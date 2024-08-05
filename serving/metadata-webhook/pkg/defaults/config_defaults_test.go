@@ -23,9 +23,8 @@ func TestTargetConfigurationDefaulting(t *testing.T) {
 				Spec: servingv1.ConfigurationSpec{
 					Template: servingv1.RevisionTemplateSpec{
 						ObjectMeta: metav1.ObjectMeta{
-							Labels: map[string]string{
-								istioRevision: knativeIstio},
 							Annotations: map[string]string{
+								sidecarInject:                "true",
 								sidecarrewriteAppHTTPProbers: "true",
 							},
 						},
@@ -40,10 +39,8 @@ func TestTargetConfigurationDefaulting(t *testing.T) {
 				Spec: servingv1.ConfigurationSpec{
 					Template: servingv1.RevisionTemplateSpec{
 						ObjectMeta: metav1.ObjectMeta{
-							Labels: map[string]string{
-								istioRevision: "something-else",
-							},
 							Annotations: map[string]string{
+								sidecarInject:                "false",
 								sidecarrewriteAppHTTPProbers: "false",
 							},
 						},
@@ -56,10 +53,8 @@ func TestTargetConfigurationDefaulting(t *testing.T) {
 				Spec: servingv1.ConfigurationSpec{
 					Template: servingv1.RevisionTemplateSpec{
 						ObjectMeta: metav1.ObjectMeta{
-							Labels: map[string]string{
-								istioRevision: knativeIstio,
-							},
 							Annotations: map[string]string{
+								sidecarInject:                "true",
 								sidecarrewriteAppHTTPProbers: "true",
 							},
 						},

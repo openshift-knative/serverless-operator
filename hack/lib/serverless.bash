@@ -220,14 +220,12 @@ spec:
       local-gateway.knative-serving.knative-local-gateway: knative-local-gateway.knative-serving-ingress.svc.cluster.local
   deployments:
   - annotations:
+      sidecar.istio.io/inject: "true"
       sidecar.istio.io/rewriteAppHTTPProbers: "true"
-    labels:
-      istio.io/rev: knative-istio
     name: activator
   - annotations:
+      sidecar.istio.io/inject: "true"
       sidecar.istio.io/rewriteAppHTTPProbers: "true"
-    labels:
-      istio.io/rev: knative-istio
     name: autoscaler
 EOF
 
@@ -254,27 +252,23 @@ spec:
   workloads:
   - annotations:
       sidecar.istio.io/logLevel: "debug"
+      sidecar.istio.io/inject: "true"
       sidecar.istio.io/rewriteAppHTTPProbers: "true"
-    labels:
-      istio.io/rev: knative-istio
     name: pingsource-mt-adapter
   - annotations:
       sidecar.istio.io/logLevel: "debug"
+      sidecar.istio.io/inject: "true"
       sidecar.istio.io/rewriteAppHTTPProbers: "true"
-    labels:
-      istio.io/rev: knative-istio
     name: mt-broker-ingress
   - annotations:
       sidecar.istio.io/logLevel: "debug"
+      sidecar.istio.io/inject: "true"
       sidecar.istio.io/rewriteAppHTTPProbers: "true"
-    labels:
-      istio.io/rev: knative-istio
     name: mt-broker-filter
   - annotations:
       sidecar.istio.io/logLevel: "debug"
+      sidecar.istio.io/inject: "true"
       sidecar.istio.io/rewriteAppHTTPProbers: "true"
-    labels:
-      istio.io/rev: knative-istio
     name: imc-dispatcher
 EOF
 
@@ -317,45 +311,38 @@ spec:
   workloads:
   - annotations:
       sidecar.istio.io/logLevel: "debug"
+      sidecar.istio.io/inject: "true"
       sidecar.istio.io/rewriteAppHTTPProbers: "true"
-    labels:
-      istio.io/rev: knative-istio
     name: kafka-broker-receiver
   - annotations:
       sidecar.istio.io/logLevel: "debug"
+      sidecar.istio.io/inject: "true"
       sidecar.istio.io/rewriteAppHTTPProbers: "true"
-    labels:
-      istio.io/rev: knative-istio
     name: kafka-broker-dispatcher
   - annotations:
       sidecar.istio.io/logLevel: "debug"
+      sidecar.istio.io/inject: "true"
       sidecar.istio.io/rewriteAppHTTPProbers: "true"
-    labels:
-      istio.io/rev: knative-istio
     name: kafka-channel-receiver
   - annotations:
       sidecar.istio.io/logLevel: "debug"
+      sidecar.istio.io/inject: "true"
       sidecar.istio.io/rewriteAppHTTPProbers: "true"
-    labels:
-      istio.io/rev: knative-istio
     name: kafka-channel-dispatcher
   - annotations:
       sidecar.istio.io/logLevel: "debug"
+      sidecar.istio.io/inject: "true"
       sidecar.istio.io/rewriteAppHTTPProbers: "true"
-    labels:
-      istio.io/rev: knative-istio
     name: kafka-sink-receiver
   - annotations:
       sidecar.istio.io/logLevel: "debug"
+      sidecar.istio.io/inject: "true"
       sidecar.istio.io/rewriteAppHTTPProbers: "true"
-    labels:
-      istio.io/rev: knative-istio
     name: kafka-source-dispatcher
   - annotations:
       sidecar.istio.io/logLevel: "debug"
+      sidecar.istio.io/inject: "true"
       sidecar.istio.io/rewriteAppHTTPProbers: "true"
-    labels:
-      istio.io/rev: knative-istio
     name: kafka-controller
 EOF
 

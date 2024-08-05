@@ -117,6 +117,7 @@ func TestMultiTenancyWithServiceMesh(t *testing.T) {
 	for _, tc := range tests {
 		tc := tc
 
+		tc.annotations[IstioInjectKey] = "true"
 		tc.annotations[IstioRewriteProbersKey] = "true"
 
 		// Always use cluster-local service.
@@ -135,10 +136,6 @@ func TestMultiTenancyWithServiceMesh(t *testing.T) {
 				ServingEnablePassthroughKey: "true",
 			}, tc.annotations)
 			service.ObjectMeta.Labels = tc.labels
-			service.Spec.Template.Labels = map[string]string{
-				// Inject istio proxy
-				IstioRevKey: IstioRevKnative,
-			}
 
 			service = test.WithServiceReadyOrFail(ctx, service)
 

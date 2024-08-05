@@ -75,7 +75,8 @@ spec:
     metadata:
       labels:
         app: zipkin
-        istio.io/rev: knative-istio
+      annotations:
+        sidecar.istio.io/inject: "false"
     spec:
       securityContext:
         runAsNonRoot: true
