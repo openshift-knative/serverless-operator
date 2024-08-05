@@ -1,17 +1,5 @@
 ---
 schema: olm.channel
-name: __DEFAULT_CHANNEL__
-package: serverless-operator
-entries:
-  - name: "serverless-operator.v__PREVIOUS_REPLACES__"
-  - name: "serverless-operator.v__PREVIOUS_VERSION__"
-    replaces: "serverless-operator.v__PREVIOUS_REPLACES__"
-    skipRange: ">=__PREVIOUS_REPLACES__ <__PREVIOUS_VERSION__"
-  - name: "serverless-operator.v__VERSION__"
-    replaces: "serverless-operator.v__PREVIOUS_VERSION__"
-    skipRange: ">=__PREVIOUS_VERSION__ <__VERSION__"
----
-schema: olm.channel
 name: __LATEST_VERSIONED_CHANNEL__
 package: serverless-operator
 entries:
