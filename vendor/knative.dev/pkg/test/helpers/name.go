@@ -26,7 +26,7 @@ import (
 const (
 	letterBytes     = "abcdefghijklmnopqrstuvwxyz"
 	randSuffixLen   = 8
-	nameLengthLimit = 50
+	nameLengthLimit = 40
 	sep             = '-'
 	sepS            = "-"
 	testNamePrefix  = "Test"
