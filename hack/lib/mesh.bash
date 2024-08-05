@@ -107,7 +107,7 @@ function deploy_gateways {
       -in "${out_dir}"/wildcard.csr \
       -out "${out_dir}"/wildcard.crt
 
-  oc get ns knative-serving-ingress || oc create namespace knative-serving-ingress
+  oc apply -f "${resources_dir}"/namespace.yaml || return $?
 
   oc create -n knative-serving-ingress secret tls wildcard-certs \
       --key="${out_dir}"/wildcard.key \
@@ -119,7 +119,6 @@ function deploy_gateways {
       --key="${out_dir}"/wildcard.key \
       --cert="${out_dir}"/wildcard.crt --dry-run=client -o yaml | oc apply -f -
 
-  oc apply -f "${resources_dir}"/namespace.yaml || return $?
   oc apply -f "${resources_dir}"/gateway-deploy.yaml || return $?
   oc apply -f "${resources_dir}"/gateway.yaml || return $?
   oc apply -f "${resources_dir}"/authorization-policies/setup || return $?
