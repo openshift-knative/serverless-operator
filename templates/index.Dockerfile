@@ -13,13 +13,8 @@ RUN /bin/opm init serverless-operator --default-channel=__DEFAULT_CHANNEL__ --ou
 # TODO: Change to registry.ci.openshift.org when not using 1.32.0. This is a problem only for 1.32.0.
 RUN /bin/opm render --skip-tls-verify -o yaml \
       __PREVIOUS_PREVIOUS_VERSION__ \
-      quay.io/openshift-knative/serverless-bundle:release-__PREVIOUS_REPLACES__ \
-      registry.ci.openshift.org/knative/release-__PREVIOUS_VERSION__:serverless-bundle \
       registry.ci.openshift.org/knative/release-__VERSION__:serverless-bundle >> /configs/index.yaml || \
     /bin/opm render --skip-tls-verify -o yaml \
-      __PREVIOUS_PREVIOUS_VERSION__ \
-      quay.io/openshift-knative/serverless-bundle:release-__PREVIOUS_REPLACES__ \
-      registry.ci.openshift.org/knative/release-__PREVIOUS_VERSION__:serverless-bundle \
       registry.ci.openshift.org/knative/serverless-bundle:main >> /configs/index.yaml
 
 # The base image is expected to contain

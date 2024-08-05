@@ -43,3 +43,25 @@ for before in "${!values[@]}"; do
   echo "Value: ${before} -> ${values[$before]}"
   sed --in-place "s|__${before}__|${values[${before}]}|" "$target"
 done
+
+# For index image, append older bundles for the "render" command.
+if [[ "$template" =~ index.Dockerfile ]]; then
+  declare -a channels
+  channels=($(metadata.get 'olm.channels.list[*]'))
+  # Delete first two elements as we only want to insert older images.
+  unset 'channels[0]'
+  unset 'channels[1]'
+  for i in "${!channels[@]}"; do
+    version=${channels[$i]#stable-}.0
+    sed --in-place "/opm render/a registry.ci.openshift.org/knative/release-${version}:serverless-bundle \\\\" "$target"
+  done
+
+  # Hacks. Should gradually go away with next versions.
+  # Workaround for https://issues.redhat.com/browse/SRVCOM-3207
+  # Use a manually built image for 1.32.0.
+  # TODO: Remove this when 1.32.0 is not included in index. This is a problem only for 1.32.0.
+  sed --in-place "s|registry.ci.openshift.org/knative/release-1.32.0:serverless-bundle|quay.io/openshift-knative/serverless-bundle:release-1.32.0|" "$target"
+  # Replace the old format for 1.31.0 and older.
+  sed --in-place "s|registry.ci.openshift.org/knative/release-1.31.0:serverless-bundle|registry.ci.openshift.org/knative/openshift-serverless-v1.31.0:serverless-bundle|" "$target"
+fi
+

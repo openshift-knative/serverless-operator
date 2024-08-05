@@ -12,14 +12,13 @@ RUN /bin/opm init serverless-operator --default-channel=stable --output yaml >> 
 # Use a manually built image for serverless-bundle.
 # TODO: Change to registry.ci.openshift.org when not using 1.32.0. This is a problem only for 1.32.0.
 RUN /bin/opm render --skip-tls-verify -o yaml \
+quay.io/openshift-knative/serverless-bundle:release-1.32.0 \
+registry.ci.openshift.org/knative/release-1.33.0:serverless-bundle \
        \
-      quay.io/openshift-knative/serverless-bundle:release-1.32.0 \
-      registry.ci.openshift.org/knative/release-1.33.0:serverless-bundle \
       registry.ci.openshift.org/knative/release-1.34.0:serverless-bundle >> /configs/index.yaml || \
     /bin/opm render --skip-tls-verify -o yaml \
-       \
-      quay.io/openshift-knative/serverless-bundle:release-1.32.0 \
-      registry.ci.openshift.org/knative/release-1.33.0:serverless-bundle \
+quay.io/openshift-knative/serverless-bundle:release-1.32.0 \
+registry.ci.openshift.org/knative/release-1.33.0:serverless-bundle \
       registry.ci.openshift.org/knative/serverless-bundle:main >> /configs/index.yaml
 
 # The base image is expected to contain
