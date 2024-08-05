@@ -479,9 +479,11 @@ func TestKsvcWithServiceMeshJWTDefaultPolicy(t *testing.T) {
 
 		// Create a test ksvc, should be accessible only via proper JWT token
 		testKsvc := test.Service("jwt-test", test.Namespace, pkgTest.ImagePath(test.HelloworldGoImg), nil, map[string]string{
-			"sidecar.istio.io/inject":                "true",
 			"sidecar.istio.io/rewriteAppHTTPProbers": "true",
 		})
+		testKsvc.Spec.Template.Labels = map[string]string{
+			"istio.io/rev": "knative-istio",
+		}
 		testKsvc = test.WithServiceReadyOrFail(ctx, testKsvc)
 
 		// Wait until the Route is ready and also verify the route returns a 401 or 403 without a token
