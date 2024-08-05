@@ -8,14 +8,17 @@ COPY --from=opm /bin/opm /bin/opm
 COPY olm-catalog/serverless-operator/index/configs /configs
 
 RUN /bin/opm init serverless-operator --default-channel=__DEFAULT_CHANNEL__ --output yaml >> /configs/index.yaml
+# Workaround for https://issues.redhat.com/browse/SRVCOM-3207
+# Use a manually built image for serverless-bundle.
+# TODO: Change to registry.ci.openshift.org when not using 1.32.0. This is a problem only for 1.32.0.
 RUN /bin/opm render --skip-tls-verify -o yaml \
       __PREVIOUS_PREVIOUS_VERSION__ \
-      registry.ci.openshift.org/knative/openshift-serverless-v__PREVIOUS_REPLACES__:serverless-bundle \
+      quay.io/openshift-knative/serverless-bundle:release-__PREVIOUS_REPLACES__ \
       registry.ci.openshift.org/knative/release-__PREVIOUS_VERSION__:serverless-bundle \
       registry.ci.openshift.org/knative/release-__VERSION__:serverless-bundle >> /configs/index.yaml || \
     /bin/opm render --skip-tls-verify -o yaml \
       __PREVIOUS_PREVIOUS_VERSION__ \
-      registry.ci.openshift.org/knative/openshift-serverless-v__PREVIOUS_REPLACES__:serverless-bundle \
+      quay.io/openshift-knative/serverless-bundle:release-__PREVIOUS_REPLACES__ \
       registry.ci.openshift.org/knative/release-__PREVIOUS_VERSION__:serverless-bundle \
       registry.ci.openshift.org/knative/serverless-bundle:main >> /configs/index.yaml
 
