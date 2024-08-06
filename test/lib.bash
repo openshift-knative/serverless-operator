@@ -538,6 +538,7 @@ EOF
 
 function kitchensink_csvs {
   local csvs csvs_rev
+  # shellcheck disable=SC2034,SC2207
   csvs=( $(yq read --doc 0 "$rootdir/olm-catalog/serverless-operator/index/configs/index.yaml" 'entries[*].name') )
 
   array.reverse csvs csvs_rev
