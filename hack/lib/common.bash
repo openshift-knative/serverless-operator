@@ -132,3 +132,12 @@ function ensure_catalog_pods_running {
     timeout 120 "[[ \$(oc -n $OLM_NAMESPACE get pods -l olm.catalogSource=redhat-marketplace | grep Running | wc -l) != 1 ]]"
   fi
 }
+
+function array.reverse() {
+  # First argument is the array to reverse. Second is the output array.
+  declare -n arr="$1" rev="$2"
+  for i in "${arr[@]}"
+  do
+    rev=("$i" "${rev[@]}")
+  done
+}

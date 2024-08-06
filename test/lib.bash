@@ -536,12 +536,25 @@ EOF
   logger.success 'Upgrade tests passed'
 }
 
+function kitchensink_csvs {
+  local csvs csvs_rev
+  csvs=( $(yq read --doc 0 "$rootdir/olm-catalog/serverless-operator/index/configs/index.yaml" 'entries[*].name') )
+
+  array.reverse csvs csvs_rev
+  # Remove first CSV as this is already installed.
+  unset 'csvs_rev[0]'
+
+  echo "${csvs_rev[@]}" | tr ' ' ','
+}
+
 function kitchensink_upgrade_tests {
   logger.info "Running kitchensink upgrade tests"
 
   local images_file
 
-  images_file="$(dirname "$(realpath "${BASH_SOURCE[0]}")")/images-rekt.yaml"
+  rootdir="$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")"
+
+  images_file="${rootdir}/test/images-rekt.yaml"
 
   export SYSTEM_NAMESPACE="$SERVING_NAMESPACE"
 
@@ -549,7 +562,7 @@ function kitchensink_upgrade_tests {
      --kubeconfigs="${KUBECONFIG}" \
      --images.producer.file="${images_file}" \
      --imagetemplate="${IMAGE_TEMPLATE}" \
-     --csv="serverless-operator.v$(metadata.get "olm.replaces"),serverless-operator.v$(metadata.get "project.version")" \
+     --csv="$(kitchensink_csvs)" \
      --upgradechannel="${OLM_UPGRADE_CHANNEL}"
 
   logger.success 'Kitchensink upgrade tests passed'
