@@ -1,0 +1,42 @@
+name: Test
+
+on:
+  push:
+    branches:
+      - 'main'
+      - 'release-*'
+  pull_request:
+    branches:
+      - 'main'
+      - 'release-*'
+
+jobs:
+  test:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Set up Go
+        uses: openshift-knative/hack/actions/setup-go@main
+
+      - name: Check out code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Merge upstream
+        if: github.event_name == 'pull_request'
+        run: |
+          if ! git config user.name > /dev/null; then
+            git config user.name "John Doe"
+          fi
+          if ! git config user.email > /dev/null; then
+            git config user.email "johndoe@localhost"
+          fi
+          git remote add upstream https://github.com/${{ github.repository }}.git
+          git fetch upstream ${{ github.base_ref }}
+          git pull --no-rebase --no-commit upstream ${{ github.base_ref }}
+        shell: bash
+
+      - name: Test
+        run: make test-unit
