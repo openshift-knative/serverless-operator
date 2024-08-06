@@ -37,8 +37,8 @@ EOF
   - command: update
     path: entries[+]
     value:
-      name: "serverless-operator-v${current_version}"
-      replaces: "serverless-operator-v${previous_version}"
+      name: "serverless-operator.v${current_version}"
+      replaces: "serverless-operator.v${previous_version}"
       skipRange: ">=${previous_version} <${current_version}"
 EOF
 
@@ -68,8 +68,8 @@ EOF
   - command: update
     path: entries[+]
     value:
-      name: "serverless-operator-v${current_version}"
-      replaces: "serverless-operator-v${previous_version}"
+      name: "serverless-operator.v${current_version}"
+      replaces: "serverless-operator.v${previous_version}"
       skipRange: ">=${previous_version} <${current_version}"
 EOF
     fi
