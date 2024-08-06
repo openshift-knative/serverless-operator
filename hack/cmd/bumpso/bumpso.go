@@ -91,7 +91,6 @@ func run() error {
 	_ = common.SetNestedField(&node, newVersion.String(), "project", "version")
 	_ = common.SetNestedField(&node, newVersion.String(), "dependencies", "redhat-knative-istio-authz-chart")
 	_ = common.SetNestedField(&node, currentVersion.String(), "olm", "replaces")
-	_ = common.SetNestedField(&node, previousVersion.String(), "olm", "previous", "replaces")
 	_ = common.SetNestedField(&node, skipRange(currentVersion, newVersion), "olm", "skipRange")
 	_ = common.SetNestedField(&node, channelsList, "olm", "channels", "list")
 	_ = common.SetNestedField(&node, serving, "dependencies", "previous", "serving")
