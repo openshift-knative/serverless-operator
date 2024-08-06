@@ -13,8 +13,6 @@ olm:
         list:
             - stable
             - stable-1.34
-            - stable-1.33
-            - stable-1.32
     previous:
         replaces: 1.32.0
 requirements:
