@@ -22,7 +22,7 @@ function run_testselect {
 
     # The testselect clones a repository. Make sure it's cloned into a temp dir.
     pushd "$clonedir" || return $?
-    "${go env GOPATH}/bin/testselect" --testsuites="${rootdir}/test/testsuites.yaml" --clonerefs="${ARTIFACT_DIR}/clonerefs.json" --output="${ARTIFACT_DIR}/tests.txt"
+    "$(go env GOPATH)/bin/testselect" --testsuites="${rootdir}/test/testsuites.yaml" --clonerefs="${ARTIFACT_DIR}/clonerefs.json" --output="${ARTIFACT_DIR}/tests.txt"
     popd || return $?
 
     logger.info 'Tests to be run:'
