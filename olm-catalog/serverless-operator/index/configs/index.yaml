@@ -9,10 +9,7 @@ entries:
   - name: "serverless-operator-v1.33.0"
     replaces: "serverless-operator-v1.32.0"
     skipRange: ">=1.32.0 <1.33.0"
-  - name: "serverless-operator-v1.32.0"
-    replaces: "serverless-operator-v1.31.0"
-    skipRange: ">=1.31.0 <1.32.0"
-  - name: serverless-operator.v1.31.0
+  - name: serverless-operator.v1.32.0
 ---
 schema: olm.channel
 name: stable-1.34
@@ -24,7 +21,4 @@ entries:
   - name: "serverless-operator-v1.33.0"
     replaces: "serverless-operator-v1.32.0"
     skipRange: ">=1.32.0 <1.33.0"
-  - name: "serverless-operator-v1.32.0"
-    replaces: "serverless-operator-v1.31.0"
-    skipRange: ">=1.31.0 <1.32.0"
-  - name: serverless-operator.v1.31.0
+  - name: serverless-operator.v1.32.0

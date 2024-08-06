@@ -16,7 +16,8 @@ function ensure_serverless_installed {
 
   local csv
   if [[ "${INSTALL_OLDEST_COMPATIBLE}" == "true" ]]; then
-    csv="serverless-operator.v$(metadata.get "olm.previous.replaces")"
+    rootdir="$(dirname "$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")")"
+    csv=$(yq read --doc 0 "$rootdir/olm-catalog/serverless-operator/index/configs/index.yaml" 'entries[-1].name')
   elif [[ "${INSTALL_PREVIOUS_VERSION}" == "true" ]]; then
     csv="$PREVIOUS_CSV"
   else
