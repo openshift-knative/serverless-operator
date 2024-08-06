@@ -2,9 +2,15 @@
 
 function run_testselect {
   if [[ -n "${ARTIFACT_DIR:-}" && -n "${CLONEREFS_OPTIONS:-}" ]]; then
-    GO111MODULE=off go get github.com/openshift-knative/hack/cmd/testselect
+    local clonedir rootdir hack_tmp_dir
 
-    local clonedir rootdir
+    hack_tmp_dir=$(mktemp -d)
+    git clone --branch main https://github.com/openshift-knative/hack "$hack_tmp_dir"
+    pushd "$hack_tmp_dir" || return $?
+    go install github.com/openshift-knative/hack/cmd/testselect
+    popd || return $?
+    rm -rf "$hack_tmp_dir"
+
     clonedir=$(mktemp -d)
 
     # CLONEREFS_OPTIONS var is set in CI
@@ -16,7 +22,7 @@ function run_testselect {
 
     # The testselect clones a repository. Make sure it's cloned into a temp dir.
     pushd "$clonedir" || return $?
-    "${GOPATH}/bin/testselect" --testsuites="${rootdir}/test/testsuites.yaml" --clonerefs="${ARTIFACT_DIR}/clonerefs.json" --output="${ARTIFACT_DIR}/tests.txt"
+    "$(go env GOPATH)/bin/testselect" --testsuites="${rootdir}/test/testsuites.yaml" --clonerefs="${ARTIFACT_DIR}/clonerefs.json" --output="${ARTIFACT_DIR}/tests.txt"
     popd || return $?
 
     logger.info 'Tests to be run:'

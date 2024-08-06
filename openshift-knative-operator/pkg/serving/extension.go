@@ -30,10 +30,11 @@ import (
 )
 
 const (
-	loggingURLTemplate = "https://%s/app/kibana#/discover?_a=(index:.all,query:'kubernetes.labels.serving_knative_dev%%5C%%2FrevisionUID:${REVISION_UID}')"
-	requiredNsEnvName  = "REQUIRED_SERVING_NAMESPACE"
-
-	defaultDomainTemplate = "{{.Name}}-{{.Namespace}}.{{.Domain}}"
+	loggingURLTemplate                         = "https://%s/app/kibana#/discover?_a=(index:.all,query:'kubernetes.labels.serving_knative_dev%%5C%%2FrevisionUID:${REVISION_UID}')"
+	requiredNsEnvName                          = "REQUIRED_SERVING_NAMESPACE"
+	defaultDomainTemplate                      = "{{.Name}}-{{.Namespace}}.{{.Domain}}"
+	networkingCertificatesReconcilerLease      = "controller.knative.dev.networking.pkg.certificates.reconciler.reconciler"
+	controlProtocolCertificatesReconcilerLease = "controller.knative.dev.control-protocol.pkg.certificates.reconciler.reconciler"
 )
 
 var isDomainMappingRemoved atomic.Bool
@@ -169,7 +170,7 @@ func (e *extension) Reconcile(ctx context.Context, comp base.KComponent) error {
 	}
 
 	if !isDomainMappingRemoved.Load() {
-		if err := e.cleanupDomainMapping(ctx, ks.GetNamespace()); err != nil {
+		if err := e.cleanupOldResources(ctx, ks.GetNamespace()); err != nil {
 			return err
 		}
 		isDomainMappingRemoved.Store(true)
@@ -213,7 +214,7 @@ func (e *extension) fetchLoggingHost(ctx context.Context) string {
 	return route.Status.Ingress[0].Host
 }
 
-func (e *extension) cleanupDomainMapping(ctx context.Context, ns string) error {
+func (e *extension) cleanupOldResources(ctx context.Context, ns string) error {
 	client := e.kubeclient
 	for _, dep := range []string{"domain-mapping", "domainmapping-webhook"} {
 		if err := client.AppsV1().Deployments(ns).Delete(ctx, dep, metav1.DeleteOptions{}); err != nil && !apierrors.IsNotFound(err) {
@@ -231,7 +232,9 @@ func (e *extension) cleanupDomainMapping(ctx context.Context, ns string) error {
 		return err
 	}
 	for _, lease := range leases.Items {
-		if strings.Contains(lease.Name, "domainmapping") || strings.Contains(lease.Name, "domain-mapping") {
+		if strings.HasPrefix(lease.Name, "domainmapping") ||
+			strings.HasPrefix(lease.Name, "net-certmanager") ||
+			strings.HasPrefix(lease.Name, networkingCertificatesReconcilerLease) || strings.HasPrefix(lease.Name, controlProtocolCertificatesReconcilerLease) {
 			if err := client.CoordinationV1().Leases(ns).Delete(ctx, lease.Name, metav1.DeleteOptions{}); err != nil && !apierrors.IsNotFound(err) {
 				return fmt.Errorf("failed to delete lease %s: %w", lease.Name, err)
 			}
