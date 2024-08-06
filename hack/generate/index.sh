@@ -47,8 +47,8 @@ EOF
 
   # Generate additional entries
   for i in $(seq $num_csvs); do
-    current_minor=$(( minor-$i ))
-    previous_minor=$(( minor-$i ))
+    current_minor=$(( minor-i ))
+    previous_minor=$(( minor-i ))
     previous_minor=$(( previous_minor-1 ))
     # If the current version is a z-stream then the following entries will
     # start with the same "minor" version.
@@ -75,12 +75,12 @@ EOF
     fi
   done
 
-  echo "---" >> ${target}
-  cat "${channel_entry_yaml}" >> ${target}
+  echo "---" >> "${target}"
+  cat "${channel_entry_yaml}" >> "${target}"
 }
 
 # Clear the file.
-> "${target}"
+rm -f "${target}"
 
 add_channel_entries "stable" "${target}"
 add_channel_entries "stable-1.34" "${target}"

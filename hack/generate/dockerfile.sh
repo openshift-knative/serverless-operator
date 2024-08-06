@@ -43,7 +43,7 @@ if [[ "$template" =~ index.Dockerfile ]]; then
 
   # Generate additional entries
   for i in $(seq $num_csvs); do
-    current_minor=$(( minor-$i ))
+    current_minor=$(( minor-i ))
     # If the current version is a z-stream then the following entries will
     # start with the same "minor" version.
     if [[ "$micro" != "0" ]]; then
