@@ -100,6 +100,9 @@ image "imc-dispatcher__dispatcher"                                              
 image "pingsource-mt-adapter__dispatcher"                                        "${KNATIVE_EVENTING_MTPING}"
 image "APISERVER_RA_IMAGE"                                                       "${KNATIVE_EVENTING_APISERVER_RECEIVE_ADAPTER}"
 image "DISPATCHER_IMAGE"                                                         "${KNATIVE_EVENTING_CHANNEL_DISPATCHER}"
+if [ "${KNATIVE_EVENTING_JOBSINK}" != "" ]; then
+  image "job-sink__job-sink"                                                       "${KNATIVE_EVENTING_JOBSINK}"
+fi
 
 image "eventmesh-backend__controller" "${KNATIVE_BACKSTAGE_PLUGINS_EVENTMESH}"
 
