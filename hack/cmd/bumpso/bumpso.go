@@ -80,8 +80,6 @@ func run() error {
 	channelsList := []interface{}{
 		defaultChannel,
 		fmt.Sprintf("stable-%d.%d", newVersion.Major, newVersion.Minor),
-		fmt.Sprintf("stable-%d.%d", currentVersion.Major, currentVersion.Minor),
-		fmt.Sprintf("stable-%d.%d", previousVersion.Major, previousVersion.Minor),
 	}
 
 	serving, _, _ := unstructured.NestedString(project, "dependencies", "serving")
