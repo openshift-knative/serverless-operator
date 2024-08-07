@@ -16,8 +16,8 @@ function ensure_serverless_installed {
 
   local csv
   if [[ "${INSTALL_OLDEST_COMPATIBLE}" == "true" ]]; then
-    csv="$(metadata.get "upgrade_sequence[0].csv")"
-    OLM_SOURCE=redhat-operators
+    rootdir="$(dirname "$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")")"
+    csv=$(yq read --doc 0 "$rootdir/olm-catalog/serverless-operator/index/configs/index.yaml" 'entries[-1].name')
   elif [[ "${INSTALL_PREVIOUS_VERSION}" == "true" ]]; then
     csv="$PREVIOUS_CSV"
   else
@@ -157,11 +157,7 @@ function deploy_knativeserving_cr {
 
   rootdir="$(dirname "$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")")"
   serving_cr="$(mktemp -t serving-XXXXX.yaml)"
-  if [[ "${INSTALL_OLDEST_COMPATIBLE}" == "true" && $(metadata.get "upgrade_sequence[0].serving_cr") != "" ]]; then
-    cp "${rootdir}/$(metadata.get "upgrade_sequence[0].serving_cr")" "$serving_cr"
-  else
-    cp "${rootdir}/test/v1beta1/resources/operator.knative.dev_v1beta1_knativeserving_cr.yaml" "$serving_cr"
-  fi
+  cp "${rootdir}/test/v1beta1/resources/operator.knative.dev_v1beta1_knativeserving_cr.yaml" "$serving_cr"
 
   if [[ "$serverless_version" != "${CURRENT_CSV#serverless-operator.v}" ]]; then
     logger.warn "Disabling internal encryption in upgrade tests due to SRVKS-1107."
@@ -355,11 +351,7 @@ function deploy_knativeeventing_cr {
 
   rootdir="$(dirname "$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")")"
   eventing_cr="$(mktemp -t eventing-XXXXX.yaml)"
-  if [[ "${INSTALL_OLDEST_COMPATIBLE}" == "true" && $(metadata.get "upgrade_sequence[0].eventing_cr") != "" ]]; then
-    cp "${rootdir}/$(metadata.get "upgrade_sequence[0].eventing_cr")" "$eventing_cr"
-  else
-    cp "${rootdir}/test/v1beta1/resources/operator.knative.dev_v1beta1_knativeeventing_cr.yaml" "$eventing_cr"
-  fi
+  cp "${rootdir}/test/v1beta1/resources/operator.knative.dev_v1beta1_knativeeventing_cr.yaml" "$eventing_cr"
 
   if [[ $ENABLE_TRACING == "true" ]]; then
     enable_tracing "$eventing_cr"

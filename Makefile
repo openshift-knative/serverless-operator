@@ -305,7 +305,6 @@ release-files:
  		templates/index.Dockerfile \
 		olm-catalog/serverless-operator/index/Dockerfile
 	./hack/generate/index.sh \
-		templates/index.yaml \
 		olm-catalog/serverless-operator/index/configs/index.yaml
 	./hack/generate/quickstart.sh \
 		templates/serverless-application-quickstart.yaml \

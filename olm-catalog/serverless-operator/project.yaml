@@ -13,11 +13,6 @@ olm:
         list:
             - stable
             - stable-1.34
-            - stable-1.33
-            - stable-1.32
-    previous:
-        replaces: 1.32.0
-        skipRange: '>=1.32.0 <1.33.0'
 requirements:
     kube:
         # The min version validation in `vendor/knative.dev/pkg/version/version.go`
@@ -72,8 +67,3 @@ dependencies:
         eventing_kafka_broker: knative-v1.12
     mustgather:
         image: quay.io/openshift-knative/must-gather
-upgrade_sequence:
-    - csv: serverless-operator.v1.32.0
-    - csv: serverless-operator.v1.33.0
-    - csv: serverless-operator.v1.33.1
-    - csv: serverless-operator.v1.34.0

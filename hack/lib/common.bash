@@ -73,6 +73,27 @@ function versions.major_minor {
   echo "${version}" | sed 's/^v\?\([[:digit:]]\+\)\.\([[:digit:]]\+\).*/\1.\2/'
 }
 
+# Returns the major part of the whole version.
+function versions.major {
+  local version=${1:?Pass a full version as arg[1]}
+  # shellcheck disable=SC2001
+  echo "${version}" | sed 's/^v\?\([[:digit:]]\+\).*/\1/'
+}
+
+# Returns the minor part of the whole version.
+function versions.minor {
+  local version=${1:?Pass a full version as arg[1]}
+  # shellcheck disable=SC2001
+  echo "${version}" | sed 's/^v\?\([[:digit:]]\+\)\.\([[:digit:]]\+\).*/\2/'
+}
+
+# Returns the micro part of the whole version.
+function versions.micro {
+  local version=${1:?Pass a full version as arg[1]}
+  # shellcheck disable=SC2001
+  echo "${version}" | sed 's/^v\?\([[:digit:]]\+\)\.\([[:digit:]]\+\)\.\([[:digit:]]\+\).*/\3/'
+}
+
 # Breaks all image references in the passed YAML file.
 function yaml.break_image_references {
   sed -i "s,image: .*,image: TO_BE_REPLACED," "$1"
@@ -110,4 +131,13 @@ function ensure_catalog_pods_running {
     oc -n "$OLM_NAMESPACE" delete pods -l olm.catalogSource=redhat-marketplace
     timeout 120 "[[ \$(oc -n $OLM_NAMESPACE get pods -l olm.catalogSource=redhat-marketplace | grep Running | wc -l) != 1 ]]"
   fi
+}
+
+function array.reverse() {
+  # First argument is the array to reverse. Second is the output array.
+  declare -n arr="$1" rev="$2"
+  for i in "${arr[@]}"
+  do
+    rev=("$i" "${rev[@]}")
+  done
 }

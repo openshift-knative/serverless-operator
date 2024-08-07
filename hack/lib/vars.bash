@@ -101,6 +101,7 @@ EOF
 )
 export IMAGE_TEMPLATE="${IMAGE_TEMPLATE:-"$DEFAULT_IMAGE_TEMPLATE"}"
 export INDEX_IMAGE="${INDEX_IMAGE:-}"
+export INDEX_IMAGE_NUM_CSVS="${INDEX_IMAGE_NUM_CSVS:-3}"
 # Might be used to disable tests which need additional users.
 # Managed environments such as Hypershift might now allow creating new users.
 export USER_MANAGEMENT_ALLOWED="${USER_MANAGEMENT_ALLOWED:-true}"

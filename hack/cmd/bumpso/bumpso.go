@@ -49,11 +49,6 @@ func run() error {
 		return fmt.Errorf("failed to decode file into node: %w", err)
 	}
 
-	previousVersion, err := previousVersion(project)
-	if err != nil {
-		return err
-	}
-
 	currentVersion, err := currentVersion(project)
 	if err != nil {
 		return err
@@ -75,22 +70,11 @@ func run() error {
 	}
 	newVersion.BumpMinor()
 
-	upgradeSequence, _, err := unstructured.NestedSlice(project, "upgrade_sequence")
-	if err != nil {
-		return err
-	}
-	upgradeSequence = upgradeSequence[1:] // Remove first version
-	upgradeSequence = append(upgradeSequence, map[string]interface{}{
-		"csv": fmt.Sprintf("serverless-operator.v%s", newVersion),
-	})
-
 	defaultChannel, _, _ := unstructured.NestedString(project, "olm", "channels", "default")
 
 	channelsList := []interface{}{
 		defaultChannel,
 		fmt.Sprintf("stable-%d.%d", newVersion.Major, newVersion.Minor),
-		fmt.Sprintf("stable-%d.%d", currentVersion.Major, currentVersion.Minor),
-		fmt.Sprintf("stable-%d.%d", previousVersion.Major, previousVersion.Minor),
 	}
 
 	serving, _, _ := unstructured.NestedString(project, "dependencies", "serving")
@@ -100,10 +84,7 @@ func run() error {
 	_ = common.SetNestedField(&node, newVersion.String(), "project", "version")
 	_ = common.SetNestedField(&node, newVersion.String(), "dependencies", "redhat-knative-istio-authz-chart")
 	_ = common.SetNestedField(&node, currentVersion.String(), "olm", "replaces")
-	_ = common.SetNestedField(&node, previousVersion.String(), "olm", "previous", "replaces")
 	_ = common.SetNestedField(&node, skipRange(currentVersion, newVersion), "olm", "skipRange")
-	_ = common.SetNestedField(&node, skipRange(previousVersion, currentVersion), "olm", "previous", "skipRange")
-	_ = common.SetNestedField(&node, upgradeSequence, "upgrade_sequence")
 	_ = common.SetNestedField(&node, channelsList, "olm", "channels", "list")
 	_ = common.SetNestedField(&node, serving, "dependencies", "previous", "serving")
 	_ = common.SetNestedField(&node, eventing, "dependencies", "previous", "eventing")
@@ -123,15 +104,6 @@ func run() error {
 
 func currentVersion(project map[string]interface{}) (*semver.Version, error) {
 	v, _, err := unstructured.NestedString(project, "project", "version")
-	if err != nil {
-		return nil, err
-	}
-	ver := semver.New(v)
-	return ver, nil
-}
-
-func previousVersion(project map[string]interface{}) (*semver.Version, error) {
-	v, _, err := unstructured.NestedString(project, "olm", "replaces")
 	if err != nil {
 		return nil, err
 	}
