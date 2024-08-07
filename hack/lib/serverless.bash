@@ -394,6 +394,8 @@ spec:
   channel:
     enabled: true
     bootstrapServers: my-cluster-kafka-bootstrap.kafka:9092
+  logging:
+    level: DEBUG
 EOF
 
   if [[ $MESH == "true" ]]; then
