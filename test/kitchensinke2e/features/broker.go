@@ -79,6 +79,8 @@ func BrokerReadiness(index int, broker component, brokerDls component, triggers 
 		triggerName := brokerName + "-" + trigger.ShortLabel()
 
 		f.Setup(fmt.Sprintf("Install a %s Trigger Thing", trigger.Label()), trigger.Install(triggerName))
+		// Workaround for https://issues.redhat.com/browse/SRVKE-1636
+		f.Teardown("Delete trigger "+triggerName, trigger.Delete(triggerName))
 
 		if triggerDls != nil {
 			f.Setup(fmt.Sprintf("Install a %s Trigger", trigger.Label()), triggerresources.Install(
