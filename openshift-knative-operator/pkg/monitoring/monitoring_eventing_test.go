@@ -1,17 +1,24 @@
 package monitoring
 
 import (
+	"os"
 	"strings"
 	"testing"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	operatorv1beta1 "knative.dev/operator/pkg/apis/operator/v1beta1"
+	operatorcommon "knative.dev/operator/pkg/reconciler/common"
 )
 
 func TestLoadPlatformEventingMonitoringManifests(t *testing.T) {
-	manifests, err := GetEventingMonitoringPlatformManifests(&operatorv1beta1.KnativeEventing{
+	if os.Getenv("KO_DATA_PATH") == "" {
+		t.Setenv("KO_DATA_PATH", "../../cmd/operator/kodata")
+	}
+
+	comp := &operatorv1beta1.KnativeEventing{
 		ObjectMeta: metav1.ObjectMeta{Namespace: eventingNamespace},
-	})
+	}
+	manifests, err := GetEventingMonitoringPlatformManifests(comp)
 	if err != nil {
 		t.Errorf("Unable to load eventing monitoring platform manifests: %v", err)
 	}
@@ -20,11 +27,17 @@ func TestLoadPlatformEventingMonitoringManifests(t *testing.T) {
 	}
 	resources := manifests[0].Resources()
 
+	deployments := eventingDeployments
+	if operatorcommon.LatestRelease(comp) != "1.14" {
+		deployments = eventingDeployments.Clone()
+		deployments.Insert("job-sink")
+	}
+
 	// We create a service monitor and a service monitor service per deployment: len(eventingDeployments)*2 resources.
 	// One clusterrolebinding (except for mt-broker-controller) per deployment for allowing tokenreviews, subjectaccessreviews
 	// to be used by kube proxy. All but one deployments have a different sa: len(eventingDeployments) -1 resources.
 	// RBAC resources from rbac-proxy.yaml: 5 resources that don't depend on the deployments number.
-	expectedEventingMonitoringResources := len(eventingDeployments)*2 + len(eventingDeployments) - 1 + 5
+	expectedEventingMonitoringResources := len(deployments)*2 + len(deployments) - 1 + 5
 
 	if len(resources) != expectedEventingMonitoringResources {
 		t.Errorf("Got %d, want %d", len(resources), expectedEventingMonitoringResources)
@@ -33,18 +46,18 @@ func TestLoadPlatformEventingMonitoringManifests(t *testing.T) {
 		kind := strings.ToLower(u.GetKind())
 		switch kind {
 		case "servicemonitor":
-			if !eventingDeployments.Has(strings.TrimSuffix(u.GetName(), "-sm")) {
+			if !deployments.Has(strings.TrimSuffix(u.GetName(), "-sm")) {
 				t.Errorf("Service monitor with name %q not found", u.GetName())
 			}
 		case "service":
-			if !eventingDeployments.Has(strings.TrimSuffix(u.GetName(), "-sm-service")) {
+			if !deployments.Has(strings.TrimSuffix(u.GetName(), "-sm-service")) {
 				t.Errorf("Service with name %q not found", u.GetName())
 			}
 		case "clusterrolebinding":
 			if u.GetName() == "rbac-proxy-metrics-prom-rb" || u.GetName() == "rbac-proxy-reviews-prom-rb" {
 				continue
 			}
-			if !eventingDeployments.Has(strings.TrimPrefix(u.GetName(), "rbac-proxy-reviews-prom-rb-")) {
+			if !deployments.Has(strings.TrimPrefix(u.GetName(), "rbac-proxy-reviews-prom-rb-")) {
 				t.Errorf("Clusterrolebinding with name %q not found", u.GetName())
 			}
 		case "role":
@@ -58,4 +71,9 @@ func TestLoadPlatformEventingMonitoringManifests(t *testing.T) {
 			checkSubjects(t, u.Object, OpenshiftMonitoringNamespace)
 		}
 	}
+}
+
+func TestLoadPlatformEventingMonitoringManifestsJobSink(t *testing.T) {
+	t.Setenv("KO_DATA_PATH", "testdata")
+	TestLoadPlatformEventingMonitoringManifests(t)
 }
