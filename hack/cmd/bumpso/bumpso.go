@@ -49,11 +49,6 @@ func run() error {
 		return fmt.Errorf("failed to decode file into node: %w", err)
 	}
 
-	previousVersion, err := previousVersion(project)
-	if err != nil {
-		return err
-	}
-
 	currentVersion, err := currentVersion(project)
 	if err != nil {
 		return err
@@ -109,15 +104,6 @@ func run() error {
 
 func currentVersion(project map[string]interface{}) (*semver.Version, error) {
 	v, _, err := unstructured.NestedString(project, "project", "version")
-	if err != nil {
-		return nil, err
-	}
-	ver := semver.New(v)
-	return ver, nil
-}
-
-func previousVersion(project map[string]interface{}) (*semver.Version, error) {
-	v, _, err := unstructured.NestedString(project, "olm", "replaces")
 	if err != nil {
 		return nil, err
 	}
