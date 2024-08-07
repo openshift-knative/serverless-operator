@@ -82,5 +82,6 @@ EOF
 # Clear the file.
 rm -f "${target}"
 
-add_channel_entries "stable" "${target}"
-add_channel_entries "stable-1.34" "${target}"
+while IFS=$'\n' read -r channel; do
+  add_channel_entries "$channel" "${target}"
+done < <(metadata.get 'olm.channels.list[*]')
