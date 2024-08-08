@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"knative.dev/pkg/ptr"
 	"os"
 
 	"github.com/opentracing/opentracing-go/log"
@@ -35,6 +36,8 @@ func main() {
 		ServerPrivateKeyName:  "tls.key",
 		ServerCertificateName: "tls.crt",
 	})
+
+	ctx = conversion.WithSkipReconcile(ctx, ptr.Bool(true))
 
 	if err := apis.AddToScheme(scheme.Scheme); err != nil {
 		log.Error(err)
@@ -72,7 +75,6 @@ func newConversionController(ctx context.Context, _ configmap.Watcher) *controll
 				},
 			},
 		},
-
 		// A function that infuses the context passed to ConvertTo/ConvertFrom/SetDefaults with custom metadata.
 		func(ctx context.Context) context.Context {
 			return ctx

@@ -19,7 +19,6 @@ package conversion
 import (
 	"context"
 	"fmt"
-	"os"
 
 	"go.uber.org/zap"
 	apixv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
@@ -50,6 +49,8 @@ type reconciler struct {
 	secretLister corelisters.SecretLister
 	crdLister    apixlisters.CustomResourceDefinitionLister
 	client       apixclient.Interface
+
+	skipReconcile bool
 }
 
 var _ webhook.ConversionController = (*reconciler)(nil)
@@ -76,7 +77,7 @@ func (r *reconciler) Reconcile(ctx context.Context, key string) error {
 		return err
 	}
 
-	if os.Getenv("USE_OLM_TLS") != "" { // olm will do the crd update
+	if r.skipReconcile { // crd update is delegated externally
 		return nil
 	}
 	cacert, ok := secret.Data[certresources.CACert]
