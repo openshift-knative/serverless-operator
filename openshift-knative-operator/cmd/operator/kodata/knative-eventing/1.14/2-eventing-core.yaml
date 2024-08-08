@@ -6212,3 +6212,6 @@ metadata:
     app.kubernetes.io/version: v1.14
     app.kubernetes.io/name: knative-eventing
     config.openshift.io/inject-trusted-cabundle: "true"
+    networking.knative.dev/trust-bundle: "true"
+  annotations:
+    "openshift.io/owning-component": "Serverless Operator"
