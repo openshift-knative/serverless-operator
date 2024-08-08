@@ -533,6 +533,8 @@ EOF
   # Delete the leftover namespace.
   oc delete namespace serving-tests
 
+  return 1
+
   logger.success 'Upgrade tests passed'
 }
 

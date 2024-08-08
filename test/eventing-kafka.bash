@@ -46,4 +46,6 @@ function upstream_knative_eventing_kafka_broker_e2e {
 
   # Rollback setting Kafka as default Broker class
   oc patch knativeeventing --type merge -n knative-eventing knative-eventing --patch-file "${root_dir}/test/config/eventing/kafka-broker-default-patch-rollback.yaml"
+
+  return 1
 }
