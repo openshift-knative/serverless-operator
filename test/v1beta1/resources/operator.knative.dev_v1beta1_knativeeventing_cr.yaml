@@ -9,11 +9,15 @@ spec:
       eventtype-auto-create: "enabled"
     logging:
       loglevel.controller: "debug"
-      loglevel.webhook: "debug"
-      loglevel.kafkachannel-dispatcher: "debug"
-      loglevel.kafkachannel-controller: "debug"
+      loglevel.eventing-webhook: "debug"
+      loglevel.inmemorychannel-webhook: "debug"
       loglevel.inmemorychannel-dispatcher: "debug"
+      loglevel.kafka-broker-controller: "debug"
+      loglevel.kafka-webhook-eventing: "debug"
       loglevel.mt-broker-controller: "debug"
+      loglevel.mt_broker_filter: "debug"
+      loglevel.mt_broker_ingress: "debug"
+      loglevel.pingsource-mt-adapter: "debug"
     sugar:
       namespace-selector: |
         matchExpressions:
