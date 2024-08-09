@@ -14,7 +14,7 @@ spec:
             namespaces:
               - "serverless-tests"
               - "knative-serving"
-              - "istio-system"
+              - "knative-serving-ingress"
 
     - from:
         - source:

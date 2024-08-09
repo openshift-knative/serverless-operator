@@ -1,4 +1,24 @@
-apiVersion: networking.istio.io/v1alpha3
+###########################################################
+# cluster external
+###########################################################
+apiVersion: v1
+kind: Service
+metadata:
+  name: knative-istio-ingressgateway
+  namespace: knative-serving-ingress
+spec:
+  type: ClusterIP
+  selector:
+    knative: ingressgateway
+  ports:
+    - name: http2
+      port: 80
+      targetPort: 8080
+    - name: https
+      port: 443
+      targetPort: 8443
+---
+apiVersion: networking.istio.io/v1beta1
 kind: Gateway
 metadata:
   name: knative-ingress-gateway
@@ -7,15 +27,40 @@ spec:
   selector:
     knative: ingressgateway
   servers:
-    - port:
-        number: 443
+    - hosts:
+        - '*'
+      port:
         name: https
+        number: 443
         protocol: HTTPS
-      hosts:
-        - "*"
       tls:
-        mode: SIMPLE
         credentialName: wildcard-certs
+        mode: SIMPLE
+---
+###########################################################
+# cluster local
+###########################################################
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    experimental.istio.io/disable-gateway-port-translation: "true"
+  name: knative-local-gateway
+  namespace: knative-serving-ingress
+spec:
+  ports:
+    - name: http2
+      port: 80
+      protocol: TCP
+      targetPort: 8081
+    - name: https
+      port: 443
+      protocol: TCP
+      targetPort: 8444
+  selector:
+    knative: ingressgateway
+  type: ClusterIP
+#########################
 ---
 apiVersion: networking.istio.io/v1alpha3
 kind: Gateway
@@ -26,30 +71,12 @@ spec:
   selector:
     knative: ingressgateway
   servers:
-    - port:
+    - hosts:
+        - "*"
+      port:
         number: 8081
         name: https
         protocol: HTTPS
       tls:
         mode: ISTIO_MUTUAL
-      hosts:
-        - "*"
 ---
-apiVersion: v1
-kind: Service
-metadata:
-  name: knative-local-gateway
-  namespace: istio-system
-  labels:
-    experimental.istio.io/disable-gateway-port-translation: "true"
-spec:
-  type: ClusterIP
-  selector:
-    istio: ingressgateway
-  ports:
-    - name: http2
-      port: 80
-      targetPort: 8081
-    - name: https
-      port: 443
-      targetPort: 8444

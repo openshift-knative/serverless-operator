@@ -166,8 +166,6 @@ function deploy_knativeserving_cr {
 
   if [[ $MESH == "true" ]]; then
     enable_istio "$serving_cr"
-    # Disable internal encryption.
-    yq delete --inplace "$serving_cr" spec.config.network.internal-encryption
   fi
 
   if [[ $ENABLE_TRACING == "true" ]]; then
@@ -205,10 +203,17 @@ function enable_istio {
 
   istio_patch="$(mktemp -t istio-XXXXX.yaml)"
   cat - << EOF > "${istio_patch}"
+metadata:
+  annotations:
+    serverless.openshift.io/disable-istio-net-policies-generation: "true"
 spec:
   ingress:
     istio:
       enabled: true
+  config:
+    istio: # point these to our own specific gateways now
+      gateway.knative-serving.knative-ingress-gateway: knative-istio-ingressgateway.knative-serving-ingress.svc.cluster.local
+      local-gateway.knative-serving.knative-local-gateway: knative-local-gateway.knative-serving-ingress.svc.cluster.local
   deployments:
   - annotations:
       sidecar.istio.io/inject: "true"

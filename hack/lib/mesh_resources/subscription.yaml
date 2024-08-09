@@ -1,35 +1,13 @@
 apiVersion: operators.coreos.com/v1alpha1
 kind: Subscription
 metadata:
-  name: jaeger-product
+  name: sailoperator
   namespace: openshift-operators
 spec:
-  channel: stable
-  name: jaeger-product
+  channel: 3.0-nightly
   installPlanApproval: Automatic
-  source: redhat-operators
+  name: sailoperator
+  source: community-operators
   sourceNamespace: openshift-marketplace
+  startingCSV: sailoperator.v3.0.0-nightly-2024-05-13
 ---
-apiVersion: operators.coreos.com/v1alpha1
-kind: Subscription
-metadata:
-  name: kiali-ossm
-  namespace: openshift-operators
-spec:
-  channel: stable
-  name: kiali-ossm
-  installPlanApproval: Automatic
-  source: redhat-operators
-  sourceNamespace: openshift-marketplace
----
-apiVersion: operators.coreos.com/v1alpha1
-kind: Subscription
-metadata:
-  name: servicemeshoperator
-  namespace: openshift-operators
-spec:
-  channel: stable
-  name: servicemeshoperator
-  installPlanApproval: Automatic
-  source: redhat-operators
-  sourceNamespace: openshift-marketplace

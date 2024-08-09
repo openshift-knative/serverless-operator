@@ -18,7 +18,7 @@ import (
 const (
 	Tenant1          = "tenant-1"
 	Tenant2          = "tenant-2"
-	LocalGatewayHost = "knative-local-gateway.istio-system.svc.cluster.local"
+	LocalGatewayHost = "knative-local-gateway.knative-serving-ingress.svc.cluster.local"
 )
 
 var ExpectStatusForbidden = func(resp *spoof.Response) (bool, error) {
@@ -124,6 +124,7 @@ func TestMultiTenancyWithServiceMesh(t *testing.T) {
 		tc.labels = map[string]string{
 			networking.VisibilityLabelKey: serving.VisibilityClusterLocal,
 		}
+
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
