@@ -232,7 +232,7 @@ func CreateClusterRoleBindingManifest(serviceAccountName string, ns string) (*mf
 // This is static information since observability cm does not allow any changes for the prometheus config
 // TODO(skonto): fix this upstream so ports are aligned if possible
 func getDefaultMetricsPort(name string) string {
-	if name == "mt-broker-ingress" || name == "mt-broker-filter" {
+	if name == "mt-broker-ingress" || name == "mt-broker-filter" || name == "job-sink" {
 		return "9092"
 	}
 	return "9090"
@@ -257,6 +257,8 @@ func getSelectorLabels(component string) map[string]string {
 	case "kafka-controller-manager":
 		labels["control-plane"] = "kafka-controller-manager"
 	case "pingsource-mt-adapter":
+		labels["app.kubernetes.io/component"] = component
+	case "job-sink":
 		labels["app.kubernetes.io/component"] = component
 	default:
 		labels["app"] = component

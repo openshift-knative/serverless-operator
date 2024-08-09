@@ -58,6 +58,11 @@ function knative_eventing_images() {
   export KNATIVE_EVENTING_CHANNEL_CONTROLLER=${KNATIVE_EVENTING_CHANNEL_CONTROLLER:-"${eventing}-channel-controller:${tag}"}
   export KNATIVE_EVENTING_CHANNEL_DISPATCHER=${KNATIVE_EVENTING_CHANNEL_DISPATCHER:-"${eventing}-channel-dispatcher:${tag}"}
   export KNATIVE_EVENTING_APISERVER_RECEIVE_ADAPTER=${KNATIVE_EVENTING_APISERVER_RECEIVE_ADAPTER:-"${eventing}-apiserver-receive-adapter:${tag}"}
+  if [ "${tag}" != "knative-v1.14" ]; then
+    export KNATIVE_EVENTING_JOBSINK=${KNATIVE_EVENTING_JOBSINK:-"${eventing}-jobsink:${tag}"}
+  else
+    export KNATIVE_EVENTING_JOBSINK=${KNATIVE_EVENTING_JOBSINK:-""}
+  fi
 
   export KNATIVE_EVENTING_APPENDER=${KNATIVE_EVENTING_APPENDER:-"${eventing}-appender:${tag}"}
   export KNATIVE_EVENTING_EVENT_DISPLAY=${KNATIVE_EVENTING_EVENT_DISPLAY:-"${eventing}-event-display:${tag}"}

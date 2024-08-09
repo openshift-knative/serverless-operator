@@ -159,6 +159,10 @@ func TestReconcile(t *testing.T) {
 }
 
 func TestManifests(t *testing.T) {
+	if os.Getenv("KO_DATA_PATH") == "" {
+		t.Setenv("KO_DATA_PATH", "../../cmd/operator/kodata")
+	}
+
 	cases := []struct {
 		name   string
 		in     *operatorv1beta1.KnativeEventing
