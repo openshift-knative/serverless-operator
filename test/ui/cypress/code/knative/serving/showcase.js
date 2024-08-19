@@ -105,6 +105,18 @@ class ShowcaseKservice {
         .scrollIntoView()
         .uncheck()
     }
+    // FIXME: Remove after https://issues.redhat.com/browse/OCPBUGS-38680 is fixed.
+    if (environment.ocpVersion().satisfies('>=4.17')) {
+      const resourceSelect =
+        cy.get('button#form-select-input-resources-field')
+
+      resourceSelect
+        .scrollIntoView()
+        .click()
+      resourceSelect.siblings('ul[role=listbox]')
+        .get('li#select-option-resources-knative button')
+        .click()
+    }
     cy.get('button[type=submit]')
       .scrollIntoView()
       .click()
