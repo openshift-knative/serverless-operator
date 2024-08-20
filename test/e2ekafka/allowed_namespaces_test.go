@@ -13,5 +13,5 @@ func TestKnativeKafkaCannotBeInstalledInARandomNamespace(t *testing.T) {
 	test.CleanupOnInterrupt(t, func() { test.CleanupAll(t, caCtx) })
 
 	knativeKafkaGvr := kafkav1alpha1.SchemeGroupVersion.WithResource("knativekafkas")
-	e2e.VerifyCRCannotBeInstalledInRandomNamespace(t, caCtx, test.Namespace, knativeKafkaGvr, "KnativeKafka", "knative-kafka")
+	e2e.VerifyCRCannotBeInstalledInRandomNamespace(t, caCtx, test.Namespace, knativeKafkaGvr, "KnativeKafka", "knative-kafka", "knative-eventing")
 }
