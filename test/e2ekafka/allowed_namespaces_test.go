@@ -1,10 +1,11 @@
 package e2ekafka
 
 import (
+	"testing"
+
 	kafkav1alpha1 "github.com/openshift-knative/serverless-operator/knative-operator/pkg/apis/operator/v1alpha1"
 	"github.com/openshift-knative/serverless-operator/test"
 	"github.com/openshift-knative/serverless-operator/test/e2e"
-	"testing"
 )
 
 func TestKnativeKafkaCannotBeInstalledInARandomNamespace(t *testing.T) {

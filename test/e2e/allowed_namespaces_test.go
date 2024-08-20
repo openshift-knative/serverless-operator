@@ -1,10 +1,11 @@
 package e2e
 
 import (
+	"testing"
+
 	"github.com/openshift-knative/serverless-operator/test"
 	"knative.dev/operator/pkg/apis/operator"
 	"knative.dev/operator/pkg/apis/operator/v1beta1"
-	"testing"
 )
 
 func TestServingCannotBeInstalledInARandomNamespace(t *testing.T) {

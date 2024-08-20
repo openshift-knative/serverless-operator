@@ -2,11 +2,12 @@ package e2e
 
 import (
 	"context"
+	"testing"
+
 	"github.com/openshift-knative/serverless-operator/test"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
-	"testing"
 )
 
 func VerifyCRCannotBeInstalledInRandomNamespace(t *testing.T, caCtx *test.Context, namespace string, resource schema.GroupVersionResource, kind string, name string) {
