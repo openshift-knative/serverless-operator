@@ -29,15 +29,13 @@ export KNATIVE_SERVING_TEST_MANIFESTS_DIR=${KNATIVE_SERVING_TEST_MANIFESTS_DIR:-
 
 function download_serving {
   component=$1
-  version=$2
-  shift
   shift
 
   files=("$@")
   echo "Files: ${files[*]}"
 
   component_dir="$root/openshift-knative-operator/cmd/operator/kodata/knative-${component}"
-  target_dir="${component_dir}/${version/knative-v/}" # remove `knative-v` prefix
+  target_dir="${component_dir}/latest"
   rm -r "$component_dir"
   mkdir -p "$target_dir"
 
@@ -54,6 +52,7 @@ function download_serving {
         branch=$(metadata.get dependencies.serving_artifacts_branch)
       fi
       url="https://raw.githubusercontent.com/openshift-knative/serving/${branch}/openshift/release/artifacts/$file"
+      echo "Downloading file from ${url}"
       wget --no-check-certificate "$url" -O "$target_file"
     else
       cp "${KNATIVE_SERVING_MANIFESTS_DIR}/${file}" "$target_file"
@@ -65,15 +64,13 @@ function download_serving {
 
 function download_eventing {
   component=$1
-  version=$2
-  shift
   shift
 
   files=("$@")
   echo "Files: ${files[*]}"
 
   component_dir="$root/openshift-knative-operator/cmd/operator/kodata/knative-${component}"
-  target_dir="${component_dir}/${version/knative-v/}" # remove `knative-v` prefix
+  target_dir="${component_dir}/latest"
   rm -r "$component_dir"
   mkdir -p "$target_dir"
 
@@ -101,15 +98,13 @@ function download_eventing {
 
 function download_eventing_istio {
   component=$1
-  version=$2
-  shift
   shift
 
   files=("$@")
   echo "Files: ${files[*]}"
 
   component_dir="$root/openshift-knative-operator/cmd/operator/kodata/knative-${component}"
-  target_dir="${component_dir}/${version/knative-v/}" # remove `knative-v` prefix
+  target_dir="${component_dir}/latest"
 
   for ((i = 0; i < ${#files[@]}; i++)); do
     index=$(( i+1 ))
@@ -135,15 +130,13 @@ function download_eventing_istio {
 
 function download_backstage_plugins {
   component=$1
-  version=$2
-  shift
   shift
 
   files=("$@")
   echo "Files: ${files[*]}"
 
   component_dir="$root/openshift-knative-operator/cmd/operator/kodata/knative-${component}"
-  target_dir="${component_dir}/${version/knative-v/}" # remove `knative-v` prefix
+  target_dir="${component_dir}/latest"
 
   for ((i = 0; i < ${#files[@]}; i++)); do
     index=$(( i+1 ))
@@ -229,7 +222,7 @@ function download_eventing_tls_testing_resources {
 # Extensive Serving testing is done at this repo only. For the latter we do use manifests under openshift-knative-operator/cmd/kodata/knative-serving which are fetched from the midstream
 # repo.
 if [[ ${KNATIVE_SERVING_TEST_MANIFESTS_DIR} = "" ]]; then
-  download_serving serving "${KNATIVE_SERVING_VERSION}" "${serving_files[@]}"
+  download_serving serving "${serving_files[@]}"
 fi
 
 #
@@ -240,8 +233,7 @@ fi
 ingress_root_dir="$root/openshift-knative-operator/cmd/operator/kodata/ingress/"
 rm -rf "${ingress_root_dir}"
 
-serving_version=$(versions.major_minor "${KNATIVE_SERVING_VERSION}")
-ingress_dir="${ingress_root_dir}/${serving_version/knative-v/}" # remove `knative-v` prefix
+ingress_dir="${ingress_root_dir}/latest"
 mkdir -p "${ingress_dir}"
 
 # ingress_dir has to contain a sub folder for each ingress
@@ -252,10 +244,10 @@ download_ingress net-kourier "${ingress_dir}" "kourier" "${kourier_files[@]}"
 #
 # DOWNLOAD EVENTING
 #
-download_eventing eventing "$KNATIVE_EVENTING_VERSION" "${eventing_files[@]}"
-download_eventing_istio eventing "$KNATIVE_EVENTING_VERSION" "${eventing_istio_files[@]}"
+download_eventing eventing "${eventing_files[@]}"
+download_eventing_istio eventing "${eventing_istio_files[@]}"
 
 download_eventing_tls_testing_resources "ca-certificate.yaml" "eventing-ca-issuer.yaml" "selfsigned-issuer.yaml"
 
-download_backstage_plugins eventing "$KNATIVE_EVENTING_VERSION" "${backstage_plugins_files[@]}"
+download_backstage_plugins eventing "${backstage_plugins_files[@]}"
 
