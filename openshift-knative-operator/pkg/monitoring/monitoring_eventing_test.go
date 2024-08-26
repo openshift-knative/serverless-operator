@@ -1,20 +1,14 @@
 package monitoring
 
 import (
-	"os"
 	"strings"
 	"testing"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	operatorv1beta1 "knative.dev/operator/pkg/apis/operator/v1beta1"
-	operatorcommon "knative.dev/operator/pkg/reconciler/common"
 )
 
-func TestLoadPlatformEventingMonitoringManifests(t *testing.T) {
-	if os.Getenv("KO_DATA_PATH") == "" {
-		t.Setenv("KO_DATA_PATH", "../../cmd/operator/kodata")
-	}
-
+func testLoadPlatformEventingMonitoringManifests(t *testing.T, supportJobSink bool) {
 	comp := &operatorv1beta1.KnativeEventing{
 		ObjectMeta: metav1.ObjectMeta{Namespace: eventingNamespace},
 	}
@@ -28,9 +22,9 @@ func TestLoadPlatformEventingMonitoringManifests(t *testing.T) {
 	resources := manifests[0].Resources()
 
 	deployments := eventingDeployments
-	if operatorcommon.LatestRelease(comp) != "1.14" {
+	if !supportJobSink {
 		deployments = eventingDeployments.Clone()
-		deployments.Insert("job-sink")
+		deployments.Delete("job-sink")
 	}
 
 	// We create a service monitor and a service monitor service per deployment: len(eventingDeployments)*2 resources.
@@ -73,7 +67,12 @@ func TestLoadPlatformEventingMonitoringManifests(t *testing.T) {
 	}
 }
 
+func TestLoadPlatformEventingMonitoringManifests(t *testing.T) {
+	t.Setenv("KO_DATA_PATH", "testdata/jobsink")
+	testLoadPlatformEventingMonitoringManifests(t, true)
+}
+
 func TestLoadPlatformEventingMonitoringManifestsJobSink(t *testing.T) {
-	t.Setenv("KO_DATA_PATH", "testdata")
-	TestLoadPlatformEventingMonitoringManifests(t)
+	t.Setenv("KO_DATA_PATH", "testdata/nojobsink")
+	testLoadPlatformEventingMonitoringManifests(t, false)
 }
