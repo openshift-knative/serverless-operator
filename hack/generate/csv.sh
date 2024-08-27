@@ -215,11 +215,18 @@ add_related_image "$target" "IMAGE_MUST_GATHER" "$(metadata.get dependencies.mus
 
 # Add Knative Kafka version to the downstream operator
 add_downstream_operator_deployment_env "$target" "CURRENT_VERSION" "$(metadata.get project.version)"
+serving_version=$(metadata.get dependencies.serving)
+add_downstream_operator_deployment_env "$target" "KNATIVE_SERVING_VERSION" "${serving_version/knative-v/}" # Remove `knative-v` prefix if exists
+eventing_version=$(metadata.get dependencies.eventing)
+add_downstream_operator_deployment_env "$target" "KNATIVE_EVENTING_VERSION" "${eventing_version/knative-v/}" # Remove `knative-v` prefix if exists
 ekb_version=$(metadata.get dependencies.eventing_kafka_broker)
 add_downstream_operator_deployment_env "$target" "KNATIVE_EVENTING_KAFKA_BROKER_VERSION" "${ekb_version/knative-v/}" # Remove `knative-v` prefix if exists
 
 # Add Serverless version to be used for naming storage jobs for Serving, Eventing
 add_upstream_operator_deployment_env "$target" "CURRENT_VERSION" "$(metadata.get project.version)"
+add_upstream_operator_deployment_env "$target" "KNATIVE_SERVING_VERSION" "${serving_version/knative-v/}" # Remove `knative-v` prefix if exists
+add_upstream_operator_deployment_env "$target" "KNATIVE_EVENTING_VERSION" "${eventing_version/knative-v/}" # Remove `knative-v` prefix if exists
+add_upstream_operator_deployment_env "$target" "KNATIVE_EVENTING_KAFKA_BROKER_VERSION" "${ekb_version/knative-v/}" # Remove `knative-v` prefix if exists
 
 # Override the image for the CLI artifact deployment
 yq write --inplace "$target" "spec.install.spec.deployments(name==knative-openshift).spec.template.spec.initContainers(name==cli-artifacts).image" "${registry}/knative-v$(metadata.get dependencies.cli):kn-cli-artifacts"

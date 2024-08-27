@@ -1,0 +1,42 @@
+diff --git a/vendor/knative.dev/operator/pkg/apis/operator/v1beta1/knativeeventing_lifecycle.go b/vendor/knative.dev/operator/pkg/apis/operator/v1beta1/knativeeventing_lifecycle.go
+index daac20f30..0dc8acd17 100644
+--- a/vendor/knative.dev/operator/pkg/apis/operator/v1beta1/knativeeventing_lifecycle.go
++++ b/vendor/knative.dev/operator/pkg/apis/operator/v1beta1/knativeeventing_lifecycle.go
+@@ -17,6 +17,7 @@ limitations under the License.
+ package v1beta1
+ 
+ import (
++	"os"
+ 	"strings"
+ 
+ 	"k8s.io/apimachinery/pkg/runtime/schema"
+@@ -132,7 +133,7 @@ func (es *KnativeEventingStatus) GetVersion() string {
+ 
+ // SetVersion sets the currently installed version of the component.
+ func (es *KnativeEventingStatus) SetVersion(version string) {
+-	es.Version = version
++	es.Version = os.Getenv("KNATIVE_EVENTING_VERSION")
+ }
+ 
+ // GetManifests gets the url links of the manifests.
+diff --git a/vendor/knative.dev/operator/pkg/apis/operator/v1beta1/knativeserving_lifecycle.go b/vendor/knative.dev/operator/pkg/apis/operator/v1beta1/knativeserving_lifecycle.go
+index e59ab4c8d..eb064a50e 100644
+--- a/vendor/knative.dev/operator/pkg/apis/operator/v1beta1/knativeserving_lifecycle.go
++++ b/vendor/knative.dev/operator/pkg/apis/operator/v1beta1/knativeserving_lifecycle.go
+@@ -17,6 +17,7 @@ limitations under the License.
+ package v1beta1
+ 
+ import (
++	"os"
+ 	"strings"
+ 
+ 	"knative.dev/operator/pkg/apis/operator"
+@@ -132,7 +133,7 @@ func (is *KnativeServingStatus) GetVersion() string {
+ 
+ // SetVersion sets the currently installed version of the component.
+ func (is *KnativeServingStatus) SetVersion(version string) {
+-	is.Version = version
++	is.Version = os.Getenv("KNATIVE_SERVING_VERSION")
+ }
+ 
+ // GetManifests gets the url links of the manifests.
