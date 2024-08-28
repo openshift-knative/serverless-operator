@@ -102,3 +102,16 @@ jobs:
           delete-branch: true
           body: |
             Bump SO version + run `make generated-files`
+            
+      - name: Trigger Konflux and CI discovery
+        if: ${{ always() }}
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.SERVERLESS_QE_ROBOT }}
+          script: |
+            github.rest.actions.createWorkflowDispatch({
+              owner: context.repo.owner,
+              repo: 'hack',
+              workflow_id: 'release-discover-branches.yaml',
+              ref: 'main',
+            })
