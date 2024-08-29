@@ -24,6 +24,10 @@ assignees: ''
 - [ ] Create a new branch from `main` with the pattern `release-x.xx`
 - [ ] [Approve CI setup for `release-1.X` branch in `openshift/release`](https://github.com/openshift/release/pulls/serverless-qe) and wait for the PR to be merged.
 - [ ] [Approve PRs created by GitHub actions bot in `serverless-operator`](https://github.com/openshift-knative/serverless-operator/pulls/app%2Fgithub-actions)
+- [ ] [Only for release-1.35+] [Approve PRs created by `serverless-qe` bot in `hack`](https://github.com/openshift-knative/hack/pulls/serverless-qe)
+  - [ ] wait for the PR to be merged
+  - [ ] wait for the [Generate CI config workflow to succeed](https://github.com/openshift-knative/hack/actions/workflows/release-generate-ci.yaml?query=event%3Apush++)
+  - [ ] [Approve Konflux-related PRs created by `serverless-qe`](https://github.com/pulls?q=is%3Aopen+is%3Apr+author%3Aserverless-qe+archived%3Afalse+%22Konflux%22) and wait for the PR to be merged.
 - [ ] Verify that [`knative-istio-authz-chart`](https://github.com/openshift-knative/knative-istio-authz-chart/branches) has a branch with the same name as the `release-1.X` branch created previously in   serverless-operator
 - [ ] Verify that [`knative-istio-authz-chart`'s `Chart.yaml`](https://github.com/openshift-knative/knative-istio-authz-chart/blob/main/Chart.yaml) has `version` and `appVersion` set to the next version.
 
