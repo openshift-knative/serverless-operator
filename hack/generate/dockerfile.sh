@@ -8,6 +8,8 @@ target="${2:?Provide a target Dockerfile file as arg[2]}"
 # shellcheck disable=SC1091,SC1090
 source "$(dirname "${BASH_SOURCE[0]}")/../lib/__sources__.bash"
 
+default_serverless_operator_images
+
 declare -A values
 values[NAME]="$(metadata.get project.name)"
 values[LATEST_VERSIONED_CHANNEL]="$(metadata.get 'olm.channels.list[1]')"
@@ -22,6 +24,7 @@ values[NODEJS_VERSION]="$(metadata.get requirements.nodejs)"
 values[OCP_TARGET_VLIST]="$(metadata.get 'requirements.ocpVersion.label')"
 values[OCP_MAX_VERSION]="$(metadata.get 'requirements.ocpVersion.max')"
 values[PREVIOUS_VERSION]="$(metadata.get olm.replaces)"
+values[BUNDLE]="${SERVERLESS_BUNDLE}"
 
 # Start fresh
 cp "$template" "$target"
@@ -41,6 +44,7 @@ if [[ "$template" =~ index.Dockerfile ]]; then
   # One is already added in template
   num_csvs=$(( INDEX_IMAGE_NUM_CSVS-1 ))
 
+  # TODO gradually migrate other bundle images to Konflux-based ones as we build more minor versions with Konflux
   # Generate additional entries
   for i in $(seq $num_csvs); do
     current_minor=$(( minor-i ))

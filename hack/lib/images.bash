@@ -3,16 +3,25 @@
 # shellcheck disable=SC1091,SC1090
 source "$(dirname "${BASH_SOURCE[0]}")/metadata.bash"
 
-registry_host='registry.ci.openshift.org'
-registry="${registry_host}/openshift"
+ci_registry_host='registry.ci.openshift.org'
+ci_registry="${ci_registry_host}/openshift"
+
 export CURRENT_VERSION_IMAGES=${CURRENT_VERSION_IMAGES:-"main"}
+CURRENT_VERSION="$(metadata.get project.version)"
+
+quay_registry_app_version=${CURRENT_VERSION/./} # 1.34.0 -> 134.0
+quay_registry_app_version=${quay_registry_app_version%.*} # 134.0 -> 134
+registry_host="quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-release-${quay_registry_app_version}"
+registry="${registry_host}"
+serverless_registry="${registry_host}/serverless"
 
 function default_serverless_operator_images() {
-  local serverless
-  serverless="${registry_host}/knative/${CURRENT_VERSION_IMAGES}:serverless"
-  export SERVERLESS_KNATIVE_OPERATOR=${SERVERLESS_KNATIVE_OPERATOR:-"${serverless}-knative-operator"}
-  export SERVERLESS_OPENSHIFT_KNATIVE_OPERATOR=${SERVERLESS_OPENSHIFT_KNATIVE_OPERATOR:-"${serverless}-openshift-knative-operator"}
-  export SERVERLESS_INGRESS=${SERVERLESS_INGRESS:-"${serverless}-ingress"}
+  export SERVERLESS_KNATIVE_OPERATOR=${SERVERLESS_KNATIVE_OPERATOR:-$(latest_konflux_image_sha "${serverless_registry}-knative-operator:${CURRENT_VERSION_IMAGES}")}
+  export SERVERLESS_OPENSHIFT_KNATIVE_OPERATOR=${SERVERLESS_OPENSHIFT_KNATIVE_OPERATOR:-$(latest_konflux_image_sha "${serverless_registry}-openshift-knative-operator:${CURRENT_VERSION_IMAGES}")}
+  export SERVERLESS_INGRESS=${SERVERLESS_INGRESS:-$(latest_konflux_image_sha "${serverless_registry}-ingress:${CURRENT_VERSION_IMAGES}")}
+
+  export SERVERLESS_BUNDLE=${SERVERLESS_BUNDLE:-$(latest_konflux_image_sha "${serverless_registry}-bundle:${CURRENT_VERSION_IMAGES}")}
+  export SERVERLESS_INDEX=${SERVERLESS_BUNDLE:-$(latest_konflux_image_sha "${serverless_registry}-index:${CURRENT_VERSION_IMAGES}")}
 }
 
 function knative_serving_images_release() {
@@ -27,13 +36,13 @@ function knative_serving_images() {
   local serving tag
   serving="${registry}/knative-serving"
   tag=${1:?"Provide tag for Serving images"}
-  export KNATIVE_SERVING_QUEUE=${KNATIVE_SERVING_QUEUE:-"${serving}-queue:${tag}"}
-  export KNATIVE_SERVING_ACTIVATOR=${KNATIVE_SERVING_ACTIVATOR:-"${serving}-activator:${tag}"}
-  export KNATIVE_SERVING_AUTOSCALER=${KNATIVE_SERVING_AUTOSCALER:-"${serving}-autoscaler:${tag}"}
-  export KNATIVE_SERVING_AUTOSCALER_HPA=${KNATIVE_SERVING_AUTOSCALER_HPA:-"${serving}-autoscaler-hpa:${tag}"}
-  export KNATIVE_SERVING_CONTROLLER=${KNATIVE_SERVING_CONTROLLER:-"${serving}-controller:${tag}"}
-  export KNATIVE_SERVING_WEBHOOK=${KNATIVE_SERVING_WEBHOOK:-"${serving}-webhook:${tag}"}
-  export KNATIVE_SERVING_STORAGE_VERSION_MIGRATION=${KNATIVE_SERVING_STORAGE_VERSION_MIGRATION:-"${serving}-storage-version-migration:${tag}"}
+  export KNATIVE_SERVING_QUEUE=${KNATIVE_SERVING_QUEUE:-$(latest_konflux_image_sha "${serving}-queue:${tag}")}
+  export KNATIVE_SERVING_ACTIVATOR=${KNATIVE_SERVING_ACTIVATOR:-$(latest_konflux_image_sha "${serving}-activator:${tag}")}
+  export KNATIVE_SERVING_AUTOSCALER=${KNATIVE_SERVING_AUTOSCALER:-$(latest_konflux_image_sha "${serving}-autoscaler:${tag}")}
+  export KNATIVE_SERVING_AUTOSCALER_HPA=${KNATIVE_SERVING_AUTOSCALER_HPA:-$(latest_konflux_image_sha "${serving}-autoscaler-hpa:${tag}")}
+  export KNATIVE_SERVING_CONTROLLER=${KNATIVE_SERVING_CONTROLLER:-$(latest_konflux_image_sha "${serving}-controller:${tag}")}
+  export KNATIVE_SERVING_WEBHOOK=${KNATIVE_SERVING_WEBHOOK:-$(latest_konflux_image_sha "${serving}-webhook:${tag}")}
+  export KNATIVE_SERVING_STORAGE_VERSION_MIGRATION=${KNATIVE_SERVING_STORAGE_VERSION_MIGRATION:-$(latest_konflux_image_sha "${serving}-storage-version-migration:${tag}")}
 }
 
 function knative_eventing_images_release() {
@@ -48,52 +57,42 @@ function knative_eventing_images() {
   local eventing tag
   eventing="${registry}/knative-eventing"
   tag=${1:?"Provide tag for Eventing images"}
-  export KNATIVE_EVENTING_CONTROLLER=${KNATIVE_EVENTING_CONTROLLER:-"${eventing}-controller:${tag}"}
-  export KNATIVE_EVENTING_WEBHOOK=${KNATIVE_EVENTING_WEBHOOK:-"${eventing}-webhook:${tag}"}
-  export KNATIVE_EVENTING_STORAGE_VERSION_MIGRATION=${KNATIVE_EVENTING_STORAGE_VERSION_MIGRATION:-"${eventing}-migrate:${tag}"}
-  export KNATIVE_EVENTING_INGRESS=${KNATIVE_EVENTING_INGRESS:-"${eventing}-ingress:${tag}"}
-  export KNATIVE_EVENTING_FILTER=${KNATIVE_EVENTING_FILTER:-"${eventing}-filter:${tag}"}
-  export KNATIVE_EVENTING_MTCHANNEL_BROKER=${KNATIVE_EVENTING_MTCHANNEL_BROKER:-"${eventing}-mtchannel-broker:${tag}"}
-  export KNATIVE_EVENTING_MTPING=${KNATIVE_EVENTING_MTPING:-"${eventing}-mtping:${tag}"}
-  export KNATIVE_EVENTING_CHANNEL_CONTROLLER=${KNATIVE_EVENTING_CHANNEL_CONTROLLER:-"${eventing}-channel-controller:${tag}"}
-  export KNATIVE_EVENTING_CHANNEL_DISPATCHER=${KNATIVE_EVENTING_CHANNEL_DISPATCHER:-"${eventing}-channel-dispatcher:${tag}"}
-  export KNATIVE_EVENTING_APISERVER_RECEIVE_ADAPTER=${KNATIVE_EVENTING_APISERVER_RECEIVE_ADAPTER:-"${eventing}-apiserver-receive-adapter:${tag}"}
+  export KNATIVE_EVENTING_CONTROLLER=${KNATIVE_EVENTING_CONTROLLER:-$(latest_konflux_image_sha "${eventing}-controller:${tag}")}
+  export KNATIVE_EVENTING_WEBHOOK=${KNATIVE_EVENTING_WEBHOOK:-$(latest_konflux_image_sha "${eventing}-webhook:${tag}")}
+  export KNATIVE_EVENTING_STORAGE_VERSION_MIGRATION=${KNATIVE_EVENTING_STORAGE_VERSION_MIGRATION:-$(latest_konflux_image_sha "${eventing}-migrate:${tag}")}
+  export KNATIVE_EVENTING_INGRESS=${KNATIVE_EVENTING_INGRESS:-$(latest_konflux_image_sha "${eventing}-ingress:${tag}")}
+  export KNATIVE_EVENTING_FILTER=${KNATIVE_EVENTING_FILTER:-$(latest_konflux_image_sha "${eventing}-filter:${tag}")}
+  export KNATIVE_EVENTING_MTCHANNEL_BROKER=${KNATIVE_EVENTING_MTCHANNEL_BROKER:-$(latest_konflux_image_sha "${eventing}-mtchannel-broker:${tag}")}
+  export KNATIVE_EVENTING_MTPING=${KNATIVE_EVENTING_MTPING:-$(latest_konflux_image_sha "${eventing}-mtping:${tag}")}
+  export KNATIVE_EVENTING_CHANNEL_CONTROLLER=${KNATIVE_EVENTING_CHANNEL_CONTROLLER:-$(latest_konflux_image_sha "${eventing}-channel-controller:${tag}")}
+  export KNATIVE_EVENTING_CHANNEL_DISPATCHER=${KNATIVE_EVENTING_CHANNEL_DISPATCHER:-$(latest_konflux_image_sha "${eventing}-channel-dispatcher:${tag}")}
+  export KNATIVE_EVENTING_APISERVER_RECEIVE_ADAPTER=${KNATIVE_EVENTING_APISERVER_RECEIVE_ADAPTER:-$(latest_konflux_image_sha "${eventing}-apiserver-receive-adapter:${tag}")}
   if [ "${tag}" != "knative-v1.14" ]; then
-    export KNATIVE_EVENTING_JOBSINK=${KNATIVE_EVENTING_JOBSINK:-"${eventing}-jobsink:${tag}"}
+    export KNATIVE_EVENTING_JOBSINK=${KNATIVE_EVENTING_JOBSINK:-$(latest_konflux_image_sha "${eventing}-jobsink:${tag}")}
   else
     export KNATIVE_EVENTING_JOBSINK=${KNATIVE_EVENTING_JOBSINK:-""}
   fi
 
-  export KNATIVE_EVENTING_APPENDER=${KNATIVE_EVENTING_APPENDER:-"${eventing}-appender:${tag}"}
-  export KNATIVE_EVENTING_EVENT_DISPLAY=${KNATIVE_EVENTING_EVENT_DISPLAY:-"${eventing}-event-display:${tag}"}
-  export KNATIVE_EVENTING_HEARTBEATS_RECEIVER=${KNATIVE_EVENTING_HEARTBEATS_RECEIVER:-"${eventing}-heartbeats-receiver:${tag}"}
-  export KNATIVE_EVENTING_MIGRATE=${KNATIVE_EVENTING_MIGRATE:-"${eventing}-migrate:${tag}"}
-  export KNATIVE_EVENTING_PONG=${KNATIVE_EVENTING_PONG:-"${eventing}-pong:${tag}"}
-  export KNATIVE_EVENTING_SCHEMA=${KNATIVE_EVENTING_SCHEMA:-"${eventing}-schema:${tag}"}
-  export KNATIVE_EVENTING_WEBSOCKETSOURCE=${KNATIVE_EVENTING_WEBSOCKETSOURCE:-"${eventing}-websocketsource:${tag}"}
-  
-  # quay.io multiarch images:
-  tag="${tag/knative-/}"
-  export KNATIVE_EVENTING_HEARTBEATS=${KNATIVE_EVENTING_HEARTBEATS:-"quay.io/openshift-knative/eventing/heartbeats:${tag}"}
-}
+  export KNATIVE_EVENTING_APPENDER=${KNATIVE_EVENTING_APPENDER:-$(latest_konflux_image_sha "${eventing}-appender:${tag}")}
+  export KNATIVE_EVENTING_EVENT_DISPLAY=${KNATIVE_EVENTING_EVENT_DISPLAY:-$(latest_konflux_image_sha "${eventing}-event-display:${tag}")}
+  export KNATIVE_EVENTING_HEARTBEATS_RECEIVER=${KNATIVE_EVENTING_HEARTBEATS_RECEIVER:-$(latest_konflux_image_sha "${eventing}-heartbeats-receiver:${tag}")}
+  export KNATIVE_EVENTING_HEARTBEATS=${KNATIVE_EVENTING_HEARTBEATS:-$(latest_konflux_image_sha "${eventing}-heartbeats:${tag}")}
+  export KNATIVE_EVENTING_MIGRATE=${KNATIVE_EVENTING_MIGRATE:-$(latest_konflux_image_sha "${eventing}-migrate:${tag}")}
+  export KNATIVE_EVENTING_PONG=${KNATIVE_EVENTING_PONG:-$(latest_konflux_image_sha "${eventing}-pong:${tag}")}
+  export KNATIVE_EVENTING_SCHEMA=${KNATIVE_EVENTING_SCHEMA:-$(latest_konflux_image_sha "${eventing}-schema:${tag}")}
+  export KNATIVE_EVENTING_WEBSOCKETSOURCE=${KNATIVE_EVENTING_WEBSOCKETSOURCE:-$(latest_konflux_image_sha "${eventing}-websocketsource:${tag}")}
 
-function default_knative_eventing_test_images() {
-  local eventing
-  eventing="quay.io/openshift-knative/eventing"
-  local tag
-  tag=$(metadata.get dependencies.eventing)
-  tag="${tag/knative-/}"
-
-  export KNATIVE_EVENTING_TEST_EVENT_SENDER=${KNATIVE_EVENTING_TEST_EVENT_SENDER:-"${eventing}/event-sender:${tag}"}
-  export KNATIVE_EVENTING_TEST_EVENTSHUB=${KNATIVE_EVENTING_TEST_EVENTSHUB:-"${eventing}/eventshub:${tag}"}
-  export KNATIVE_EVENTING_TEST_PERFORMANCE=${KNATIVE_EVENTING_TEST_PERFORMANCE:-"${eventing}/performance:${tag}"}
-  export KNATIVE_EVENTING_TEST_PRINT=${KNATIVE_EVENTING_TEST_PRINT:-"${eventing}/print:${tag}"}
-  export KNATIVE_EVENTING_TEST_RECORDEVENTS=${KNATIVE_EVENTING_TEST_RECORDEVENTS:-"${eventing}/recordevents:${tag}"}
-  export KNATIVE_EVENTING_TEST_REQUEST_SENDER=${KNATIVE_EVENTING_TEST_REQUEST_SENDER:-"${eventing}/request-sender:${tag}"}
-  export KNATIVE_EVENTING_TEST_WATHOLA_FETCHER=${KNATIVE_EVENTING_TEST_WATHOLA_FETCHER:-"${eventing}/wathola-fetcher:${tag}"}
-  export KNATIVE_EVENTING_TEST_WATHOLA_FORWARDER=${KNATIVE_EVENTING_TEST_WATHOLA_FORWARDER:-"${eventing}/wathola-forwarder:${tag}"}
-  export KNATIVE_EVENTING_TEST_WATHOLA_RECEIVER=${KNATIVE_EVENTING_TEST_WATHOLA_RECEIVER:-"${eventing}/wathola-receiver:${tag}"}
-  export KNATIVE_EVENTING_TEST_WATHOLA_SENDER=${KNATIVE_EVENTING_TEST_WATHOLA_SENDER:-"${eventing}/wathola-sender:${tag}"}
+  # Test images
+  export KNATIVE_EVENTING_TEST_EVENT_SENDER=${KNATIVE_EVENTING_TEST_EVENT_SENDER:-$(latest_konflux_image_sha "${eventing}-event-sender:${tag}")}
+  export KNATIVE_EVENTING_TEST_EVENTSHUB=${KNATIVE_EVENTING_TEST_EVENTSHUB:-$(latest_konflux_image_sha "${eventing}-eventshub:${tag}")}
+  export KNATIVE_EVENTING_TEST_PERFORMANCE=${KNATIVE_EVENTING_TEST_PERFORMANCE:-$(latest_konflux_image_sha "${eventing}-performance:${tag}")}
+  export KNATIVE_EVENTING_TEST_PRINT=${KNATIVE_EVENTING_TEST_PRINT:-$(latest_konflux_image_sha "${eventing}-print:${tag}")}
+  export KNATIVE_EVENTING_TEST_RECORDEVENTS=${KNATIVE_EVENTING_TEST_RECORDEVENTS:-$(latest_konflux_image_sha "${eventing}-recordevents:${tag}")}
+  export KNATIVE_EVENTING_TEST_REQUEST_SENDER=${KNATIVE_EVENTING_TEST_REQUEST_SENDER:-$(latest_konflux_image_sha "${eventing}-request-sender:${tag}")}
+  export KNATIVE_EVENTING_TEST_WATHOLA_FETCHER=${KNATIVE_EVENTING_TEST_WATHOLA_FETCHER:-$(latest_konflux_image_sha "${eventing}-wathola-fetcher:${tag}")}
+  export KNATIVE_EVENTING_TEST_WATHOLA_FORWARDER=${KNATIVE_EVENTING_TEST_WATHOLA_FORWARDER:-$(latest_konflux_image_sha "${eventing}-wathola-forwarder:${tag}")}
+  export KNATIVE_EVENTING_TEST_WATHOLA_RECEIVER=${KNATIVE_EVENTING_TEST_WATHOLA_RECEIVER:-$(latest_konflux_image_sha "${eventing}-wathola-receiver:${tag}")}
+  export KNATIVE_EVENTING_TEST_WATHOLA_SENDER=${KNATIVE_EVENTING_TEST_WATHOLA_SENDER:-$(latest_konflux_image_sha "${eventing}-wathola-sender:${tag}")}
 }
 
 function knative_eventing_istio_images_release() {
@@ -123,27 +122,28 @@ function knative_eventing_kafka_broker_images() {
   local eventing_kafka_broker tag
   eventing_kafka_broker="${registry}/knative-eventing-kafka-broker"
   tag=${1:?"Provide tag for Eventing Kafka Broker images"}
-  export KNATIVE_EVENTING_KAFKA_BROKER_DISPATCHER=${KNATIVE_EVENTING_KAFKA_BROKER_DISPATCHER:-"${eventing_kafka_broker}-dispatcher:${tag}"}
-  export KNATIVE_EVENTING_KAFKA_BROKER_RECEIVER=${KNATIVE_EVENTING_KAFKA_BROKER_RECEIVER:-"${eventing_kafka_broker}-receiver:${tag}"}
-  export KNATIVE_EVENTING_KAFKA_BROKER_KAFKA_CONTROLLER=${KNATIVE_EVENTING_KAFKA_BROKER_KAFKA_CONTROLLER:-"${eventing_kafka_broker}-kafka-controller:${tag}"}
-  export KNATIVE_EVENTING_KAFKA_BROKER_WEBHOOK_KAFKA=${KNATIVE_EVENTING_KAFKA_BROKER_WEBHOOK_KAFKA:-"${eventing_kafka_broker}-webhook-kafka":${tag}}
-  export KNATIVE_EVENTING_KAFKA_BROKER_POST_INSTALL=${KNATIVE_EVENTING_KAFKA_BROKER_POST_INSTALL:-"${eventing_kafka_broker}-post-install:${tag}"}
+  export KNATIVE_EVENTING_KAFKA_BROKER_DISPATCHER=${KNATIVE_EVENTING_KAFKA_BROKER_DISPATCHER:-$(latest_konflux_image_sha "${eventing_kafka_broker}-dispatcher:${tag}")}
+  export KNATIVE_EVENTING_KAFKA_BROKER_RECEIVER=${KNATIVE_EVENTING_KAFKA_BROKER_RECEIVER:-$(latest_konflux_image_sha "${eventing_kafka_broker}-receiver:${tag}")}
+  export KNATIVE_EVENTING_KAFKA_BROKER_KAFKA_CONTROLLER=${KNATIVE_EVENTING_KAFKA_BROKER_KAFKA_CONTROLLER:-$(latest_konflux_image_sha "${eventing_kafka_broker}-kafka-controller:${tag}")}
+  export KNATIVE_EVENTING_KAFKA_BROKER_WEBHOOK_KAFKA=${KNATIVE_EVENTING_KAFKA_BROKER_WEBHOOK_KAFKA:-$(latest_konflux_image_sha "${eventing_kafka_broker}-webhook-kafka":${tag})}
+  export KNATIVE_EVENTING_KAFKA_BROKER_POST_INSTALL=${KNATIVE_EVENTING_KAFKA_BROKER_POST_INSTALL:-$(latest_konflux_image_sha "${eventing_kafka_broker}-post-install:${tag}")}
 }
 
 function default_knative_ingress_images() {
   local knative_kourier knative_istio
   knative_kourier="$(metadata.get dependencies.kourier)"
-  export KNATIVE_KOURIER_CONTROL=${KNATIVE_KOURIER_CONTROL:-"${registry}/net-kourier-kourier:${knative_kourier}"}
+  export KNATIVE_KOURIER_CONTROL=${KNATIVE_KOURIER_CONTROL:-$(latest_konflux_image_sha "${registry}/net-kourier-kourier:${knative_kourier}")}
   export KNATIVE_KOURIER_GATEWAY=${KNATIVE_KOURIER_GATEWAY:-"quay.io/maistra-dev/proxyv2-ubi8:$(metadata.get dependencies.maistra)"}
 
   knative_istio="$(metadata.get dependencies.net_istio)"
-  export KNATIVE_ISTIO_CONTROLLER=${KNATIVE_ISTIO_CONTROLLER:-"${registry}/net-istio-controller:${knative_istio}"}
-  export KNATIVE_ISTIO_WEBHOOK=${KNATIVE_ISTIO_WEBHOOK:-"${registry}/net-istio-webhook:${knative_istio}"}
+  export KNATIVE_ISTIO_CONTROLLER=${KNATIVE_ISTIO_CONTROLLER:-$(latest_konflux_image_sha "${registry}/net-istio-controller:${knative_istio}")}
+  export KNATIVE_ISTIO_WEBHOOK=${KNATIVE_ISTIO_WEBHOOK:-$(latest_konflux_image_sha "${registry}/net-istio-webhook:${knative_istio}")}
 }
 
 function knative_backstage_plugins_images() {
   local backstage_plugins tag
-  backstage_plugins="${registry}/knative-backstage-plugins"
+  # TODO migrate to Konflux
+  backstage_plugins="${ci_registry}/knative-backstage-plugins"
   tag=${1:?"Provide tag for Backstage plugins images"}
   export KNATIVE_BACKSTAGE_PLUGINS_EVENTMESH=${KNATIVE_BACKSTAGE_PLUGINS_EVENTMESH:-"${backstage_plugins}-eventmesh:${tag}"}
 }
@@ -154,4 +154,22 @@ function knative_backstage_plugins_images_release() {
 
 function default_knative_backstage_plugins_images() {
   knative_backstage_plugins_images "$(metadata.get dependencies.backstage_plugins)"
+}
+
+function latest_konflux_image_sha() {
+  input=${1:?"Provide image"}
+
+  image_without_tag=${input%:*} # Remove tag, if any
+  image_without_tag=${image_without_tag%@*} # Remove sha, if any
+
+  # TODO uncomment, exit with error
+  # digest=$(docker manifest inspect "${image_without_tag}:latest" -v | jq '.Descriptor.digest')
+  digest=''
+  if [ "${digest}" = "" ]; then
+    # exit 1
+    echo "${image_without_tag}:latest"
+    return
+  fi
+
+  echo "${image_without_tag}@${digest}"
 }
