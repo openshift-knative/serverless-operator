@@ -123,7 +123,16 @@ operator-e2e:
 	TEST_KNATIVE_KAFKA=true ./test/e2e-tests.sh
 	DELETE_CRD_ON_TEARDOWN="false" ./hack/teardown.sh
 
+operator-e2e-no-tracing:
+	UNINSTALL_STRIMZI="false" ./hack/strimzi.sh
+	SCALE_UP=4 INSTALL_KAFKA="true" ./hack/install.sh
+	TEST_KNATIVE_KAFKA=true ./test/e2e-tests.sh
+	DELETE_CRD_ON_TEARDOWN="false" ./hack/teardown.sh
+
 test-e2e-with-kafka: operator-e2e
+
+# No tracing variant for low-memory test configurations (like SNO)
+test-e2e-with-kafka-no-tracing: operator-e2e-no-tracing
 
 # Run E2E tests from the current repo for serving+eventing+mesh
 test-e2e-with-mesh-testonly:
