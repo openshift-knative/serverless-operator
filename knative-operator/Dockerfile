@@ -1,18 +1,36 @@
-FROM registry.ci.openshift.org/openshift/release:rhel-8-release-golang-1.22-openshift-4.17 AS builder
+# DO NOT EDIT! Generated Dockerfile for knative-operator/cmd/knative-operator.
+ARG GO_BUILDER=registry.ci.openshift.org/openshift/release:rhel-8-release-golang-1.21-openshift-4.17
+ARG GO_RUNTIME=registry.access.redhat.com/ubi8/ubi-minimal
 
-ENV BASE=github.com/openshift-knative/serverless-operator
-WORKDIR ${GOPATH}/src/${BASE}
+FROM $GO_BUILDER as builder
 
 COPY . .
 
-ENV GOFLAGS="-mod=vendor"
-RUN go build -o /tmp/operator ${BASE}/knative-operator/cmd/manager
+ENV CGO_ENABLED=1
+ENV GOEXPERIMENT=strictfipsruntime
 
-FROM registry.access.redhat.com/ubi8-minimal:latest
+RUN go build -tags strictfipsruntime -o /usr/bin/main ./knative-operator/cmd/knative-operator
+
+FROM $GO_RUNTIME
+
+ARG VERSION=
+
+# Install zoneinfo.
+RUN microdnf install tzdata
+
 USER 65532
 
-COPY --from=builder /tmp/operator /ko-app/operator
-# install manifest[s]
+COPY --from=builder /usr/bin/main /usr/bin/main
+
 COPY knative-operator/deploy /deploy
 
-ENTRYPOINT ["/ko-app/operator"]
+LABEL \
+      com.redhat.component="openshift-serverless-1--knative-operator-rhel8-container" \
+      name="openshift-serverless-1/-knative-operator-rhel8" \
+      version=$VERSION \
+      summary="Red Hat OpenShift Serverless 1  Knative Operator" \
+      maintainer="serverless-support@redhat.com" \
+      description="Red Hat OpenShift Serverless 1  Knative Operator" \
+      io.k8s.display-name="Red Hat OpenShift Serverless 1  Knative Operator"
+
+ENTRYPOINT ["/usr/bin/main"]

@@ -34,7 +34,7 @@ function download_serving {
   files=("$@")
   echo "Files: ${files[*]}"
 
-  component_dir="$root/openshift-knative-operator/cmd/operator/kodata/knative-${component}"
+  component_dir="$root/openshift-knative-operator/cmd/openshift-knative-operator/kodata/knative-${component}"
   target_dir="${component_dir}/latest"
   rm -r "$component_dir"
   mkdir -p "$target_dir"
@@ -69,7 +69,7 @@ function download_eventing {
   files=("$@")
   echo "Files: ${files[*]}"
 
-  component_dir="$root/openshift-knative-operator/cmd/operator/kodata/knative-${component}"
+  component_dir="$root/openshift-knative-operator/cmd/openshift-knative-operator/kodata/knative-${component}"
   target_dir="${component_dir}/latest"
   rm -r "$component_dir"
   mkdir -p "$target_dir"
@@ -103,7 +103,7 @@ function download_eventing_istio {
   files=("$@")
   echo "Files: ${files[*]}"
 
-  component_dir="$root/openshift-knative-operator/cmd/operator/kodata/knative-${component}"
+  component_dir="$root/openshift-knative-operator/cmd/openshift-knative-operator/kodata/knative-${component}"
   target_dir="${component_dir}/latest"
 
   for ((i = 0; i < ${#files[@]}; i++)); do
@@ -135,7 +135,7 @@ function download_backstage_plugins {
   files=("$@")
   echo "Files: ${files[*]}"
 
-  component_dir="$root/openshift-knative-operator/cmd/operator/kodata/knative-${component}"
+  component_dir="$root/openshift-knative-operator/cmd/openshift-knative-operator/kodata/knative-${component}"
   target_dir="${component_dir}/latest"
 
   for ((i = 0; i < ${#files[@]}; i++)); do
@@ -230,7 +230,7 @@ fi
 #
 
 # clean up ingreess_dir
-ingress_root_dir="$root/openshift-knative-operator/cmd/operator/kodata/ingress/"
+ingress_root_dir="$root/openshift-knative-operator/cmd/openshift-knative-operator/kodata/ingress/"
 rm -rf "${ingress_root_dir}"
 
 ingress_dir="${ingress_root_dir}/latest"

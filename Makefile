@@ -284,15 +284,6 @@ release-files:
 		templates/annotations.yaml \
 		olm-catalog/serverless-operator/metadata/annotations.yaml
 	./hack/generate/dockerfile.sh \
-		templates/knative-operator.Dockerfile \
-		knative-operator/Dockerfile
-	./hack/generate/dockerfile.sh \
-		templates/openshift-knative-operator.Dockerfile \
-		openshift-knative-operator/Dockerfile
-	./hack/generate/dockerfile.sh \
-		templates/serving-ingress.Dockerfile \
-		serving/ingress/Dockerfile
-	./hack/generate/dockerfile.sh \
 		templates/main.Dockerfile \
 		olm-catalog/serverless-operator/Dockerfile
 	./hack/generate/dockerfile.sh \
@@ -315,10 +306,28 @@ release-files:
 	./hack/generate/mesh-auth-policies.sh \
   	tenant-1,tenant-2,serving-tests,serverless-tests,eventing-e2e0,eventing-e2e1,eventing-e2e2,eventing-e2e3,eventing-e2e4
 
+generate-dockerfiles:
+	git clone https://github.com/openshift-knative/hack.git /tmp/hack
+	cd /tmp/hack && go install github.com/openshift-knative/hack/cmd/generate && cd - && rm -rf /tmp/hack
+	rm -rf /tmp/serverless-operator-generator
+	generate \
+		--generators dockerfile \
+		--includes knative-operator \
+		--includes openshift-knative-operator \
+		--includes serving/ingress \
+		--project-file olm-catalog/serverless-operator/project.yaml \
+		--output /tmp/serverless-operator-generator/
+	cp /tmp/serverless-operator-generator/ci-operator/knative-images/knative-operator/Dockerfile knative-operator/Dockerfile
+	cp /tmp/serverless-operator-generator/ci-operator/knative-images/openshift-knative-operator/Dockerfile openshift-knative-operator/Dockerfile
+	cp /tmp/serverless-operator-generator/ci-operator/knative-images/ingress/Dockerfile serving/ingress/Dockerfile
+
+	git apply knative-operator/dockerfile.patch
+	git apply openshift-knative-operator/dockerfile.patch
+
 # Generates all files that can be generated, includes release files, code generation
 # and updates vendoring.
 # Use CURRENT_VERSION_IMAGES="<branch>" if you need to override the defaulting to main
-generated-files: release-files
+generated-files: generate-dockerfiles release-files
 	./hack/update-deps.sh
 	./hack/update-codegen.sh
 	(cd knative-operator && ./hack/update-manifests.sh)

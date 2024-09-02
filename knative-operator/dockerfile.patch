@@ -1,0 +1,13 @@
+diff --git a/knative-operator/Dockerfile b/knative-operator/Dockerfile
+index e789ffb70..2ccbbd166 100755
+--- a/knative-operator/Dockerfile
++++ b/knative-operator/Dockerfile
+@@ -22,6 +22,8 @@ USER 65532
+ 
+ COPY --from=builder /usr/bin/main /usr/bin/main
+ 
++COPY knative-operator/deploy /deploy
++
+ LABEL \
+       com.redhat.component="openshift-serverless-1--knative-operator-rhel8-container" \
+       name="openshift-serverless-1/-knative-operator-rhel8" \
