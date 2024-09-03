@@ -9,5 +9,5 @@ index e789ffb70..2ccbbd166 100755
 +COPY knative-operator/deploy /deploy
 +
  LABEL \
-       com.redhat.component="openshift-serverless-1--knative-operator-rhel8-container" \
-       name="openshift-serverless-1/-knative-operator-rhel8" \
+       com.redhat.component="openshift-serverless-1-knative-operator-rhel8-container" \
+       name="openshift-serverless-1/knative-operator-rhel8" \

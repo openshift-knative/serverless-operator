@@ -23,12 +23,12 @@ USER 65532
 COPY --from=builder /usr/bin/main /usr/bin/main
 
 LABEL \
-      com.redhat.component="openshift-serverless-1--ingress-rhel8-container" \
-      name="openshift-serverless-1/-ingress-rhel8" \
+      com.redhat.component="openshift-serverless-1-ingress-rhel8-container" \
+      name="openshift-serverless-1/ingress-rhel8" \
       version=$VERSION \
-      summary="Red Hat OpenShift Serverless 1  Ingress" \
+      summary="Red Hat OpenShift Serverless 1 Ingress" \
       maintainer="serverless-support@redhat.com" \
-      description="Red Hat OpenShift Serverless 1  Ingress" \
-      io.k8s.display-name="Red Hat OpenShift Serverless 1  Ingress"
+      description="Red Hat OpenShift Serverless 1 Ingress" \
+      io.k8s.display-name="Red Hat OpenShift Serverless 1 Ingress"
 
 ENTRYPOINT ["/usr/bin/main"]

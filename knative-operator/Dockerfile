@@ -25,12 +25,12 @@ COPY --from=builder /usr/bin/main /usr/bin/main
 COPY knative-operator/deploy /deploy
 
 LABEL \
-      com.redhat.component="openshift-serverless-1--knative-operator-rhel8-container" \
-      name="openshift-serverless-1/-knative-operator-rhel8" \
+      com.redhat.component="openshift-serverless-1-knative-operator-rhel8-container" \
+      name="openshift-serverless-1/knative-operator-rhel8" \
       version=$VERSION \
-      summary="Red Hat OpenShift Serverless 1  Knative Operator" \
+      summary="Red Hat OpenShift Serverless 1 Knative Operator" \
       maintainer="serverless-support@redhat.com" \
-      description="Red Hat OpenShift Serverless 1  Knative Operator" \
-      io.k8s.display-name="Red Hat OpenShift Serverless 1  Knative Operator"
+      description="Red Hat OpenShift Serverless 1 Knative Operator" \
+      io.k8s.display-name="Red Hat OpenShift Serverless 1 Knative Operator"
 
 ENTRYPOINT ["/usr/bin/main"]

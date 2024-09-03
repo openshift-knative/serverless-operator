@@ -26,12 +26,12 @@ ENV KO_DATA_PATH="/var/run/ko"
 COPY openshift-knative-operator/cmd/openshift-knative-operator/kodata $KO_DATA_PATH
 
 LABEL \
-      com.redhat.component="openshift-serverless-1--openshift-knative-operator-rhel8-container" \
-      name="openshift-serverless-1/-openshift-knative-operator-rhel8" \
+      com.redhat.component="openshift-serverless-1-openshift-knative-operator-rhel8-container" \
+      name="openshift-serverless-1/openshift-knative-operator-rhel8" \
       version=$VERSION \
-      summary="Red Hat OpenShift Serverless 1  Openshift Knative Operator" \
+      summary="Red Hat OpenShift Serverless 1 Openshift Knative Operator" \
       maintainer="serverless-support@redhat.com" \
-      description="Red Hat OpenShift Serverless 1  Openshift Knative Operator" \
-      io.k8s.display-name="Red Hat OpenShift Serverless 1  Openshift Knative Operator"
+      description="Red Hat OpenShift Serverless 1 Openshift Knative Operator" \
+      io.k8s.display-name="Red Hat OpenShift Serverless 1 Openshift Knative Operator"
 
 ENTRYPOINT ["/usr/bin/main"]

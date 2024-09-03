@@ -10,5 +10,5 @@ index ef420e6e0..b7cd0b0e1 100755
 +COPY openshift-knative-operator/cmd/openshift-knative-operator/kodata $KO_DATA_PATH
 +
  LABEL \
-       com.redhat.component="openshift-serverless-1--openshift-knative-operator-rhel8-container" \
-       name="openshift-serverless-1/-openshift-knative-operator-rhel8" \
+       com.redhat.component="openshift-serverless-1-openshift-knative-operator-rhel8-container" \
+       name="openshift-serverless-1/openshift-knative-operator-rhel8" \
