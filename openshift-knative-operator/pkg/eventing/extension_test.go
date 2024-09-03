@@ -160,7 +160,7 @@ func TestReconcile(t *testing.T) {
 
 func TestManifests(t *testing.T) {
 	if os.Getenv("KO_DATA_PATH") == "" {
-		t.Setenv("KO_DATA_PATH", "../../cmd/operator/kodata")
+		t.Setenv("KO_DATA_PATH", "../../cmd/openshift-knative-operator/kodata")
 	}
 
 	cases := []struct {
