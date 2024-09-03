@@ -17,8 +17,8 @@ testsuites:
       - ^knative-operator/pkg/controller/knativeserving/
       - ^knative-operator/pkg/webhook/knativeeventing/
       - ^knative-operator/pkg/webhook/knativeserving/
-      - ^openshift-knative-operator/cmd/operator/kodata/knative-eventing/
-      - ^openshift-knative-operator/cmd/operator/kodata/knative-serving/
+      - ^openshift-knative-operator/cmd/openshift-knative-operator/kodata/knative-eventing/
+      - ^openshift-knative-operator/cmd/openshift-knative-operator/kodata/knative-serving/
       - ^openshift-knative-operator/pkg/eventing/
       - ^openshift-knative-operator/pkg/serving/
       - ^serving/ingress/
@@ -39,7 +39,7 @@ testsuites:
     run_if_changed:
       - "^knative-operator/pkg/controller/knativeeventing/"
       - "^knative-operator/pkg/webhook/knativeeventing/"
-      - "^openshift-knative-operator/cmd/operator/kodata/knative-eventing/"
+      - "^openshift-knative-operator/cmd/openshift-knative-operator/kodata/knative-eventing/"
       - "^openshift-knative-operator/pkg/eventing/"
     tests:
       - downstream_eventing_e2e_tests
@@ -48,7 +48,7 @@ testsuites:
   - name: "Monitoring"
     run_if_changed:
       - "^knative-operator/pkg/monitoring/"
-      - "^openshift-knative-operator/cmd/operator/kodata/monitoring/"
+      - "^openshift-knative-operator/cmd/openshift-knative-operator/kodata/monitoring/"
       - "^openshift-knative-operator/pkg/monitoring/"
     tests:
       - downstream_monitoring_e2e_tests
@@ -56,7 +56,7 @@ testsuites:
     run_if_changed:
       - "^knative-operator/pkg/controller/knativeserving/"
       - "^knative-operator/pkg/webhook/knativeserving/"
-      - "^openshift-knative-operator/cmd/operator/kodata/knative-serving/"
+      - "^openshift-knative-operator/cmd/openshift-knative-operator/kodata/knative-serving/"
       - "^openshift-knative-operator/pkg/serving/"
       - "^serving/ingress/"
     tests:

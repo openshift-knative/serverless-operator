@@ -1,19 +1,37 @@
-FROM registry.ci.openshift.org/openshift/release:rhel-8-release-golang-1.22-openshift-4.17 AS builder
+# DO NOT EDIT! Generated Dockerfile for openshift-knative-operator/cmd/openshift-knative-operator.
+ARG GO_BUILDER=registry.ci.openshift.org/openshift/release:rhel-8-release-golang-1.21-openshift-4.17
+ARG GO_RUNTIME=registry.access.redhat.com/ubi8/ubi-minimal
 
-ENV BASE=github.com/openshift-knative/serverless-operator
-WORKDIR ${GOPATH}/src/${BASE}
+FROM $GO_BUILDER as builder
 
 COPY . .
 
-ENV GOFLAGS="-mod=vendor"
-RUN go build -o /tmp/operator ${BASE}/openshift-knative-operator/cmd/operator
+ENV CGO_ENABLED=1
+ENV GOEXPERIMENT=strictfipsruntime
 
-FROM registry.access.redhat.com/ubi8-minimal:latest
+RUN go build -tags strictfipsruntime -o /usr/bin/main ./openshift-knative-operator/cmd/openshift-knative-operator
+
+FROM $GO_RUNTIME
+
+ARG VERSION=
+
+# Install zoneinfo.
+RUN microdnf install tzdata
+
 USER 65532
 
-COPY --from=builder /tmp/operator /ko-app/operator
+COPY --from=builder /usr/bin/main /usr/bin/main
 
 ENV KO_DATA_PATH="/var/run/ko"
-COPY openshift-knative-operator/cmd/operator/kodata $KO_DATA_PATH
+COPY openshift-knative-operator/cmd/openshift-knative-operator/kodata $KO_DATA_PATH
 
-ENTRYPOINT ["/ko-app/operator"]
+LABEL \
+      com.redhat.component="openshift-serverless-1-openshift-knative-operator-rhel8-container" \
+      name="openshift-serverless-1/openshift-knative-operator-rhel8" \
+      version=$VERSION \
+      summary="Red Hat OpenShift Serverless 1 Openshift Knative Operator" \
+      maintainer="serverless-support@redhat.com" \
+      description="Red Hat OpenShift Serverless 1 Openshift Knative Operator" \
+      io.k8s.display-name="Red Hat OpenShift Serverless 1 Openshift Knative Operator"
+
+ENTRYPOINT ["/usr/bin/main"]

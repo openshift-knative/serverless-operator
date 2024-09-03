@@ -1,0 +1,14 @@
+diff --git a/openshift-knative-operator/Dockerfile b/openshift-knative-operator/Dockerfile
+index ef420e6e0..b7cd0b0e1 100755
+--- a/openshift-knative-operator/Dockerfile
++++ b/openshift-knative-operator/Dockerfile
+@@ -22,6 +22,9 @@ USER 65532
+ 
+ COPY --from=builder /usr/bin/main /usr/bin/main
+ 
++ENV KO_DATA_PATH="/var/run/ko"
++COPY openshift-knative-operator/cmd/openshift-knative-operator/kodata $KO_DATA_PATH
++
+ LABEL \
+       com.redhat.component="openshift-serverless-1-openshift-knative-operator-rhel8-container" \
+       name="openshift-serverless-1/openshift-knative-operator-rhel8" \
