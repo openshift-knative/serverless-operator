@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-export BUILD_NUMBER=${BUILD_NUMBER:-$(head -c 128 </dev/urandom | base64 | fold -w 8 | head -n 1)}
+export BUILD_NUMBER=${BUILD_NUMBER:-$(head -c 128 </dev/urandom | basenc --base64url | fold -w 8 | head -n 1)}
 
 if [[ -n "${ARTIFACT_DIR:-}" ]]; then
   ARTIFACTS="${ARTIFACT_DIR}/build-${BUILD_NUMBER}"
