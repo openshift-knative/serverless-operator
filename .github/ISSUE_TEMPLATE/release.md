@@ -24,6 +24,7 @@ assignees: ''
 - [ ] Create a new branch from `main` with the pattern `release-x.xx`
 - [ ] [Approve CI setup for `release-1.X` branch in `openshift/release`](https://github.com/openshift/release/pulls/serverless-qe) and wait for the PR to be merged.
 - [ ] [Approve PRs created by GitHub actions bot in `serverless-operator`](https://github.com/openshift-knative/serverless-operator/pulls/app%2Fgithub-actions)
+- [ ] [Only for release-1.35+] [Revoke and recreate the token for the Konflux auto apply workflow](https://github.com/openshift-knative/hack/tree/main/cmd/konflux-apply#revoke-and-recreate-token)
 - [ ] [Only for release-1.35+] [Approve PRs created by `serverless-qe` bot in `hack`](https://github.com/openshift-knative/hack/pulls/serverless-qe)
   - [ ] wait for the PR to be merged
   - [ ] wait for the [Generate CI config workflow to succeed](https://github.com/openshift-knative/hack/actions/workflows/release-generate-ci.yaml?query=event%3Apush++)
