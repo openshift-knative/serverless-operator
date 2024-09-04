@@ -117,8 +117,10 @@ function replace_images() {
   dockerfile_path=${1:?Pass dockerfile path}
   tmp_dockerfile=$(mktemp /tmp/Dockerfile.XXXXXX)
   cp "${dockerfile_path}" "$tmp_dockerfile"
-  sed -e "s|\$GO_RUNTIME|$(metadata.get 'imageOverrides[name==GO_RUNTIME].pullSpec')|" -i "$tmp_dockerfile"
-  sed -e "s|\$GO_BUILDER|$(metadata.get 'imageOverrides[name==GO_BUILDER].pullSpec')|" -i "$tmp_dockerfile"
+
+  sed -e "s|\$GO_RUNTIME|$(grep "GO_RUNTIME=" "$tmp_dockerfile" | cut -d"=" -f 2)|" \
+      -e "s|\$GO_BUILDER|$(grep "GO_BUILDER=" "$tmp_dockerfile" | cut -d"=" -f 2)|" -i "$tmp_dockerfile"
+
   echo "$tmp_dockerfile"
 }
 
