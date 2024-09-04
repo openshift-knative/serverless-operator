@@ -52,3 +52,15 @@ func TestDomainMappingResource(t *testing.T) {
 		}
 	})
 }
+
+// SRVKS-1264 - cleanup of old internal TLS secrets
+func TestOldTLSSecret(t *testing.T) {
+	ctx := test.SetupClusterAdmin(t)
+	t.Run("Secret", func(t *testing.T) {
+		if _, err := ctx.Clients.Kube.CoreV1().Secrets(test.ServingNamespace).Get(context.Background(), "control-serving-certs", metav1.GetOptions{}); err != nil {
+			if !apierrors.IsNotFound(err) {
+				t.Fatalf("Failed to verify secret is deprecated & removed %s: %v", "control-serving-certs", err)
+			}
+		}
+	})
+}

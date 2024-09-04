@@ -38,6 +38,7 @@ const (
 )
 
 var isDomainMappingRemoved atomic.Bool
+var isSecretRemoved atomic.Bool
 
 // NewExtension creates a new extension for a Knative Serving controller.
 func NewExtension(ctx context.Context, impl *controller.Impl) operator.Extension {
@@ -176,6 +177,13 @@ func (e *extension) Reconcile(ctx context.Context, comp base.KComponent) error {
 		isDomainMappingRemoved.Store(true)
 	}
 
+	if !isSecretRemoved.Load() {
+		if err := e.cleanupOldSecrets(ctx, ks.GetNamespace()); err != nil {
+			return err
+		}
+		isSecretRemoved.Store(true)
+	}
+
 	return monitoring.ReconcileMonitoringForServing(ctx, e.kubeclient, ks)
 }
 
@@ -248,6 +256,15 @@ func (e *extension) cleanupOldResources(ctx context.Context, ns string) error {
 	}
 	if err := client.AdmissionregistrationV1().ValidatingWebhookConfigurations().Delete(ctx, "validation.webhook.domainmapping.serving.knative.dev", metav1.DeleteOptions{}); err != nil && !apierrors.IsNotFound(err) {
 		return fmt.Errorf("failed to delete validating webhook configuration validation.webhook.domainmapping.serving.knative.dev: %w", err)
+	}
+	return nil
+}
+
+// SRVKS-1264 - cleanup of old internal TLS secrets
+func (e *extension) cleanupOldSecrets(ctx context.Context, ns string) error {
+	client := e.kubeclient
+	if err := client.CoreV1().Secrets(ns).Delete(ctx, "control-serving-certs", metav1.DeleteOptions{}); err != nil && !apierrors.IsNotFound(err) {
+		return fmt.Errorf("failed to delete old internal TLS secret: %w", err)
 	}
 	return nil
 }
