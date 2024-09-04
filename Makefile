@@ -319,7 +319,7 @@ generate-dockerfiles:
 	git clone https://github.com/openshift-knative/hack.git /tmp/hack
 	cd /tmp/hack && go install github.com/openshift-knative/hack/cmd/generate && cd - && rm -rf /tmp/hack
 	rm -rf /tmp/serverless-operator-generator
-	generate \
+	$(shell go env GOPATH)/bin/generate \
 		--generators dockerfile \
 		--includes knative-operator \
 		--includes openshift-knative-operator \
