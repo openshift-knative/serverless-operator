@@ -110,16 +110,15 @@ EOF
   logger.success "CatalogSource installed successfully"
 }
 
-# Dockerfiles might include references to private images that are only available in CI.
-# For non-CI builds, some images need to be replaced with public variants.
+# Dockerfiles might specify "FROM $XYZ" which fails OpenShift on-cluster
+# builds. Replace the references with real images.
 function replace_images() {
   local dockerfile_path tmp_dockerfile
   dockerfile_path=${1:?Pass dockerfile path}
   tmp_dockerfile=$(mktemp /tmp/Dockerfile.XXXXXX)
   cp "${dockerfile_path}" "$tmp_dockerfile"
-  if [ -z "$OPENSHIFT_CI" ]; then
-    sed -e "s|registry.ci.openshift.org/ocp/ubi-minimal:8|registry.access.redhat.com/ubi8/ubi-minimal|" -i "$tmp_dockerfile"
-  fi
+  sed -e "s|\$GO_RUNTIME|$(metadata.get 'imageOverrides[name==GO_RUNTIME].pullSpec')|" -i "$tmp_dockerfile"
+  sed -e "s|\$GO_BUILDER|$(metadata.get 'imageOverrides[name==GO_BUILDER].pullSpec')|" -i "$tmp_dockerfile"
   echo "$tmp_dockerfile"
 }
 
@@ -135,8 +134,7 @@ function build_image() {
   if ! oc get buildconfigs "$name" -n "$OLM_NAMESPACE" >/dev/null 2>&1; then
     logger.info "Create an image build for ${name}"
     oc -n "${OLM_NAMESPACE}" new-build \
-      --strategy=docker --name "$name" --dockerfile "$(cat "${tmp_dockerfile}")" \
-      --image=$(metadata.get 'imageOverrides[name==GO_RUNTIME].pullSpec')
+      --strategy=docker --name "$name" --dockerfile "$(cat "${tmp_dockerfile}")"
   else
     logger.info "${name} image build is already created"
   fi
