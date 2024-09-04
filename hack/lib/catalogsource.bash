@@ -135,7 +135,8 @@ function build_image() {
   if ! oc get buildconfigs "$name" -n "$OLM_NAMESPACE" >/dev/null 2>&1; then
     logger.info "Create an image build for ${name}"
     oc -n "${OLM_NAMESPACE}" new-build \
-      --strategy=docker --name "$name" --dockerfile "$(cat "${tmp_dockerfile}")"
+      --strategy=docker --name "$name" --dockerfile "$(cat "${tmp_dockerfile}")" \
+      --image=$(metadata.get 'imageOverrides[name==GO_RUNTIME].pullSpec')
   else
     logger.info "${name} image build is already created"
   fi

@@ -25,6 +25,11 @@ requirements:
         min: '4.12'
         max: '4.15'
         label: 'v4.12'
+imageOverrides:
+  - name: GO_BUILDER
+    pullSpec: "registry.ci.openshift.org/openshift/release:rhel-8-release-golang-1.22-openshift-4.17"
+  - name: GO_RUNTIME
+    pullSpec: "registry.access.redhat.com/ubi8/ubi-minimal"
 dependencies:
     serving: knative-v1.14
     # serving midstream branch name
