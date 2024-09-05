@@ -21,6 +21,8 @@ USER 65532
 
 COPY --from=builder /usr/bin/main /usr/bin/knative-operator
 
+COPY knative-operator/deploy /deploy
+
 LABEL \
       com.redhat.component="openshift-serverless-1-knative-operator-rhel8-container" \
       name="openshift-serverless-1/knative-operator-rhel8" \

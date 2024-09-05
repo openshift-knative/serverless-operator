@@ -21,6 +21,9 @@ USER 65532
 
 COPY --from=builder /usr/bin/main /usr/bin/openshift-knative-operator
 
+ENV KO_DATA_PATH="/var/run/ko"
+COPY openshift-knative-operator/cmd/openshift-knative-operator/kodata $KO_DATA_PATH
+
 LABEL \
       com.redhat.component="openshift-serverless-1-openshift-knative-operator-rhel8-container" \
       name="openshift-serverless-1/openshift-knative-operator-rhel8" \
