@@ -1,10 +1,10 @@
 diff --git a/openshift-knative-operator/Dockerfile b/openshift-knative-operator/Dockerfile
-index ef420e6e0..b7cd0b0e1 100755
+index 56f2ca2f3..b83f53df6 100755
 --- a/openshift-knative-operator/Dockerfile
 +++ b/openshift-knative-operator/Dockerfile
-@@ -22,6 +22,9 @@ USER 65532
+@@ -21,6 +21,9 @@ USER 65532
  
- COPY --from=builder /usr/bin/main /usr/bin/main
+ COPY --from=builder /usr/bin/main /usr/bin/openshift-knative-operator
  
 +ENV KO_DATA_PATH="/var/run/ko"
 +COPY openshift-knative-operator/cmd/openshift-knative-operator/kodata $KO_DATA_PATH
