@@ -1,10 +1,10 @@
 diff --git a/knative-operator/Dockerfile b/knative-operator/Dockerfile
-index e789ffb70..2ccbbd166 100755
+index f18e08905..a2d2d364b 100755
 --- a/knative-operator/Dockerfile
 +++ b/knative-operator/Dockerfile
-@@ -22,6 +22,8 @@ USER 65532
+@@ -21,6 +21,8 @@ USER 65532
  
- COPY --from=builder /usr/bin/main /usr/bin/main
+ COPY --from=builder /usr/bin/main /usr/bin/knative-operator
  
 +COPY knative-operator/deploy /deploy
 +

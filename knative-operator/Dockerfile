@@ -19,7 +19,7 @@ RUN microdnf install tzdata
 
 USER 65532
 
-COPY --from=builder /usr/bin/main /usr/bin/main
+COPY --from=builder /usr/bin/main /usr/bin/knative-operator
 
 COPY knative-operator/deploy /deploy
 
@@ -32,4 +32,4 @@ LABEL \
       description="Red Hat OpenShift Serverless 1 Knative Operator" \
       io.k8s.display-name="Red Hat OpenShift Serverless 1 Knative Operator"
 
-ENTRYPOINT ["/usr/bin/main"]
+ENTRYPOINT ["/usr/bin/knative-operator"]
