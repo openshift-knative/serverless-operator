@@ -6,7 +6,7 @@ kind: ClusterRole
 metadata:
   name: eventmesh-backend
   labels:
-    app.kubernetes.io/version: v1.12
+    app.kubernetes.io/version: v1.14
     app.kubernetes.io/component: eventmesh-backend
 
 rules:
@@ -66,7 +66,7 @@ metadata:
   name: eventmesh-backend
   namespace: knative-eventing
   labels:
-    app.kubernetes.io/version: v1.12
+    app.kubernetes.io/version: v1.14
     app.kubernetes.io/component: eventmesh-backend
 ---
 ---
@@ -76,7 +76,7 @@ kind: ClusterRoleBinding
 metadata:
   name: eventmesh-backend
   labels:
-    app.kubernetes.io/version: v1.12
+    app.kubernetes.io/version: v1.14
     app.kubernetes.io/component: eventmesh-backend
 subjects:
   - kind: ServiceAccount
@@ -96,7 +96,7 @@ metadata:
   namespace: knative-eventing
   labels:
     app: eventmesh-backend
-    app.kubernetes.io/version: v1.12
+    app.kubernetes.io/version: v1.14
     app.kubernetes.io/component: eventmesh-backend
     app.kubernetes.io/name: knative-eventing
 spec:
@@ -108,7 +108,7 @@ spec:
       name: eventmesh-backend
       labels:
         app: eventmesh-backend
-        app.kubernetes.io/version: v1.12
+        app.kubernetes.io/version: v1.14
         app.kubernetes.io/component: eventmesh-backend
         app.kubernetes.io/name: knative-eventing
     spec:
@@ -174,7 +174,7 @@ metadata:
   namespace: knative-eventing
   labels:
     app: eventmesh-backend
-    app.kubernetes.io/version: v1.12
+    app.kubernetes.io/version: v1.14
     app.kubernetes.io/component: eventmesh-backend
     app.kubernetes.io/name: knative-eventing
 spec:
