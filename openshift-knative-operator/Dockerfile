@@ -19,10 +19,7 @@ RUN microdnf install tzdata
 
 USER 65532
 
-COPY --from=builder /usr/bin/main /usr/bin/main
-
-ENV KO_DATA_PATH="/var/run/ko"
-COPY openshift-knative-operator/cmd/openshift-knative-operator/kodata $KO_DATA_PATH
+COPY --from=builder /usr/bin/main /usr/bin/openshift-knative-operator
 
 LABEL \
       com.redhat.component="openshift-serverless-1-openshift-knative-operator-rhel8-container" \
@@ -33,4 +30,4 @@ LABEL \
       description="Red Hat OpenShift Serverless 1 Openshift Knative Operator" \
       io.k8s.display-name="Red Hat OpenShift Serverless 1 Openshift Knative Operator"
 
-ENTRYPOINT ["/usr/bin/main"]
+ENTRYPOINT ["/usr/bin/openshift-knative-operator"]

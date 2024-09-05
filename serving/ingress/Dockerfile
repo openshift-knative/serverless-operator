@@ -19,7 +19,7 @@ RUN microdnf install tzdata
 
 USER 65532
 
-COPY --from=builder /usr/bin/main /usr/bin/main
+COPY --from=builder /usr/bin/main /usr/bin/ingress
 
 LABEL \
       com.redhat.component="openshift-serverless-1-ingress-rhel8-container" \
@@ -30,4 +30,4 @@ LABEL \
       description="Red Hat OpenShift Serverless 1 Ingress" \
       io.k8s.display-name="Red Hat OpenShift Serverless 1 Ingress"
 
-ENTRYPOINT ["/usr/bin/main"]
+ENTRYPOINT ["/usr/bin/ingress"]
