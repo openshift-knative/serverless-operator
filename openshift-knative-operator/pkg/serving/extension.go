@@ -233,7 +233,6 @@ func (e *extension) cleanupOldResources(ctx context.Context, ns string) error {
 	if err != nil {
 		return err
 	}
-	// Leases - DomainMapping and CertManager related
 	for _, lease := range leases.Items {
 		if strings.HasPrefix(lease.Name, "domainmapping") ||
 			strings.HasPrefix(lease.Name, "net-certmanager") ||
