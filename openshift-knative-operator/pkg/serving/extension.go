@@ -37,7 +37,7 @@ const (
 	controlProtocolCertificatesReconcilerLease = "controller.knative.dev.control-protocol.pkg.certificates.reconciler.reconciler"
 )
 
-var isDomainMappingRemoved atomic.Bool
+var oldResourceRemoved atomic.Bool
 
 // NewExtension creates a new extension for a Knative Serving controller.
 func NewExtension(ctx context.Context, impl *controller.Impl) operator.Extension {
@@ -169,11 +169,11 @@ func (e *extension) Reconcile(ctx context.Context, comp base.KComponent) error {
 		common.ConfigureIfUnset(&ks.Spec.CommonSpec, monitoring.ObservabilityCMName, monitoring.ObservabilityBackendKey, "none")
 	}
 
-	if !isDomainMappingRemoved.Load() {
+	if !oldResourceRemoved.Load() {
 		if err := e.cleanupOldResources(ctx, ks.GetNamespace()); err != nil {
 			return err
 		}
-		isDomainMappingRemoved.Store(true)
+		oldResourceRemoved.Store(true)
 	}
 
 	return monitoring.ReconcileMonitoringForServing(ctx, e.kubeclient, ks)
@@ -214,8 +214,10 @@ func (e *extension) fetchLoggingHost(ctx context.Context) string {
 	return route.Status.Ingress[0].Host
 }
 
+// cleanupOldResources util function to clean up old, deprecated or dangling resources from Serving features.
 func (e *extension) cleanupOldResources(ctx context.Context, ns string) error {
 	client := e.kubeclient
+	// DomainMapping related resources
 	for _, dep := range []string{"domain-mapping", "domainmapping-webhook"} {
 		if err := client.AppsV1().Deployments(ns).Delete(ctx, dep, metav1.DeleteOptions{}); err != nil && !apierrors.IsNotFound(err) {
 			return fmt.Errorf("failed to delete deployment %s: %w", dep, err)
@@ -249,5 +251,11 @@ func (e *extension) cleanupOldResources(ctx context.Context, ns string) error {
 	if err := client.AdmissionregistrationV1().ValidatingWebhookConfigurations().Delete(ctx, "validation.webhook.domainmapping.serving.knative.dev", metav1.DeleteOptions{}); err != nil && !apierrors.IsNotFound(err) {
 		return fmt.Errorf("failed to delete validating webhook configuration validation.webhook.domainmapping.serving.knative.dev: %w", err)
 	}
+
+	// SRVKS-1264 - deprecated TLS secret
+	if err := client.CoreV1().Secrets(ns).Delete(ctx, "control-serving-certs", metav1.DeleteOptions{}); err != nil && !apierrors.IsNotFound(err) {
+		return fmt.Errorf("failed to delete old internal TLS secret: %w", err)
+	}
+
 	return nil
 }
