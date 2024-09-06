@@ -1,19 +1,13 @@
 diff --git a/knative-operator/Dockerfile b/knative-operator/Dockerfile
-index a2d2d364b..2aedacb3c 100755
+index 0fd4719f9..2aedacb3c 100755
 --- a/knative-operator/Dockerfile
 +++ b/knative-operator/Dockerfile
-@@ -17,12 +17,12 @@ ARG VERSION=
+@@ -19,6 +19,8 @@ RUN microdnf install tzdata
  
- RUN microdnf install tzdata 
- 
--USER 65532
--
  COPY --from=builder /usr/bin/main /usr/bin/knative-operator
  
- COPY knative-operator/deploy /deploy
- 
-+USER 65532
++COPY knative-operator/deploy /deploy
 +
+ USER 65532
+ 
  LABEL \
-       com.redhat.component="openshift-serverless-1-knative-operator-rhel8-container" \
-       name="openshift-serverless-1/knative-operator-rhel8" \
