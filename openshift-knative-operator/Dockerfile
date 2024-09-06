@@ -19,6 +19,9 @@ RUN microdnf install tzdata
 
 COPY --from=builder /usr/bin/main /usr/bin/openshift-knative-operator
 
+ENV KO_DATA_PATH="/var/run/ko"
+COPY openshift-knative-operator/cmd/openshift-knative-operator/kodata $KO_DATA_PATH
+
 USER 65532
 
 LABEL \

@@ -19,6 +19,8 @@ RUN microdnf install tzdata
 
 COPY --from=builder /usr/bin/main /usr/bin/knative-operator
 
+COPY knative-operator/deploy /deploy
+
 USER 65532
 
 LABEL \
