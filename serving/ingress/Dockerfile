@@ -17,9 +17,9 @@ ARG VERSION=
 
 RUN microdnf install tzdata 
 
-USER 65532
-
 COPY --from=builder /usr/bin/main /usr/bin/ingress
+
+USER 65532
 
 LABEL \
       com.redhat.component="openshift-serverless-1-ingress-rhel8-container" \

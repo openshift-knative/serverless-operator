@@ -17,11 +17,9 @@ ARG VERSION=
 
 RUN microdnf install tzdata 
 
-USER 65532
-
 COPY --from=builder /usr/bin/main /usr/bin/knative-operator
 
-COPY knative-operator/deploy /deploy
+USER 65532
 
 LABEL \
       com.redhat.component="openshift-serverless-1-knative-operator-rhel8-container" \
