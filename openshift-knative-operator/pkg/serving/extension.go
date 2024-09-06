@@ -233,6 +233,7 @@ func (e *extension) cleanupOldResources(ctx context.Context, ns string) error {
 	if err != nil {
 		return err
 	}
+	// Leases - DomainMapping and CertManager related
 	for _, lease := range leases.Items {
 		if strings.HasPrefix(lease.Name, "domainmapping") ||
 			strings.HasPrefix(lease.Name, "net-certmanager") ||
@@ -251,7 +252,6 @@ func (e *extension) cleanupOldResources(ctx context.Context, ns string) error {
 	if err := client.AdmissionregistrationV1().ValidatingWebhookConfigurations().Delete(ctx, "validation.webhook.domainmapping.serving.knative.dev", metav1.DeleteOptions{}); err != nil && !apierrors.IsNotFound(err) {
 		return fmt.Errorf("failed to delete validating webhook configuration validation.webhook.domainmapping.serving.knative.dev: %w", err)
 	}
-	// --DomainMapping related resources
 
 	// SRVKS-1264 - deprecated TLS secret
 	if err := client.CoreV1().Secrets(ns).Delete(ctx, "control-serving-certs", metav1.DeleteOptions{}); err != nil && !apierrors.IsNotFound(err) {
