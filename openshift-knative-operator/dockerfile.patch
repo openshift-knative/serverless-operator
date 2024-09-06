@@ -1,14 +1,14 @@
 diff --git a/openshift-knative-operator/Dockerfile b/openshift-knative-operator/Dockerfile
-index 56f2ca2f3..b83f53df6 100755
+index 45fc30a2e..3ab357b44 100755
 --- a/openshift-knative-operator/Dockerfile
 +++ b/openshift-knative-operator/Dockerfile
-@@ -21,6 +21,9 @@ USER 65532
+@@ -19,6 +19,9 @@ RUN microdnf install tzdata
  
  COPY --from=builder /usr/bin/main /usr/bin/openshift-knative-operator
  
 +ENV KO_DATA_PATH="/var/run/ko"
 +COPY openshift-knative-operator/cmd/openshift-knative-operator/kodata $KO_DATA_PATH
 +
+ USER 65532
+ 
  LABEL \
-       com.redhat.component="openshift-serverless-1-openshift-knative-operator-rhel8-container" \
-       name="openshift-serverless-1/openshift-knative-operator-rhel8" \
