@@ -15,7 +15,6 @@ FROM $GO_RUNTIME
 
 ARG VERSION=
 
-RUN microdnf install tzdata 
 
 COPY --from=builder /usr/bin/main /usr/bin/knative-operator
 
