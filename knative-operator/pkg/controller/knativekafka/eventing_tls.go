@@ -53,7 +53,13 @@ func (r *ReconcileKnativeKafka) isTLSEnabled(ctx context.Context, instance *serv
 	if !ok {
 		return false, nil
 	}
-	f := feature.Flags{feature.TransportEncryption: feature.Flag(te)}
+
+	f, err := feature.NewFlagsConfigFromMap(map[string]string{
+		feature.TransportEncryption: te,
+	})
+	if err != nil {
+		return false, fmt.Errorf("failed to build feature flags from ConfigMap %s: %w", key.String(), err)
+	}
 
 	return f.IsPermissiveTransportEncryption() || f.IsStrictTransportEncryption(), nil
 }
