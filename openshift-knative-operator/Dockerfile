@@ -15,7 +15,6 @@ FROM $GO_RUNTIME
 
 ARG VERSION=
 
-
 COPY --from=builder /usr/bin/main /usr/bin/openshift-knative-operator
 
 ENV KO_DATA_PATH="/var/run/ko"
