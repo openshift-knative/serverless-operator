@@ -15,7 +15,6 @@ FROM $GO_RUNTIME
 
 ARG VERSION=
 
-
 COPY --from=builder /usr/bin/main /usr/bin/ingress
 
 USER 65532
