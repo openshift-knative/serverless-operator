@@ -51,7 +51,7 @@ dependencies:
     backstage_plugins: knative-v1.14
     # backstage-plugins midstream branch or commit
     backstage_plugins_artifacts_branch: release-v1.14
-    cli: 1.12.0
+    cli: 1.14.0
     func:
         util: quay.io/boson/alpine-socat:1.7.4.3-r1-non-root
         tekton_s2i: registry.redhat.io/source-to-image/source-to-image-rhel8@sha256:6a6025914296a62fdf2092c3a40011bd9b966a6806b094d51eec5e1bd5026ef4
