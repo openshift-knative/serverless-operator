@@ -16,21 +16,7 @@ function deploy_certmanager_operator {
 
   openshift_version=$(oc version -o yaml | yq read - openshiftVersion)
   deployment_namespace="cert-manager"
-  if printf '%s\n4.12\n' "${openshift_version}" | sort --version-sort -C; then
-      # OCP version is older as 4.12 and thus cert-manager-operator is only available as tech-preview in this version (cert-manager-operator GA'ed in OCP 4.12)
-      
-      echo "Running on OpenShift ${openshift_version} which supports cert-manager-operator only in tech-preview"
-
-      yq delete "${certmanager_resources_dir}"/subscription.yaml --doc 1 spec | \
-      yq write - --doc 2 spec.channel tech-preview | \
-      oc apply -f - || return $?
-
-      deployment_namespace="openshift-cert-manager"
-  else
-    echo "Running on OpenShift ${openshift_version} which supports GA'ed cert-manager-operator"
-
-    oc apply -f "${certmanager_resources_dir}"/subscription.yaml || return $?
-  fi
+  oc apply -f "${certmanager_resources_dir}"/subscription.yaml || return $?
 
   logger.info "Waiting until cert manager operator is available"
 
