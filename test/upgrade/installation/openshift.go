@@ -24,7 +24,7 @@ var (
 	// adminAcks includes admin acks for cluster upgrades.
 	// See https://access.redhat.com/articles/6955381 for more details.
 	adminAcks = []string{
-		"ack-4.11-kube-1.25-api-removals-in-4.12",
+		"ack-4.12-kube-1.26-api-removals-in-4.13",
 		"ack-4.13-kube-1.27-api-removals-in-4.14",
 	}
 )

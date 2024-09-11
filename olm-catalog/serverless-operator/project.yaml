@@ -22,9 +22,9 @@ requirements:
     golang: '1.22'
     nodejs: 20.x
     ocpVersion:
-        min: '4.12'
+        min: '4.13'
         max: '4.15'
-        label: 'v4.12'
+        label: 'v4.13'
 dependencies:
     serving: knative-v1.14
     # serving midstream branch name
