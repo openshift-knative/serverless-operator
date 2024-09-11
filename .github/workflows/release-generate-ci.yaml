@@ -68,7 +68,7 @@ jobs:
         run: go run ./cmd/prowcopy --from-branch ${{ github.ref_name }} --branch ${{ github.ref_name }} --tag "release-$(yq read ../serverless-operator/olm-catalog/serverless-operator/project.yaml 'project.version')" --config config/serverless-operator.yaml
 
       - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v6
+        uses: peter-evans/create-pull-request@v7
         with:
           token: ${{ secrets.SERVERLESS_QE_ROBOT }}
           path: ./src/github.com/openshift-knative/hack/openshift/release
