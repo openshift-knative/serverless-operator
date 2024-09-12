@@ -42,6 +42,8 @@ readonly MT_CHANNEL_BASED_BROKER_CONFIG_DIR="config/brokers/mt-channel-broker"
 # MT Channel Based Broker config.
 readonly MT_CHANNEL_BASED_BROKER_DEFAULT_CONFIG="config/core/configmaps/default-broker.yaml"
 
+readonly EVENTING_TLS_TEST_CONFIG_DIR="test/config/tls"
+
 # Config tracing config.
 readonly CONFIG_TRACING_CONFIG="test/config/config-tracing.yaml"
 
@@ -87,6 +89,10 @@ function knative_setup() {
   enable_sugar || fail_test "Could not enable Sugar Controller Injection"
 
   unleash_duck || fail_test "Could not unleash the chaos duck"
+
+  install_feature_cm || fail_test "Could not install features configmap"
+
+  create_knsubscribe_rolebinding || fail_test "Could not create knsubscribe rolebinding"
 }
 
 function scale_controlplane() {
@@ -98,6 +104,11 @@ function scale_controlplane() {
     # Scale up components for HA tests
     kubectl -n "${SYSTEM_NAMESPACE}" scale deployment "$deployment" --replicas="${REPLICAS}" || failed=1
   done
+}
+
+function create_knsubscribe_rolebinding() {
+  kubectl delete clusterrolebinding knsubscribe-test-rb --ignore-not-found=true
+  kubectl create clusterrolebinding knsubscribe-test-rb --user=$(kubectl auth whoami -ojson | jq .status.userInfo.username -r) --clusterrole=crossnamespace-subscriber
 }
 
 # Install Knative Monitoring in the current cluster.
@@ -180,6 +191,8 @@ function install_knative_eventing() {
   local TMP_CONFIG_TRACING_CONFIG=${TMP_DIR}/${CONFIG_TRACING_CONFIG##*/}
   sed "s/namespace: ${KNATIVE_DEFAULT_NAMESPACE}/namespace: ${SYSTEM_NAMESPACE}/g" "${CONFIG_TRACING_CONFIG}" > "${TMP_CONFIG_TRACING_CONFIG}"
   kubectl replace -f "${TMP_CONFIG_TRACING_CONFIG}"
+
+  kubectl apply -Rf "${EVENTING_TLS_TEST_CONFIG_DIR}"
 
   scale_controlplane eventing-webhook eventing-controller
 
@@ -269,6 +282,14 @@ function unleash_duck() {
     sed "s/namespace: ${KNATIVE_DEFAULT_NAMESPACE}/namespace: ${SYSTEM_NAMESPACE}/g" | \
     ko apply "${KO_FLAGS}" -f - || return $?
     if (( SCALE_CHAOSDUCK_TO_ZERO )); then kubectl -n "${SYSTEM_NAMESPACE}" scale deployment/chaosduck --replicas=0; fi
+}
+
+function install_feature_cm() {
+  KO_FLAGS="${KO_FLAGS:-}"
+  echo "install feature configmap"
+  cat test/config/config-features.yaml | \
+  sed "s/namespace: ${KNATIVE_DEFAULT_NAMESPACE}/namespace: ${SYSTEM_NAMESPACE}/g" | \
+  ko apply "${KO_FLAGS}" -f - || return $?
 }
 
 # Teardown the Knative environment after tests finish.

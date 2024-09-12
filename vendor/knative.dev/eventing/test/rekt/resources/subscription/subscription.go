@@ -5,7 +5,7 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+	http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -34,7 +34,7 @@ import (
 //go:embed *.yaml
 var yaml embed.FS
 
-func gvr() schema.GroupVersionResource {
+func GVR() schema.GroupVersionResource {
 	return schema.GroupVersionResource{Group: "messaging.knative.dev", Version: "v1", Resource: "subscriptions"}
 }
 
@@ -136,7 +136,7 @@ func Install(name string, opts ...manifest.CfgFn) feature.StepFn {
 
 // IsReady tests to see if a Subscription becomes ready within the time given.
 func IsReady(name string, timing ...time.Duration) feature.StepFn {
-	return k8s.IsReady(gvr(), name, timing...)
+	return k8s.IsReady(GVR(), name, timing...)
 }
 
 // WithSubscriberFromDestination adds the subscriber related config to a Trigger spec.

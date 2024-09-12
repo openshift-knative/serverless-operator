@@ -117,9 +117,10 @@ type ControllerConfigSpec struct {
 type IPFamiliesType string
 
 const (
-	IPFamiliesIPv4      IPFamiliesType = "IPv4"
-	IPFamiliesIPv6      IPFamiliesType = "IPv6"
-	IPFamiliesDualStack IPFamiliesType = "DualStack"
+	IPFamiliesIPv4                 IPFamiliesType = "IPv4"
+	IPFamiliesIPv6                 IPFamiliesType = "IPv6"
+	IPFamiliesDualStack            IPFamiliesType = "DualStack"
+	IPFamiliesDualStackIPv6Primary IPFamiliesType = "DualStackIPv6Primary"
 )
 
 // Network contains network related configuration
@@ -483,11 +484,11 @@ type ContainerRuntimeConfiguration struct {
 	// logSizeMax specifies the Maximum size allowed for the container log file.
 	// Negative numbers indicate that no size limit is imposed.
 	// If it is positive, it must be >= 8192 to match/exceed conmon's read buffer.
-	LogSizeMax resource.Quantity `json:"logSizeMax,omitempty"`
+	LogSizeMax *resource.Quantity `json:"logSizeMax,omitempty"`
 
 	// overlaySize specifies the maximum size of a container image.
 	// This flag can be used to set quota on the size of container images.
-	OverlaySize resource.Quantity `json:"overlaySize,omitempty"`
+	OverlaySize *resource.Quantity `json:"overlaySize,omitempty"`
 
 	// defaultRuntime is the name of the OCI runtime to be used as the default.
 	DefaultRuntime ContainerRuntimeDefaultRuntime `json:"defaultRuntime,omitempty"`
