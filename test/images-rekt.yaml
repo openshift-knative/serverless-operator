@@ -1,2 +1,2 @@
-knative.dev/reconciler-test/cmd/eventshub: quay.io/openshift-knative/eventing/eventshub:v1.14
-knative.dev/eventing/cmd/heartbeats: quay.io/openshift-knative/eventing/heartbeats:v1.14
+knative.dev/reconciler-test/cmd/eventshub: quay.io/openshift-knative/eventing/eventshub:v1.15
+knative.dev/eventing/cmd/heartbeats: quay.io/openshift-knative/eventing/heartbeats:v1.15
