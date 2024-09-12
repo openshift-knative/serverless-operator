@@ -19,7 +19,7 @@ metadata:
   name: images.caching.internal.knative.dev
   labels:
     app.kubernetes.io/name: knative-serving
-    app.kubernetes.io/version: "release-v1.14"
+    app.kubernetes.io/version: "v1.15"
     knative.dev/crd-install: "true"
 spec:
   group: caching.internal.knative.dev
@@ -175,7 +175,7 @@ metadata:
   labels:
     app.kubernetes.io/name: knative-serving
     app.kubernetes.io/component: networking
-    app.kubernetes.io/version: "release-v1.14"
+    app.kubernetes.io/version: "v1.15"
     knative.dev/crd-install: "true"
 spec:
   group: networking.internal.knative.dev
@@ -360,7 +360,7 @@ metadata:
   name: configurations.serving.knative.dev
   labels:
     app.kubernetes.io/name: knative-serving
-    app.kubernetes.io/version: "release-v1.14"
+    app.kubernetes.io/version: "v1.15"
     knative.dev/crd-install: "true"
     duck.knative.dev/podspecable: "true"
 spec:
@@ -1859,7 +1859,7 @@ metadata:
   labels:
     app.kubernetes.io/name: knative-serving
     app.kubernetes.io/component: networking
-    app.kubernetes.io/version: "release-v1.14"
+    app.kubernetes.io/version: "v1.15"
     knative.dev/crd-install: "true"
 spec:
   group: networking.internal.knative.dev
@@ -1935,7 +1935,7 @@ metadata:
   name: domainmappings.serving.knative.dev
   labels:
     app.kubernetes.io/name: knative-serving
-    app.kubernetes.io/version: "release-v1.14"
+    app.kubernetes.io/version: "v1.15"
     knative.dev/crd-install: "true"
 spec:
   group: serving.knative.dev
@@ -2148,7 +2148,7 @@ metadata:
   labels:
     app.kubernetes.io/name: knative-serving
     app.kubernetes.io/component: networking
-    app.kubernetes.io/version: "release-v1.14"
+    app.kubernetes.io/version: "v1.15"
     knative.dev/crd-install: "true"
 spec:
   group: networking.internal.knative.dev
@@ -2544,7 +2544,7 @@ metadata:
   name: metrics.autoscaling.internal.knative.dev
   labels:
     app.kubernetes.io/name: knative-serving
-    app.kubernetes.io/version: "release-v1.14"
+    app.kubernetes.io/version: "v1.15"
     knative.dev/crd-install: "true"
 spec:
   group: autoscaling.internal.knative.dev
@@ -2687,7 +2687,7 @@ metadata:
   name: podautoscalers.autoscaling.internal.knative.dev
   labels:
     app.kubernetes.io/name: knative-serving
-    app.kubernetes.io/version: "release-v1.14"
+    app.kubernetes.io/version: "v1.15"
     knative.dev/crd-install: "true"
 spec:
   group: autoscaling.internal.knative.dev
@@ -2887,7 +2887,7 @@ metadata:
   name: revisions.serving.knative.dev
   labels:
     app.kubernetes.io/name: knative-serving
-    app.kubernetes.io/version: "release-v1.14"
+    app.kubernetes.io/version: "v1.15"
     knative.dev/crd-install: "true"
 spec:
   group: serving.knative.dev
@@ -4401,7 +4401,7 @@ metadata:
   name: routes.serving.knative.dev
   labels:
     app.kubernetes.io/name: knative-serving
-    app.kubernetes.io/version: "release-v1.14"
+    app.kubernetes.io/version: "v1.15"
     knative.dev/crd-install: "true"
     duck.knative.dev/addressable: "true"
 spec:
@@ -4671,7 +4671,7 @@ metadata:
   labels:
     app.kubernetes.io/name: knative-serving
     app.kubernetes.io/component: networking
-    app.kubernetes.io/version: "release-v1.14"
+    app.kubernetes.io/version: "v1.15"
     knative.dev/crd-install: "true"
 spec:
   group: networking.internal.knative.dev
@@ -4895,7 +4895,7 @@ metadata:
   name: services.serving.knative.dev
   labels:
     app.kubernetes.io/name: knative-serving
-    app.kubernetes.io/version: "release-v1.14"
+    app.kubernetes.io/version: "v1.15"
     knative.dev/crd-install: "true"
     duck.knative.dev/addressable: "true"
     duck.knative.dev/podspecable: "true"
