@@ -11,7 +11,8 @@ CURRENT_VERSION="$(metadata.get project.version)"
 
 quay_registry_app_version=${CURRENT_VERSION/./} # 1.34.0 -> 134.0
 quay_registry_app_version=${quay_registry_app_version%.*} # 134.0 -> 134
-registry_host="quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-release-${quay_registry_app_version}"
+registry_prefix="quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-"
+registry_host="${registry_prefix}${quay_registry_app_version}"
 registry="${registry_host}"
 serverless_registry="${registry_host}/serverless"
 
@@ -33,9 +34,13 @@ function default_knative_serving_images() {
 }
 
 function knative_serving_images() {
-  local serving tag
+  local serving tag app_version
   serving="${registry}/knative-serving"
   tag=${1:?"Provide tag for Serving images"}
+
+  app_version=$(get_app_version_from_tag "${tag}")
+  serving="${registry_prefix}${app_version}/kn-serving"
+
   export KNATIVE_SERVING_QUEUE=${KNATIVE_SERVING_QUEUE:-$(latest_konflux_image_sha "${serving}-queue:${tag}")}
   export KNATIVE_SERVING_ACTIVATOR=${KNATIVE_SERVING_ACTIVATOR:-$(latest_konflux_image_sha "${serving}-activator:${tag}")}
   export KNATIVE_SERVING_AUTOSCALER=${KNATIVE_SERVING_AUTOSCALER:-$(latest_konflux_image_sha "${serving}-autoscaler:${tag}")}
@@ -54,9 +59,12 @@ function default_knative_eventing_images() {
 }
 
 function knative_eventing_images() {
-  local eventing tag
-  eventing="${registry}/knative-eventing"
+  local eventing tag app_version
   tag=${1:?"Provide tag for Eventing images"}
+
+  app_version=$(get_app_version_from_tag "${tag}")
+  eventing="${registry_prefix}${app_version}/kn-eventing"
+
   export KNATIVE_EVENTING_CONTROLLER=${KNATIVE_EVENTING_CONTROLLER:-$(latest_konflux_image_sha "${eventing}-controller:${tag}")}
   export KNATIVE_EVENTING_WEBHOOK=${KNATIVE_EVENTING_WEBHOOK:-$(latest_konflux_image_sha "${eventing}-webhook:${tag}")}
   export KNATIVE_EVENTING_STORAGE_VERSION_MIGRATION=${KNATIVE_EVENTING_STORAGE_VERSION_MIGRATION:-$(latest_konflux_image_sha "${eventing}-migrate:${tag}")}
@@ -104,9 +112,12 @@ function default_knative_eventing_istio_images() {
 }
 
 function knative_eventing_istio_images() {
-  local eventing_istio tag
-  eventing_istio="${registry}/knative-eventing-istio"
+  local eventing_istio tag app_version
   tag=${1:?"Provide tag for Eventing Istio images"}
+
+  app_version=$(get_app_version_from_tag "${tag}")
+  eventing_istio="${registry_prefix}${app_version}/kn-eventing-istio"
+
   export KNATIVE_EVENTING_ISTIO_CONTROLLER=${KNATIVE_EVENTING_ISTIO_CONTROLLER:-"${eventing_istio}-controller:${tag}"}
 }
 
@@ -119,9 +130,12 @@ function default_knative_eventing_kafka_broker_images() {
 }
 
 function knative_eventing_kafka_broker_images() {
-  local eventing_kafka_broker tag
-  eventing_kafka_broker="${registry}/knative-eventing-kafka-broker"
+  local eventing_kafka_broker tag app_version
   tag=${1:?"Provide tag for Eventing Kafka Broker images"}
+
+  app_version=$(get_app_version_from_tag "${tag}")
+  eventing_kafka_broker="${registry_prefix}${app_version}/kn-ekb"
+
   export KNATIVE_EVENTING_KAFKA_BROKER_DISPATCHER=${KNATIVE_EVENTING_KAFKA_BROKER_DISPATCHER:-$(latest_konflux_image_sha "${eventing_kafka_broker}-dispatcher:${tag}")}
   export KNATIVE_EVENTING_KAFKA_BROKER_RECEIVER=${KNATIVE_EVENTING_KAFKA_BROKER_RECEIVER:-$(latest_konflux_image_sha "${eventing_kafka_broker}-receiver:${tag}")}
   export KNATIVE_EVENTING_KAFKA_BROKER_KAFKA_CONTROLLER=${KNATIVE_EVENTING_KAFKA_BROKER_KAFKA_CONTROLLER:-$(latest_konflux_image_sha "${eventing_kafka_broker}-kafka-controller:${tag}")}
@@ -130,14 +144,21 @@ function knative_eventing_kafka_broker_images() {
 }
 
 function default_knative_ingress_images() {
-  local knative_kourier knative_istio
+  local kourier_registry istio_registry knative_kourier knative_istio kourier_app_version istio_app_version
+
   knative_kourier="$(metadata.get dependencies.kourier)"
-  export KNATIVE_KOURIER_CONTROL=${KNATIVE_KOURIER_CONTROL:-$(latest_konflux_image_sha "${registry}/net-kourier-kourier:${knative_kourier}")}
+  kourier_app_version=$(get_app_version_from_tag "${knative_kourier}")
+  kourier_registry="${registry_prefix}${kourier_app_version}/net-kourier"
+
+  export KNATIVE_KOURIER_CONTROL=${KNATIVE_KOURIER_CONTROL:-$(latest_konflux_image_sha "${kourier_registry}-kourier:${knative_kourier}")}
   export KNATIVE_KOURIER_GATEWAY=${KNATIVE_KOURIER_GATEWAY:-"quay.io/maistra-dev/proxyv2-ubi8:$(metadata.get dependencies.maistra)"}
 
   knative_istio="$(metadata.get dependencies.net_istio)"
-  export KNATIVE_ISTIO_CONTROLLER=${KNATIVE_ISTIO_CONTROLLER:-$(latest_konflux_image_sha "${registry}/net-istio-controller:${knative_istio}")}
-  export KNATIVE_ISTIO_WEBHOOK=${KNATIVE_ISTIO_WEBHOOK:-$(latest_konflux_image_sha "${registry}/net-istio-webhook:${knative_istio}")}
+  istio_app_version=$(get_app_version_from_tag "${knative_istio}")
+  istio_registry="${registry_prefix}${istio_app_version}/net-istio"
+
+  export KNATIVE_ISTIO_CONTROLLER=${KNATIVE_ISTIO_CONTROLLER:-$(latest_konflux_image_sha "${istio_registry}-controller:${knative_istio}")}
+  export KNATIVE_ISTIO_WEBHOOK=${KNATIVE_ISTIO_WEBHOOK:-$(latest_konflux_image_sha "${istio_registry}-webhook:${knative_istio}")}
 }
 
 function knative_backstage_plugins_images() {
@@ -172,4 +193,14 @@ function latest_konflux_image_sha() {
   fi
 
   echo "${image_without_tag}@${digest}"
+}
+
+function get_app_version_from_tag() {
+  local tag app_version
+  tag=${1:?"Provide tag for Serving images"}
+
+  app_version=$(sobranch --upstream-version "${tag/knative-v/}") # -> release-1.34
+  app_version=${app_version/release-/}                   # -> 1.34
+  app_version=${app_version/./}                          # -> 134
+  echo "${app_version}"
 }

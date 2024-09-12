@@ -285,7 +285,7 @@ generate-ci-config:
 	./openshift/ci-operator/generate-ci-config.sh $(BRANCH) > ci-operator-config.yaml
 
 # Generates all files that are templated with release metadata.
-release-files:
+release-files: install-tool-sobranch
 	./hack/generate/csv.sh \
 		templates/csv.yaml \
 		olm-catalog/serverless-operator/manifests/serverless-operator.clusterserviceversion.yaml
@@ -315,7 +315,7 @@ release-files:
 	./hack/generate/mesh-auth-policies.sh \
   	tenant-1,tenant-2,serving-tests,serverless-tests,eventing-e2e0,eventing-e2e1,eventing-e2e2,eventing-e2e3,eventing-e2e4
 
-generate-dockerfiles:
+generate-dockerfiles: install-tool-generate
 	GOFLAGS='' go install github.com/openshift-knative/hack/cmd/generate@latest
 	$(shell go env GOPATH)/bin/generate \
 		--generators dockerfile \
@@ -335,7 +335,7 @@ generate-dockerfiles:
 # Generates all files that can be generated, includes release files, code generation
 # and updates vendoring.
 # Use CURRENT_VERSION_IMAGES="<branch>" if you need to override the defaulting to main
-generated-files: generate-dockerfiles release-files
+generated-files: install-tool-sobranch generate-dockerfiles release-files
 	./hack/update-deps.sh
 	./hack/update-codegen.sh
 	(cd knative-operator && ./hack/update-manifests.sh)
@@ -367,3 +367,9 @@ lint:
 # Runs formatters and thelike to fix potential linter warnings.
 fix-lint:
 	prettier --write templates/*.yaml
+
+install-tool-sobranch:
+	GOFLAGS='' go install github.com/openshift-knative/hack/cmd/sobranch@latest
+
+install-tool-generate:
+	GOFLAGS='' go install github.com/openshift-knative/hack/cmd/generate@latest
