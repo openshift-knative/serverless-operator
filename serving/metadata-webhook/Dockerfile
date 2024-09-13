@@ -1,16 +1,31 @@
-FROM registry.access.redhat.com/ubi8-minimal:latest AS builder
+# DO NOT EDIT! Generated Dockerfile for serving/metadata-webhook/cmd/webhook.
+ARG GO_BUILDER=registry.ci.openshift.org/openshift/release:rhel-8-release-golang-1.22-openshift-4.17
+ARG GO_RUNTIME=registry.access.redhat.com/ubi8/ubi-minimal
 
-RUN microdnf install -y golang
+FROM $GO_BUILDER as builder
 
-COPY . /code
-WORKDIR /code
+COPY . .
 
-ENV GOFLAGS="-mod=vendor"
-RUN go build -o /tmp/metadata-webhook github.com/openshift-knative/serverless-operator/serving/metadata-webhook/cmd/webhook
+ENV CGO_ENABLED=1
+ENV GOEXPERIMENT=strictfipsruntime
 
-FROM registry.access.redhat.com/ubi8-minimal:latest
+RUN go build -tags strictfipsruntime -o /usr/bin/main ./serving/metadata-webhook/cmd/webhook
+
+FROM $GO_RUNTIME
+
+ARG VERSION=
+
+COPY --from=builder /usr/bin/main /usr/bin/webhook
+
 USER 65532
 
-COPY --from=builder /tmp/metadata-webhook /ko-app/metadata-webhook
+LABEL \
+      com.redhat.component="openshift-serverless-1-webhook-rhel8-container" \
+      name="openshift-serverless-1/webhook-rhel8" \
+      version=$VERSION \
+      summary="Red Hat OpenShift Serverless 1 Webhook" \
+      maintainer="serverless-support@redhat.com" \
+      description="Red Hat OpenShift Serverless 1 Webhook" \
+      io.k8s.display-name="Red Hat OpenShift Serverless 1 Webhook"
 
-ENTRYPOINT ["/ko-app/metadata-webhook"]
+ENTRYPOINT ["/usr/bin/webhook"]
