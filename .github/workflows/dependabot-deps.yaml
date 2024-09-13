@@ -1,4 +1,4 @@
-name: depndabot - update-deps.sh
+name: Dependabot
 
 on:
   pull_request:
@@ -8,7 +8,7 @@ permissions:
 
 jobs:
   generate_some_code:
-    name: Generate some code!
+    name: Update deps
     runs-on: ubuntu-latest
     if: ${{ github.actor == 'dependabot[bot]' }}
     steps:

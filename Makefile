@@ -316,9 +316,7 @@ release-files:
   	tenant-1,tenant-2,serving-tests,serverless-tests,eventing-e2e0,eventing-e2e1,eventing-e2e2,eventing-e2e3,eventing-e2e4
 
 generate-dockerfiles:
-	git clone https://github.com/openshift-knative/hack.git /tmp/hack
-	cd /tmp/hack && go install github.com/openshift-knative/hack/cmd/generate && cd - && rm -rf /tmp/hack
-	rm -rf /tmp/serverless-operator-generator
+	go install github.com/openshift-knative/hack/cmd/generate@latest
 	$(shell go env GOPATH)/bin/generate \
 		--generators dockerfile \
 		--dockerfile-image-builder-fmt "registry.ci.openshift.org/openshift/release:rhel-8-release-golang-1.22-openshift-4.17"  \
