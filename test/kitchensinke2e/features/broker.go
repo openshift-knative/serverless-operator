@@ -83,13 +83,13 @@ func BrokerReadiness(index int, broker component, brokerDls component, triggers 
 		if triggerDls != nil {
 			f.Setup(fmt.Sprintf("Install a %s Trigger", trigger.Label()), triggerresources.Install(
 				triggerName,
-				brokerName,
+				triggerresources.WithBrokerName(brokerName),
 				triggerresources.WithSubscriber(trigger.KReference(triggerName), ""),
 				triggerresources.WithDeadLetterSink(triggerDls.KReference(triggerDlsName), "")))
 		} else {
 			f.Setup(fmt.Sprintf("Install a %s Trigger", trigger.Label()), triggerresources.Install(
 				triggerName,
-				brokerName,
+				triggerresources.WithBrokerName(brokerName),
 				triggerresources.WithSubscriber(trigger.KReference(triggerName), "")))
 		}
 	}
