@@ -1281,7 +1281,7 @@ k8s.io/utils/trace
 ## explicit; go 1.22
 knative.dev/caching/pkg/apis/caching
 knative.dev/caching/pkg/apis/caching/v1alpha1
-# knative.dev/eventing v0.42.0 => github.com/openshift-knative/eventing v0.99.1-0.20240912142802-3ddd281e981d
+# knative.dev/eventing v0.42.0 => github.com/openshift-knative/eventing v0.99.1-0.20240918092417-3789dfefcce5
 ## explicit; go 1.22
 knative.dev/eventing/pkg/apis
 knative.dev/eventing/pkg/apis/config
@@ -1352,7 +1352,6 @@ knative.dev/eventing/pkg/client/informers/externalversions/sources/v1beta2
 knative.dev/eventing/pkg/client/injection/client
 knative.dev/eventing/pkg/client/injection/client/fake
 knative.dev/eventing/pkg/client/injection/informers/eventing/v1/broker
-knative.dev/eventing/pkg/client/injection/informers/eventing/v1alpha1/eventpolicy
 knative.dev/eventing/pkg/client/injection/informers/factory
 knative.dev/eventing/pkg/client/injection/reconciler/eventing/v1/broker
 knative.dev/eventing/pkg/client/listers/eventing/v1
@@ -1423,7 +1422,7 @@ knative.dev/eventing/test/upgrade/prober/wathola/fetcher
 knative.dev/eventing/test/upgrade/prober/wathola/forwarder
 knative.dev/eventing/test/upgrade/prober/wathola/receiver
 knative.dev/eventing/test/upgrade/prober/wathola/sender
-# knative.dev/eventing-kafka-broker v0.37.0 => github.com/openshift-knative/eventing-kafka-broker v0.25.1-0.20240912142823-cce3a989bfc1
+# knative.dev/eventing-kafka-broker v0.37.0 => github.com/openshift-knative/eventing-kafka-broker v0.25.1-0.20240917152412-5dd3c57c9356
 ## explicit; go 1.22
 knative.dev/eventing-kafka-broker/control-plane/pkg/apis/bindings
 knative.dev/eventing-kafka-broker/control-plane/pkg/apis/bindings/v1beta1
@@ -1452,21 +1451,14 @@ knative.dev/eventing-kafka-broker/control-plane/pkg/client/internals/kafka/injec
 knative.dev/eventing-kafka-broker/control-plane/pkg/config
 knative.dev/eventing-kafka-broker/control-plane/pkg/contract
 knative.dev/eventing-kafka-broker/control-plane/pkg/core/config
-knative.dev/eventing-kafka-broker/control-plane/pkg/counter
 knative.dev/eventing-kafka-broker/control-plane/pkg/kafka
-knative.dev/eventing-kafka-broker/control-plane/pkg/kafka/clientpool
 knative.dev/eventing-kafka-broker/control-plane/pkg/kafka/offset
 knative.dev/eventing-kafka-broker/control-plane/pkg/kafka/sarama
-knative.dev/eventing-kafka-broker/control-plane/pkg/logging
 knative.dev/eventing-kafka-broker/control-plane/pkg/prober
 knative.dev/eventing-kafka-broker/control-plane/pkg/propagator
-knative.dev/eventing-kafka-broker/control-plane/pkg/receiver
 knative.dev/eventing-kafka-broker/control-plane/pkg/reconciler/base
-knative.dev/eventing-kafka-broker/control-plane/pkg/reconciler/broker
 knative.dev/eventing-kafka-broker/control-plane/pkg/reconciler/channel/apis/messaging
-knative.dev/eventing-kafka-broker/control-plane/pkg/reconciler/channel/resources
 knative.dev/eventing-kafka-broker/control-plane/pkg/security
-knative.dev/eventing-kafka-broker/control-plane/pkg/util
 knative.dev/eventing-kafka-broker/test/e2e_new/bogus_config
 knative.dev/eventing-kafka-broker/test/e2e_sink
 knative.dev/eventing-kafka-broker/test/lib
@@ -1577,15 +1569,8 @@ knative.dev/pkg/client/injection/kube/client
 knative.dev/pkg/client/injection/kube/client/fake
 knative.dev/pkg/client/injection/kube/informers/admissionregistration/v1/mutatingwebhookconfiguration
 knative.dev/pkg/client/injection/kube/informers/apps/v1/deployment
-knative.dev/pkg/client/injection/kube/informers/apps/v1/statefulset
-knative.dev/pkg/client/injection/kube/informers/core/v1/configmap
 knative.dev/pkg/client/injection/kube/informers/core/v1/namespace
-knative.dev/pkg/client/injection/kube/informers/core/v1/pod
-knative.dev/pkg/client/injection/kube/informers/core/v1/secret
-knative.dev/pkg/client/injection/kube/informers/core/v1/service
-knative.dev/pkg/client/injection/kube/informers/core/v1/serviceaccount
 knative.dev/pkg/client/injection/kube/informers/factory
-knative.dev/pkg/client/injection/kube/informers/rbac/v1/clusterrolebinding
 knative.dev/pkg/codegen/cmd/injection-gen
 knative.dev/pkg/codegen/cmd/injection-gen/args
 knative.dev/pkg/codegen/cmd/injection-gen/generators
@@ -1766,8 +1751,8 @@ sigs.k8s.io/structured-merge-diff/v4/value
 ## explicit; go 1.12
 sigs.k8s.io/yaml
 sigs.k8s.io/yaml/goyaml.v2
-# knative.dev/eventing => github.com/openshift-knative/eventing v0.99.1-0.20240912142802-3ddd281e981d
-# knative.dev/eventing-kafka-broker => github.com/openshift-knative/eventing-kafka-broker v0.25.1-0.20240912142823-cce3a989bfc1
+# knative.dev/eventing => github.com/openshift-knative/eventing v0.99.1-0.20240918092417-3789dfefcce5
+# knative.dev/eventing-kafka-broker => github.com/openshift-knative/eventing-kafka-broker v0.25.1-0.20240917152412-5dd3c57c9356
 # knative.dev/hack => knative.dev/hack v0.0.0-20240814135050-f9643117f6a1
 # knative.dev/networking => knative.dev/networking v0.0.0-20240716111826-bab7f2a3e556
 # knative.dev/pkg => knative.dev/pkg v0.0.0-20240716082220-4355f0c73608
