@@ -17,8 +17,8 @@ registry="${registry_host}"
 serverless_registry="${registry_host}/serverless"
 
 function default_serverless_operator_images() {
-  export SERVERLESS_KNATIVE_OPERATOR=${SERVERLESS_KNATIVE_OPERATOR:-$(latest_konflux_image_sha "${serverless_registry}-knative-operator:${CURRENT_VERSION_IMAGES}")}
-  export SERVERLESS_OPENSHIFT_KNATIVE_OPERATOR=${SERVERLESS_OPENSHIFT_KNATIVE_OPERATOR:-$(latest_konflux_image_sha "${serverless_registry}-openshift-knative-operator:${CURRENT_VERSION_IMAGES}")}
+  export SERVERLESS_KNATIVE_OPERATOR=${SERVERLESS_KNATIVE_OPERATOR:-$(latest_konflux_image_sha "${serverless_registry}-kn-operator:${CURRENT_VERSION_IMAGES}")}
+  export SERVERLESS_OPENSHIFT_KNATIVE_OPERATOR=${SERVERLESS_OPENSHIFT_KNATIVE_OPERATOR:-$(latest_konflux_image_sha "${serverless_registry}-openshift-kn-operator:${CURRENT_VERSION_IMAGES}")}
   export SERVERLESS_INGRESS=${SERVERLESS_INGRESS:-$(latest_konflux_image_sha "${serverless_registry}-ingress:${CURRENT_VERSION_IMAGES}")}
 
   export SERVERLESS_BUNDLE=${SERVERLESS_BUNDLE:-$(latest_konflux_image_sha "${serverless_registry}-bundle:${CURRENT_VERSION_IMAGES}")}

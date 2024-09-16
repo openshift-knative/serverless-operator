@@ -828,7 +828,7 @@ spec:
                 serviceAccountName: knative-operator
                 containers:
                   - name: knative-operator
-                    image: quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/serverless-openshift-knative-operator:latest
+                    image: quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/serverless-openshift-kn-operator:latest
                     readinessProbe:
                       periodSeconds: 1
                       httpGet:
@@ -989,7 +989,7 @@ spec:
                           - ALL
                 containers:
                   - name: knative-openshift
-                    image: quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/serverless-knative-operator:latest
+                    image: quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/serverless-kn-operator:latest
                     imagePullPolicy: Always
                     readinessProbe:
                       httpGet:
@@ -1316,9 +1316,9 @@ spec:
         - knativeeventings.operator.knative.dev
   relatedImages:
     - name: "knative-operator"
-      image: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/serverless-openshift-knative-operator:latest"
+      image: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/serverless-openshift-kn-operator:latest"
     - name: "knative-openshift"
-      image: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/serverless-knative-operator:latest"
+      image: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/serverless-kn-operator:latest"
     - name: "knative-openshift-ingress"
       image: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/serverless-ingress:latest"
     - name: "IMAGE_queue-proxy"
