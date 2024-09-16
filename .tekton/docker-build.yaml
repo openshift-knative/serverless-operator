@@ -50,6 +50,10 @@ spec:
     - name: workspace
       workspace: workspace
   params:
+  - default: "false"
+    description: 'Enable in-development package managers. WARNING: the behavior may
+      change at any time without notice. Use at your own risk.'
+    name: prefetch-input-dev-package-managers
   - default: []
     description: Additional image tags
     name: additional-tags
@@ -124,6 +128,35 @@ spec:
     name: CHAINS-GIT_COMMIT
     value: $(tasks.clone-repository.results.commit)
   tasks:
+  - name: prefetch-dependencies
+    params:
+    - name: dev-package-managers
+      value: $(params.prefetch-input-dev-package-managers)
+    - name: input
+      value: $(params.prefetch-input)
+    runAfter:
+    - clone-repository
+    taskRef:
+      params:
+      - name: name
+        value: prefetch-dependencies
+      - name: bundle
+        value: quay.io/konflux-ci/tekton-catalog/task-prefetch-dependencies:0.1@sha256:fd1fda0dcf53938860ae6fcba37f5572ae25ae02dba44c15754fb7ba7549fb5c
+      - name: kind
+        value: task
+      resolver: bundles
+    when:
+    - input: $(params.prefetch-input)
+      operator: notin
+      values:
+      - ""
+    workspaces:
+    - name: source
+      workspace: workspace
+    - name: git-basic-auth
+      workspace: git-auth
+    - name: netrc
+      workspace: netrc
   - name: apply-tags
     params:
     - name: ADDITIONAL_TAGS
@@ -185,33 +218,6 @@ spec:
       workspace: workspace
     - name: basic-auth
       workspace: git-auth
-  - name: prefetch-dependencies
-    params:
-    - name: input
-      value: $(params.prefetch-input)
-    runAfter:
-    - clone-repository
-    taskRef:
-      params:
-      - name: name
-        value: prefetch-dependencies
-      - name: bundle
-        value: quay.io/konflux-ci/tekton-catalog/task-prefetch-dependencies:0.1@sha256:fd1fda0dcf53938860ae6fcba37f5572ae25ae02dba44c15754fb7ba7549fb5c
-      - name: kind
-        value: task
-      resolver: bundles
-    when:
-    - input: $(params.prefetch-input)
-      operator: notin
-      values:
-      - ""
-    workspaces:
-    - name: source
-      workspace: workspace
-    - name: git-basic-auth
-      workspace: git-auth
-    - name: netrc
-      workspace: netrc
   - name: build-container
     params:
     - name: IMAGE
