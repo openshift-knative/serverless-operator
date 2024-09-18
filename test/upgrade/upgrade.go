@@ -1,10 +1,11 @@
 package upgrade
 
 import (
-	"github.com/openshift-knative/serverless-operator/test"
-	"github.com/openshift-knative/serverless-operator/test/upgrade/installation"
 	pkgupgrade "knative.dev/pkg/test/upgrade"
 	"knative.dev/reconciler-test/pkg/environment"
+
+	"github.com/openshift-knative/serverless-operator/test"
+	"github.com/openshift-knative/serverless-operator/test/upgrade/installation"
 )
 
 func ServerlessUpgradeOperations(ctx *test.Context) []pkgupgrade.Operation {
@@ -23,8 +24,8 @@ func ServerlessDowngradeOperations(ctx *test.Context, glob environment.GlobalEnv
 			if err := installation.DowngradeServerless(ctx); err != nil {
 				c.T.Error("Serverless downgrade failed:", err)
 			}
-			installation.CleanupTriggerv2ConsumerGroups(c, glob)
-			installation.CleanupTriggerv2Deployments(c, glob)
+			installation.CleanupChannelv2ConsumerGroups(c, glob)
+			installation.CleanupChannelv2Deployments(c, glob)
 		}),
 	}
 }

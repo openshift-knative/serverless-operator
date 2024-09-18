@@ -21,39 +21,36 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/openshift-knative/serverless-operator/test"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/kubernetes"
-
-	kubeclient "knative.dev/pkg/client/injection/kube/client"
-	pkgupgrade "knative.dev/pkg/test/upgrade"
-
 	internalsclient "knative.dev/eventing-kafka-broker/control-plane/pkg/client/internals/kafka/injection/client"
-
+	kubeclient "knative.dev/pkg/client/injection/kube/client"
+	"knative.dev/pkg/system"
+	pkgupgrade "knative.dev/pkg/test/upgrade"
 	"knative.dev/reconciler-test/pkg/environment"
 )
 
 // This file is copied from Eventing Kafka Broker repo.
 
-func CleanupTriggerv2ConsumerGroups(c pkgupgrade.Context, glob environment.GlobalEnvironment) {
+func CleanupChannelv2ConsumerGroups(c pkgupgrade.Context, glob environment.GlobalEnvironment) {
 	ctx, _ := glob.Environment()
 	client := kubeclient.Get(ctx)
 
-	err := deleteConsumerGroups(ctx, client)
+	err := deleteConsumerGroups(ctx, client, "KafkaChannel")
 	if err != nil {
-		c.T.Fatal("failed to downgrade from triggerv2", err.Error())
+		c.T.Fatal("failed to downgrade from channelv2", err.Error())
 	}
 }
 
-func CleanupTriggerv2Deployments(c pkgupgrade.Context, glob environment.GlobalEnvironment) {
+func CleanupChannelv2Deployments(c pkgupgrade.Context, glob environment.GlobalEnvironment) {
 	ctx, _ := glob.Environment()
 	client := kubeclient.Get(ctx)
 
-	err := deleteStatefulSet(ctx, client, "kafka-broker-dispatcher", test.EventingNamespace)
+	err := deleteStatefulSet(ctx, client, "kafka-channel-dispatcher", system.Namespace())
 	if err != nil {
-		c.T.Fatal("failed to downgrade from triggerv2", err.Error())
+		c.T.Fatal("failed to downgrade from channelv2", err.Error())
 	}
 }
 
@@ -65,7 +62,7 @@ func deleteStatefulSet(ctx context.Context, client kubernetes.Interface, name st
 
 	err = client.AppsV1().StatefulSets(namespace).Delete(ctx, name, metav1.DeleteOptions{})
 	if err != nil && !errors.IsNotFound(err) {
-		return fmt.Errorf("failed to delete statefulset: %w", err)
+		return fmt.Errorf("failed to delete statefulset %s/%s: %w", namespace, name, err)
 	}
 
 	return nil
@@ -86,7 +83,7 @@ func waitDeploymentExists(ctx context.Context, client kubernetes.Interface, name
 	})
 }
 
-func deleteConsumerGroups(ctx context.Context, client kubernetes.Interface) error {
+func deleteConsumerGroups(ctx context.Context, client kubernetes.Interface, kind string) error {
 	namespaces, err := client.CoreV1().Namespaces().List(ctx, metav1.ListOptions{})
 	if err != nil {
 		return err
@@ -104,7 +101,7 @@ func deleteConsumerGroups(ctx context.Context, client kubernetes.Interface) erro
 
 		for _, cg := range cgList.Items {
 			for _, owner := range cg.OwnerReferences {
-				if owner.Kind == "Trigger" {
+				if owner.Kind == kind {
 					err := cgClient.Delete(ctx, cg.Name, metav1.DeleteOptions{})
 					if err != nil && !errors.IsNotFound(err) {
 						return err
