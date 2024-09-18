@@ -29,10 +29,11 @@ PREVIOUS_CSV="$(metadata.get project.name).v$PREVIOUS_VERSION"
 export CURRENT_VERSION PREVIOUS_VERSION CURRENT_CSV PREVIOUS_CSV
 
 # Directories below are filled with source code by ci-operator
-export KNATIVE_SERVING_HOME="${GOPATH}/src/knative.dev/serving"
-export KNATIVE_EVENTING_HOME="${GOPATH}/src/knative.dev/eventing"
-export KNATIVE_EVENTING_KAFKA_BROKER_HOME="${GOPATH}/src/knative.dev/eventing-kafka-broker"
-export KNATIVE_EVENTING_ISTIO_HOME="${GOPATH}/src/knative.dev/eventing-istio"
+export TEST_SOURCE_BASE_PATH=${TEST_SOURCE_BASE_PATH:-"/go/src/knative.dev"}
+export KNATIVE_SERVING_HOME="${TEST_SOURCE_BASE_PATH}/serving"
+export KNATIVE_EVENTING_HOME="${TEST_SOURCE_BASE_PATH}/eventing"
+export KNATIVE_EVENTING_KAFKA_BROKER_HOME="${TEST_SOURCE_BASE_PATH}/eventing-kafka-broker"
+export KNATIVE_EVENTING_ISTIO_HOME="${TEST_SOURCE_BASE_PATH}/eventing-istio"
 export BROKER_CLASS=${BROKER_CLASS:-"Kafka"}
 
 export DOCKER_REPO_OVERRIDE="${DOCKER_REPO_OVERRIDE:-}"
