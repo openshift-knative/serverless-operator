@@ -27,9 +27,10 @@ import (
 	"k8s.io/client-go/kubernetes"
 	internalsclient "knative.dev/eventing-kafka-broker/control-plane/pkg/client/internals/kafka/injection/client"
 	kubeclient "knative.dev/pkg/client/injection/kube/client"
-	"knative.dev/pkg/system"
 	pkgupgrade "knative.dev/pkg/test/upgrade"
 	"knative.dev/reconciler-test/pkg/environment"
+
+	"github.com/openshift-knative/serverless-operator/test"
 )
 
 // This file is copied from Eventing Kafka Broker repo.
@@ -48,7 +49,7 @@ func CleanupChannelv2Deployments(c pkgupgrade.Context, glob environment.GlobalEn
 	ctx, _ := glob.Environment()
 	client := kubeclient.Get(ctx)
 
-	err := deleteStatefulSet(ctx, client, "kafka-channel-dispatcher", system.Namespace())
+	err := deleteStatefulSet(ctx, client, "kafka-channel-dispatcher", test.EventingNamespace)
 	if err != nil {
 		c.T.Fatal("failed to downgrade from channelv2", err.Error())
 	}
