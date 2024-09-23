@@ -26,6 +26,8 @@ LABEL \
       summary="Red Hat OpenShift Serverless 1 Ingress" \
       maintainer="serverless-support@redhat.com" \
       description="Red Hat OpenShift Serverless 1 Ingress" \
-      io.k8s.display-name="Red Hat OpenShift Serverless 1 Ingress"
+      io.k8s.display-name="Red Hat OpenShift Serverless 1 Ingress" \
+      io.k8s.description="Red Hat OpenShift Serverless Ingress" \
+      io.openshift.tags="ingress"
 
 ENTRYPOINT ["/usr/bin/ingress"]
