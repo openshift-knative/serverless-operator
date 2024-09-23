@@ -150,6 +150,12 @@ function downstream_serving_e2e_tests {
       --imagetemplate "${IMAGE_TEMPLATE}" \
       "$@"
 
+    certName=$(oc get ingresscontroller.operator.openshift.io -n openshift-ingress-operator \
+      default -o=jsonpath='{.spec.defaultCertificate.name}')
+    if [[ "$certName" != "" ]]; then
+      configure_cm network openshift-ingress-default-certificate:"${certName}"
+    fi
+
     # Enable Serving encryption (only supported on Kourier - at least for now)
     configure_cm network system-internal-tls:enabled
     configure_cm network cluster-local-domain-tls:enabled
@@ -168,6 +174,10 @@ function downstream_serving_e2e_tests {
       --imagetemplate "${IMAGE_TEMPLATE}" \
       "$@"
 
+    # Put back default ingress certificate.
+    if [[ "$certName" != "" ]]; then
+      configure_cm network openshift-ingress-default-certificate:router-certs-default
+    fi
     # Disable Serving encryption for following tests
     configure_cm network system-internal-tls:disabled
     configure_cm network cluster-local-domain-tls:disabled
