@@ -1633,7 +1633,7 @@ knative.dev/networking/pkg/http/proxy
 knative.dev/networking/pkg/http/stats
 knative.dev/networking/pkg/ingress
 knative.dev/networking/pkg/k8s
-# knative.dev/operator v0.41.2
+# knative.dev/operator v0.41.9
 ## explicit; go 1.21
 knative.dev/operator/pkg/apis/operator
 knative.dev/operator/pkg/apis/operator/base
