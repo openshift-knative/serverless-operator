@@ -26,6 +26,8 @@ LABEL \
       summary="Red Hat OpenShift Serverless 1 Webhook" \
       maintainer="serverless-support@redhat.com" \
       description="Red Hat OpenShift Serverless 1 Webhook" \
-      io.k8s.display-name="Red Hat OpenShift Serverless 1 Webhook"
+      io.k8s.display-name="Red Hat OpenShift Serverless 1 Webhook" \
+      io.k8s.description="Red Hat OpenShift Serverless Webhook" \
+      io.openshift.tags="webhook"
 
 ENTRYPOINT ["/usr/bin/webhook"]
