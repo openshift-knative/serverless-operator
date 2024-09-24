@@ -931,9 +931,9 @@ spec:
                       - name: "IMAGE_KUBE_RBAC_PROXY"
                         value: "registry.ci.openshift.org/origin/4.15:kube-rbac-proxy"
                       - name: "IMAGE_KN_PLUGIN_EVENT_SENDER"
-                        value: "registry.ci.openshift.org/knative/release-1.14:client-plugin-event-sender"
+                        value: "registry.ci.openshift.org/knative/release-1.15:client-plugin-event-sender"
                       - name: "IMAGE_KN_CLIENT"
-                        value: "registry.ci.openshift.org/openshift/knative-v1.14.0:knative-client"
+                        value: "registry.ci.openshift.org/openshift/knative-v1.15:knative-client-kn"
                       - name: "IMAGE_KN_PLUGIN_FUNC_UTIL"
                         value: "quay.io/boson/alpine-socat:1.7.4.3-r1-non-root"
                       - name: "IMAGE_KN_PLUGIN_FUNC_TEKTON_S2I"
@@ -977,7 +977,7 @@ spec:
                 serviceAccountName: knative-openshift
                 initContainers:
                   - name: cli-artifacts
-                    image: registry.ci.openshift.org/openshift/knative-v1.14.0:kn-cli-artifacts
+                    image: registry.ci.openshift.org/openshift/knative-v1.15:knative-client-cli-artifacts
                     imagePullPolicy: Always
                     command: ["sh", "-c", "rm -rf /cli-artifacts/* && cp /usr/share/kn/**/* /cli-artifacts && chmod 444 /cli-artifacts/*"]
                     volumeMounts:
@@ -1103,9 +1103,9 @@ spec:
                       - name: "IMAGE_KUBE_RBAC_PROXY"
                         value: "registry.ci.openshift.org/origin/4.15:kube-rbac-proxy"
                       - name: "IMAGE_KN_PLUGIN_EVENT_SENDER"
-                        value: "registry.ci.openshift.org/knative/release-1.14:client-plugin-event-sender"
+                        value: "registry.ci.openshift.org/knative/release-1.15:client-plugin-event-sender"
                       - name: "IMAGE_KN_CLIENT"
-                        value: "registry.ci.openshift.org/openshift/knative-v1.14.0:knative-client"
+                        value: "registry.ci.openshift.org/openshift/knative-v1.15:knative-client-kn"
                       - name: "IMAGE_KN_PLUGIN_FUNC_UTIL"
                         value: "quay.io/boson/alpine-socat:1.7.4.3-r1-non-root"
                       - name: "IMAGE_KN_PLUGIN_FUNC_TEKTON_S2I"
@@ -1378,9 +1378,9 @@ spec:
     - name: "IMAGE_KUBE_RBAC_PROXY"
       image: "registry.ci.openshift.org/origin/4.15:kube-rbac-proxy"
     - name: "IMAGE_KN_PLUGIN_EVENT_SENDER"
-      image: "registry.ci.openshift.org/knative/release-1.14:client-plugin-event-sender"
+      image: "registry.ci.openshift.org/knative/release-1.15:client-plugin-event-sender"
     - name: "IMAGE_KN_CLIENT"
-      image: "registry.ci.openshift.org/openshift/knative-v1.14.0:knative-client"
+      image: "registry.ci.openshift.org/openshift/knative-v1.15:knative-client-kn"
     - name: "IMAGE_KN_PLUGIN_FUNC_UTIL"
       image: "quay.io/boson/alpine-socat:1.7.4.3-r1-non-root"
     - name: "IMAGE_KN_PLUGIN_FUNC_TEKTON_S2I"

@@ -11,7 +11,7 @@ source "$(dirname "${BASH_SOURCE[0]}")/../lib/metadata.bash"
 source "$(dirname "${BASH_SOURCE[0]}")/../lib/images.bash"
 
 client_version="$(metadata.get dependencies.cli)"
-kn_event="${registry_host}/knative/release-${client_version%.*}:client-plugin-event"
+kn_event="${registry_host}/knative/release-${client_version#knative-v}:client-plugin-event"
 rbac_proxy="registry.ci.openshift.org/origin/$(metadata.get 'requirements.ocpVersion.max'):kube-rbac-proxy"
 
 default_serverless_operator_images
@@ -119,7 +119,7 @@ kafka_image "knative-kafka-storage-version-migrator__migrate"    "${KNATIVE_EVEN
 
 image 'KUBE_RBAC_PROXY'          "${rbac_proxy}"
 image 'KN_PLUGIN_EVENT_SENDER'   "${kn_event}-sender"
-image 'KN_CLIENT'              "${registry}/knative-v$(metadata.get dependencies.cli):knative-client"
+image 'KN_CLIENT'              "${registry}/$(metadata.get dependencies.cli):knative-client-kn"
 
 image 'KN_PLUGIN_FUNC_UTIL'           "$(metadata.get dependencies.func.util)"
 image 'KN_PLUGIN_FUNC_TEKTON_S2I'     "$(metadata.get dependencies.func.tekton_s2i)"
@@ -229,7 +229,7 @@ add_upstream_operator_deployment_env "$target" "KNATIVE_EVENTING_VERSION" "${eve
 add_upstream_operator_deployment_env "$target" "KNATIVE_EVENTING_KAFKA_BROKER_VERSION" "${ekb_version/knative-v/}" # Remove `knative-v` prefix if exists
 
 # Override the image for the CLI artifact deployment
-yq write --inplace "$target" "spec.install.spec.deployments(name==knative-openshift).spec.template.spec.initContainers(name==cli-artifacts).image" "${registry}/knative-v$(metadata.get dependencies.cli):kn-cli-artifacts"
+yq write --inplace "$target" "spec.install.spec.deployments(name==knative-openshift).spec.template.spec.initContainers(name==cli-artifacts).image" "${registry}/$(metadata.get dependencies.cli):knative-client-cli-artifacts"
 
 for name in "${!yaml_keys[@]}"; do
   echo "Value: ${name} -> ${yaml_keys[$name]}"
