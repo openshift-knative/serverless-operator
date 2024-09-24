@@ -32,7 +32,7 @@ require (
 	knative.dev/eventing-kafka-broker v0.37.0
 	knative.dev/hack v0.0.0-20240404013450-1133b37da8d7
 	knative.dev/networking v0.0.0-20240418213116-979f63728302
-	knative.dev/operator v0.41.2
+	knative.dev/operator v0.41.9
 	knative.dev/pkg v0.0.0-20240416145024-0f34a8815650
 	knative.dev/serving v0.41.0
 	sigs.k8s.io/controller-runtime v0.17.3
