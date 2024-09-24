@@ -5,7 +5,7 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+	http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -225,4 +225,12 @@ type TriggerList struct {
 // GetStatus retrieves the status of the Trigger. Implements the KRShaped interface.
 func (t *Trigger) GetStatus() *duckv1.Status {
 	return &t.Status.Status
+}
+
+// GetCrossNamespaceRef returns the Broker reference for the Trigger. Implements the ResourceInfo interface.
+func (t *Trigger) GetCrossNamespaceRef() duckv1.KReference {
+	if t.Spec.BrokerRef != nil {
+		return *t.Spec.BrokerRef
+	}
+	return duckv1.KReference{}
 }

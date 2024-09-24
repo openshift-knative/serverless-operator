@@ -5,7 +5,7 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+	http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -127,6 +127,17 @@ func WithSubscriptionChannel(gvk metav1.GroupVersionKind, name string) Subscript
 	}
 }
 
+func WithSubscriptionChannelRef(gvk metav1.GroupVersionKind, name string, namespace string) SubscriptionOption {
+	return func(s *v1.Subscription) {
+		s.Spec.Channel = duckv1.KReference{
+			APIVersion: apiVersion(gvk),
+			Kind:       gvk.Kind,
+			Name:       name,
+			Namespace:  namespace,
+		}
+	}
+}
+
 func WithSubscriptionChannelUsingGroup(gvk metav1.GroupVersionKind, name string) SubscriptionOption {
 	return func(s *v1.Subscription) {
 		s.Spec.Channel = duckv1.KReference{
@@ -144,6 +155,29 @@ func WithSubscriptionChannelUsingApiVersionAndGroup(gvk metav1.GroupVersionKind,
 			Group:      gvk.Group,
 			Kind:       gvk.Kind,
 			Name:       name,
+		}
+	}
+}
+
+func WithSubscriptionChannelRefUsingGroup(gvk metav1.GroupVersionKind, name string, namespace string) SubscriptionOption {
+	return func(s *v1.Subscription) {
+		s.Spec.Channel = duckv1.KReference{
+			Group:     gvk.Group,
+			Kind:      gvk.Kind,
+			Name:      name,
+			Namespace: namespace,
+		}
+	}
+}
+
+func WithSubscriptionChannelRefUsingApiVersionAndGroup(gvk metav1.GroupVersionKind, name string, namespace string) SubscriptionOption {
+	return func(s *v1.Subscription) {
+		s.Spec.Channel = duckv1.KReference{
+			APIVersion: apiVersion(gvk),
+			Group:      gvk.Group,
+			Kind:       gvk.Kind,
+			Name:       name,
+			Namespace:  namespace,
 		}
 	}
 }

@@ -100,7 +100,8 @@ func New(
 	resolvable bool,
 	endpointOverride string,
 	requestInterval, requestTimeout time.Duration,
-	opts ...TransportOption) (*SpoofingClient, error) {
+	opts ...TransportOption,
+) (*SpoofingClient, error) {
 	endpoint, mapper, err := ResolveEndpoint(ctx, kubeClientset, domain, resolvable, endpointOverride)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get the cluster endpoint: %w", err)
@@ -291,8 +292,8 @@ func (sc *SpoofingClient) WaitForEndpointState(
 	url *url.URL,
 	inState ResponseChecker,
 	desc string,
-	opts ...RequestOption) (*Response, error) {
-
+	opts ...RequestOption,
+) (*Response, error) {
 	return sc.endpointState(
 		ctx,
 		url,
@@ -310,7 +311,8 @@ func (sc *SpoofingClient) endpointState(
 	desc string,
 	f func(*http.Request, ResponseChecker) (*Response, error),
 	logName string,
-	opts ...RequestOption) (*Response, error) {
+	opts ...RequestOption,
+) (*Response, error) {
 	defer logging.GetEmitableSpan(ctx, logName+"/"+desc).End()
 
 	if url.Scheme == "" || url.Host == "" {
@@ -351,7 +353,8 @@ func (sc *SpoofingClient) CheckEndpointState(
 	url *url.URL,
 	inState ResponseChecker,
 	desc string,
-	opts ...RequestOption) (*Response, error) {
+	opts ...RequestOption,
+) (*Response, error) {
 	return sc.endpointState(
 		ctx,
 		url,

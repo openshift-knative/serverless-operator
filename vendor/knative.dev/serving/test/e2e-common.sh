@@ -309,8 +309,8 @@ function install() {
   YTT_FILES+=("${REPO_ROOT_DIR}/test/config/ytt/ingress/${ingress}")
   YTT_FILES+=("${REPO_ROOT_DIR}/test/config/ytt/certmanager/kapp-order.yaml")
   YTT_FILES+=("${REPO_ROOT_DIR}/test/config/ytt/certmanager/kapp-secret-upgrade.yaml")
+  YTT_FILES+=("${REPO_ROOT_DIR}/test/config/ytt/certmanager/net-certmanager-config.yaml")
   YTT_FILES+=("${REPO_ROOT_DIR}/third_party/cert-manager-${CERT_MANAGER_VERSION}/cert-manager.yaml")
-  YTT_FILES+=("${REPO_ROOT_DIR}/third_party/cert-manager-${CERT_MANAGER_VERSION}/net-certmanager.yaml")
 
   if (( MESH )); then
     YTT_FILES+=("${REPO_ROOT_DIR}/test/config/ytt/mesh")
@@ -389,10 +389,12 @@ function install() {
   fi
 
   if (( ENABLE_TLS )); then
-    echo "Patch config-network to enable encryption features"
-    toggle_feature system-internal-tls enabled config-network
-
-    if [[ "$INGRESS_CLASS" == "kourier.ingress.networking.knative.dev" ]] || [[ "$INGRESS_CLASS" == "istio.ingress.networking.knative.dev" ]]; then
+    if [[ "$INGRESS_CLASS" == "kourier.ingress.networking.knative.dev" ]] || [[ "$INGRESS_CLASS" == "contour.ingress.networking.knative.dev" ]]; then
+      echo "Patch config-network to enable system-internal-tls feature (kourier/contour)"
+      toggle_feature system-internal-tls enabled config-network
+    fi
+    if [[ "$INGRESS_CLASS" == "kourier.ingress.networking.knative.dev" ]] || [[ "$INGRESS_CLASS" == "istio.ingress.networking.knative.dev" ]] || [[ "$INGRESS_CLASS" == "contour.ingress.networking.knative.dev" ]]; then
+      echo "Patch config-network to enable cluster-local-domain-tls feature (kourier/istio/contour)"
       toggle_feature cluster-local-domain-tls enabled config-network
     fi
 
