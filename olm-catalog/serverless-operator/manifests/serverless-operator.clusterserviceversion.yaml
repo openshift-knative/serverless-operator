@@ -819,11 +819,10 @@ spec:
                 serverless.openshift.io/is: webhook
             template:
               metadata:
-                annotations:
-                  sidecar.istio.io/inject: "false"
                 labels:
                   name: knative-operator
                   serverless.openshift.io/is: webhook
+                  sidecar.istio.io/inject: "false"
               spec:
                 serviceAccountName: knative-operator
                 containers:
