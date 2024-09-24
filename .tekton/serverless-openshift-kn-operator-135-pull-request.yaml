@@ -24,6 +24,8 @@ spec:
       value: [ VERSION=1.35.0, ]
     - name: git-url
       value: '{{source_url}}'
+    - name: hermetic
+      value: "true"
     - name: image-expires-after
       value: 5d
     - name: output-image
