@@ -7,8 +7,9 @@ metadata:
 spec:
   template:
     metadata:
-      annotations:
+      labels:
         sidecar.istio.io/inject: "true"
+      annotations:
         sidecar.istio.io/rewriteAppHTTPProbers: "true"
     spec:
       containers:

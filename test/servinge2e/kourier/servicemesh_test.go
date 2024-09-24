@@ -103,8 +103,10 @@ func TestKsvcWithServiceMeshSidecar(t *testing.T) {
 			// Verifies the activator can connect to the pod
 			name: "sidecar-via-activator",
 			annotations: map[string]string{
-				servicemesh.IstioInjectKey:         "true",
 				autoscaling.TargetBurstCapacityKey: "-1",
+			},
+			labels: map[string]string{
+				servicemesh.IstioInjectKey: "true",
 			},
 			expectIstioSidecar: true,
 		}, {
@@ -112,15 +114,17 @@ func TestKsvcWithServiceMeshSidecar(t *testing.T) {
 			// Verifies the gateway can connect to the pod directly
 			name: "sidecar-without-activator",
 			annotations: map[string]string{
-				servicemesh.IstioInjectKey:         "true",
 				autoscaling.TargetBurstCapacityKey: "0",
 				autoscaling.MinScaleAnnotationKey:  "1",
+			},
+			labels: map[string]string{
+				servicemesh.IstioInjectKey: "true",
 			},
 			expectIstioSidecar: true,
 		}, {
 			// Verifies the "sidecar.istio.io/inject" annotation is really what decides the istio-proxy presence
 			name: "no-sidecar",
-			annotations: map[string]string{
+			labels: map[string]string{
 				servicemesh.IstioInjectKey: "false",
 			},
 			expectIstioSidecar: false,
@@ -129,9 +133,7 @@ func TestKsvcWithServiceMeshSidecar(t *testing.T) {
 			name: "local-sidecar-via-activator",
 			labels: map[string]string{
 				networking.VisibilityLabelKey: serving.VisibilityClusterLocal,
-			},
-			annotations: map[string]string{
-				servicemesh.IstioInjectKey: "true",
+				servicemesh.IstioInjectKey:    "true",
 			},
 			expectIstioSidecar: true,
 		}, {
@@ -139,9 +141,9 @@ func TestKsvcWithServiceMeshSidecar(t *testing.T) {
 			name: "local-sidecar-without-activator",
 			labels: map[string]string{
 				networking.VisibilityLabelKey: serving.VisibilityClusterLocal,
+				servicemesh.IstioInjectKey:    "true",
 			},
 			annotations: map[string]string{
-				servicemesh.IstioInjectKey:         "true",
 				autoscaling.TargetBurstCapacityKey: "0",
 				autoscaling.MinScaleAnnotationKey:  "1",
 			},
@@ -477,9 +479,11 @@ func TestKsvcWithServiceMeshJWTDefaultPolicy(t *testing.T) {
 
 		// Create a test ksvc, should be accessible only via proper JWT token
 		testKsvc := test.Service("jwt-test", test.Namespace, pkgTest.ImagePath(test.HelloworldGoImg), nil, map[string]string{
-			"sidecar.istio.io/inject":                "true",
 			"sidecar.istio.io/rewriteAppHTTPProbers": "true",
 		})
+		testKsvc.Spec.Template.Labels = map[string]string{
+			"sidecar.istio.io/inject": "true",
+		}
 		testKsvc = test.WithServiceReadyOrFail(ctx, testKsvc)
 
 		// Wait until the Route is ready and also verify the route returns a 401 or 403 without a token

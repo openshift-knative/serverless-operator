@@ -75,7 +75,6 @@ spec:
     metadata:
       labels:
         app: zipkin
-      annotations:
         sidecar.istio.io/inject: "false"
     spec:
       securityContext:
