@@ -1,0 +1,12 @@
+diff --git a/vendor/knative.dev/operator/pkg/reconciler/common/hpa.go b/vendor/knative.dev/operator/pkg/reconciler/common/hpa.go
+index 09518fb99..c2af7a3d3 100644
+--- a/vendor/knative.dev/operator/pkg/reconciler/common/hpa.go
++++ b/vendor/knative.dev/operator/pkg/reconciler/common/hpa.go
+@@ -33,7 +33,6 @@ func hasHorizontalPodOrCustomAutoscaler(name string) bool {
+ 		"mt-broker-filter",
+ 		"kafka-broker-dispatcher",
+ 		"kafka-source-dispatcher",
+-		"kafka-channel-dispatcher",
+ 	).Has(name)
+ }
+ 
