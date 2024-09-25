@@ -1,7 +1,8 @@
 module github.com/openshift-knative/serverless-operator
 
-go 1.22
-toolchain go1.22.5
+go 1.22.0
+
+toolchain go1.22.7
 
 require (
 	github.com/blang/semver/v4 v4.0.0
