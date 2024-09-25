@@ -476,6 +476,9 @@ function teardown_serverless {
   fi
   logger.info 'Ensure no ingress pods running'
   timeout 600 "[[ \$(oc get pods -n ${INGRESS_NAMESPACE} --field-selector=status.phase!=Succeeded -o jsonpath='{.items}') != '[]' ]]"
+  if oc get namespace "${INGRESS_NAMESPACE}" &>/dev/null; then
+    oc delete namespace "${INGRESS_NAMESPACE}"
+  fi
   timeout 600 "[[ \$(oc get ns ${INGRESS_NAMESPACE} --no-headers | wc -l) == 1 ]]"
   logger.info 'Ensure no knative eventing or knative kafka pods running'
   timeout 700 "[[ \$(oc get pods -n ${EVENTING_NAMESPACE} --field-selector=status.phase!=Succeeded -o jsonpath='{.items}') != '[]' ]]"
