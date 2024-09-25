@@ -142,6 +142,7 @@ declare -A vars
 vars[OCP_TARGET]="$(metadata.get 'requirements.ocpVersion.max')"
 
 function add_related_image {
+  echo "Add related image to '${1}' - $2 = $3"
   cat << EOF | yq write --inplace --script - "$1"
 - command: update
   path: spec.relatedImages[+]
@@ -152,6 +153,7 @@ EOF
 }
 
 function add_downstream_operator_deployment_env {
+  echo "Add downstream operator deployment env '${1}' - $2 = $3"
   cat << EOF | yq write --inplace --script - "$1"
 - command: update
   path: spec.install.spec.deployments(name==knative-openshift).spec.template.spec.containers(name==knative-openshift).env[+]
@@ -178,6 +180,7 @@ function set_operator_ingress_image {
 # there was a naming clash between eventing and kafka, but we won't provide the Kafka overrides to the
 # midstream operator.
 function add_upstream_operator_deployment_env {
+  echo "Add upstream operator deployment env '${1}' - $2 = $3"
   cat << EOF | yq write --inplace --script - "$1"
 - command: update
   path: spec.install.spec.deployments(name==knative-operator-webhook).spec.template.spec.containers(name==knative-operator).env[+]
