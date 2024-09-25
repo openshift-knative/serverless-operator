@@ -49,7 +49,7 @@ func OverridesTransform(overrides []base.WorkloadOverride, log *zap.SugaredLogge
 				ps = &deployment.Spec.Template
 
 				// Do not set replicas, if this resource is controlled by a HPA
-				if override.Replicas != nil && !hasHorizontalPodAutoscaler(override.Name) {
+				if override.Replicas != nil && !hasHorizontalPodOrCustomAutoscaler(override.Name) {
 					deployment.Spec.Replicas = override.Replicas
 				}
 			}
@@ -62,7 +62,7 @@ func OverridesTransform(overrides []base.WorkloadOverride, log *zap.SugaredLogge
 				ps = &ss.Spec.Template
 
 				// Do not set replicas, if this resource is controlled by a HPA
-				if override.Replicas != nil && !hasHorizontalPodAutoscaler(override.Name) {
+				if override.Replicas != nil && !hasHorizontalPodOrCustomAutoscaler(override.Name) {
 					ss.Spec.Replicas = override.Replicas
 				}
 			}
@@ -223,7 +223,7 @@ func replaceProbes(override *base.WorkloadOverride, ps *corev1.PodTemplateSpec) 
 				}
 				if *overrideProbe == (v1.Probe{}) {
 					//  Disable probe when users explicitly set the empty overrideProbe.
-					containers[i].ReadinessProbe = nil
+					containers[i].LivenessProbe = nil
 					continue
 				}
 				if containers[i].LivenessProbe == nil {

@@ -18,7 +18,7 @@ package features
 
 import (
 	"k8s.io/apimachinery/pkg/types"
-	kafkabroker "knative.dev/eventing-kafka-broker/control-plane/pkg/reconciler/broker"
+
 	"knative.dev/eventing-kafka-broker/test/e2e_new/bogus_config"
 	"knative.dev/eventing-kafka-broker/test/rekt/resources/kafkatopic"
 
@@ -63,7 +63,7 @@ func BrokerConfigMapDeletedFirst() *feature.Feature {
 		cmName,
 	))
 	f.Setup("install broker", broker.Install(brokerName, append(broker.WithEnvConfig(), broker.WithConfig(cmName))...))
-	f.Setup("install trigger", trigger.Install(triggerName, brokerName,
+	f.Setup("install trigger", trigger.Install(triggerName, trigger.WithBrokerName(brokerName),
 		trigger.WithSubscriber(service.AsKReference(sink), "")),
 	)
 
@@ -111,7 +111,7 @@ func BrokerAuthSecretDoesNotExist() *feature.Feature {
 			broker.WithConfig(configName),
 			broker.WithAnnotations(
 				map[string]interface{}{
-					kafkabroker.ExternalTopicAnnotation: topicName,
+					"kafka.eventing.knative.dev/external.topic": topicName,
 				}))...))
 
 	f.Assert("delete broker", featuressteps.DeleteBroker(brokerName))
@@ -132,7 +132,7 @@ func BrokerExternalTopicDoesNotExist() *feature.Feature {
 			broker.WithEnvConfig(),
 			broker.WithAnnotations(
 				map[string]interface{}{
-					kafkabroker.ExternalTopicAnnotation: topicName,
+					"kafka.eventing.knative.dev/external.topic": topicName,
 				}))...))
 
 	f.Assert("delete broker", featuressteps.DeleteBroker(brokerName))
@@ -161,7 +161,7 @@ func BrokerExternalTopicAuthSecretDoesNotExist() *feature.Feature {
 			broker.WithConfig(configName),
 			broker.WithAnnotations(
 				map[string]interface{}{
-					kafkabroker.ExternalTopicAnnotation: topicName,
+					"kafka.eventing.knative.dev/external.topic": topicName,
 				}))...))
 
 	f.Assert("delete broker", featuressteps.DeleteBroker(brokerName))

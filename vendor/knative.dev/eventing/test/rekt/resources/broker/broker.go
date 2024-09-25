@@ -5,7 +5,7 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+	http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -101,6 +101,12 @@ func WithConfig(name string) manifest.CfgFn {
 		cfg["apiVersion"] = "v1"
 		cfg["name"] = name
 		templateData["config"] = cfg
+	}
+}
+
+func WithNamespace(namespace string) manifest.CfgFn {
+	return func(cfg map[string]interface{}) {
+		cfg["namespace"] = namespace
 	}
 }
 
@@ -278,10 +284,6 @@ func InstallMTBroker(name string) *feature.Feature {
 	return f
 }
 
-func InstallMTBrokerIntoFeature(f *feature.Feature) string {
-	brokerName := feature.MakeRandomK8sName("broker")
-	f.Setup(fmt.Sprintf("Install broker %q", brokerName), Install(brokerName, WithEnvConfig()...))
-	f.Setup("Broker is ready", IsReady(brokerName))
-	f.Setup("Broker is addressable", k8s.IsAddressable(GVR(), brokerName))
-	return brokerName
+func InstallMTBrokerStepFn(brokerName string) feature.StepFn {
+	return Install(brokerName, WithEnvConfig()...)
 }

@@ -73,6 +73,7 @@ spec:
                         - PowerVS
                         - AlibabaCloud
                         - Nutanix
+                        - External
                       x-kubernetes-validations:
                         - rule: self in ['','AWS']
                           message: allowed values are '' and 'AWS'

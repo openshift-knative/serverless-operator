@@ -23,6 +23,8 @@ spec:
       value: [ VERSION=1.35.0, ]
     - name: git-url
       value: '{{source_url}}'
+    - name: hermetic
+      value: "false"
     - name: output-image
       value: quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/serverless-index:{{revision}}
     - name: revision

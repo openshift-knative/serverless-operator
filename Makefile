@@ -267,7 +267,7 @@ test-soak-testonly:
 
 test-soak:
 	UNINSTALL_STRIMZI="false" ./hack/strimzi.sh
-	SCALE_UP=5 INSTALL_KAFKA="true" ./hack/install.sh
+	SCALE_UP=6 INSTALL_KAFKA="true" ./hack/install.sh
 	./test/soak-tests.sh
 
 # Run all E2E tests.
@@ -323,11 +323,13 @@ generate-dockerfiles:
 		--includes knative-operator \
 		--includes openshift-knative-operator \
 		--includes serving/ingress \
+		--includes serving/metadata-webhook \
 		--project-file olm-catalog/serverless-operator/project.yaml \
 		--output /tmp/serverless-operator-generator/
 	cp /tmp/serverless-operator-generator/ci-operator/knative-images/knative-operator/Dockerfile knative-operator/Dockerfile
 	cp /tmp/serverless-operator-generator/ci-operator/knative-images/openshift-knative-operator/Dockerfile openshift-knative-operator/Dockerfile
 	cp /tmp/serverless-operator-generator/ci-operator/knative-images/ingress/Dockerfile serving/ingress/Dockerfile
+	cp /tmp/serverless-operator-generator/ci-operator/knative-images/webhook/Dockerfile serving/metadata-webhook/Dockerfile
 
 	git apply knative-operator/dockerfile.patch
 	git apply openshift-knative-operator/dockerfile.patch
