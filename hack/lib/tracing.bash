@@ -127,13 +127,9 @@ EOF
 }
 
 function install_opentelemetry_tracing {
-  logger.info "Install OpenTelemetry Tracing"
-  if [[ $(oc get crd servicemeshcontrolplanes.maistra.io --no-headers | wc -l) != 1 ]]; then
-    # The following components are installed with Service Mesh.
-    logger.info "Install Distributed Tracing Platform (Jaeger) Operator"
-    install_jaeger_operator
-    install_jaeger_cr
-  fi
+  logger.info "Install Distributed Tracing Platform (Jaeger) Operator"
+  install_jaeger_operator
+  install_jaeger_cr
   logger.info "Install Distributed Tracing Data Collection Operator"
   install_opentelemetry_operator
   install_opentelemetrycollector

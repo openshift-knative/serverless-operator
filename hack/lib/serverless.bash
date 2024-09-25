@@ -166,8 +166,6 @@ function deploy_knativeserving_cr {
 
   if [[ $MESH == "true" ]]; then
     enable_istio "$serving_cr"
-    # Disable internal encryption.
-    yq delete --inplace "$serving_cr" spec.config.network.internal-encryption
   fi
 
   if [[ $ENABLE_TRACING == "true" ]]; then

@@ -51,8 +51,8 @@ export OPERATORS_NAMESPACE="${OPERATORS_NAMESPACE:-openshift-serverless}"
 export SERVING_NAMESPACE="${SERVING_NAMESPACE:-knative-serving}"
 export INGRESS_NAMESPACE="${INGRESS_NAMESPACE:-knative-serving-ingress}"
 export EVENTING_NAMESPACE="${EVENTING_NAMESPACE:-knative-eventing}"
-# eventing e2e and conformance tests use a container for tracing tests that has hardcoded `istio-system` in it
-export TRACING_NAMESPACE="${TRACING_NAMESPACE:-istio-system}"
+# eventing e2e and conformance tests use a container for tracing tests that has hardcoded to `knative-tracing` in it
+export TRACING_NAMESPACE="${TRACING_NAMESPACE:-knative-tracing}"
 export TRACING_BACKEND="${TRACING_BACKEND:-tempo}"
 
 declare -a SYSTEM_NAMESPACES

@@ -27,7 +27,7 @@ import (
 const (
 	testNamespace              = "serverless-tests"
 	requestCount               = 100
-	tracingNamespace           = "istio-system"
+	tracingNamespace           = "knative-tracing"
 	jaegerQueryFrontedSelector = "app=jaeger"
 	tempoQueryFrontedSelector  = "app.kubernetes.io/component=query-frontend"
 	jaegerQueryPort            = 16685
