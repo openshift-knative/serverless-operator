@@ -29,6 +29,8 @@ LABEL \
       summary="Red Hat OpenShift Serverless 1 Openshift Knative Operator" \
       maintainer="serverless-support@redhat.com" \
       description="Red Hat OpenShift Serverless 1 Openshift Knative Operator" \
-      io.k8s.display-name="Red Hat OpenShift Serverless 1 Openshift Knative Operator"
+      io.k8s.display-name="Red Hat OpenShift Serverless 1 Openshift Knative Operator" \
+      io.k8s.description="Red Hat OpenShift Serverless Openshift Knative Operator" \
+      io.openshift.tags="openshift-knative-operator"
 
 ENTRYPOINT ["/usr/bin/openshift-knative-operator"]

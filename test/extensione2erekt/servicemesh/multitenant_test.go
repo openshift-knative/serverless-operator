@@ -235,7 +235,7 @@ func DeployBrokerTriggerKsvc(brokerName, sink string) *feature.Feature {
 	backoffPolicy := eventingduckv1.BackoffPolicyLinear
 	f.Requirement("install trigger", trigger.Install(
 		triggerName,
-		brokerName,
+		trigger.WithBrokerName(brokerName),
 		trigger.WithRetry(3, &backoffPolicy, ptr.To("PT1S")),
 		trigger.WithSubscriber(service.AsKReference(sink), ""),
 	))

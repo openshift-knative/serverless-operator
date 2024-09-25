@@ -15,10 +15,10 @@ set -o pipefail
 cd "${ROOT_DIR}"
 
 # This controls the knative release version we track.
-KN_VERSION="release-1.14"
-EVENTING_VERSION="release-v1.14"
-EVENTING_KAFKA_BROKER_VERSION="release-v1.14"
-SERVING_VERSION="release-v1.14"
+KN_VERSION="release-1.15"
+EVENTING_VERSION="release-v1.15"
+EVENTING_KAFKA_BROKER_VERSION="release-v1.15"
+SERVING_VERSION="release-v1.15"
 GO_VERSION="$(metadata.get requirements.golang)"
 OCP_VERSION="$(metadata.get requirements.ocpVersion.min)"
 
@@ -33,9 +33,9 @@ REPLACE_DEPS=(
   "knative.dev/hack=knative.dev/hack@${KN_VERSION}"
   "knative.dev/networking=knative.dev/networking@${KN_VERSION}"
   "knative.dev/reconciler-test=knative.dev/reconciler-test@${KN_VERSION}"
-  "knative.dev/eventing-kafka-broker=github.com/openshift-knative/eventing-kafka-broker@${EVENTING_KAFKA_BROKER_VERSION}"
   "knative.dev/eventing=github.com/openshift-knative/eventing@${EVENTING_VERSION}"
   "knative.dev/serving=github.com/openshift-knative/serving@${SERVING_VERSION}"
+  "knative.dev/eventing-kafka-broker=github.com/openshift-knative/eventing-kafka-broker@${EVENTING_KAFKA_BROKER_VERSION}"
   "github.com/openshift/api=github.com/openshift/api@release-${OCP_VERSION}"
   "github.com/openshift/client-go=github.com/openshift/client-go@release-${OCP_VERSION}"
   "github.com/openshift/machine-config-operator=github.com/openshift/machine-config-operator@release-${OCP_VERSION}"

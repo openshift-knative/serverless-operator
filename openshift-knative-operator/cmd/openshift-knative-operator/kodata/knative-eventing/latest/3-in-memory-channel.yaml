@@ -19,7 +19,7 @@ metadata:
   name: imc-controller
   namespace: knative-eventing
   labels:
-    app.kubernetes.io/version: v1.14
+    app.kubernetes.io/version: v1.15
     app.kubernetes.io/name: knative-eventing
 ---
 apiVersion: rbac.authorization.k8s.io/v1
@@ -27,7 +27,7 @@ kind: ClusterRoleBinding
 metadata:
   name: imc-controller
   labels:
-    app.kubernetes.io/version: v1.14
+    app.kubernetes.io/version: v1.15
     app.kubernetes.io/name: knative-eventing
 subjects:
   - kind: ServiceAccount
@@ -44,7 +44,7 @@ metadata:
   namespace: knative-eventing
   name: imc-controller
   labels:
-    app.kubernetes.io/version: v1.14
+    app.kubernetes.io/version: v1.15
     app.kubernetes.io/name: knative-eventing
 subjects:
   - kind: ServiceAccount
@@ -60,7 +60,7 @@ kind: ClusterRoleBinding
 metadata:
   name: imc-controller-resolver
   labels:
-    app.kubernetes.io/version: v1.14
+    app.kubernetes.io/version: v1.15
     app.kubernetes.io/name: knative-eventing
 subjects:
   - kind: ServiceAccount
@@ -91,7 +91,7 @@ metadata:
   name: imc-dispatcher
   namespace: knative-eventing
   labels:
-    app.kubernetes.io/version: v1.14
+    app.kubernetes.io/version: v1.15
     app.kubernetes.io/name: knative-eventing
 ---
 apiVersion: rbac.authorization.k8s.io/v1
@@ -99,7 +99,7 @@ kind: ClusterRoleBinding
 metadata:
   name: imc-dispatcher
   labels:
-    app.kubernetes.io/version: v1.14
+    app.kubernetes.io/version: v1.15
     app.kubernetes.io/name: knative-eventing
 subjects:
   - kind: ServiceAccount
@@ -160,7 +160,7 @@ metadata:
   namespace: knative-eventing
   labels:
     app.kubernetes.io/component: imc-controller
-    app.kubernetes.io/version: v1.14
+    app.kubernetes.io/version: v1.15
     app.kubernetes.io/name: knative-eventing
 data:
   MaxIdleConnections: "1000"
@@ -188,8 +188,9 @@ metadata:
   labels:
     knative.dev/high-availability: "true"
     app.kubernetes.io/component: imc-controller
-    app.kubernetes.io/version: v1.14
+    app.kubernetes.io/version: v1.15
     app.kubernetes.io/name: knative-eventing
+    bindings.knative.dev/exclude: "true"
 spec:
   selector:
     matchLabels:
@@ -201,7 +202,7 @@ spec:
         messaging.knative.dev/channel: in-memory-channel
         messaging.knative.dev/role: controller
         app.kubernetes.io/component: imc-controller
-        app.kubernetes.io/version: v1.14
+        app.kubernetes.io/version: v1.15
         app.kubernetes.io/name: knative-eventing
     spec:
       affinity:
@@ -235,7 +236,7 @@ spec:
               fieldRef:
                 fieldPath: metadata.namespace
           - name: DISPATCHER_IMAGE
-            value: registry.ci.openshift.org/openshift/knative-v1.14:knative-eventing-channel-dispatcher
+            value: registry.ci.openshift.org/openshift/knative-v1.15:knative-eventing-channel-dispatcher
           - name: POD_NAME
             valueFrom:
               fieldRef:
@@ -286,7 +287,7 @@ kind: Service
 metadata:
   labels:
     app.kubernetes.io/component: imc-controller
-    app.kubernetes.io/version: v1.14
+    app.kubernetes.io/version: v1.15
     app.kubernetes.io/name: knative-eventing
   name: inmemorychannel-webhook
   namespace: knative-eventing
@@ -327,7 +328,7 @@ metadata:
     messaging.knative.dev/channel: in-memory-channel
     messaging.knative.dev/role: dispatcher
     app.kubernetes.io/component: imc-dispatcher
-    app.kubernetes.io/version: v1.14
+    app.kubernetes.io/version: v1.15
     app.kubernetes.io/name: knative-eventing
 spec:
   selector:
@@ -368,8 +369,9 @@ metadata:
   labels:
     knative.dev/high-availability: "true"
     app.kubernetes.io/component: imc-dispatcher
-    app.kubernetes.io/version: v1.14
+    app.kubernetes.io/version: v1.15
     app.kubernetes.io/name: knative-eventing
+    bindings.knative.dev/exclude: "true"
 spec:
   selector:
     matchLabels:
@@ -381,7 +383,7 @@ spec:
         messaging.knative.dev/channel: in-memory-channel
         messaging.knative.dev/role: dispatcher
         app.kubernetes.io/component: imc-dispatcher
-        app.kubernetes.io/version: v1.14
+        app.kubernetes.io/version: v1.15
         app.kubernetes.io/name: knative-eventing
     spec:
       affinity:
@@ -477,7 +479,7 @@ metadata:
     knative.dev/crd-install: "true"
     messaging.knative.dev/subscribable: "true"
     duck.knative.dev/addressable: "true"
-    app.kubernetes.io/version: v1.14
+    app.kubernetes.io/version: v1.15
     app.kubernetes.io/name: knative-eventing
 spec:
   group: messaging.knative.dev
@@ -628,6 +630,11 @@ spec:
                         serviceAccountName:
                           description: ServiceAccountName is the name of the generated service account used for this components OIDC authentication.
                           type: string
+                        serviceAccountNames:
+                          description: ServiceAccountNames is the list of names of the generated service accounts used for this components OIDC authentication.
+                          type: array
+                          items:
+                            type: string
           status:
             description: Status represents the current state of the Channel. This data may be out of date.
             type: object
@@ -662,6 +669,18 @@ spec:
                 description: Annotations is additional Status fields for the Resource to save some additional State as well as convey more information to the user. This is roughly akin to Annotations on any k8s resource, just the reconciler conveying richer information outwards.
                 type: object
                 x-kubernetes-preserve-unknown-fields: true
+              policies:
+                description: List of applied EventPolicies
+                type: array
+                items:
+                  type: object
+                  properties:
+                    apiVersion:
+                      description: The API version of the applied EventPolicy. This indicates, which version of EventPolicy is supported by the resource.
+                      type: string
+                    name:
+                      description: The name of the applied EventPolicy
+                      type: string
               conditions:
                 description: Conditions the latest available observations of a resource's current state.
                 type: array
@@ -744,6 +763,11 @@ spec:
                         serviceAccountName:
                           description: ServiceAccountName is the name of the generated service account used for this components OIDC authentication.
                           type: string
+                        serviceAccountNames:
+                          description: ServiceAccountNames is the list of names of the generated service accounts used for this components OIDC authentication.
+                          type: array
+                          items:
+                            type: string
     additionalPrinterColumns:
     - name: URL
       type: string
@@ -790,7 +814,7 @@ metadata:
   name: imc-addressable-resolver
   labels:
     duck.knative.dev/addressable: "true"
-    app.kubernetes.io/version: v1.14
+    app.kubernetes.io/version: v1.15
     app.kubernetes.io/name: knative-eventing
 # Do not use this role directly. These rules will be added to the "addressable-resolver" role.
 rules:
@@ -824,7 +848,7 @@ metadata:
   name: imc-channelable-manipulator
   labels:
     duck.knative.dev/channelable: "true"
-    app.kubernetes.io/version: v1.14
+    app.kubernetes.io/version: v1.15
     app.kubernetes.io/name: knative-eventing
 # Do not use this role directly. These rules will be added to the "channelable-manipulator" role.
 rules:
@@ -861,7 +885,7 @@ kind: ClusterRole
 metadata:
   name: imc-controller
   labels:
-    app.kubernetes.io/version: v1.14
+    app.kubernetes.io/version: v1.15
     app.kubernetes.io/name: knative-eventing
 rules:
   - apiGroups:
@@ -874,6 +898,7 @@ rules:
       - list
       - watch
       - update
+      - knsubscribe
   - apiGroups:
       - messaging.knative.dev
     resources:
@@ -888,6 +913,14 @@ rules:
       - inmemorychannels
     verbs:
       - patch
+  - apiGroups:
+      - eventing.knative.dev
+    resources:
+      - eventpolicies
+    verbs:
+      - get
+      - list
+      - watch
   - apiGroups:
       - ""
     resources:
@@ -1004,6 +1037,36 @@ rules:
     verbs:
       - "update"
 ---
+# Copyright 2024 The Knative Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: imc-subscriber
+  labels:
+    duck.knative.dev/crossnamespace-subscribable: "true"
+    app.kubernetes.io/version: v1.15
+    app.kubernetes.io/name: knative-eventing
+rules:
+- apiGroups:
+  - messaging.knative.dev
+  resources:
+  - inmemorychannels
+  verbs:
+  - knsubscribe
+---
 # Copyright 2019 The Knative Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -1022,7 +1085,7 @@ kind: ClusterRole
 metadata:
   name: imc-dispatcher
   labels:
-    app.kubernetes.io/version: v1.14
+    app.kubernetes.io/version: v1.15
     app.kubernetes.io/name: knative-eventing
 rules:
   - apiGroups:
@@ -1082,11 +1145,17 @@ rules:
       - eventing.knative.dev
     resources:
       - eventtypes
+      - eventpolicies
     verbs:
-      - create
       - get
       - list
       - watch
+  - apiGroups:
+      - eventing.knative.dev
+    resources:
+      - eventtypes
+    verbs:
+      - create
 ---
 # Copyright 2020 The Knative Authors
 #
@@ -1108,7 +1177,7 @@ metadata:
   namespace: knative-eventing
   name: knative-inmemorychannel-webhook
   labels:
-    app.kubernetes.io/version: v1.14
+    app.kubernetes.io/version: v1.15
     app.kubernetes.io/name: knative-eventing
 rules:
   # For manipulating certs into secrets.
@@ -1143,7 +1212,7 @@ kind: MutatingWebhookConfiguration
 metadata:
   name: inmemorychannel.eventing.knative.dev
   labels:
-    app.kubernetes.io/version: v1.14
+    app.kubernetes.io/version: v1.15
     app.kubernetes.io/name: knative-eventing
 webhooks:
 - admissionReviewVersions: ["v1"]
@@ -1175,7 +1244,7 @@ kind: ValidatingWebhookConfiguration
 metadata:
   name: validation.inmemorychannel.eventing.knative.dev
   labels:
-    app.kubernetes.io/version: v1.14
+    app.kubernetes.io/version: v1.15
     app.kubernetes.io/name: knative-eventing
 webhooks:
 - admissionReviewVersions: ["v1"]
@@ -1208,6 +1277,6 @@ metadata:
   name: inmemorychannel-webhook-certs
   namespace: knative-eventing
   labels:
-    app.kubernetes.io/version: v1.14
+    app.kubernetes.io/version: v1.15
     app.kubernetes.io/name: knative-eventing
 # The data is populated at install time.

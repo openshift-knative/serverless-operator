@@ -59,7 +59,7 @@ func BrokerSmokeTest(brokerClass string) *feature.Feature {
 	backoffPolicy := duckv1.BackoffPolicyLinear
 	f.Setup("install trigger", trigger.Install(
 		triggerName,
-		brokerName,
+		trigger.WithBrokerName(brokerName),
 		trigger.WithRetry(3, &backoffPolicy, ptr.To("PT1S")),
 		trigger.WithSubscriber(service.AsKReference(sink), ""),
 	))

@@ -4,9 +4,6 @@ run:
   build-tags:
     - upgrade
 
-  skip-dirs:
-    - pkg/client
-
 linters:
   enable:
     - asciicheck
@@ -49,6 +46,9 @@ linters-settings:
         alias: $1$2
 
 issues:
+  exclude-dirs:
+    - pkg/client
+
   exclude-rules:
     - path: test # Excludes /test, *_test.go etc.
       linters:

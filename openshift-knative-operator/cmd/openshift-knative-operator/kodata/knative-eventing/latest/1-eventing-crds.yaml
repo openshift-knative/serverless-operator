@@ -21,7 +21,7 @@ metadata:
     eventing.knative.dev/source: "true"
     duck.knative.dev/source: "true"
     knative.dev/crd-install: "true"
-    app.kubernetes.io/version: v1.14
+    app.kubernetes.io/version: v1.15
     app.kubernetes.io/name: knative-eventing
   annotations:
     # TODO add schemas
@@ -68,6 +68,7 @@ spec:
         properties:
           spec:
             type: object
+            x-kubernetes-preserve-unknown-fields: true
             required:
               - resources
             properties:
@@ -201,6 +202,11 @@ spec:
                   serviceAccountName:
                     description: ServiceAccountName is the name of the generated service account used for this components OIDC authentication.
                     type: string
+                  serviceAccountNames:
+                    description: ServiceAccountNames is the list of names of the generated service accounts used for this components OIDC authentication.
+                    type: array
+                    items:
+                      type: string
               ceAttributes:
                 description: CloudEventAttributes are the specific attributes that the Source uses as part of its CloudEvents.
                 type: array
@@ -302,7 +308,7 @@ metadata:
   labels:
     knative.dev/crd-install: "true"
     duck.knative.dev/addressable: "true"
-    app.kubernetes.io/version: v1.14
+    app.kubernetes.io/version: v1.15
     app.kubernetes.io/name: knative-eventing
 spec:
   group: eventing.knative.dev
@@ -415,6 +421,18 @@ spec:
                 description: Annotations is additional Status fields for the Resource to save some additional State as well as convey more information to the user. This is roughly akin to Annotations on any k8s resource, just the reconciler conveying richer information outwards.
                 type: object
                 x-kubernetes-preserve-unknown-fields: true
+              policies:
+                description: List of applied EventPolicies
+                type: array
+                items:
+                  type: object
+                  properties:
+                    apiVersion:
+                      description: The API version of the applied EventPolicy. This indicates, which version of EventPolicy is supported by the resource.
+                      type: string
+                    name:
+                      description: The name of the applied EventPolicy
+                      type: string
               conditions:
                 description: Conditions the latest available observations of a resource's current state.
                 type: array
@@ -504,7 +522,7 @@ metadata:
     knative.dev/crd-install: "true"
     messaging.knative.dev/subscribable: "true"
     duck.knative.dev/addressable: "true"
-    app.kubernetes.io/version: v1.14
+    app.kubernetes.io/version: v1.15
     app.kubernetes.io/name: knative-eventing
 spec:
   group: messaging.knative.dev
@@ -673,6 +691,11 @@ spec:
                         serviceAccountName:
                           description: ServiceAccountName is the name of the generated service account used for this components OIDC authentication.
                           type: string
+                        serviceAccountNames:
+                          description: ServiceAccountNames is the list of names of the generated service accounts used for this components OIDC authentication.
+                          type: array
+                          items:
+                            type: string
           status:
             description: Status represents the current state of the Channel. This data may be out of date.
             type: object
@@ -723,6 +746,18 @@ spec:
                   namespace:
                     description: 'Namespace of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/ This is optional field, it gets defaulted to the object holding it if left out.'
                     type: string
+              policies:
+                description: List of applied EventPolicies
+                type: array
+                items:
+                  type: object
+                  properties:
+                    apiVersion:
+                      description: The API version of the applied EventPolicy. This indicates, which version of EventPolicy is supported by the resource.
+                      type: string
+                    name:
+                      description: The name of the applied EventPolicy
+                      type: string
               conditions:
                 description: Conditions the latest available observations of a resource's current state.
                 type: array
@@ -805,6 +840,11 @@ spec:
                         serviceAccountName:
                           description: ServiceAccountName is the name of the generated service account used for this components OIDC authentication.
                           type: string
+                        serviceAccountNames:
+                          description: ServiceAccountNames is the list of names of the generated service accounts used for this components OIDC authentication.
+                          type: array
+                          items:
+                            type: string
   names:
     kind: Channel
     plural: channels
@@ -839,7 +879,7 @@ metadata:
     eventing.knative.dev/source: "true"
     duck.knative.dev/source: "true"
     knative.dev/crd-install: "true"
-    app.kubernetes.io/version: v1.14
+    app.kubernetes.io/version: v1.15
     app.kubernetes.io/name: knative-eventing
   name: containersources.sources.knative.dev
 spec:
@@ -914,6 +954,11 @@ spec:
                     serviceAccountName:
                       description: ServiceAccountName is the name of the generated service account used for this components OIDC authentication.
                       type: string
+                    serviceAccountNames:
+                      description: ServiceAccountNames is the list of names of the generated service accounts used for this components OIDC authentication.
+                      type: array
+                      items:
+                        type: string
                 ceAttributes:
                   description: CloudEventAttributes are the specific attributes that the Source uses as part of its CloudEvents.
                   type: array
@@ -989,6 +1034,188 @@ spec:
     singular: containersource
   scope: Namespaced
 ---
+# Copyright 2024 The Knative Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: eventpolicies.eventing.knative.dev
+  labels:
+    knative.dev/crd-install: "true"
+    app.kubernetes.io/version: v1.15
+    app.kubernetes.io/name: knative-eventing
+spec:
+  group: eventing.knative.dev
+  versions:
+  - name: v1alpha1
+    served: true
+    storage: true
+    subresources:
+      status: {}
+    schema:
+      openAPIV3Schema:
+        type: object
+        properties:
+          spec:
+            description: Spec defines the desired state of the EventPolicy.
+            type: object
+            properties:
+              from:
+                description: From is the list of sources or oidc identities, which are allowed to send events to the targets (.spec.to).
+                type: array
+                items:
+                  type: object
+                  properties:
+                    ref:
+                      description: Ref contains a direct reference to a resource which is allowed to send events to the target.
+                      type: object
+                      properties:
+                        apiVersion:
+                          description: API version of the referent.
+                          type: string
+                        kind:
+                          description: 'Kind of the referent. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+                          type: string
+                        name:
+                          description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names'
+                          type: string
+                        namespace:
+                          description: 'Namespace of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/ This is optional field, it gets defaulted to the object holding it if left out.'
+                          type: string
+                    sub:
+                      description: Sub sets the OIDC identity name to be allowed to send events to the target. It is also possible to set a glob-like pattern to match any suffix.
+                      type: string
+              to:
+                description: To lists all resources for which this policy applies. Resources in this list must act like an ingress and have an audience. The resources are part of the same namespace as the EventPolicy. An empty list means it applies to all resources in the EventPolicies namespace
+                type: array
+                items:
+                  type: object
+                  properties:
+                    ref:
+                      description: Ref contains the direct reference to a target
+                      type: object
+                      properties:
+                        apiVersion:
+                          description: API version of the referent.
+                          type: string
+                        kind:
+                          description: 'Kind of the referent. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+                          type: string
+                        name:
+                          description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names'
+                          type: string
+                    selector:
+                      description: Selector contains a selector to group targets
+                      type: object
+                      properties:
+                        apiVersion:
+                          description: 'APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+                          type: string
+                        kind:
+                          description: 'Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+                          type: string
+                        matchExpressions:
+                          description: matchExpressions is a list of label selector requirements. The requirements are ANDed.
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              key:
+                                description: key is the label key that the selector applies to.
+                                type: string
+                              operator:
+                                description: operator represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists and DoesNotExist.
+                                type: string
+                              values:
+                                description: values is an array of string values. If the operator is In or NotIn, the values array must be non-empty. If the operator is Exists or DoesNotExist, the values array must be empty. This array is replaced during a strategic merge patch.
+                                type: array
+                                items:
+                                  type: string
+                        matchLabels:
+                          description: matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels map is equivalent to an element of matchExpressions, whose key field is "key", the operator is "In", and the values array contains only "value". The requirements are ANDed.
+                          type: object
+                          x-kubernetes-preserve-unknown-fields: true
+          status:
+            description: Status represents the current state of the EventPolicy. This data may be out of date.
+            type: object
+            properties:
+              annotations:
+                description: Annotations is additional Status fields for the Resource to save some additional State as well as convey more information to the user. This is roughly akin to Annotations on any k8s resource, just the reconciler conveying richer information outwards.
+                type: object
+                x-kubernetes-preserve-unknown-fields: true
+              conditions:
+                description: Conditions the latest available observations of a resource's current state.
+                type: array
+                items:
+                  type: object
+                  required:
+                    - type
+                    - status
+                  properties:
+                    lastTransitionTime:
+                      description: LastTransitionTime is the last time the condition transitioned from one status to another. We use VolatileTime in place of metav1.Time to exclude this from creating equality.Semantic differences (all other things held constant).
+                      type: string
+                    message:
+                      description: A human readable message indicating details about the transition.
+                      type: string
+                    reason:
+                      description: The reason for the condition's last transition.
+                      type: string
+                    severity:
+                      description: Severity with which to treat failures of this type of condition. When this is not specified, it defaults to Error.
+                      type: string
+                    status:
+                      description: Status of the condition, one of True, False, Unknown.
+                      type: string
+                    type:
+                      description: Type of condition.
+                      type: string
+              from:
+                description: From is the list of resolved oidc identities from .spec.from
+                type: array
+                items:
+                  type: string
+              observedGeneration:
+                description: ObservedGeneration is the 'Generation' of the Service that was last processed by the controller.
+                type: integer
+                format: int64
+
+    additionalPrinterColumns:
+    - name: Ready
+      type: string
+      jsonPath: ".status.conditions[?(@.type==\"Ready\")].status"
+    - name: Reason
+      type: string
+      jsonPath: ".status.conditions[?(@.type==\"Ready\")].reason"
+  names:
+    kind: EventPolicy
+    plural: eventpolicies
+    singular: eventpolicy
+    categories:
+      - all
+      - knative
+      - eventing
+  scope: Namespaced
+  conversion:
+    strategy: Webhook
+    webhook:
+      conversionReviewVersions: ["v1", "v1beta1"]
+      clientConfig:
+        service:
+          name: eventing-webhook
+          namespace: knative-eventing
+---
 # Copyright 2020 The Knative Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -1008,13 +1235,13 @@ metadata:
   name: eventtypes.eventing.knative.dev
   labels:
     knative.dev/crd-install: "true"
-    app.kubernetes.io/version: v1.14
+    app.kubernetes.io/version: v1.15
     app.kubernetes.io/name: knative-eventing
 spec:
   group: eventing.knative.dev
   versions:
   - name: v1beta3
-    served: false
+    served: true
     storage: false
     subresources:
       status: {}
@@ -1042,6 +1269,9 @@ spec:
                     type: string
                   namespace:
                     description: 'Namespace of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/ This is an optional field, it gets defaulted to the object holding it if left out.'
+                    type: string
+                  address:
+                    description: 'Address points to a specific Address Name'
                     type: string
               description:
                 description: 'Description is an optional field used to describe the
@@ -1120,10 +1350,10 @@ spec:
     additionalPrinterColumns:
     - name: Type
       type: string
-      jsonPath: ".spec.attributes[?(@.name='type')].value"
+      jsonPath: ".spec.attributes[?(@.name=='type')].value"
     - name: Source
       type: string
-      jsonPath: ".spec.attributes[?(@.name='source')].value"
+      jsonPath: ".spec.attributes[?(@.name=='source')].value"
     - name: Reference Name
       type: string
       jsonPath: ".spec.reference.name"
@@ -1170,6 +1400,9 @@ spec:
                     type: string
                   namespace:
                     description: 'Namespace of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/ This is an optional field, it gets defaulted to the object holding it if left out.'
+                    type: string
+                  address:
+                    description: 'Address points to a specific Address Name'
                     type: string
               description:
                 description: 'Description is an optional field used to describe the
@@ -1301,6 +1534,9 @@ spec:
                     type: string
                   namespace:
                     description: 'Namespace of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/ This is an optional field, it gets defaulted to the object holding it if left out.'
+                    type: string
+                  address:
+                    description: 'Address points to a specific Address Name'
                     type: string
               description:
                 description: 'Description is an optional field used to describe the
@@ -1439,6 +1675,153 @@ spec:
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: jobsinks.sinks.knative.dev
+  labels:
+    knative.dev/crd-install: "true"
+    duck.knative.dev/addressable: "true"
+    app.kubernetes.io/version: v1.15
+    app.kubernetes.io/name: knative-eventing
+spec:
+  group: sinks.knative.dev
+  versions:
+    - name: v1alpha1
+      served: true
+      storage: true
+      subresources:
+        status: { }
+      schema:
+        openAPIV3Schema:
+          description: 'JobSink triggers long-running jobs when an event occur.'
+          type: object
+          properties:
+            spec:
+              description: Spec defines the desired state of the JobSink.
+              type: object
+              properties:
+                job:
+                  type: object
+                  description: Full Job resource object, see https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#job-v1-batch for more details.
+                  x-kubernetes-preserve-unknown-fields: true
+            status:
+              description: Status represents the current state of the JobSink. This data may be out of date.
+              type: object
+              properties:
+                address:
+                  description: JobSink is Addressable. It exposes the endpoint as an URI to schedule long running jobs when an even occurs.
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                    url:
+                      type: string
+                    CACerts:
+                      type: string
+                    audience:
+                      type: string
+                addresses:
+                  description: JobSink is Addressable. It exposes the endpoint as an URI to schedule long running jobs when an even occurs.
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                      url:
+                        type: string
+                      CACerts:
+                        type: string
+                      audience:
+                        type: string
+                job:
+                  type: object
+                  properties:
+                    selector:
+                      type: string
+                      description: Label selector for all scheduled jobs
+                annotations:
+                  description: Annotations is additional Status fields for the Resource to save some additional State as well as convey more information to the user. This is roughly akin to Annotations on any k8s resource, just the reconciler conveying richer information outwards.
+                  type: object
+                  x-kubernetes-preserve-unknown-fields: true
+                policies:
+                  description: List of applied EventPolicies
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      apiVersion:
+                        description: The API version of the applied EventPolicy. This indicates, which version of EventPolicy is supported by the resource.
+                        type: string
+                      name:
+                        description: The name of the applied EventPolicy
+                        type: string
+                conditions:
+                  description: Conditions the latest available observations of a resource's current state.
+                  type: array
+                  items:
+                    type: object
+                    required:
+                      - type
+                      - status
+                    properties:
+                      lastTransitionTime:
+                        description: 'LastTransitionTime is the last time the condition transitioned from one status to another. We use VolatileTime in place of metav1.Time to exclude this from creating equality.Semantic differences (all other things held constant).'
+                        type: string
+                      message:
+                        description: 'A human readable message indicating details about the transition.'
+                        type: string
+                      reason:
+                        description: 'The reason for the condition''s last transition.'
+                        type: string
+                      severity:
+                        description: 'Severity with which to treat failures of this type of condition. When this is not specified, it defaults to Error.'
+                        type: string
+                      status:
+                        description: 'Status of the condition, one of True, False, Unknown.'
+                        type: string
+                      type:
+                        description: 'Type of condition.'
+                        type: string
+      additionalPrinterColumns:
+        - name: URL
+          type: string
+          jsonPath: .status.address.url
+        - name: Age
+          type: date
+          jsonPath: .metadata.creationTimestamp
+        - name: Ready
+          type: string
+          jsonPath: ".status.conditions[?(@.type==\"Ready\")].status"
+        - name: Reason
+          type: string
+          jsonPath: ".status.conditions[?(@.type==\"Ready\")].reason"
+  names:
+    kind: JobSink
+    plural: jobsinks
+    singular: jobsink
+    categories:
+      - all
+      - knative
+      - eventing
+      - sink
+  scope: Namespaced
+---
+# Copyright 2020 The Knative Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
@@ -1446,7 +1829,7 @@ metadata:
   labels:
     knative.dev/crd-install: "true"
     duck.knative.dev/addressable: "true"
-    app.kubernetes.io/version: v1.14
+    app.kubernetes.io/version: v1.15
     app.kubernetes.io/name: knative-eventing
 spec:
   group: flows.knative.dev
@@ -1773,6 +2156,11 @@ spec:
                   serviceAccountName:
                     description: ServiceAccountName is the name of the generated service account used for this components OIDC authentication.
                     type: string
+                  serviceAccountNames:
+                    description: ServiceAccountNames is the list of names of the generated service accounts used for this components OIDC authentication.
+                    type: array
+                    items:
+                      type: string
               branchStatuses:
                 description: BranchStatuses is an array of corresponding to branch
                     statuses. Matches the Spec.Branches array in the order.
@@ -2012,6 +2400,18 @@ spec:
                                 description: 'UID of the referent. More
                                     info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#uids'
                                 type: string
+              policies:
+                description: List of applied EventPolicies
+                type: array
+                items:
+                  type: object
+                  properties:
+                    apiVersion:
+                      description: The API version of the applied EventPolicy. This indicates, which version of EventPolicy is supported by the resource.
+                      type: string
+                    name:
+                      description: The name of the applied EventPolicy
+                      type: string
               conditions:
                 description: Conditions the latest available observations of a resource's
                     current state.
@@ -2167,7 +2567,7 @@ metadata:
     eventing.knative.dev/source: "true"
     duck.knative.dev/source: "true"
     knative.dev/crd-install: "true"
-    app.kubernetes.io/version: v1.14
+    app.kubernetes.io/version: v1.15
     app.kubernetes.io/name: knative-eventing
   annotations:
     # TODO add schema
@@ -2283,6 +2683,11 @@ spec:
                   serviceAccountName:
                     description: ServiceAccountName is the name of the generated service account used for this components OIDC authentication.
                     type: string
+                  serviceAccountNames:
+                    description: ServiceAccountNames is the list of names of the generated service accounts used for this components OIDC authentication.
+                    type: array
+                    items:
+                      type: string
               ceAttributes:
                 description: 'CloudEventAttributes are the specific attributes that
                           the Source uses as part of its CloudEvents.'
@@ -2464,6 +2869,11 @@ spec:
                   serviceAccountName:
                     description: ServiceAccountName is the name of the generated service account used for this components OIDC authentication.
                     type: string
+                  serviceAccountNames:
+                    description: ServiceAccountNames is the list of names of the generated service accounts used for this components OIDC authentication.
+                    type: array
+                    items:
+                      type: string
               ceAttributes:
                 description: 'CloudEventAttributes are the specific attributes that
                         the Source uses as part of its CloudEvents.'
@@ -2589,7 +2999,7 @@ metadata:
   labels:
     knative.dev/crd-install: "true"
     duck.knative.dev/addressable: "true"
-    app.kubernetes.io/version: v1.14
+    app.kubernetes.io/version: v1.15
     app.kubernetes.io/name: knative-eventing
 spec:
   group: flows.knative.dev
@@ -2767,6 +3177,11 @@ spec:
                   serviceAccountName:
                     description: ServiceAccountName is the name of the generated service account used for this components OIDC authentication.
                     type: string
+                  serviceAccountNames:
+                    description: ServiceAccountNames is the list of names of the generated service accounts used for this components OIDC authentication.
+                    type: array
+                    items:
+                      type: string
               channelStatuses:
                 description: ChannelStatuses is an array of corresponding Channel statuses. Matches the Spec.Steps array in the order.
                 type: array
@@ -2823,6 +3238,18 @@ spec:
                         type:
                           description: Type of condition.
                           type: string
+              policies:
+                description: List of applied EventPolicies
+                type: array
+                items:
+                  type: object
+                  properties:
+                    apiVersion:
+                      description: The API version of the applied EventPolicy. This indicates, which version of EventPolicy is supported by the resource.
+                      type: string
+                    name:
+                      description: The name of the applied EventPolicy
+                      type: string
               conditions:
                 description: Conditions the latest available observations of a resource's current state.
                 type: array
@@ -2955,7 +3382,7 @@ metadata:
     duck.knative.dev/source: "true"
     duck.knative.dev/binding: "true"
     knative.dev/crd-install: "true"
-    app.kubernetes.io/version: v1.14
+    app.kubernetes.io/version: v1.15
     app.kubernetes.io/name: knative-eventing
   name: sinkbindings.sources.knative.dev
 spec:
@@ -3071,6 +3498,11 @@ spec:
                     serviceAccountName:
                       description: ServiceAccountName is the name of the generated service account used for this components OIDC authentication.
                       type: string
+                    serviceAccountNames:
+                      description: ServiceAccountNames is the list of names of the generated service accounts used for this components OIDC authentication.
+                      type: array
+                      items:
+                        type: string
                 ceAttributes:
                   description: CloudEventAttributes are the specific attributes that the Source uses as part of its CloudEvents.
                   type: array
@@ -3169,7 +3601,7 @@ metadata:
   name: subscriptions.messaging.knative.dev
   labels:
     knative.dev/crd-install: "true"
-    app.kubernetes.io/version: v1.14
+    app.kubernetes.io/version: v1.15
     app.kubernetes.io/name: knative-eventing
 spec:
   group: messaging.knative.dev
@@ -3321,6 +3753,11 @@ spec:
                   serviceAccountName:
                     description: ServiceAccountName is the name of the generated service account used for this components OIDC authentication.
                     type: string
+                  serviceAccountNames:
+                    description: ServiceAccountNames is the list of names of the generated service accounts used for this components OIDC authentication.
+                    type: array
+                    items:
+                      type: string
               conditions:
                 description: Conditions the latest available observations of a resource's current state.
                 type: array
@@ -3425,7 +3862,7 @@ metadata:
   name: triggers.eventing.knative.dev
   labels:
     knative.dev/crd-install: "true"
-    app.kubernetes.io/version: v1.14
+    app.kubernetes.io/version: v1.15
     app.kubernetes.io/name: knative-eventing
 spec:
   group: eventing.knative.dev
@@ -3525,13 +3962,50 @@ spec:
                     type: integer
                     format: int32
               filter:
-                description: 'Filter is the filter to apply against all events from the Broker. Only events that pass this filter will be sent to the Subscriber. If not specified, will default to allowing all events. '
+                description: 'Filter is the filter to apply against all events from the Broker. Only events that pass this filter will be sent to the Subscriber. If not specified, will default to allowing all events.'
                 type: object
                 properties:
                   attributes:
-                    description: 'Attributes filters events by exact match on event context attributes. Each key in the map is compared with the equivalent key in the event context. An event passes the filter if all values are equal to the specified values.  Nested context attributes are not supported as keys. Only string values are supported. '
+                    description: 'Attributes filters events by exact match on event context attributes. Each key in the map is compared with the equivalent key in the event context. An event passes the filter if all values are equal to the specified values.  Nested context attributes are not supported as keys. Only string values are supported.'
                     type: object
                     x-kubernetes-preserve-unknown-fields: true
+              filters:
+                description: 'Filters is an array of SubscriptionsAPIFilter that evaluate to true or false. If any filter expression in the array evaluates to false, the event must not be sent to the Subscriber. If all the filter expressions in the array evaluate to true, the event must be attempted to be delivered. Absence of a filter or empty array implies a value of true. In the event of users specifying both Filter and Filters, then the latter will override the former. This will allow users to try out the effect of the new Filters field without compromising the existing attribute-based Filter and try it out on existing Trigger objects.'
+                type: array
+                items:
+                  type: object
+                  properties:
+                    all:
+                      description: 'All evaluates to true if all the nested expressions evaluate to true. It must contain at least one filter expression.'
+                      type: array
+                      items:
+                        type: object
+                        x-kubernetes-preserve-unknown-fields: true
+                    any:
+                      description: 'Any evaluates to true if at least one of the nested expressions evaluates to true. It must contain at least one filter expression.'
+                      type: array
+                      items:
+                        type: object
+                        x-kubernetes-preserve-unknown-fields: true
+                    cesql:
+                      description: 'CESQL is a CloudEvents SQL expression that will be evaluated to true or false against each CloudEvent.'
+                      type: string
+                    exact:
+                      description: 'Exact evaluates to true if the values of the matching CloudEvents attributes all exactly match with the associated value String specified (case-sensitive). The keys are the names of the CloudEvents attributes to be matched, and their values are the String values to use in the comparison. The attribute name and value specified in the filter express must not be empty strings.'
+                      type: object
+                      x-kubernetes-preserve-unknown-fields: true
+                    not:
+                      description: 'Not evaluates to true if the nested expression evaluates to false.'
+                      type: object
+                      x-kubernetes-preserve-unknown-fields: true
+                    prefix:
+                      description: 'Prefix evaluates to true if the values of the matching CloudEvents attributes all start with the associated value String specified (case sensitive). The keys are the names of the CloudEvents attributes to be matched, and their values are the String values to use in the comparison. The attribute name and value specified in the filter express must not be empty strings.'
+                      type: object
+                      x-kubernetes-preserve-unknown-fields: true
+                    suffix:
+                      description: 'Suffix evaluates to true if the values of the matching CloudEvents attributes all end with the associated value String specified (case sensitive). The keys are the names of the CloudEvents attributes to be matched, and their values are the String values to use in the comparison. The attribute name and value specified in the filter express must not be empty strings.'
+                      type: object
+                      x-kubernetes-preserve-unknown-fields: true
               subscriber:
                 description: Subscriber is the addressable that receives events from the Broker that pass the Filter. It is required.
                 type: object
@@ -3576,6 +4050,11 @@ spec:
                   serviceAccountName:
                     description: ServiceAccountName is the name of the generated service account used for this components OIDC authentication.
                     type: string
+                  serviceAccountNames:
+                    description: ServiceAccountNames is the list of names of the generated service accounts used for this components OIDC authentication.
+                    type: array
+                    items:
+                      type: string
               conditions:
                 description: Conditions the latest available observations of a resource's current state.
                 type: array
