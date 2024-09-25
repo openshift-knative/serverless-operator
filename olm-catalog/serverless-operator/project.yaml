@@ -51,7 +51,7 @@ dependencies:
     backstage_plugins: knative-v1.14
     # backstage-plugins midstream branch or commit
     backstage_plugins_artifacts_branch: release-v1.14
-    cli: 1.14.0
+    cli: knative-v1.15
     func:
         # TODO migrate to Konflux
         util: quay.io/boson/alpine-socat:1.7.4.3-r1-non-root
