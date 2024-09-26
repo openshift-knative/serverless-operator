@@ -14,15 +14,19 @@ function install_catalogsource {
 
   ensure_catalog_pods_running
 
-  local rootdir csv index_image
+  local rootdir csv index_image tag
 
-  index_image=registry.ci.openshift.org/knative/serverless-index:main
+  rootdir="$(dirname "$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")")"
+
+  # Get current tag from openshift-knative image URL.
+  tag=$(yq read "$rootdir/olm-catalog/serverless-operator/manifests/serverless-operator.clusterserviceversion.yaml" "spec.install.spec.deployments(name==knative-openshift).spec.template.spec.containers(name==knative-openshift).image" | cut -d":" -f 1 | cut -d"/" -f 3)
+
+  index_image=registry.ci.openshift.org/knative/serverless-index:${tag}
 
   # Build bundle and index images only when running in CI or when DOCKER_REPO_OVERRIDE is defined.
   # Otherwise the latest nightly build will be used for CatalogSource.
   if [ -n "$OPENSHIFT_CI" ] || [ -n "$DOCKER_REPO_OVERRIDE" ]; then
     index_image=image-registry.openshift-image-registry.svc:5000/$OLM_NAMESPACE/serverless-index:latest
-    rootdir="$(dirname "$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")")"
 
     csv="${rootdir}/olm-catalog/serverless-operator/manifests/serverless-operator.clusterserviceversion.yaml"
 
