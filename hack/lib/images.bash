@@ -178,7 +178,7 @@ function latest_konflux_image_sha() {
   image_without_tag=${input%:*} # Remove tag, if any
   image_without_tag=${image_without_tag%@*} # Remove sha, if any
 
-  digest=$(docker manifest inspect "${image_without_tag}:latest" -v | jq -r '.Descriptor.digest')
+  digest=$(skopeo inspect "docker://${image_without_tag}:latest" | jq -r '.Digest')
   if [ "${digest}" = "" ]; then
     exit 1
   fi
