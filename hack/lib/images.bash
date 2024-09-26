@@ -178,6 +178,8 @@ function latest_konflux_image_sha() {
   image_without_tag=${input%:*} # Remove tag, if any
   image_without_tag=${image_without_tag%@*} # Remove sha, if any
 
+  go_bin="$(go env GOPATH)/bin"
+  export GOPATH="$PATH:$go_bin"
   digest=$(skopeo inspect "docker://${image_without_tag}:latest" | jq -r '.Digest')
   if [ "${digest}" = "" ]; then
     exit 1
