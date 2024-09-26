@@ -29,9 +29,11 @@ func TestTargetKServiceDefaulting(t *testing.T) {
 					ConfigurationSpec: servingv1.ConfigurationSpec{
 						Template: servingv1.RevisionTemplateSpec{
 							ObjectMeta: metav1.ObjectMeta{
+								Labels: map[string]string{
+									sidecarInject: "true",
+								},
 								Annotations: map[string]string{
 									proxyIstioConfig:             holdApplicationUntilProxyStarts,
-									sidecarInject:                "true",
 									sidecarrewriteAppHTTPProbers: "true",
 								},
 							},
@@ -53,8 +55,10 @@ func TestTargetKServiceDefaulting(t *testing.T) {
 					ConfigurationSpec: servingv1.ConfigurationSpec{
 						Template: servingv1.RevisionTemplateSpec{
 							ObjectMeta: metav1.ObjectMeta{
+								Labels: map[string]string{
+									sidecarInject: "false",
+								},
 								Annotations: map[string]string{
-									sidecarInject:                "false",
 									sidecarrewriteAppHTTPProbers: "false",
 								},
 							},
@@ -74,9 +78,11 @@ func TestTargetKServiceDefaulting(t *testing.T) {
 					ConfigurationSpec: servingv1.ConfigurationSpec{
 						Template: servingv1.RevisionTemplateSpec{
 							ObjectMeta: metav1.ObjectMeta{
+								Labels: map[string]string{
+									sidecarInject: "true",
+								},
 								Annotations: map[string]string{
 									proxyIstioConfig:             holdApplicationUntilProxyStarts,
-									sidecarInject:                "true",
 									sidecarrewriteAppHTTPProbers: "true",
 								},
 							},

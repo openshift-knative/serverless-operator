@@ -67,10 +67,9 @@ apiVersion: v1
 kind: Pod
 metadata:
   name: event-display
-  annotations:
-    sidecar.istio.io/inject: 'true'
   labels:
     app: event-display
+    sidecar.istio.io/inject: 'true'
 spec:
   containers:
     - name: event-display

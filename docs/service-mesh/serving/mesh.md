@@ -51,7 +51,7 @@ spec:
   - Ingress
 ```
 
-Then, create Knative Service with `sidecar.istio.io/inject: "true"` annotation in your namespace,
+Then, create Knative Service with `sidecar.istio.io/inject: "true"` label in your namespace,
 which is one of the namespaces in the `ServiceMeshMemberRoll`.
 
 ```sh
@@ -64,7 +64,7 @@ spec:
   template:
     metadata:
       name: hello-example-1
-      annotations:
+      labels:
         sidecar.istio.io/inject: "true"
     spec:
       containers:
