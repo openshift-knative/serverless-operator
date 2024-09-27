@@ -66,14 +66,14 @@ function install_catalogsource {
     # will push images to ${OLM_NAMESPACE} namespace, allow the ${OPERATORS_NAMESPACE} namespace to pull those images.
     oc adm policy add-role-to-group system:image-puller system:serviceaccounts:"${OPERATORS_NAMESPACE}" --namespace "${OLM_NAMESPACE}"
 
-    local index_dorkerfile_path=olm-catalog/serverless-operator/index/Dockerfile
+    local index_dorkerfile_path="olm-catalog/serverless-operator/index/Dockerfile"
 
     logger.debug "Create a backup of the index Dockerfile."
-    cp "${rootdir}/${index_dorkerfile_path}" "${rootdir}/_output/bkp.Dockerfile"
+    cp "${index_dorkerfile_path}" "${rootdir}/_output/bkp.Dockerfile"
 
     # Replace bundle reference with previously built bundle
-    bundle="${SERVERLESS_BUNDLE%:*}" # Remove the tag from the match
-    bundle="${SERVERLESS_BUNDLE%@*}" # Remove the sha from the match
+    bundle="${DEFAULT_SERVERLESS_BUNDLE%:*}" # Remove the tag from the match
+    bundle="${DEFAULT_SERVERLESS_BUNDLE%@*}" # Remove the sha from the match
     if ! grep "${bundle}" "${rootdir}/${index_dorkerfile_path}"; then
       logger.error "Bundle ${bundle} not found in Dockerfile."
       return 1

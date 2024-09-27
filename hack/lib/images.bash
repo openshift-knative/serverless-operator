@@ -22,6 +22,7 @@ function default_serverless_operator_images() {
   export SERVERLESS_INGRESS=${SERVERLESS_INGRESS:-$(latest_konflux_image_sha "${serverless_registry}-ingress:${CURRENT_VERSION_IMAGES}")}
 
   export SERVERLESS_BUNDLE=${SERVERLESS_BUNDLE:-$(latest_konflux_image_sha "${serverless_registry}-bundle:${CURRENT_VERSION_IMAGES}")}
+  export DEFAULT_SERVERLESS_BUNDLE=${DEFAULT_SERVERLESS_BUNDLE:-$(latest_konflux_image_sha "${serverless_registry}-bundle:${CURRENT_VERSION_IMAGES}")}
   export SERVERLESS_INDEX=${SERVERLESS_INDEX:-$(latest_konflux_image_sha "${serverless_registry}-index:${CURRENT_VERSION_IMAGES}")}
 }
 
