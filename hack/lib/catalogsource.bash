@@ -16,14 +16,13 @@ function install_catalogsource {
 
   local rootdir csv index_image
 
-  rootdir="$(dirname "$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")")"
-
   index_image=registry.ci.openshift.org/knative/serverless-index:$(metadata.get project.tag)
 
   # Build bundle and index images only when running in CI or when DOCKER_REPO_OVERRIDE is defined.
   # Otherwise the latest nightly build will be used for CatalogSource.
   if [ -n "$OPENSHIFT_CI" ] || [ -n "$DOCKER_REPO_OVERRIDE" ]; then
     index_image=image-registry.openshift-image-registry.svc:5000/$OLM_NAMESPACE/serverless-index:latest
+    rootdir="$(dirname "$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")")"
 
     csv="${rootdir}/olm-catalog/serverless-operator/manifests/serverless-operator.clusterserviceversion.yaml"
 
