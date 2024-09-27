@@ -6,6 +6,8 @@ template="${1:?Provide template file as arg[1]}"
 target="${2:?Provide a target CSV file as arg[2]}"
 
 # shellcheck disable=SC1091,SC1090
+source "$(dirname "${BASH_SOURCE[0]}")/../lib/common.bash"
+# shellcheck disable=SC1091,SC1090
 source "$(dirname "${BASH_SOURCE[0]}")/../lib/metadata.bash"
 # shellcheck disable=SC1091,SC1090
 source "$(dirname "${BASH_SOURCE[0]}")/../lib/images.bash"
@@ -138,6 +140,7 @@ yaml_keys[spec.replaces]="$(metadata.get project.name).v$(metadata.get olm.repla
 
 declare -A vars
 vars[OCP_TARGET]="$(metadata.get 'requirements.ocpVersion.max')"
+vars[VERSION_MAJOR_MINOR]="$(versions.major_minor $(metadata.get 'project.version'))"
 
 function add_related_image {
   cat << EOF | yq write --inplace --script - "$1"
