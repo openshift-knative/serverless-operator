@@ -55,7 +55,7 @@ jobs:
         if: (github.event_name == 'pull_request' && github.base_ref != 'main') || ((github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref_name != 'main')
         run: |
           tag="release-$(yq read ./olm-catalog/serverless-operator/project.yaml 'project.version')"
-          echo "CURRENT_VERSION_IMAGES=${tag}" >> $GITHUB_ENV
+          yq write ./olm-catalog/serverless-operator/project.yaml 'project.tag' ${tag}
         shell: bash
 
       - name: Regenerate all generated files
