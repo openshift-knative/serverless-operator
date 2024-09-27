@@ -13,7 +13,7 @@ RUN go build -tags strictfipsruntime -o /usr/bin/main ./openshift-knative-operat
 
 FROM $GO_RUNTIME
 
-ARG VERSION=
+ARG VERSION=main
 
 COPY --from=builder /usr/bin/main /usr/bin/openshift-knative-operator
 
