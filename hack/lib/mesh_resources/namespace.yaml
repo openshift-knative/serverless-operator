@@ -2,64 +2,90 @@ apiVersion: v1
 kind: Namespace
 metadata:
   name: knative-serving
+  labels:
+    istio-injection: enabled
 ---
 apiVersion: v1
 kind: Namespace
 metadata:
   name: knative-serving-ingress
+  labels:
+    istio-injection: enabled
 ---
 apiVersion: v1
 kind: Namespace
 metadata:
   name: knative-eventing
+  labels:
+    istio-injection: enabled
 ---
 apiVersion: v1
 kind: Namespace
 metadata:
   name: serving-tests
+  labels:
+    istio-injection: enabled
 ---
 apiVersion: v1
 kind: Namespace
 metadata:
   name: serving-tests-alt
+  labels:
+    istio-injection: enabled
 ---
 apiVersion: v1
 kind: Namespace
 metadata:
   name: serverless-tests
+  labels:
+    istio-injection: enabled
 ---
 # Additional namespaces for upgrade tests
 apiVersion: v1
 kind: Namespace
 metadata:
   name: eventing-e2e0
+  labels:
+    istio-injection: enabled
 ---
 apiVersion: v1
 kind: Namespace
 metadata:
   name: eventing-e2e1
+  labels:
+    istio-injection: enabled
 ---
 apiVersion: v1
 kind: Namespace
 metadata:
   name: eventing-e2e2
+  labels:
+    istio-injection: enabled
 ---
 apiVersion: v1
 kind: Namespace
 metadata:
   name: eventing-e2e3
+  labels:
+    istio-injection: enabled
 ---
 apiVersion: v1
 kind: Namespace
 metadata:
   name: eventing-e2e4
+  labels:
+    istio-injection: enabled
 ---
 apiVersion: v1
 kind: Namespace
 metadata:
   name: tenant-1
+  labels:
+    istio-injection: enabled
 ---
 apiVersion: v1
 kind: Namespace
 metadata:
   name: tenant-2
+  labels:
+    istio-injection: enabled
