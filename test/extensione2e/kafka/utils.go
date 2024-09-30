@@ -62,8 +62,10 @@ func DeployKsvcWithEventInfoStoreOrFail(ctx *test.Context, t *testing.T, namespa
 	// Setup a knative service for the wathola-forwarder
 	ksvc, err := test.WithServiceReady(ctx, name, namespace, pkgTest.ImagePath(test.WatholaForwarderImg), func(service *servingv1.Service) {
 		service.Spec.Template.Annotations = map[string]string{
-			"sidecar.istio.io/inject":                "true",
 			"sidecar.istio.io/rewriteAppHTTPProbers": "true",
+		}
+		service.Spec.Template.Labels = map[string]string{
+			"sidecar.istio.io/inject": "true",
 		}
 		service.Spec.Template.Spec.Volumes = []corev1.Volume{
 			{Name: "config", VolumeSource: corev1.VolumeSource{

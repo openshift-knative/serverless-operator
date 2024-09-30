@@ -77,17 +77,19 @@ spec:
       enabled: true
   deployments:
   - name: activator
-    annotations:
+    labels:
       "sidecar.istio.io/inject": "true"
+    annotations:
       "sidecar.istio.io/rewriteAppHTTPProbers": "true"
   - name: autoscaler
-    annotations:
+    labels:
       "sidecar.istio.io/inject": "true"
+    annotations:
       "sidecar.istio.io/rewriteAppHTTPProbers": "true"
 EOF
 ```
 
-Then, create KnativeService with `sidecar.istio.io/inject: "true"`, `sidecar.istio.io/rewriteAppHTTPProbers: "true"` and `serving.knative.openshift.io/enablePassthrough: "true"` annotations in your namespace,
+Then, create KnativeService with the `sidecar.istio.io/inject: "true"` label and `sidecar.istio.io/rewriteAppHTTPProbers: "true"`, `serving.knative.openshift.io/enablePassthrough: "true"` annotations in your namespace,
 which is one of the namespaces in the `ServiceMeshMemberRoll`.
 
 ```sh
@@ -103,8 +105,9 @@ spec:
   template:
     metadata:
       name: hello-example-1
-      annotations:
+      labels:
         sidecar.istio.io/inject: "true"
+      annotations:
         sidecar.istio.io/rewriteAppHTTPProbers: "true"
     spec:
       containers:

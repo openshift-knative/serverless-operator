@@ -34,7 +34,7 @@ kubectl get all -n serverless-tests
 Run the custom source with Istio's proxy injected:
 
 ```shell
-kubectl -n serverless-tests run curl --annotations=sidecar.istio.io/inject=true --image=radial/busyboxplus:curl -i --tty --rm
+kubectl -n serverless-tests run curl --labels=sidecar.istio.io/inject=true --image=radial/busyboxplus:curl -i --tty --rm
 ```
 
 Send an event to a broker address:

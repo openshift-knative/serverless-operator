@@ -8,6 +8,7 @@ RUN yum install -y kubectl httpd-tools
 
 RUN GOFLAGS='' go install github.com/mikefarah/yq/v3@latest
 RUN GOFLAGS='' go install knative.dev/test-infra/tools/kntest/cmd/kntest@latest
+RUN GOFLAGS='' go install -tags="exclude_graphdriver_btrfs containers_image_openpgp" github.com/containers/skopeo/cmd/skopeo@v1.16.1
 RUN rm -rf $GOPATH/.cache
 
 # Allow runtime users to add entries to /etc/passwd

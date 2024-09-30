@@ -34,8 +34,7 @@ func WaitForInstallPlan(ctx *Context, namespace string, csvName, olmSource strin
 }
 
 func installsCSVFromSource(installPlan operatorsv1alpha1.InstallPlan, csvName, olmSource string) bool {
-	if installPlan.Status.BundleLookups == nil ||
-		len(installPlan.Status.BundleLookups) == 0 ||
+	if len(installPlan.Status.BundleLookups) == 0 ||
 		installPlan.Status.BundleLookups[0].CatalogSourceRef == nil ||
 		installPlan.Status.BundleLookups[0].CatalogSourceRef.Name != olmSource {
 		return false

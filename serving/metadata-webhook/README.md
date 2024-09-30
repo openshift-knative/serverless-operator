@@ -43,5 +43,7 @@ EOF
 
 ```
 $ kubectl get -n serving-tests deploy hello-1-deployment -o=jsonpath='{.spec.template.metadata.annotations}' \
-             | grep '"sidecar.istio.io/inject":"true","sidecar.istio.io/rewriteAppHTTPProbers":"true"'
+             | grep '"sidecar.istio.io/rewriteAppHTTPProbers":"true"'
+$ kubectl get -n serving-tests deploy hello-1-deployment -o=jsonpath='{.spec.template.metadata.labels}' \
+             | grep '"sidecar.istio.io/inject":"true"'
 ```

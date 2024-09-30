@@ -267,7 +267,7 @@ test-soak-testonly:
 
 test-soak:
 	UNINSTALL_STRIMZI="false" ./hack/strimzi.sh
-	SCALE_UP=5 INSTALL_KAFKA="true" ./hack/install.sh
+	SCALE_UP=6 INSTALL_KAFKA="true" ./hack/install.sh
 	./test/soak-tests.sh
 
 # Run all E2E tests.

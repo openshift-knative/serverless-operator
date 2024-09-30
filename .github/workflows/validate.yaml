@@ -161,7 +161,7 @@ jobs:
       - name: Go Lint - knative-operator
         uses: golangci/golangci-lint-action@v6
         with:
-          version: v1.55.2
+          version: v1.61.0
           args: --timeout=10m0s --verbose 
           working-directory: ./src/github.com/${{ github.repository }}
 

@@ -26,9 +26,12 @@ func (r *TargetConfiguration) SetDefaults(_ context.Context) {
 	if r.Spec.Template.Annotations == nil {
 		r.Spec.Template.Annotations = make(map[string]string)
 	}
+	if r.Spec.Template.Labels == nil {
+		r.Spec.Template.Labels = make(map[string]string)
+	}
 
-	r.Spec.Template.Annotations[sidecarInject] = "true"
 	r.Spec.Template.Annotations[sidecarrewriteAppHTTPProbers] = "true"
+	r.Spec.Template.Labels[sidecarInject] = "true"
 }
 
 // Validate returns nil due to no need for validation
