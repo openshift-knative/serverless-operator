@@ -81,16 +81,7 @@ jobs:
 
       - name: Check if everything is consistent
         working-directory: ./src/github.com/${{ github.repository }}
-        run: |
-          if [ -n "$(git status --porcelain)" ]; then
-            echo '::debug::Running `git status`'
-            git -c color.status=always status
-            echo '::debug::Running `git diff`'
-            git -c color.ui=always diff
-            echo '::error::Not all generated files are commited. Run `make generated-files` and commit files.'
-            echo '::warning::`make generated-files` needs to be run on GOPATH due to https://github.com/knative/pkg/issues/1287'
-            exit 33
-          fi
+        run: ./hack/verify-diff.sh
 
       - name: Check existence of skipRange and replaces in ClusterServiceVersion
         working-directory: ./src/github.com/${{ github.repository }}
