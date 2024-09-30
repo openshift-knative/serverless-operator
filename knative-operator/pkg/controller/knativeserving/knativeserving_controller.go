@@ -6,14 +6,7 @@ import (
 	"os"
 	"sync/atomic"
 
-	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
-	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/knativeserving/consoleclidownload"
-	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/knativeserving/consoleutil"
-	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/knativeserving/quickstart"
-	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/monitoring"
-	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/monitoring/dashboards"
-	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/monitoring/dashboards/health"
-	socommon "github.com/openshift-knative/serverless-operator/pkg/common"
+	"github.com/go-logr/logr"
 	configv1 "github.com/openshift/api/config/v1"
 	consolev1 "github.com/openshift/api/console/v1"
 	routev1 "github.com/openshift/api/route/v1"
@@ -37,6 +30,15 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
+
+	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
+	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/knativeserving/consoleclidownload"
+	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/knativeserving/consoleutil"
+	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/knativeserving/quickstart"
+	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/monitoring"
+	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/monitoring/dashboards"
+	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/monitoring/dashboards/health"
+	socommon "github.com/openshift-knative/serverless-operator/pkg/common"
 )
 
 const (
@@ -94,6 +96,7 @@ func newReconciler(mgr manager.Manager) reconcile.Reconciler {
 		client: client,
 		cache:  mgr.GetCache(),
 		scheme: mgr.GetScheme(),
+		logger: mgr.GetLogger(),
 	}
 }
 
@@ -166,7 +169,7 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 		}
 	}
 	for _, t := range gvkToResource {
-		err = c.Watch(source.Kind(mgr.GetCache(), t), common.EnqueueRequestByOwnerAnnotations(socommon.ServingOwnerName, socommon.ServingOwnerNamespace))
+		err = c.Watch(source.Kind(mgr.GetCache(), t), common.EnqueueRequestByOwnerAnnotations(c.GetLogger(), socommon.ServingOwnerName, socommon.ServingOwnerNamespace))
 		if err != nil {
 			return err
 		}
@@ -186,6 +189,7 @@ type ReconcileKnativeServing struct {
 	scheme *runtime.Scheme
 	cache  cache.Cache
 	c      *controller.Controller
+	logger logr.Logger
 }
 
 // Reconcile reads that state of the cluster for a KnativeServing
@@ -209,7 +213,7 @@ func (r *ReconcileKnativeServing) Reconcile(_ context.Context, request reconcile
 
 	// If previously not set let's add a watch for ConsoleCLIDownload
 	if consoleutil.IsConsoleInstalled() && !cliDownloadWatchSet.Load() {
-		if err = (*r.c).Watch(source.Kind(r.cache, &consolev1.ConsoleCLIDownload{}), common.EnqueueRequestByOwnerAnnotations(socommon.ServingOwnerName, socommon.ServingOwnerNamespace)); err != nil {
+		if err = (*r.c).Watch(source.Kind(r.cache, &consolev1.ConsoleCLIDownload{}), common.EnqueueRequestByOwnerAnnotations(r.logger, socommon.ServingOwnerName, socommon.ServingOwnerNamespace)); err != nil {
 			return reconcile.Result{}, err
 		}
 		cliDownloadWatchSet.Store(true)

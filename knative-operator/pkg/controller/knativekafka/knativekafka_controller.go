@@ -141,12 +141,24 @@ func add(mgr manager.Manager, r *ReconcileKnativeKafka) error {
 		r.rawKafkaSinkManifest,
 	)
 
+	namespace := os.Getenv("REQUIRED_KAFKA_NAMESPACE")
+	if namespace == "" {
+		namespace = "knative-eventing"
+	}
+
 	for key, t := range gvkToResource {
 		if strings.EqualFold(key.Group, "cert-manager.io") {
 			// We cannot watch cert-manager resources since it's an optional addon.
 			continue
 		}
-		err = c.Watch(source.Kind(mgr.GetCache(), t), common.EnqueueRequestByOwnerAnnotations(common.KafkaOwnerName, common.KafkaOwnerNamespace))
+		err = c.Watch(source.Kind(mgr.GetCache(), t), filteredGlobalResync(context.Background(), c.GetLogger(), r, func(object client.Object) bool {
+			for _, v := range gvkToResource {
+				if areSameObjects(object, v) {
+					return true
+				}
+			}
+			return false
+		}))
 		if err != nil {
 			return err
 		}
@@ -158,8 +170,8 @@ func add(mgr manager.Manager, r *ReconcileKnativeKafka) error {
 	}
 
 	for _, t := range gvkToEventingResource {
-		err = c.Watch(source.Kind(mgr.GetCache(), t), filteredGlobalResync(context.Background(), mgr.GetLogger(), r, func(object client.Object) bool {
-			return object.GetNamespace() == "knative-eventing" && dependentConfigMaps.Has(object.GetName())
+		err = c.Watch(source.Kind(mgr.GetCache(), t), filteredGlobalResync(context.Background(), c.GetLogger(), r, func(object client.Object) bool {
+			return object.GetNamespace() == namespace && dependentConfigMaps.Has(object.GetName())
 		}))
 		if err != nil {
 			return err
@@ -167,7 +179,7 @@ func add(mgr manager.Manager, r *ReconcileKnativeKafka) error {
 	}
 
 	// watch KnativeEventing instances as KnativeKafka instances are dependent on them
-	err = c.Watch(source.Kind(mgr.GetCache(), &operatorv1beta1.KnativeEventing{}), filteredGlobalResync(context.Background(), mgr.GetLogger(), r, func(_ client.Object) bool {
+	err = c.Watch(source.Kind(mgr.GetCache(), &operatorv1beta1.KnativeEventing{}), filteredGlobalResync(context.Background(), c.GetLogger(), r, func(_ client.Object) bool {
 		return true
 	}))
 	if err != nil {
@@ -177,6 +189,13 @@ func add(mgr manager.Manager, r *ReconcileKnativeKafka) error {
 	return nil
 }
 
+func areSameObjects(o1 client.Object, o2 client.Object) bool {
+	return o2.GetNamespace() == o1.GetNamespace() &&
+		o2.GetName() == o1.GetName() &&
+		o2.GetObjectKind().GroupVersionKind().Kind == o1.GetObjectKind().GroupVersionKind().Kind &&
+		o2.GetObjectKind().GroupVersionKind().Group == o1.GetObjectKind().GroupVersionKind().Group
+}
+
 func filteredGlobalResync(ctx context.Context, logger logr.Logger, r *ReconcileKnativeKafka, filter func(client.Object) bool) handler.EventHandler {
 	return handler.EnqueueRequestsFromMapFunc(func(_ context.Context, object client.Object) []reconcile.Request {
 		if !filter(object) {
@@ -184,6 +203,7 @@ func filteredGlobalResync(ctx context.Context, logger logr.Logger, r *ReconcileK
 		}
 
 		logger.Info("Global resync",
+			"object.gvk", object.GetObjectKind().GroupVersionKind().String(),
 			"object.namespace", object.GetNamespace(),
 			"object.name", object.GetName(),
 		)

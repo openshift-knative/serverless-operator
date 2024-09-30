@@ -6,6 +6,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/go-logr/logr"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -110,12 +111,19 @@ func SetAnnotations(annotations map[string]string) mf.Transformer {
 }
 
 // EnqueueRequestByOwnerAnnotations is a common function to enqueue reconcile requests for resources.
-func EnqueueRequestByOwnerAnnotations(ownerNameAnnotationKey, ownerNamespaceAnnotationKey string) handler.EventHandler {
+func EnqueueRequestByOwnerAnnotations(logger logr.Logger, ownerNameAnnotationKey, ownerNamespaceAnnotationKey string) handler.EventHandler {
 	return handler.EnqueueRequestsFromMapFunc(func(_ context.Context, obj client.Object) []reconcile.Request {
 		annotations := obj.GetAnnotations()
 		ownerNamespace := annotations[ownerNamespaceAnnotationKey]
 		ownerName := annotations[ownerNameAnnotationKey]
 		if ownerNamespace != "" && ownerName != "" {
+			logger.Info("Creating reconciliation request for owner",
+				"ownerNamespace", ownerNamespace,
+				"owner", ownerName,
+				"reason.object.gvk", obj.GetObjectKind().GroupVersionKind().String(),
+				"reason.object.namespace", obj.GetNamespace(),
+				"reason.object.name", obj.GetName(),
+			)
 			return []reconcile.Request{{
 				NamespacedName: types.NamespacedName{Namespace: ownerNamespace, Name: ownerName},
 			}}

@@ -31,15 +31,16 @@ if [[ $on_cluster_builds = true ]]; then
   logger.info 'Images build'
 
 else
+  CONTAINER_BUILD_TAG_SUFFIX=${CONTAINER_BUILD_TAG_SUFFIX:-""}
   tmp_dockerfile=$(replace_images openshift-knative-operator/Dockerfile)
-  podman build -t "$repo/serverless-openshift-knative-operator" -f "${tmp_dockerfile}" .
-  podman push "$repo/serverless-openshift-knative-operator"
+  podman build -t "$repo/serverless-openshift-knative-operator${CONTAINER_BUILD_TAG_SUFFIX}"  -f "${tmp_dockerfile}" .
+  podman push "$repo/serverless-openshift-knative-operator${CONTAINER_BUILD_TAG_SUFFIX}"
 
   tmp_dockerfile=$(replace_images knative-operator/Dockerfile)
-  podman build -t "$repo/serverless-knative-operator" -f "${tmp_dockerfile}" .
-  podman push "$repo/serverless-knative-operator"
+  podman build -t "$repo/serverless-knative-operator${CONTAINER_BUILD_TAG_SUFFIX}" -f "${tmp_dockerfile}" .
+  podman push "$repo/serverless-knative-operator${CONTAINER_BUILD_TAG_SUFFIX}"
 
   tmp_dockerfile=$(replace_images serving/ingress/Dockerfile)
-  podman build -t "$repo/serverless-ingress" -f "${tmp_dockerfile}" .
-  podman push "$repo/serverless-ingress"
+  podman build -t "$repo/serverless-ingress${CONTAINER_BUILD_TAG_SUFFIX}" -f "${tmp_dockerfile}" .
+  podman push "$repo/serverless-ingress${CONTAINER_BUILD_TAG_SUFFIX}"
 fi
