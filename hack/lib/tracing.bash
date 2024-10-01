@@ -10,8 +10,6 @@ function install_tracing {
     install_zipkin_tracing
   elif [[ "${TRACING_BACKEND}" == "tempo" ]]; then
     install_tempo_tracing
-  elif [[ "${TRACING_BACKEND}" == "otel" ]]; then
-    install_opentelemetry_tracing
   else
     echo "Unknown TRACING_BACKEND \"$TRACING_BACKEND\""
     return 1
@@ -123,19 +121,6 @@ EOF
 
   logger.info "Waiting until Zipkin is available"
   oc wait deployment --all --timeout=600s --for=condition=Available -n "${TRACING_NAMESPACE}"
-}
-
-function install_opentelemetry_tracing {
-  logger.info "Install OpenTelemetry Tracing"
-  if [[ $(oc get crd servicemeshcontrolplanes.maistra.io --no-headers | wc -l) != 1 ]]; then
-    # The following components are installed with Service Mesh.
-    logger.info "Install Distributed Tracing Platform (Jaeger) Operator"
-    install_jaeger_operator
-    install_jaeger_cr
-  fi
-  logger.info "Install Distributed Tracing Data Collection Operator"
-  install_opentelemetry_operator
-  install_opentelemetrycollector
 }
 
 function install_tempo_tracing {
