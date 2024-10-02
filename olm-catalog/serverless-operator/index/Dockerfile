@@ -1,4 +1,6 @@
-FROM registry.redhat.io/openshift4/ose-operator-registry-rhel9:v4.17 AS opm
+ARG OPM_IMAGE=registry.ci.openshift.org/origin/4.17:operator-registry
+
+FROM $OPM_IMAGE AS opm
 
 FROM registry.access.redhat.com/ubi9/ubi-minimal as builder
 
@@ -19,7 +21,7 @@ registry.ci.openshift.org/knative/release-1.34.0:serverless-bundle \
 
 # The base image is expected to contain
 # /bin/opm (with a serve subcommand) and /bin/grpc_health_probe
-FROM registry.redhat.io/openshift4/ose-operator-registry-rhel9:v4.17
+FROM $OPM_IMAGE
 
 # Copy declarative config root into image at /configs
 COPY --from=builder /configs /configs
