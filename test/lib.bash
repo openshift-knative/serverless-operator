@@ -427,35 +427,32 @@ function run_rolling_upgrade_tests {
 
   logger.info "Running rolling upgrade tests"
 
-  local base serving_image_version eventing_image_version eventing_kafka_broker_image_version image_template common_opts images_file
+  local image_template common_opts images_file
 
   # Specify image mapping for REKT tests
   images_file="$(dirname "$(realpath "${BASH_SOURCE[0]}")")/images-rekt.yaml"
-  serving_image_version=${KNATIVE_SERVING_VERSION#knative-}
-  eventing_image_version="${KNATIVE_EVENTING_VERSION#knative-}"
-  eventing_kafka_broker_image_version="${KNATIVE_EVENTING_KAFKA_BROKER_VERSION#knative-}"
+
+  default_knative_eventing_images
+  default_knative_eventing_kafka_broker_images
+  default_knative_serving_images
 
   # Mapping based on https://github.com/openshift/release/tree/master/core-services/image-mirroring/knative
   # for non-REKT tests.
-  base="quay.io/openshift-knative/"
   image_template=$(
     cat <<-EOF
-$base{{- with .Name }}
-{{- if eq .      "kafka-consumer"      }}eventing-kafka-broker/{{.}}:$eventing_kafka_broker_image_version
-{{- else if eq . "event-flaker"        }}eventing/{{.}}:$eventing_image_version
-{{- else if eq . "event-library"       }}eventing/{{.}}:$eventing_image_version
-{{- else if eq . "event-sender"        }}eventing/{{.}}:$eventing_image_version
-{{- else if eq . "eventshub"           }}eventing/{{.}}:$eventing_image_version
-{{- else if eq . "heartbeats"          }}eventing/{{.}}:$eventing_image_version
-{{- else if eq . "performance"         }}eventing/{{.}}:$eventing_image_version
-{{- else if eq . "print"               }}eventing/{{.}}:$eventing_image_version
-{{- else if eq . "recordevents"        }}eventing/{{.}}:$eventing_image_version
-{{- else if eq . "request-sender"      }}eventing/{{.}}:$eventing_image_version
-{{- else if eq . "wathola-fetcher"     }}eventing/{{.}}:$eventing_image_version
-{{- else if eq . "wathola-forwarder"   }}eventing/{{.}}:$eventing_image_version
-{{- else if eq . "wathola-receiver"    }}eventing/{{.}}:$eventing_image_version
-{{- else if eq . "wathola-sender"      }}eventing/{{.}}:$eventing_image_version
-{{- else                               }}serving/{{.}}:$serving_image_version{{end -}}
+{{- with .Name }}
+{{- if eq .      "kafka-consumer"      }}${KNATIVE_EVENTING_KAFKA_BROKER_TEST_KAFKA_CONSUMER}
+{{- else if eq . "event-sender"        }}${KNATIVE_EVENTING_TEST_EVENT_SENDER}
+{{- else if eq . "eventshub"           }}${KNATIVE_EVENTING_TEST_EVENTSHUB}
+{{- else if eq . "heartbeats"          }}${KNATIVE_EVENTING_HEARTBEATS}
+{{- else if eq . "print"               }}${KNATIVE_EVENTING_TEST_PRINT}
+{{- else if eq . "recordevents"        }}${KNATIVE_EVENTING_TEST_RECORDEVENTS}
+{{- else if eq . "request-sender"      }}${KNATIVE_EVENTING_TEST_REQUEST_SENDER}
+{{- else if eq . "wathola-fetcher"     }}${KNATIVE_EVENTING_TEST_WATHOLA_FETCHER}
+{{- else if eq . "wathola-forwarder"   }}${KNATIVE_EVENTING_TEST_WATHOLA_FORWARDER}
+{{- else if eq . "wathola-receiver"    }}${KNATIVE_EVENTING_TEST_WATHOLA_RECEIVER}
+{{- else if eq . "wathola-sender"      }}${KNATIVE_EVENTING_TEST_WATHOLA_SENDER}
+{{- else                               }}${KNATIVE_SERVING_IMAGE_PREFIX}-{{.}}:latest
 {{end -}}
 EOF
 )
