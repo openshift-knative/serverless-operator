@@ -95,6 +95,9 @@ func (e *extension) Transformers(ke base.KComponent) []mf.Transformer {
 		common.ApplyCABundlesTransform(),
 		common.JobsRemoveTTLSecondsAfterFinished(),
 	}
+	if eventingistio.IsEnabled(ke.GetSpec().GetConfig()) {
+		tf = append(tf, common.AddIstioSidecarInjectLabels(ke))
+	}
 	tf = append(tf, monitoring.GetEventingTransformers(ke)...)
 	return append(tf, common.DeprecatedAPIsTranformers(e.kubeclient.Discovery())...)
 }
