@@ -1170,7 +1170,7 @@ spec:
                 serviceAccountName: knative-openshift-ingress
                 containers:
                   - name: knative-openshift-ingress
-                    image: quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/serverless-ingress@sha256:470915e253d999af642ee20d24c4df496078e3878e742b0468fa22294bdd5381
+                    image: quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/serverless-ingress@sha256:6a9b48bb9f39dc832fad6e3cdb2a1c62992476e526e92f27e09f2c359ff6e37a
                     imagePullPolicy: Always
                     ports:
                       - containerPort: 9090
@@ -1323,7 +1323,7 @@ spec:
     - name: "knative-openshift"
       image: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/serverless-kn-operator@sha256:138c1358070243f5d9d3c472d433576b77e6bbf71238d99f99513350977c1bd8"
     - name: "knative-openshift-ingress"
-      image: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/serverless-ingress@sha256:470915e253d999af642ee20d24c4df496078e3878e742b0468fa22294bdd5381"
+      image: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/serverless-ingress@sha256:6a9b48bb9f39dc832fad6e3cdb2a1c62992476e526e92f27e09f2c359ff6e37a"
     - name: "IMAGE_queue-proxy"
       image: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-serving-queue@sha256:b4abacfb1a8a5176d0d48ff475d444eb9617625f7ec2271efaf8a9b67eff13f0"
     - name: "IMAGE_activator"
