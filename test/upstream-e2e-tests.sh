@@ -25,9 +25,9 @@ run_testselect
 # Run upgrade tests
 if [[ $TEST_KNATIVE_UPGRADE == true ]]; then
   # Set KafkaChannel as default for upgrade tests.
-#  if [[ $TEST_KNATIVE_KAFKA == "true" ]]; then
-#    ensure_kafka_channel_default
-#  fi
+  if [[ $TEST_KNATIVE_KAFKA == "true" ]]; then
+    ensure_kafka_channel_default
+  fi
   run_rolling_upgrade_tests
 fi
 
@@ -36,15 +36,15 @@ if [[ $TEST_KNATIVE_E2E == true ]]; then
   # TODO: Remove this when upstream tests can use in-cluster config.
   # See https://github.com/knative/eventing/issues/5996 (the same issue affects Eventing Kafka)
   ensure_kubeconfig
-#  if [[ $TEST_KNATIVE_KAFKA_BROKER == true ]]; then
-#    upstream_knative_eventing_kafka_broker_e2e
-#  fi
+  if [[ $TEST_KNATIVE_KAFKA_BROKER == true ]]; then
+    upstream_knative_eventing_kafka_broker_e2e
+  fi
   if [[ $TEST_KNATIVE_SERVING == true ]]; then
     upstream_knative_serving_e2e_and_conformance_tests
   fi
-#  if [[ $TEST_KNATIVE_EVENTING == true ]]; then
-#    upstream_knative_eventing_e2e
-#  fi
+  if [[ $TEST_KNATIVE_EVENTING == true ]]; then
+    upstream_knative_eventing_e2e
+  fi
 fi
 
 [ -n "$OPENSHIFT_CI" ] && check_serverless_alerts
