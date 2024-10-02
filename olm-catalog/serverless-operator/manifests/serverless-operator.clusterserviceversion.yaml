@@ -827,7 +827,7 @@ spec:
                 serviceAccountName: knative-operator
                 containers:
                   - name: knative-operator
-                    image: quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/serverless-openshift-kn-operator@sha256:14a608fd1f456a2d907ea7a20496a4209e23a3996bb9e354f2cf151e4457b2ab
+                    image: quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/serverless-openshift-kn-operator@sha256:e4a52eb8bd0f40d360bf62c4449508ad5b069d3be934454efee32bb077ab2ff3
                     readinessProbe:
                       periodSeconds: 1
                       httpGet:
@@ -990,7 +990,7 @@ spec:
                           - ALL
                 containers:
                   - name: knative-openshift
-                    image: quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/serverless-kn-operator@sha256:fbb2a0e6caa34445ff75ed659a6bfc6ebaf188f7bf83114e96bb2412fb4b9b61
+                    image: quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/serverless-kn-operator@sha256:138c1358070243f5d9d3c472d433576b77e6bbf71238d99f99513350977c1bd8
                     imagePullPolicy: Always
                     readinessProbe:
                       httpGet:
@@ -1170,7 +1170,7 @@ spec:
                 serviceAccountName: knative-openshift-ingress
                 containers:
                   - name: knative-openshift-ingress
-                    image: quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/serverless-ingress@sha256:b449b7e460dc22264cf73ba628824ec6fe1b1eb8c2c8b076255cda2d030631f7
+                    image: quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/serverless-ingress@sha256:470915e253d999af642ee20d24c4df496078e3878e742b0468fa22294bdd5381
                     imagePullPolicy: Always
                     ports:
                       - containerPort: 9090
@@ -1319,11 +1319,11 @@ spec:
         - knativeeventings.operator.knative.dev
   relatedImages:
     - name: "knative-operator"
-      image: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/serverless-openshift-kn-operator@sha256:14a608fd1f456a2d907ea7a20496a4209e23a3996bb9e354f2cf151e4457b2ab"
+      image: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/serverless-openshift-kn-operator@sha256:e4a52eb8bd0f40d360bf62c4449508ad5b069d3be934454efee32bb077ab2ff3"
     - name: "knative-openshift"
-      image: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/serverless-kn-operator@sha256:fbb2a0e6caa34445ff75ed659a6bfc6ebaf188f7bf83114e96bb2412fb4b9b61"
+      image: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/serverless-kn-operator@sha256:138c1358070243f5d9d3c472d433576b77e6bbf71238d99f99513350977c1bd8"
     - name: "knative-openshift-ingress"
-      image: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/serverless-ingress@sha256:b449b7e460dc22264cf73ba628824ec6fe1b1eb8c2c8b076255cda2d030631f7"
+      image: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/serverless-ingress@sha256:470915e253d999af642ee20d24c4df496078e3878e742b0468fa22294bdd5381"
     - name: "IMAGE_queue-proxy"
       image: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-serving-queue@sha256:b4abacfb1a8a5176d0d48ff475d444eb9617625f7ec2271efaf8a9b67eff13f0"
     - name: "IMAGE_activator"
