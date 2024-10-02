@@ -53,6 +53,7 @@ dependencies:
     backstage_plugins_artifacts_branch: release-v1.14
     cli: knative-v1.15
     func:
+        # TODO migrate to Konflux
         util: quay.io/boson/alpine-socat:1.7.4.3-r1-non-root
         tekton_s2i: registry.redhat.io/source-to-image/source-to-image-rhel8@sha256:6a6025914296a62fdf2092c3a40011bd9b966a6806b094d51eec5e1bd5026ef4
         tekton_buildah: registry.redhat.io/rhel8/buildah@sha256:3d505d9c0f5d4cd5a4ec03b8d038656c6cdbdf5191e00ce6388f7e0e4d2f1b74

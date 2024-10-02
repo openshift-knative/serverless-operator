@@ -11,7 +11,7 @@ RUN /bin/opm init serverless-operator --default-channel=__DEFAULT_CHANNEL__ --ou
 RUN /bin/opm render --skip-tls-verify -o yaml \
       registry.ci.openshift.org/knative/release-__VERSION__:serverless-bundle >> /configs/index.yaml || \
     /bin/opm render --skip-tls-verify -o yaml \
-      registry.ci.openshift.org/knative/serverless-bundle:main >> /configs/index.yaml
+      __BUNDLE__ >> /configs/index.yaml
 
 # The base image is expected to contain
 # /bin/opm (with a serve subcommand) and /bin/grpc_health_probe

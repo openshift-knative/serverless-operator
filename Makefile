@@ -6,44 +6,44 @@ dev:
 images:
 	./hack/images.sh $(DOCKER_REPO_OVERRIDE)
 
-install:
+install: install-tool-sobranch
 	./hack/install.sh
 
-install-operator:
+install-operator: install-tool-sobranch
 	INSTALL_SERVING="false" INSTALL_EVENTING="false" ./hack/install.sh
 
-install-all:
+install-all: install-tool-sobranch
 	UNINSTALL_STRIMZI="false" ./hack/strimzi.sh
 	./hack/tracing.sh
 	SCALE_UP=4 INSTALL_KAFKA="true" ENABLE_TRACING=true ./hack/install.sh
 
-install-release-next: generated-files-release-next
+install-release-next: install-tool-sobranch generated-files-release-next
 	ON_CLUSTER_BUILDS=true ./hack/images.sh image-registry.openshift-image-registry.svc:5000/openshift-marketplace
 	USE_RELEASE_NEXT=true DOCKER_REPO_OVERRIDE=image-registry.openshift-image-registry.svc:5000/openshift-marketplace ./hack/install.sh
 
 install-tracing:
 	./hack/tracing.sh
 
-install-serving:
+install-serving: install-tool-sobranch
 	INSTALL_EVENTING="false" ./hack/install.sh
 
-install-serving-with-mesh:
+install-serving-with-mesh: install-tool-sobranch
 	UNINSTALL_MESH="false" ./hack/mesh.sh
 	MESH=true SCALE_UP=4 INSTALL_SERVING=true INSTALL_EVENTING="false" ./hack/install.sh
 
-install-eventing:
+install-eventing: install-tool-sobranch
 	INSTALL_SERVING="false" ./hack/install.sh
 
-install-kafka:
+install-kafka: install-tool-sobranch
 	SCALE_UP=4 INSTALL_SERVING="false" INSTALL_KAFKA="true" ./hack/install.sh
 
-install-kafka-with-mesh:
+install-kafka-with-mesh: install-tool-sobranch
 	UNINSTALL_MESH="false" ./hack/mesh.sh
 	TRACING_BACKEND=zipkin TRACING_NAMESPACE=knative-eventing ./hack/tracing.sh
 	UNINSTALL_STRIMZI="false" ./hack/strimzi.sh
 	MESH=true SCALE_UP=5 INSTALL_SERVING=false INSTALL_EVENTING=true INSTALL_KAFKA=true TRACING_BACKEND=zipkin TRACING_NAMESPACE=knative-eventing ENABLE_TRACING=true ./hack/install.sh
 
-install-kafka-with-keda:
+install-kafka-with-keda: install-tool-sobranch
 	UNINSTALL_KEDA="false" ./hack/keda.sh
 	SCALE_UP=4 INSTALL_SERVING="false" INSTALL_KAFKA="true" ENABLE_KEDA="true" ./hack/install.sh
 
@@ -65,10 +65,10 @@ install-certmanager:
 uninstall-certmanager:
 	UNINSTALL_CERTMANAGER="true" ./hack/certmanager.sh
 
-install-previous:
+install-previous: install-tool-sobranch
 	INSTALL_PREVIOUS_VERSION="true" ./hack/install.sh
 
-install-previous-with-kafka:
+install-previous-with-kafka: install-tool-sobranch
 	INSTALL_PREVIOUS_VERSION="true" INSTALL_KAFKA="true" ./hack/install.sh
 
 install-mesh:
@@ -106,7 +106,7 @@ test-unit:
 test-e2e-testonly:
 	./test/e2e-tests.sh
 
-test-e2e:
+test-e2e: install-tool-sobranch
 	./hack/tracing.sh
 	ENABLE_TRACING=true ./hack/install.sh
 	./test/e2e-tests.sh
@@ -116,14 +116,14 @@ test-e2e:
 test-e2e-with-kafka-testonly:
 	TEST_KNATIVE_KAFKA=true ./test/e2e-tests.sh
 
-operator-e2e:
+operator-e2e: install-tool-sobranch
 	UNINSTALL_STRIMZI="false" ./hack/strimzi.sh
 	./hack/tracing.sh
 	SCALE_UP=4 INSTALL_KAFKA="true" ENABLE_TRACING=true ./hack/install.sh
 	TEST_KNATIVE_KAFKA=true ./test/e2e-tests.sh
 	DELETE_CRD_ON_TEARDOWN="false" ./hack/teardown.sh
 
-operator-e2e-no-tracing:
+operator-e2e-no-tracing: install-tool-sobranch
 	UNINSTALL_STRIMZI="false" ./hack/strimzi.sh
 	SCALE_UP=4 INSTALL_KAFKA="true" ./hack/install.sh
 	TEST_KNATIVE_KAFKA=true ./test/e2e-tests.sh
@@ -138,7 +138,7 @@ test-e2e-with-kafka-no-tracing: operator-e2e-no-tracing
 test-e2e-with-mesh-testonly:
 	MESH=true ./test/e2e-tests.sh
 
-test-e2e-with-mesh:
+test-e2e-with-mesh: install-tool-sobranch
 	UNINSTALL_MESH="false" ./hack/mesh.sh
 	./hack/tracing.sh
 	UNINSTALL_STRIMZI="false" ./hack/strimzi.sh
@@ -150,7 +150,7 @@ test-operator: test-unit test-e2e
 
 # Run upstream E2E tests with net-istio and sidecar.
 # TODO: Enable upgrade tests once upstream fixed the issue https://github.com/knative/serving/issues/11535.
-test-upstream-e2e-mesh-testonly:
+test-upstream-e2e-mesh-testonly: install-tool-sobranch
 	MESH=true TEST_KNATIVE_KAFKA=true ./test/e2e-tests.sh
 	MESH=true TEST_KNATIVE_KAFKA=false TEST_KNATIVE_SERVING=true TEST_KNATIVE_EVENTING=true TEST_KNATIVE_KAFKA_BROKER=true TEST_KNATIVE_UPGRADE=false ./test/upstream-e2e-tests.sh
 
@@ -174,14 +174,14 @@ test-upstream-e2e-no-upgrade-testonly:
 test-upstream-e2e-kafka-no-upgrade-testonly:
 	TEST_KNATIVE_KAFKA_BROKER=true TEST_KNATIVE_E2E=true TEST_KNATIVE_UPGRADE=false ./test/upstream-e2e-tests.sh
 
-upstream-e2e:
+upstream-e2e: install-tool-sobranch
 	TRACING_BACKEND=zipkin ./hack/tracing.sh
 	TRACING_BACKEND=zipkin ENABLE_TRACING=true ./hack/install.sh
 	TEST_KNATIVE_KAFKA=false TEST_KNATIVE_E2E=true TEST_KNATIVE_SERVING=true TEST_KNATIVE_EVENTING=true TEST_KNATIVE_UPGRADE=false ./test/upstream-e2e-tests.sh
 
 test-upstream-e2e-no-upgrade: upstream-e2e
 
-upstream-e2e-kafka:
+upstream-e2e-kafka: install-tool-sobranch
 	UNINSTALL_STRIMZI="false" ./hack/strimzi.sh
 	TRACING_BACKEND=zipkin ./hack/tracing.sh
 	SCALE_UP=6 INSTALL_KAFKA="true" TRACING_BACKEND=zipkin ENABLE_TRACING=true ./hack/install.sh
@@ -193,13 +193,13 @@ test-upstream-e2e-kafka-no-upgrade: upstream-e2e-kafka
 test-upstream-upgrade-testonly:
 	TEST_KNATIVE_KAFKA=true TEST_KNATIVE_E2E=false TEST_KNATIVE_UPGRADE=true ./test/upstream-e2e-tests.sh
 
-test-upgrade:
+test-upgrade: install-tool-sobranch
 	TRACING_BACKEND=zipkin ZIPKIN_DEDICATED_NODE=true ./hack/tracing.sh
 	UNINSTALL_STRIMZI=false ./hack/strimzi.sh
 	INSTALL_PREVIOUS_VERSION=true INSTALL_KAFKA=true TRACING_BACKEND=zipkin ENABLE_TRACING=true SCALE_UP=5 ./hack/install.sh
 	TEST_KNATIVE_KAFKA=true TEST_KNATIVE_E2E=false TEST_KNATIVE_UPGRADE=true ./test/upstream-e2e-tests.sh
 
-mesh-upgrade:
+mesh-upgrade: install-tool-sobranch
 	UNINSTALL_MESH=false ./hack/mesh.sh
 	TRACING_BACKEND=zipkin ./hack/tracing.sh
 	UNINSTALL_STRIMZI=false ./hack/strimzi.sh
@@ -208,7 +208,7 @@ mesh-upgrade:
 
 test-upgrade-with-mesh: mesh-upgrade
 
-kitchensink-upgrade:
+kitchensink-upgrade: install-tool-sobranch
 	UNINSTALL_STRIMZI="false" ./hack/strimzi.sh
 	./hack/dev.sh
 	INSTALL_OLDEST_COMPATIBLE="true" INSTALL_KAFKA="true" SCALE_UP=4 ./hack/install.sh
@@ -219,7 +219,7 @@ test-kitchensink-upgrade: kitchensink-upgrade
 test-kitchensink-upgrade-testonly:
 	./test/kitchensink-upgrade-tests.sh
 
-test-kitchensink-upgrade-stress:
+test-kitchensink-upgrade-stress: install-tool-sobranch
 	UNINSTALL_STRIMZI=false ./hack/strimzi.sh
 	INSTALL_PREVIOUS_VERSION=true INSTALL_KAFKA=true SCALE_UP=5 ./hack/install.sh
 	./test/kitchensink-upgrade-stress-tests.sh
@@ -231,7 +231,7 @@ test-kitchensink-upgrade-stress-testonly:
 test-ui-e2e-testonly:
 	./test/ui-e2e-tests.sh
 
-ui-e2e:
+ui-e2e: install-tool-sobranch
 	./hack/install.sh
 	./test/ui-e2e-tests.sh
 
@@ -245,12 +245,12 @@ test-kitchensink-e2e-testonly:
 test-kitchensink-e2e-single-testonly:
 	./test/kitchensink-e2e-tests.sh -run $(TEST)
 
-test-kitchensink-e2e-setup:
+test-kitchensink-e2e-setup: install-tool-sobranch
 	UNINSTALL_STRIMZI="false" ./hack/strimzi.sh
 	SCALE_UP=4 INSTALL_KAFKA="true" ./hack/install.sh
 
 # Runs all subsets of kitchensink tests. Runs tests separately so `go test` doesn't take too much memory in CI
-kitchensink-e2e:
+kitchensink-e2e: install-tool-sobranch
 	UNINSTALL_STRIMZI="false" ./hack/strimzi.sh
 	SCALE_UP=5 INSTALL_KAFKA="true" ./hack/install.sh
 	./test/kitchensink-e2e-tests.sh -run TestBrokerReadinessBrokerDLS
@@ -265,13 +265,13 @@ test-kitchensink-e2e: kitchensink-e2e
 test-soak-testonly:
 	./test/soak-tests.sh
 
-test-soak:
+test-soak: install-tool-sobranch
 	UNINSTALL_STRIMZI="false" ./hack/strimzi.sh
 	SCALE_UP=6 INSTALL_KAFKA="true" ./hack/install.sh
 	./test/soak-tests.sh
 
 # Run all E2E tests.
-test-all-e2e:
+test-all-e2e: install-tool-sobranch
 	./hack/tracing.sh
 	ENABLE_TRACING=true ./hack/install.sh
 	./test/e2e-tests.sh
@@ -285,7 +285,7 @@ generate-ci-config:
 	./openshift/ci-operator/generate-ci-config.sh $(BRANCH) > ci-operator-config.yaml
 
 # Generates all files that are templated with release metadata.
-release-files:
+release-files: install-tool-sobranch
 	./hack/generate/csv.sh \
 		templates/csv.yaml \
 		olm-catalog/serverless-operator/manifests/serverless-operator.clusterserviceversion.yaml
@@ -315,7 +315,7 @@ release-files:
 	./hack/generate/mesh-auth-policies.sh \
   	tenant-1,tenant-2,serving-tests,serverless-tests,eventing-e2e0,eventing-e2e1,eventing-e2e2,eventing-e2e3,eventing-e2e4
 
-generate-dockerfiles:
+generate-dockerfiles: install-tool-generate
 	GOFLAGS='' go install github.com/openshift-knative/hack/cmd/generate@latest
 	$(shell go env GOPATH)/bin/generate \
 		--generators dockerfile \
@@ -337,7 +337,7 @@ generate-dockerfiles:
 # Generates all files that can be generated, includes release files, code generation
 # and updates vendoring.
 # Use CURRENT_VERSION_IMAGES="<branch>" if you need to override the defaulting to main
-generated-files: generate-dockerfiles release-files
+generated-files: install-tool-sobranch generate-dockerfiles release-files
 	./hack/update-deps.sh
 	./hack/update-codegen.sh
 	(cd knative-operator && ./hack/update-manifests.sh)
@@ -369,3 +369,9 @@ lint:
 # Runs formatters and thelike to fix potential linter warnings.
 fix-lint:
 	prettier --write templates/*.yaml
+
+install-tool-sobranch:
+	GOFLAGS='' go install github.com/openshift-knative/hack/cmd/sobranch@latest
+
+install-tool-generate:
+	GOFLAGS='' go install github.com/openshift-knative/hack/cmd/generate@latest

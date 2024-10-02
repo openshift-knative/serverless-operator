@@ -12,8 +12,10 @@ source "$(dirname "${BASH_SOURCE[0]}")/../lib/metadata.bash"
 # shellcheck disable=SC1091,SC1090
 source "$(dirname "${BASH_SOURCE[0]}")/../lib/images.bash"
 
+# TODO migrate CLI images to Konflux
 client_version="$(metadata.get dependencies.cli)"
-kn_event="${registry_host}/knative/release-${client_version#knative-v}:client-plugin-event"
+kn_event="${ci_registry_host}/knative/release-${client_version#knative-v}:client-plugin-event"
+
 rbac_proxy="registry.ci.openshift.org/origin/$(metadata.get 'requirements.ocpVersion.max'):kube-rbac-proxy"
 
 default_serverless_operator_images
@@ -121,7 +123,7 @@ kafka_image "knative-kafka-storage-version-migrator__migrate"    "${KNATIVE_EVEN
 
 image 'KUBE_RBAC_PROXY'          "${rbac_proxy}"
 image 'KN_PLUGIN_EVENT_SENDER'   "${kn_event}-sender"
-image 'KN_CLIENT'              "${registry}/$(metadata.get dependencies.cli):knative-client-kn"
+image 'KN_CLIENT'                "${ci_registry}/$(metadata.get dependencies.cli):knative-client-kn"
 
 image 'KN_PLUGIN_FUNC_UTIL'           "$(metadata.get dependencies.func.util)"
 image 'KN_PLUGIN_FUNC_TEKTON_S2I'     "$(metadata.get dependencies.func.tekton_s2i)"
@@ -143,6 +145,7 @@ vars[OCP_TARGET]="$(metadata.get 'requirements.ocpVersion.max')"
 vars[VERSION_MAJOR_MINOR]="$(versions.major_minor $(metadata.get 'project.version'))"
 
 function add_related_image {
+  echo "Add related image to '${1}' - $2 = $3"
   cat << EOF | yq write --inplace --script - "$1"
 - command: update
   path: spec.relatedImages[+]
@@ -153,6 +156,7 @@ EOF
 }
 
 function add_downstream_operator_deployment_env {
+  echo "Add downstream operator deployment env '${1}' - $2 = $3"
   cat << EOF | yq write --inplace --script - "$1"
 - command: update
   path: spec.install.spec.deployments(name==knative-openshift).spec.template.spec.containers(name==knative-openshift).env[+]
@@ -179,6 +183,7 @@ function set_operator_ingress_image {
 # there was a naming clash between eventing and kafka, but we won't provide the Kafka overrides to the
 # midstream operator.
 function add_upstream_operator_deployment_env {
+  echo "Add upstream operator deployment env '${1}' - $2 = $3"
   cat << EOF | yq write --inplace --script - "$1"
 - command: update
   path: spec.install.spec.deployments(name==knative-operator-webhook).spec.template.spec.containers(name==knative-operator).env[+]
@@ -232,7 +237,7 @@ add_upstream_operator_deployment_env "$target" "KNATIVE_EVENTING_VERSION" "${eve
 add_upstream_operator_deployment_env "$target" "KNATIVE_EVENTING_KAFKA_BROKER_VERSION" "${ekb_version/knative-v/}" # Remove `knative-v` prefix if exists
 
 # Override the image for the CLI artifact deployment
-yq write --inplace "$target" "spec.install.spec.deployments(name==knative-openshift).spec.template.spec.initContainers(name==cli-artifacts).image" "${registry}/$(metadata.get dependencies.cli):knative-client-cli-artifacts"
+yq write --inplace "$target" "spec.install.spec.deployments(name==knative-openshift).spec.template.spec.initContainers(name==cli-artifacts).image" "${ci_registry}/$(metadata.get dependencies.cli):knative-client-cli-artifacts"
 
 for name in "${!yaml_keys[@]}"; do
   echo "Value: ${name} -> ${yaml_keys[$name]}"

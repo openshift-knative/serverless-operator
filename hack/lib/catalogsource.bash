@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+# shellcheck disable=SC1091,SC1090
+source "$(dirname "${BASH_SOURCE[0]}")/../lib/images.bash"
+
 function ensure_catalogsource_installed {
   logger.info 'Check if CatalogSource is installed'
   if oc get catalogsource "$OPERATOR" -n "$OLM_NAMESPACE" > /dev/null 2>&1; then
@@ -16,7 +19,9 @@ function install_catalogsource {
 
   local rootdir csv index_image
 
-  index_image=registry.ci.openshift.org/knative/serverless-index:main
+  default_serverless_operator_images
+
+  index_image="${SERVERLESS_INDEX}"
 
   # Build bundle and index images only when running in CI or when DOCKER_REPO_OVERRIDE is defined.
   # Otherwise the latest nightly build will be used for CatalogSource.
@@ -61,18 +66,19 @@ function install_catalogsource {
     # will push images to ${OLM_NAMESPACE} namespace, allow the ${OPERATORS_NAMESPACE} namespace to pull those images.
     oc adm policy add-role-to-group system:image-puller system:serviceaccounts:"${OPERATORS_NAMESPACE}" --namespace "${OLM_NAMESPACE}"
 
-    local index_dorkerfile_path=olm-catalog/serverless-operator/index/Dockerfile
+    local index_dorkerfile_path="olm-catalog/serverless-operator/index/Dockerfile"
 
     logger.debug "Create a backup of the index Dockerfile."
-    cp "${rootdir}/${index_dorkerfile_path}" "${rootdir}/_output/bkp.Dockerfile"
+    cp "${index_dorkerfile_path}" "${rootdir}/_output/bkp.Dockerfile"
 
     # Replace bundle reference with previously built bundle
-    bundle="registry.ci.openshift.org/knative/release-${CURRENT_VERSION}:serverless-bundle"
+    bundle="${DEFAULT_SERVERLESS_BUNDLE%:*}" # Remove the tag from the match
+    bundle="${DEFAULT_SERVERLESS_BUNDLE%@*}" # Remove the sha from the match
     if ! grep "${bundle}" "${rootdir}/${index_dorkerfile_path}"; then
       logger.error "Bundle ${bundle} not found in Dockerfile."
       return 1
     fi
-    sed -i "s_\(.*\)\(${bundle}\)\(.*\)_\1image-registry.openshift-image-registry.svc:5000/$OLM_NAMESPACE/serverless-bundle:latest\3_" "${rootdir}/${index_dorkerfile_path}"
+    sed -ri "s#(.*)(${bundle})(:[a-z0-9]*)?(@sha[0-9]+:[a-z0-9]+)?(.*)#\1image-registry.openshift-image-registry.svc:5000/${OLM_NAMESPACE}/serverless-bundle:latest\5#" "${rootdir}/${index_dorkerfile_path}"
 
     build_image "serverless-index" "${rootdir}" "${index_dorkerfile_path}"
 
