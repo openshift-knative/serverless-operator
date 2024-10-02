@@ -1,4 +1,4 @@
-FROM registry.ci.openshift.org/ocp/4.15:cli AS oc-image
+FROM registry.ci.openshift.org/ocp/4.17:cli AS oc-image
 
 FROM src
 

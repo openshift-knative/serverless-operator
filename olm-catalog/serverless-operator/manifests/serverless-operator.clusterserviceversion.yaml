@@ -188,7 +188,7 @@ spec:
     - kafka
   links:
     - name: Documentation
-      url: https://access.redhat.com/documentation/en-us/openshift_container_platform/4.15/html/serverless/index
+      url: https://access.redhat.com/documentation/en-us/openshift_container_platform/4.17/html/serverless/index
     - name: Source Repository
       url: https://github.com/openshift-knative/serverless-operator
   maintainers:
@@ -928,7 +928,7 @@ spec:
                       - name: "IMAGE_eventmesh-backend__controller"
                         value: "registry.ci.openshift.org/openshift/knative-backstage-plugins-eventmesh:knative-v1.14"
                       - name: "IMAGE_KUBE_RBAC_PROXY"
-                        value: "registry.ci.openshift.org/origin/4.15:kube-rbac-proxy"
+                        value: "registry.ci.openshift.org/origin/4.17:kube-rbac-proxy"
                       - name: "IMAGE_KN_PLUGIN_EVENT_SENDER"
                         value: "registry.ci.openshift.org/knative/release-1.15:client-plugin-event-sender"
                       - name: "IMAGE_KN_CLIENT"
@@ -1100,7 +1100,7 @@ spec:
                       - name: "IMAGE_eventmesh-backend__controller"
                         value: "registry.ci.openshift.org/openshift/knative-backstage-plugins-eventmesh:knative-v1.14"
                       - name: "IMAGE_KUBE_RBAC_PROXY"
-                        value: "registry.ci.openshift.org/origin/4.15:kube-rbac-proxy"
+                        value: "registry.ci.openshift.org/origin/4.17:kube-rbac-proxy"
                       - name: "IMAGE_KN_PLUGIN_EVENT_SENDER"
                         value: "registry.ci.openshift.org/knative/release-1.15:client-plugin-event-sender"
                       - name: "IMAGE_KN_CLIENT"
@@ -1375,7 +1375,7 @@ spec:
     - name: "IMAGE_eventmesh-backend__controller"
       image: "registry.ci.openshift.org/openshift/knative-backstage-plugins-eventmesh:knative-v1.14"
     - name: "IMAGE_KUBE_RBAC_PROXY"
-      image: "registry.ci.openshift.org/origin/4.15:kube-rbac-proxy"
+      image: "registry.ci.openshift.org/origin/4.17:kube-rbac-proxy"
     - name: "IMAGE_KN_PLUGIN_EVENT_SENDER"
       image: "registry.ci.openshift.org/knative/release-1.15:client-plugin-event-sender"
     - name: "IMAGE_KN_CLIENT"
