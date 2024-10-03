@@ -114,7 +114,7 @@ function knative_eventing_istio_images() {
   app_version=$(get_app_version_from_tag "${tag}")
   eventing_istio="${registry_prefix}${app_version}/kn-eventing-istio"
 
-  export KNATIVE_EVENTING_ISTIO_CONTROLLER=${KNATIVE_EVENTING_ISTIO_CONTROLLER:-"${eventing_istio}-controller:${tag}"}
+  export KNATIVE_EVENTING_ISTIO_CONTROLLER=${KNATIVE_EVENTING_ISTIO_CONTROLLER:-$(latest_konflux_image_sha "${eventing_istio}-controller:${tag}")}
 }
 
 function knative_eventing_kafka_broker_images_release() {
