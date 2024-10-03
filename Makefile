@@ -154,7 +154,7 @@ test-upstream-e2e-mesh-testonly: install-tool-sobranch
 	MESH=true TEST_KNATIVE_KAFKA=true ./test/e2e-tests.sh
 	MESH=true TEST_KNATIVE_KAFKA=false TEST_KNATIVE_SERVING=true TEST_KNATIVE_EVENTING=true TEST_KNATIVE_KAFKA_BROKER=true TEST_KNATIVE_UPGRADE=false ./test/upstream-e2e-tests.sh
 
-install-for-mesh-e2e:
+install-for-mesh-e2e: install-tool-sobranch
 	UNINSTALL_MESH="false" ./hack/mesh.sh
 	TRACING_BACKEND=zipkin TRACING_NAMESPACE=knative-eventing ./hack/tracing.sh
 	UNINSTALL_STRIMZI="false" ./hack/strimzi.sh
