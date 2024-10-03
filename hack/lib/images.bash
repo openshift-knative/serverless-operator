@@ -158,11 +158,13 @@ function default_knative_ingress_images() {
 }
 
 function knative_backstage_plugins_images() {
-  local backstage_plugins tag
-  # TODO migrate to Konflux
-  backstage_plugins="${ci_registry}/knative-backstage-plugins"
+  local backstage_plugins tag app_version
   tag=${1:?"Provide tag for Backstage plugins images"}
-  export KNATIVE_BACKSTAGE_PLUGINS_EVENTMESH=${KNATIVE_BACKSTAGE_PLUGINS_EVENTMESH:-"${backstage_plugins}-eventmesh:${tag}"}
+
+  app_version=$(get_app_version_from_tag "${tag}")
+  backstage_plugins="${registry_prefix}${app_version}/kn-backstage-plugins"
+
+  export KNATIVE_BACKSTAGE_PLUGINS_EVENTMESH=${KNATIVE_BACKSTAGE_PLUGINS_EVENTMESH:-$(latest_konflux_image_sha "${backstage_plugins}-eventmesh:${tag}")}
 }
 
 function knative_backstage_plugins_images_release() {
@@ -181,7 +183,7 @@ function latest_konflux_image_sha() {
 
   go_bin="$(go env GOPATH)/bin"
   export GOPATH="$PATH:$go_bin"
-  digest=$(skopeo inspect "docker://${image_without_tag}:latest" | jq -r '.Digest')
+  digest=$(skopeo inspect --no-tags=true "docker://${image_without_tag}:latest" | jq -r '.Digest')
   if [ "${digest}" = "" ]; then
     exit 1
   fi

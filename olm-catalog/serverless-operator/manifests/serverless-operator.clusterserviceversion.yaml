@@ -827,7 +827,7 @@ spec:
                 serviceAccountName: knative-operator
                 containers:
                   - name: knative-operator
-                    image: quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/serverless-openshift-kn-operator@sha256:d7220dd948871b6be630a9d5663de964a5bd8b0be83d92de3be734e74fc1ef5b
+                    image: quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/serverless-openshift-kn-operator@sha256:41ca50c860865da187b57a7b850d06e1696f1bd8b24983b44ee9b141b30c8451
                     readinessProbe:
                       periodSeconds: 1
                       httpGet:
@@ -926,7 +926,7 @@ spec:
                       - name: "IMAGE_job-sink__job-sink"
                         value: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-eventing-jobsink@sha256:871b5606cf16dbfc107ad510ee421a59103c695e6f7248f5f9e9204d3db01083"
                       - name: "IMAGE_eventmesh-backend__controller"
-                        value: "registry.ci.openshift.org/openshift/knative-backstage-plugins-eventmesh:knative-v1.14"
+                        value: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-backstage-plugins-eventmesh@sha256:75f953e1e144b4161226dcf370079bd28b89796d08ef4b70bb2e3cbc2a0a2fb8"
                       - name: "IMAGE_KUBE_RBAC_PROXY"
                         value: "registry.ci.openshift.org/origin/4.15:kube-rbac-proxy"
                       - name: "IMAGE_KN_PLUGIN_EVENT_SENDER"
@@ -990,7 +990,7 @@ spec:
                           - ALL
                 containers:
                   - name: knative-openshift
-                    image: quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/serverless-kn-operator@sha256:f5d33bf56c0ae2ef994b434c3d237658e5de7f4478280d1dc77dd1fbe18bf834
+                    image: quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/serverless-kn-operator@sha256:f1678a51edcbd2dd1d5237d6bf60db67264ba0dbb8e9f7edaf15837816d8bc68
                     imagePullPolicy: Always
                     readinessProbe:
                       httpGet:
@@ -1098,7 +1098,7 @@ spec:
                       - name: "IMAGE_job-sink__job-sink"
                         value: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-eventing-jobsink@sha256:871b5606cf16dbfc107ad510ee421a59103c695e6f7248f5f9e9204d3db01083"
                       - name: "IMAGE_eventmesh-backend__controller"
-                        value: "registry.ci.openshift.org/openshift/knative-backstage-plugins-eventmesh:knative-v1.14"
+                        value: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-backstage-plugins-eventmesh@sha256:75f953e1e144b4161226dcf370079bd28b89796d08ef4b70bb2e3cbc2a0a2fb8"
                       - name: "IMAGE_KUBE_RBAC_PROXY"
                         value: "registry.ci.openshift.org/origin/4.15:kube-rbac-proxy"
                       - name: "IMAGE_KN_PLUGIN_EVENT_SENDER"
@@ -1170,7 +1170,7 @@ spec:
                 serviceAccountName: knative-openshift-ingress
                 containers:
                   - name: knative-openshift-ingress
-                    image: quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/serverless-ingress@sha256:b56c3b1b017292f4ffa4fe49cee7f33d8323aed62c47b90074dfb249243c19d6
+                    image: quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/serverless-ingress@sha256:53d85eb444f7e9f5720a654d81c7cb9174f385c9953e382dc56343fdf54ffe6d
                     imagePullPolicy: Always
                     ports:
                       - containerPort: 9090
@@ -1319,11 +1319,11 @@ spec:
         - knativeeventings.operator.knative.dev
   relatedImages:
     - name: "knative-operator"
-      image: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/serverless-openshift-kn-operator@sha256:d7220dd948871b6be630a9d5663de964a5bd8b0be83d92de3be734e74fc1ef5b"
+      image: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/serverless-openshift-kn-operator@sha256:41ca50c860865da187b57a7b850d06e1696f1bd8b24983b44ee9b141b30c8451"
     - name: "knative-openshift"
-      image: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/serverless-kn-operator@sha256:f5d33bf56c0ae2ef994b434c3d237658e5de7f4478280d1dc77dd1fbe18bf834"
+      image: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/serverless-kn-operator@sha256:f1678a51edcbd2dd1d5237d6bf60db67264ba0dbb8e9f7edaf15837816d8bc68"
     - name: "knative-openshift-ingress"
-      image: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/serverless-ingress@sha256:b56c3b1b017292f4ffa4fe49cee7f33d8323aed62c47b90074dfb249243c19d6"
+      image: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/serverless-ingress@sha256:53d85eb444f7e9f5720a654d81c7cb9174f385c9953e382dc56343fdf54ffe6d"
     - name: "IMAGE_queue-proxy"
       image: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-serving-queue@sha256:2ad1471b4ef1aa330a065e5ce58dab91c34a1f1692dc6899846349f2ddd3d144"
     - name: "IMAGE_activator"
@@ -1373,7 +1373,7 @@ spec:
     - name: "IMAGE_job-sink__job-sink"
       image: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-eventing-jobsink@sha256:871b5606cf16dbfc107ad510ee421a59103c695e6f7248f5f9e9204d3db01083"
     - name: "IMAGE_eventmesh-backend__controller"
-      image: "registry.ci.openshift.org/openshift/knative-backstage-plugins-eventmesh:knative-v1.14"
+      image: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-backstage-plugins-eventmesh@sha256:75f953e1e144b4161226dcf370079bd28b89796d08ef4b70bb2e3cbc2a0a2fb8"
     - name: "IMAGE_KUBE_RBAC_PROXY"
       image: "registry.ci.openshift.org/origin/4.15:kube-rbac-proxy"
     - name: "IMAGE_KN_PLUGIN_EVENT_SENDER"
