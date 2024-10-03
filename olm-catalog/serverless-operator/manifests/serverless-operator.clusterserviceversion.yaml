@@ -827,7 +827,7 @@ spec:
                 serviceAccountName: knative-operator
                 containers:
                   - name: knative-operator
-                    image: quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/serverless-openshift-kn-operator@sha256:e4a52eb8bd0f40d360bf62c4449508ad5b069d3be934454efee32bb077ab2ff3
+                    image: quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/serverless-openshift-kn-operator@sha256:d7220dd948871b6be630a9d5663de964a5bd8b0be83d92de3be734e74fc1ef5b
                     readinessProbe:
                       periodSeconds: 1
                       httpGet:
@@ -878,31 +878,31 @@ spec:
                       - name: KUBERNETES_MIN_VERSION
                         value: "v1.0.0"
                       - name: "IMAGE_queue-proxy"
-                        value: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-serving-queue@sha256:b4abacfb1a8a5176d0d48ff475d444eb9617625f7ec2271efaf8a9b67eff13f0"
+                        value: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-serving-queue@sha256:2ad1471b4ef1aa330a065e5ce58dab91c34a1f1692dc6899846349f2ddd3d144"
                       - name: "IMAGE_activator"
-                        value: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-serving-activator@sha256:2a21e8fdd59a2a045dfece9ffde5a1a4ee5dd118c3ad93a1564b69e3b2439a60"
+                        value: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-serving-activator@sha256:f094ff4050507e70caa87522d5ab0f6e6657da59b18e93ae5257f3d3b8026eee"
                       - name: "IMAGE_autoscaler"
-                        value: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-serving-autoscaler@sha256:84baf70e238700878345bbf438e4f5195a3907124eb2be3e159fe5ac731d3a42"
+                        value: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-serving-autoscaler@sha256:b8f4d570238d52f3b3ae515579169959c8ffca298d01ba82a238a20517ed466c"
                       - name: "IMAGE_autoscaler-hpa"
-                        value: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-serving-autoscaler-hpa@sha256:fbc11dd16d7fc246a25e1bb657199d4bfa22a11dc2107328439b6b26f9785eec"
+                        value: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-serving-autoscaler-hpa@sha256:457a4960ba1e84311de3d463a5710bdecdd8c648bf7c13cef685241135b3d988"
                       - name: "IMAGE_controller__controller"
-                        value: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-serving-controller@sha256:49b9531ac2002649c80cfc0e2513e4d5a73263074ca41c9860c39caf683d297c"
+                        value: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-serving-controller@sha256:b888402b61116f09d1f7125f02ab61604536cfdb7bfc12fa8466dc1a51136193"
                       - name: "IMAGE_webhook__webhook"
-                        value: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-serving-webhook@sha256:eeb3c91b0b97e8d6fe84963a1ccb8a23a7c9f2afc3ef43d7e91cbe91f4aa3a6f"
+                        value: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-serving-webhook@sha256:1d06ede29313e89890d7a121ae221266854b03e02c8aa2ec8c7bed7cd3f1a2d5"
                       - name: "IMAGE_storage-version-migration-serving-__migrate"
-                        value: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-serving-storage-version-migration@sha256:820534b3cc0c915778cd7a40d6cfddfeb308defb3b0e5d3fa1be5697ecc34c15"
+                        value: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-serving-storage-version-migration@sha256:5b3effc45910293070b1be94ebb507843adfba1335dffbebe0f4ac0cf4d5d8a4"
                       - name: "IMAGE_kourier-gateway"
                         value: "quay.io/maistra-dev/proxyv2-ubi8:2.4-latest"
                       - name: "IMAGE_net-kourier-controller__controller"
-                        value: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/net-kourier-kourier@sha256:2996e8e4715c6d180972905ecbed78fda4d297a89b01afad811c18ef88e4e36c"
+                        value: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/net-kourier-kourier@sha256:60eb1203fcfa16c7adb38d32bdff6f8bcb4299c2faec5c7be8b5696660923440"
                       - name: "IMAGE_net-istio-controller__controller"
-                        value: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/net-istio-controller@sha256:a0c47fb18adaa741245cdd1a673cb079f036be67abbc28ffe820829cc079aac0"
+                        value: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/net-istio-controller@sha256:a47a4cdc0d95b86eeb300ba39ecae4f2197a04724cb2d74d983ed8cc6d2d50da"
                       - name: "IMAGE_net-istio-webhook__webhook"
-                        value: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/net-istio-webhook@sha256:73035094d41e580ada560284d55f3a2ca112cc15d4fe311c5c6fe83639e0d846"
+                        value: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/net-istio-webhook@sha256:d0a42d170a0c30dc1c219a1dd158e6423b1825f45aacbcfef97e796748701dcf"
                       - name: "IMAGE_eventing-controller__eventing-controller"
                         value: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-eventing-controller@sha256:3177e4a3a5ee1a6f08d3936fab95d264fbde647073a0d6467088ef1850f68793"
                       - name: "IMAGE_eventing-istio-controller__eventing-istio-controller"
-                        value: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-eventing-istio-controller:knative-v1.15"
+                        value: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-eventing-istio-controller@sha256:4efa48e57136e04ac8dae0a54fffe449d8c95e35fedeef96b9384b514b474db1"
                       - name: "IMAGE_eventing-webhook__eventing-webhook"
                         value: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-eventing-webhook@sha256:1df312de3848baa563d0a055f269e0aff53db38b2872d93c59efc65b64bbe76a"
                       - name: "IMAGE_storage-version-migration-eventing-__migrate"
@@ -990,7 +990,7 @@ spec:
                           - ALL
                 containers:
                   - name: knative-openshift
-                    image: quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/serverless-kn-operator@sha256:138c1358070243f5d9d3c472d433576b77e6bbf71238d99f99513350977c1bd8
+                    image: quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/serverless-kn-operator@sha256:f5d33bf56c0ae2ef994b434c3d237658e5de7f4478280d1dc77dd1fbe18bf834
                     imagePullPolicy: Always
                     readinessProbe:
                       httpGet:
@@ -1050,31 +1050,31 @@ spec:
                       - name: KUBERNETES_MIN_VERSION
                         value: "v1.0.0"
                       - name: "IMAGE_queue-proxy"
-                        value: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-serving-queue@sha256:b4abacfb1a8a5176d0d48ff475d444eb9617625f7ec2271efaf8a9b67eff13f0"
+                        value: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-serving-queue@sha256:2ad1471b4ef1aa330a065e5ce58dab91c34a1f1692dc6899846349f2ddd3d144"
                       - name: "IMAGE_activator"
-                        value: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-serving-activator@sha256:2a21e8fdd59a2a045dfece9ffde5a1a4ee5dd118c3ad93a1564b69e3b2439a60"
+                        value: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-serving-activator@sha256:f094ff4050507e70caa87522d5ab0f6e6657da59b18e93ae5257f3d3b8026eee"
                       - name: "IMAGE_autoscaler"
-                        value: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-serving-autoscaler@sha256:84baf70e238700878345bbf438e4f5195a3907124eb2be3e159fe5ac731d3a42"
+                        value: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-serving-autoscaler@sha256:b8f4d570238d52f3b3ae515579169959c8ffca298d01ba82a238a20517ed466c"
                       - name: "IMAGE_autoscaler-hpa"
-                        value: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-serving-autoscaler-hpa@sha256:fbc11dd16d7fc246a25e1bb657199d4bfa22a11dc2107328439b6b26f9785eec"
+                        value: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-serving-autoscaler-hpa@sha256:457a4960ba1e84311de3d463a5710bdecdd8c648bf7c13cef685241135b3d988"
                       - name: "IMAGE_controller__controller"
-                        value: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-serving-controller@sha256:49b9531ac2002649c80cfc0e2513e4d5a73263074ca41c9860c39caf683d297c"
+                        value: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-serving-controller@sha256:b888402b61116f09d1f7125f02ab61604536cfdb7bfc12fa8466dc1a51136193"
                       - name: "IMAGE_webhook__webhook"
-                        value: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-serving-webhook@sha256:eeb3c91b0b97e8d6fe84963a1ccb8a23a7c9f2afc3ef43d7e91cbe91f4aa3a6f"
+                        value: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-serving-webhook@sha256:1d06ede29313e89890d7a121ae221266854b03e02c8aa2ec8c7bed7cd3f1a2d5"
                       - name: "IMAGE_storage-version-migration-serving-__migrate"
-                        value: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-serving-storage-version-migration@sha256:820534b3cc0c915778cd7a40d6cfddfeb308defb3b0e5d3fa1be5697ecc34c15"
+                        value: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-serving-storage-version-migration@sha256:5b3effc45910293070b1be94ebb507843adfba1335dffbebe0f4ac0cf4d5d8a4"
                       - name: "IMAGE_kourier-gateway"
                         value: "quay.io/maistra-dev/proxyv2-ubi8:2.4-latest"
                       - name: "IMAGE_net-kourier-controller__controller"
-                        value: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/net-kourier-kourier@sha256:2996e8e4715c6d180972905ecbed78fda4d297a89b01afad811c18ef88e4e36c"
+                        value: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/net-kourier-kourier@sha256:60eb1203fcfa16c7adb38d32bdff6f8bcb4299c2faec5c7be8b5696660923440"
                       - name: "IMAGE_net-istio-controller__controller"
-                        value: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/net-istio-controller@sha256:a0c47fb18adaa741245cdd1a673cb079f036be67abbc28ffe820829cc079aac0"
+                        value: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/net-istio-controller@sha256:a47a4cdc0d95b86eeb300ba39ecae4f2197a04724cb2d74d983ed8cc6d2d50da"
                       - name: "IMAGE_net-istio-webhook__webhook"
-                        value: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/net-istio-webhook@sha256:73035094d41e580ada560284d55f3a2ca112cc15d4fe311c5c6fe83639e0d846"
+                        value: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/net-istio-webhook@sha256:d0a42d170a0c30dc1c219a1dd158e6423b1825f45aacbcfef97e796748701dcf"
                       - name: "IMAGE_eventing-controller__eventing-controller"
                         value: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-eventing-controller@sha256:3177e4a3a5ee1a6f08d3936fab95d264fbde647073a0d6467088ef1850f68793"
                       - name: "IMAGE_eventing-istio-controller__eventing-istio-controller"
-                        value: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-eventing-istio-controller:knative-v1.15"
+                        value: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-eventing-istio-controller@sha256:4efa48e57136e04ac8dae0a54fffe449d8c95e35fedeef96b9384b514b474db1"
                       - name: "IMAGE_eventing-webhook__eventing-webhook"
                         value: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-eventing-webhook@sha256:1df312de3848baa563d0a055f269e0aff53db38b2872d93c59efc65b64bbe76a"
                       - name: "IMAGE_storage-version-migration-eventing-__migrate"
@@ -1170,7 +1170,7 @@ spec:
                 serviceAccountName: knative-openshift-ingress
                 containers:
                   - name: knative-openshift-ingress
-                    image: quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/serverless-ingress@sha256:0e2ab8db49447bc11574c2ae6066072fb1d7a6731f1e47950c5acc2cb683204f
+                    image: quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/serverless-ingress@sha256:b56c3b1b017292f4ffa4fe49cee7f33d8323aed62c47b90074dfb249243c19d6
                     imagePullPolicy: Always
                     ports:
                       - containerPort: 9090
@@ -1319,37 +1319,37 @@ spec:
         - knativeeventings.operator.knative.dev
   relatedImages:
     - name: "knative-operator"
-      image: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/serverless-openshift-kn-operator@sha256:e4a52eb8bd0f40d360bf62c4449508ad5b069d3be934454efee32bb077ab2ff3"
+      image: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/serverless-openshift-kn-operator@sha256:d7220dd948871b6be630a9d5663de964a5bd8b0be83d92de3be734e74fc1ef5b"
     - name: "knative-openshift"
-      image: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/serverless-kn-operator@sha256:138c1358070243f5d9d3c472d433576b77e6bbf71238d99f99513350977c1bd8"
+      image: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/serverless-kn-operator@sha256:f5d33bf56c0ae2ef994b434c3d237658e5de7f4478280d1dc77dd1fbe18bf834"
     - name: "knative-openshift-ingress"
-      image: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/serverless-ingress@sha256:0e2ab8db49447bc11574c2ae6066072fb1d7a6731f1e47950c5acc2cb683204f"
+      image: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/serverless-ingress@sha256:b56c3b1b017292f4ffa4fe49cee7f33d8323aed62c47b90074dfb249243c19d6"
     - name: "IMAGE_queue-proxy"
-      image: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-serving-queue@sha256:b4abacfb1a8a5176d0d48ff475d444eb9617625f7ec2271efaf8a9b67eff13f0"
+      image: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-serving-queue@sha256:2ad1471b4ef1aa330a065e5ce58dab91c34a1f1692dc6899846349f2ddd3d144"
     - name: "IMAGE_activator"
-      image: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-serving-activator@sha256:2a21e8fdd59a2a045dfece9ffde5a1a4ee5dd118c3ad93a1564b69e3b2439a60"
+      image: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-serving-activator@sha256:f094ff4050507e70caa87522d5ab0f6e6657da59b18e93ae5257f3d3b8026eee"
     - name: "IMAGE_autoscaler"
-      image: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-serving-autoscaler@sha256:84baf70e238700878345bbf438e4f5195a3907124eb2be3e159fe5ac731d3a42"
+      image: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-serving-autoscaler@sha256:b8f4d570238d52f3b3ae515579169959c8ffca298d01ba82a238a20517ed466c"
     - name: "IMAGE_autoscaler-hpa"
-      image: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-serving-autoscaler-hpa@sha256:fbc11dd16d7fc246a25e1bb657199d4bfa22a11dc2107328439b6b26f9785eec"
+      image: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-serving-autoscaler-hpa@sha256:457a4960ba1e84311de3d463a5710bdecdd8c648bf7c13cef685241135b3d988"
     - name: "IMAGE_controller__controller"
-      image: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-serving-controller@sha256:49b9531ac2002649c80cfc0e2513e4d5a73263074ca41c9860c39caf683d297c"
+      image: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-serving-controller@sha256:b888402b61116f09d1f7125f02ab61604536cfdb7bfc12fa8466dc1a51136193"
     - name: "IMAGE_webhook__webhook"
-      image: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-serving-webhook@sha256:eeb3c91b0b97e8d6fe84963a1ccb8a23a7c9f2afc3ef43d7e91cbe91f4aa3a6f"
+      image: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-serving-webhook@sha256:1d06ede29313e89890d7a121ae221266854b03e02c8aa2ec8c7bed7cd3f1a2d5"
     - name: "IMAGE_storage-version-migration-serving-__migrate"
-      image: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-serving-storage-version-migration@sha256:820534b3cc0c915778cd7a40d6cfddfeb308defb3b0e5d3fa1be5697ecc34c15"
+      image: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-serving-storage-version-migration@sha256:5b3effc45910293070b1be94ebb507843adfba1335dffbebe0f4ac0cf4d5d8a4"
     - name: "IMAGE_kourier-gateway"
       image: "quay.io/maistra-dev/proxyv2-ubi8:2.4-latest"
     - name: "IMAGE_net-kourier-controller__controller"
-      image: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/net-kourier-kourier@sha256:2996e8e4715c6d180972905ecbed78fda4d297a89b01afad811c18ef88e4e36c"
+      image: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/net-kourier-kourier@sha256:60eb1203fcfa16c7adb38d32bdff6f8bcb4299c2faec5c7be8b5696660923440"
     - name: "IMAGE_net-istio-controller__controller"
-      image: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/net-istio-controller@sha256:a0c47fb18adaa741245cdd1a673cb079f036be67abbc28ffe820829cc079aac0"
+      image: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/net-istio-controller@sha256:a47a4cdc0d95b86eeb300ba39ecae4f2197a04724cb2d74d983ed8cc6d2d50da"
     - name: "IMAGE_net-istio-webhook__webhook"
-      image: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/net-istio-webhook@sha256:73035094d41e580ada560284d55f3a2ca112cc15d4fe311c5c6fe83639e0d846"
+      image: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/net-istio-webhook@sha256:d0a42d170a0c30dc1c219a1dd158e6423b1825f45aacbcfef97e796748701dcf"
     - name: "IMAGE_eventing-controller__eventing-controller"
       image: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-eventing-controller@sha256:3177e4a3a5ee1a6f08d3936fab95d264fbde647073a0d6467088ef1850f68793"
     - name: "IMAGE_eventing-istio-controller__eventing-istio-controller"
-      image: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-eventing-istio-controller:knative-v1.15"
+      image: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-eventing-istio-controller@sha256:4efa48e57136e04ac8dae0a54fffe449d8c95e35fedeef96b9384b514b474db1"
     - name: "IMAGE_eventing-webhook__eventing-webhook"
       image: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-eventing-webhook@sha256:1df312de3848baa563d0a055f269e0aff53db38b2872d93c59efc65b64bbe76a"
     - name: "IMAGE_storage-version-migration-eventing-__migrate"
