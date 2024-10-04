@@ -139,6 +139,30 @@ function knative_eventing_kafka_broker_images() {
   export KNATIVE_EVENTING_KAFKA_BROKER_POST_INSTALL=${KNATIVE_EVENTING_KAFKA_BROKER_POST_INSTALL:-$(latest_konflux_image_sha "${eventing_kafka_broker}-post-install:${tag}")}
 }
 
+function knative_kn_plugin_func_images_release() {
+  knative_kn_plugin_func_images "${USE_IMAGE_RELEASE_TAG}"
+}
+
+function default_knative_kn_plugin_func_images() {
+  knative_kn_plugin_func_images "$(metadata.get dependencies.func.promotion_tag)"
+}
+
+function knative_kn_plugin_func_images() {
+  local knative_kn_plugin_func tag app_version
+  tag=${1:?"Provide tag for kn-plugin-func images"}
+
+  app_version=$(get_app_version_from_tag "${tag}")
+  knative_kn_plugin_func="${registry_prefix}${app_version}/kn-plugin-func"
+
+  export KNATIVE_KN_PLUGIN_FUNC_FUNC_UTIL=${KNATIVE_KN_PLUGIN_FUNC_FUNC_UTIL:-$(latest_konflux_image_sha "${knative_kn_plugin_func}-func-util:${tag}")}
+
+  export KNATIVE_KN_PLUGIN_FUNC_TEKTON_S2I=${KNATIVE_KN_PLUGIN_FUNC_UTIL:-"$(metadata.get dependencies.func.tekton_s2i)"}
+  export KNATIVE_KN_PLUGIN_FUNC_TEKTON_BUILDAH=${KNATIVE_KN_PLUGIN_FUNC_UTIL:-"$(metadata.get dependencies.func.tekton_buildah)"}
+  export KNATIVE_KN_PLUGIN_FUNC_NODEJS_20_MINIMAL=${KNATIVE_KN_PLUGIN_FUNC_UTIL:-"$(metadata.get dependencies.func.nodejs_20_minimal)"}
+  export KNATIVE_KN_PLUGIN_FUNC_OPENJDK_21=${KNATIVE_KN_PLUGIN_FUNC_UTIL:-"$(metadata.get dependencies.func.openjdk_21)"}
+  export KNATIVE_KN_PLUGIN_FUNC_PYTHON_39=${KNATIVE_KN_PLUGIN_FUNC_UTIL:-"$(metadata.get dependencies.func.python-39)"}
+}
+
 function default_knative_ingress_images() {
   local kourier_registry istio_registry knative_kourier knative_istio kourier_app_version istio_app_version
 
