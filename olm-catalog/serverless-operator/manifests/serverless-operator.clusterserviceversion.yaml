@@ -827,7 +827,7 @@ spec:
                 serviceAccountName: knative-operator
                 containers:
                   - name: knative-operator
-                    image: quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/serverless-openshift-kn-operator@sha256:41ca50c860865da187b57a7b850d06e1696f1bd8b24983b44ee9b141b30c8451
+                    image: quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/serverless-openshift-kn-operator@sha256:ea8198b416523dd73f78878c977fbc4b460f9711de811573e0265e5dc5e0ea01
                     readinessProbe:
                       periodSeconds: 1
                       httpGet:
@@ -938,13 +938,13 @@ spec:
                       - name: "IMAGE_KN_PLUGIN_FUNC_TEKTON_S2I"
                         value: "registry.redhat.io/source-to-image/source-to-image-rhel8@sha256:6a6025914296a62fdf2092c3a40011bd9b966a6806b094d51eec5e1bd5026ef4"
                       - name: "IMAGE_KN_PLUGIN_FUNC_TEKTON_BUILDAH"
-                        value: "registry.redhat.io/rhel8/buildah@sha256:3d505d9c0f5d4cd5a4ec03b8d038656c6cdbdf5191e00ce6388f7e0e4d2f1b74"
+                        value: "registry.redhat.io/rhel8/buildah@sha256:ffa1a8d81b4e2b4f547825967622e6b8b1e97125ece0c9ef81b0c72296625dd3"
                       - name: "IMAGE_KN_PLUGIN_FUNC_NODEJS_20_MINIMAL"
-                        value: "registry.access.redhat.com/ubi8/nodejs-20-minimal@sha256:a2a7e399aaf09a48c28f40820da16709b62aee6f2bc703116b9345fab5830861"
+                        value: "registry.access.redhat.com/ubi8/nodejs-20-minimal@sha256:73d584352a72534254e95af6159200a597841658a7b3ef3abb13f25427fe55ad"
                       - name: "IMAGE_KN_PLUGIN_FUNC_OPENJDK_21"
-                        value: "registry.access.redhat.com/ubi8/openjdk-21@sha256:441897a1f691c7d4b3a67bb3e0fea83e18352214264cb383fd057bbbd5ed863c"
+                        value: "registry.access.redhat.com/ubi8/openjdk-21@sha256:e8e2b2525e1ba56ec2e2cc582a4fba7c95210cb2e073f6744172cf5d41ff309b"
                       - name: "IMAGE_KN_PLUGIN_FUNC_PYTHON_39"
-                        value: "registry.access.redhat.com/ubi8/python-39@sha256:27e795fd6b1b77de70d1dc73a65e4c790650748a9cfda138fdbd194b3d6eea3d"
+                        value: "registry.access.redhat.com/ubi8/python-39@sha256:ff822477c76999b19173ac849ee327fa77e7f20076680785e3f91d792fb59b2c"
                       - name: "CURRENT_VERSION"
                         value: "1.35.0"
                       - name: "KNATIVE_SERVING_VERSION"
@@ -990,7 +990,7 @@ spec:
                           - ALL
                 containers:
                   - name: knative-openshift
-                    image: quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/serverless-kn-operator@sha256:f1678a51edcbd2dd1d5237d6bf60db67264ba0dbb8e9f7edaf15837816d8bc68
+                    image: quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/serverless-kn-operator@sha256:94cc08ad26e5fefed230af3f82737853d1c3260fb5c5fb09c3359852dcf3f82c
                     imagePullPolicy: Always
                     readinessProbe:
                       httpGet:
@@ -1110,13 +1110,13 @@ spec:
                       - name: "IMAGE_KN_PLUGIN_FUNC_TEKTON_S2I"
                         value: "registry.redhat.io/source-to-image/source-to-image-rhel8@sha256:6a6025914296a62fdf2092c3a40011bd9b966a6806b094d51eec5e1bd5026ef4"
                       - name: "IMAGE_KN_PLUGIN_FUNC_TEKTON_BUILDAH"
-                        value: "registry.redhat.io/rhel8/buildah@sha256:3d505d9c0f5d4cd5a4ec03b8d038656c6cdbdf5191e00ce6388f7e0e4d2f1b74"
+                        value: "registry.redhat.io/rhel8/buildah@sha256:ffa1a8d81b4e2b4f547825967622e6b8b1e97125ece0c9ef81b0c72296625dd3"
                       - name: "IMAGE_KN_PLUGIN_FUNC_NODEJS_20_MINIMAL"
-                        value: "registry.access.redhat.com/ubi8/nodejs-20-minimal@sha256:a2a7e399aaf09a48c28f40820da16709b62aee6f2bc703116b9345fab5830861"
+                        value: "registry.access.redhat.com/ubi8/nodejs-20-minimal@sha256:73d584352a72534254e95af6159200a597841658a7b3ef3abb13f25427fe55ad"
                       - name: "IMAGE_KN_PLUGIN_FUNC_OPENJDK_21"
-                        value: "registry.access.redhat.com/ubi8/openjdk-21@sha256:441897a1f691c7d4b3a67bb3e0fea83e18352214264cb383fd057bbbd5ed863c"
+                        value: "registry.access.redhat.com/ubi8/openjdk-21@sha256:e8e2b2525e1ba56ec2e2cc582a4fba7c95210cb2e073f6744172cf5d41ff309b"
                       - name: "IMAGE_KN_PLUGIN_FUNC_PYTHON_39"
-                        value: "registry.access.redhat.com/ubi8/python-39@sha256:27e795fd6b1b77de70d1dc73a65e4c790650748a9cfda138fdbd194b3d6eea3d"
+                        value: "registry.access.redhat.com/ubi8/python-39@sha256:ff822477c76999b19173ac849ee327fa77e7f20076680785e3f91d792fb59b2c"
                       - name: "KAFKA_IMAGE_kafka-broker-receiver__kafka-broker-receiver"
                         value: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-ekb-receiver@sha256:61130e75eecb865274f2c5a8deca1df05d35b5f8167b4ee386a57361b1732c6d"
                       - name: "KAFKA_IMAGE_kafka-broker-dispatcher__kafka-broker-dispatcher"
@@ -1170,7 +1170,7 @@ spec:
                 serviceAccountName: knative-openshift-ingress
                 containers:
                   - name: knative-openshift-ingress
-                    image: quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/serverless-ingress@sha256:53d85eb444f7e9f5720a654d81c7cb9174f385c9953e382dc56343fdf54ffe6d
+                    image: quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/serverless-ingress@sha256:3c5a7528cf2fef0bce3adcd328ff484882a90b251a3e587872466b401ac74276
                     imagePullPolicy: Always
                     ports:
                       - containerPort: 9090
@@ -1319,11 +1319,11 @@ spec:
         - knativeeventings.operator.knative.dev
   relatedImages:
     - name: "knative-operator"
-      image: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/serverless-openshift-kn-operator@sha256:41ca50c860865da187b57a7b850d06e1696f1bd8b24983b44ee9b141b30c8451"
+      image: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/serverless-openshift-kn-operator@sha256:ea8198b416523dd73f78878c977fbc4b460f9711de811573e0265e5dc5e0ea01"
     - name: "knative-openshift"
-      image: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/serverless-kn-operator@sha256:f1678a51edcbd2dd1d5237d6bf60db67264ba0dbb8e9f7edaf15837816d8bc68"
+      image: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/serverless-kn-operator@sha256:94cc08ad26e5fefed230af3f82737853d1c3260fb5c5fb09c3359852dcf3f82c"
     - name: "knative-openshift-ingress"
-      image: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/serverless-ingress@sha256:53d85eb444f7e9f5720a654d81c7cb9174f385c9953e382dc56343fdf54ffe6d"
+      image: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/serverless-ingress@sha256:3c5a7528cf2fef0bce3adcd328ff484882a90b251a3e587872466b401ac74276"
     - name: "IMAGE_queue-proxy"
       image: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-serving-queue@sha256:2ad1471b4ef1aa330a065e5ce58dab91c34a1f1692dc6899846349f2ddd3d144"
     - name: "IMAGE_activator"
@@ -1385,13 +1385,13 @@ spec:
     - name: "IMAGE_KN_PLUGIN_FUNC_TEKTON_S2I"
       image: "registry.redhat.io/source-to-image/source-to-image-rhel8@sha256:6a6025914296a62fdf2092c3a40011bd9b966a6806b094d51eec5e1bd5026ef4"
     - name: "IMAGE_KN_PLUGIN_FUNC_TEKTON_BUILDAH"
-      image: "registry.redhat.io/rhel8/buildah@sha256:3d505d9c0f5d4cd5a4ec03b8d038656c6cdbdf5191e00ce6388f7e0e4d2f1b74"
+      image: "registry.redhat.io/rhel8/buildah@sha256:ffa1a8d81b4e2b4f547825967622e6b8b1e97125ece0c9ef81b0c72296625dd3"
     - name: "IMAGE_KN_PLUGIN_FUNC_NODEJS_20_MINIMAL"
-      image: "registry.access.redhat.com/ubi8/nodejs-20-minimal@sha256:a2a7e399aaf09a48c28f40820da16709b62aee6f2bc703116b9345fab5830861"
+      image: "registry.access.redhat.com/ubi8/nodejs-20-minimal@sha256:73d584352a72534254e95af6159200a597841658a7b3ef3abb13f25427fe55ad"
     - name: "IMAGE_KN_PLUGIN_FUNC_OPENJDK_21"
-      image: "registry.access.redhat.com/ubi8/openjdk-21@sha256:441897a1f691c7d4b3a67bb3e0fea83e18352214264cb383fd057bbbd5ed863c"
+      image: "registry.access.redhat.com/ubi8/openjdk-21@sha256:e8e2b2525e1ba56ec2e2cc582a4fba7c95210cb2e073f6744172cf5d41ff309b"
     - name: "IMAGE_KN_PLUGIN_FUNC_PYTHON_39"
-      image: "registry.access.redhat.com/ubi8/python-39@sha256:27e795fd6b1b77de70d1dc73a65e4c790650748a9cfda138fdbd194b3d6eea3d"
+      image: "registry.access.redhat.com/ubi8/python-39@sha256:ff822477c76999b19173ac849ee327fa77e7f20076680785e3f91d792fb59b2c"
     - name: "KAFKA_IMAGE_kafka-broker-receiver__kafka-broker-receiver"
       image: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-ekb-receiver@sha256:61130e75eecb865274f2c5a8deca1df05d35b5f8167b4ee386a57361b1732c6d"
     - name: "KAFKA_IMAGE_kafka-broker-dispatcher__kafka-broker-dispatcher"
