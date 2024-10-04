@@ -35,7 +35,7 @@ dependencies:
     net_istio: knative-v1.15
     net_istio_artifacts_branch: release-v1.15
     redhat-knative-istio-authz-chart: 1.35.0
-    maistra: 2.4-latest
+    maistra: registry.redhat.io/openshift-service-mesh/proxyv2-rhel8:2.5
     eventing: knative-v1.15
     # eventing core midstream branch name
     eventing_artifacts_branch: release-v1.15

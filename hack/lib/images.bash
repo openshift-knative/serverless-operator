@@ -171,7 +171,7 @@ function default_knative_ingress_images() {
   kourier_registry="${registry_prefix}${kourier_app_version}/net-kourier"
 
   export KNATIVE_KOURIER_CONTROL=${KNATIVE_KOURIER_CONTROL:-$(latest_image_sha "${kourier_registry}-kourier:${knative_kourier}")}
-  export KNATIVE_KOURIER_GATEWAY=${KNATIVE_KOURIER_GATEWAY:-"quay.io/maistra-dev/proxyv2-ubi8:$(metadata.get dependencies.maistra)"}
+  export KNATIVE_KOURIER_GATEWAY=${KNATIVE_KOURIER_GATEWAY:-"$(latest_image_sha $(metadata.get dependencies.maistra))"}
 
   knative_istio="$(metadata.get dependencies.net_istio)"
   istio_app_version=$(get_app_version_from_tag "${knative_istio}")
@@ -216,8 +216,11 @@ function latest_image_sha() {
   digest=$(skopeo inspect --no-tags=true "docker://${image_without_tag}:latest" | jq -r '.Digest')
   if [ "${digest}" = "" ]; then
     digest=$(skopeo inspect --no-tags=true "docker://${image_with_tag}" | jq -r '.Digest')
-    if [ "${digest}" = "" ]; then
+    if [ "${digest}" = "" ] && ! [[ "${image_with_tag}" =~ registry.redhat.io* ]]; then
       exit 1
+    else
+      echo "${image_with_tag}"
+      return
     fi
   fi
 
