@@ -5,23 +5,23 @@ source "$(dirname "${BASH_SOURCE[0]}")/../lib/images.bash"
 
 function ensure_catalogsource_installed {
   logger.info 'Check if CatalogSource is installed'
-  if oc get catalogsource "$OPERATOR" -n "$OLM_NAMESPACE" > /dev/null 2>&1; then
-    logger.success 'CatalogSource is already installed.'
-    return 0
-  fi
+#  if oc get catalogsource "$OPERATOR" -n "$OLM_NAMESPACE" > /dev/null 2>&1; then
+#    logger.success 'CatalogSource is already installed.'
+#    return 0
+#  fi
   install_catalogsource
 }
 
 function install_catalogsource {
   logger.info "Installing CatalogSource"
 
-  ensure_catalog_pods_running
+  #ensure_catalog_pods_running
 
   local rootdir csv index_image
 
-  default_serverless_operator_images
+#  default_serverless_operator_images
 
-  index_image="${SERVERLESS_INDEX}"
+#  index_image="${SERVERLESS_INDEX}"
 
   # Build bundle and index images only when running in CI or when DOCKER_REPO_OVERRIDE is defined.
   # Otherwise the latest nightly build will be used for CatalogSource.
@@ -42,14 +42,16 @@ function install_catalogsource {
     fi
 
     # Generate CSV from template to properly substitute operator images from env variables.
-    "${rootdir}/hack/generate/csv.sh" templates/csv.yaml "$csv"
+    #"${rootdir}/hack/generate/csv.sh" templates/csv.yaml "$csv"
 
     if [[ "${OPENSHIFT_BUILD_NAME:-}" = serverless-source-image* ]]; then
       # Replace storage version migration images with quay.io variants for test purposes.
       override_storage_version_migration_images "$csv"
     fi
 
-    cat "$csv"
+    install_image_content_source_policy "$csv"
+
+    #cat "$csv"
 
     build_image "serverless-bundle" "${rootdir}" "olm-catalog/serverless-operator/Dockerfile"
 
@@ -114,6 +116,47 @@ EOF
   fi
 
   logger.success "CatalogSource installed successfully"
+}
+
+function install_image_content_source_policy {
+  local csv tmpfile
+  csv="${1:?Pass as CSV as arg[1]}"
+  logger.info "Install ImageContentSourcePolicy"
+  tmpfile=$(mktemp /tmp/icsp.XXXXXX.yaml)
+  cat > "$tmpfile" <<EOF
+apiVersion: operator.openshift.io/v1alpha1
+kind: ImageContentSourcePolicy
+metadata:
+  labels:
+    operators.openshift.org/catalog: "true"
+  name: serverless-image-content-source-policy
+spec:
+  repositoryDigestMirrors:
+EOF
+
+    relatedImages=$(yq read olm-catalog/serverless-operator/manifests/serverless-operator.clusterserviceversion.yaml 'spec.relatedImages[*].image')
+    while IFS= read -r line; do
+      if  [[ $line == $registry_redhat_io_prefix || $line =~ $registry_redhat_io_prefix ]]; then
+        img=${line%:*} # Remove tag, if any
+        img=${img%@*}  # Remove sha, if any
+        img=${img##*/} # Get image name after last slash
+        add_repository_digest_mirrors "$tmpfile" "${registry_redhat_io_prefix}/${img}" "${registry}/${img}"
+      fi
+    done <<< "$relatedImages"
+
+  [ -n "$OPENSHIFT_CI" ] && cat "$tmpfile"
+  oc apply -f "$tmpfile"
+}
+
+function add_repository_digest_mirrors {
+  echo "Add mirror image to '${1}' - $2 = $3"
+  cat << EOF | yq write --inplace --script - "$1"
+- command: update
+  path: spec.repositoryDigestMirrors[+]
+  value:
+    mirrors: [ "${3}" ]
+    source: "${2}"
+EOF
 }
 
 # Dockerfiles might specify "FROM $XYZ" which fails OpenShift on-cluster

@@ -13,7 +13,7 @@ quay_registry_app_version=${CURRENT_VERSION/./} # 1.34.0 -> 134.0
 quay_registry_app_version=${quay_registry_app_version%.*} # 134.0 -> 134
 registry_prefix="quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-"
 registry="${registry_prefix}${quay_registry_app_version}"
-registry_redhat_io_prefix="registry.redhat.io/openshift-serverless-1/"
+registry_redhat_io_prefix="registry.redhat.io/openshift-serverless-1"
 
 function default_serverless_operator_images() {
   local serverless_registry="${registry}/serverless"
@@ -82,7 +82,7 @@ function knative_eventing_images() {
   export KNATIVE_EVENTING_APPENDER=${KNATIVE_EVENTING_APPENDER:-$(latest_registry_redhat_io_image_sha "${eventing}-appender:${tag}")}
   export KNATIVE_EVENTING_EVENT_DISPLAY=${KNATIVE_EVENTING_EVENT_DISPLAY:-$(latest_registry_redhat_io_image_sha "${eventing}-event-display:${tag}")}
   export KNATIVE_EVENTING_HEARTBEATS_RECEIVER=${KNATIVE_EVENTING_HEARTBEATS_RECEIVER:-$(latest_registry_redhat_io_image_sha "${eventing}-heartbeats-receiver:${tag}")}
-  # TODO: Check if heartbeats is just a test image. Cos it's not in CSV (maybe use konflux quay.io for it)
+  # TODO: Check if heartbeats is just a test image. Cos it's not in CSV
   export KNATIVE_EVENTING_HEARTBEATS=${KNATIVE_EVENTING_HEARTBEATS:-$(latest_registry_redhat_io_image_sha "${eventing}-heartbeats:${tag}")}
   export KNATIVE_EVENTING_MIGRATE=${KNATIVE_EVENTING_MIGRATE:-$(latest_registry_redhat_io_image_sha "${eventing}-migrate:${tag}")}
   export KNATIVE_EVENTING_PONG=${KNATIVE_EVENTING_PONG:-$(latest_registry_redhat_io_image_sha "${eventing}-pong:${tag}")}
@@ -216,7 +216,7 @@ function latest_registry_redhat_io_image_sha() {
     exit 1
   fi
 
-  echo "${registry_redhat_io_prefix}${image_name}@${digest}"
+  echo "${registry_redhat_io_prefix}/${image_name}@${digest}"
 }
 
 function latest_konflux_image_sha() {
