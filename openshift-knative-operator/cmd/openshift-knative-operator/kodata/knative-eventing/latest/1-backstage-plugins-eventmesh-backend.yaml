@@ -6,7 +6,7 @@ kind: ClusterRole
 metadata:
   name: eventmesh-backend
   labels:
-    app.kubernetes.io/version: v1.14
+    app.kubernetes.io/version: v1.15
     app.kubernetes.io/component: eventmesh-backend
 
 rules:
@@ -16,18 +16,6 @@ rules:
     resources:
       # for config-logging and config-leader-election
       - configmaps
-    verbs:
-      - get
-      - list
-      - watch
-
-  # permissions for eventtypes, brokers and triggers
-  - apiGroups:
-      - "eventing.knative.dev"
-    resources:
-      - brokers
-      - eventtypes
-      - triggers
     verbs:
       - get
       - list
@@ -46,17 +34,6 @@ rules:
       - delete
       - patch
       - watch
-
-
-  # permissions to get subscribers for triggers
-  # as subscribers can be any resource, we need to give access to all resources
-  # we fetch subscribers one by one, we only need `get` verb
-  - apiGroups:
-      - "*"
-    resources:
-      - "*"
-    verbs:
-      - get
 ---
 ---
 
@@ -66,7 +43,7 @@ metadata:
   name: eventmesh-backend
   namespace: knative-eventing
   labels:
-    app.kubernetes.io/version: v1.14
+    app.kubernetes.io/version: v1.15
     app.kubernetes.io/component: eventmesh-backend
 ---
 ---
@@ -76,7 +53,7 @@ kind: ClusterRoleBinding
 metadata:
   name: eventmesh-backend
   labels:
-    app.kubernetes.io/version: v1.14
+    app.kubernetes.io/version: v1.15
     app.kubernetes.io/component: eventmesh-backend
 subjects:
   - kind: ServiceAccount
@@ -96,7 +73,7 @@ metadata:
   namespace: knative-eventing
   labels:
     app: eventmesh-backend
-    app.kubernetes.io/version: v1.14
+    app.kubernetes.io/version: v1.15
     app.kubernetes.io/component: eventmesh-backend
     app.kubernetes.io/name: knative-eventing
 spec:
@@ -108,7 +85,7 @@ spec:
       name: eventmesh-backend
       labels:
         app: eventmesh-backend
-        app.kubernetes.io/version: v1.14
+        app.kubernetes.io/version: v1.15
         app.kubernetes.io/component: eventmesh-backend
         app.kubernetes.io/name: knative-eventing
     spec:
@@ -174,7 +151,7 @@ metadata:
   namespace: knative-eventing
   labels:
     app: eventmesh-backend
-    app.kubernetes.io/version: v1.14
+    app.kubernetes.io/version: v1.15
     app.kubernetes.io/component: eventmesh-backend
     app.kubernetes.io/name: knative-eventing
 spec:
