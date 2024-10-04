@@ -457,6 +457,8 @@ function run_rolling_upgrade_tests {
 EOF
 )
 
+  echo "image template '$image_template'"
+
   # Test configuration. See https://github.com/knative/eventing/tree/main/test/upgrade#probe-test-configuration
   # TODO(ksuszyns): remove EVENTING_UPGRADE_TESTS_SERVING_SCALETOZERO when knative/operator#297 is fixed.
   export EVENTING_UPGRADE_TESTS_SERVING_SCALETOZERO=false
