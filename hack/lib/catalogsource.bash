@@ -162,7 +162,7 @@ EOF
 # Dockerfiles might specify "FROM $XYZ" which fails OpenShift on-cluster
 # builds. Replace the references with real images.
 function replace_images() {
-  local dockerfile_path tmp_dockerfile go_runtime go_builder
+  local dockerfile_path tmp_dockerfile go_runtime go_builder opm_image
   dockerfile_path=${1:?Pass dockerfile path}
   tmp_dockerfile=$(mktemp /tmp/Dockerfile.XXXXXX)
   cp "${dockerfile_path}" "$tmp_dockerfile"
@@ -175,8 +175,13 @@ function replace_images() {
     go_builder=$(grep "GO_BUILDER=" "$tmp_dockerfile" | cut -d"=" -f 2)
   fi
 
+  if grep -q "OPM_IMAGE=" "$tmp_dockerfile"; then
+    opm_image=$(grep "OPM_IMAGE=" "$tmp_dockerfile" | cut -d"=" -f 2)
+  fi
+
   sed -e "s|\$GO_RUNTIME|${go_runtime:-}|" \
-      -e "s|\$GO_BUILDER|${go_builder:-}|" -i "$tmp_dockerfile"
+      -e "s|\$GO_BUILDER|${go_builder:-}|" \
+      -e "s|\$OPM_IMAGE|${opm_image:-}|" -i "$tmp_dockerfile"
 
   echo "$tmp_dockerfile"
 }
