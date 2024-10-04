@@ -13,7 +13,7 @@ quay_registry_app_version=${CURRENT_VERSION/./} # 1.34.0 -> 134.0
 quay_registry_app_version=${quay_registry_app_version%.*} # 134.0 -> 134
 registry_prefix="quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-"
 registry="${registry_prefix}${quay_registry_app_version}"
-registry_redhat_io_prefix="registry.redhat.io/openshift-serverless-1"
+registry_redhat_io="registry.redhat.io/openshift-serverless-1"
 
 function default_serverless_operator_images() {
   local serverless_registry="${registry}/serverless"
@@ -216,7 +216,7 @@ function latest_registry_redhat_io_image_sha() {
     exit 1
   fi
 
-  echo "${registry_redhat_io_prefix}/${image_name}@${digest}"
+  echo "${registry_redhat_io}/${image_name}@${digest}"
 }
 
 function latest_konflux_image_sha() {

@@ -134,13 +134,13 @@ spec:
   repositoryDigestMirrors:
 EOF
 
-    relatedImages=$(yq read olm-catalog/serverless-operator/manifests/serverless-operator.clusterserviceversion.yaml 'spec.relatedImages[*].image')
+    relatedImages=$(yq read "$csv" 'spec.relatedImages[*].image')
     while IFS= read -r line; do
-      if  [[ $line == $registry_redhat_io_prefix || $line =~ $registry_redhat_io_prefix ]]; then
+      if  [[ $line == $registry_redhat_io || $line =~ $registry_redhat_io ]]; then
         img=${line%:*} # Remove tag, if any
         img=${img%@*}  # Remove sha, if any
         img=${img##*/} # Get image name after last slash
-        add_repository_digest_mirrors "$tmpfile" "${registry_redhat_io_prefix}/${img}" "${registry}/${img}"
+        add_repository_digest_mirrors "$tmpfile" "${registry_redhat_io}/${img}" "${registry}/${img}"
       fi
     done <<< "$relatedImages"
 
