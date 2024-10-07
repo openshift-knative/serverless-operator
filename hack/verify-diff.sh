@@ -3,7 +3,7 @@
 # Define the files to exclude
 readonly EXCLUDE_FILES=(
   'olm-catalog/serverless-operator/manifests/serverless-operator.clusterserviceversion.yaml'
-  'olm-catalog/serverless-operator/index/Dockerfile'
+  'olm-catalog/serverless-operator-index/Dockerfile'
   'test/images-rekt.yaml'
 )
 # Define the patterns to exclude
