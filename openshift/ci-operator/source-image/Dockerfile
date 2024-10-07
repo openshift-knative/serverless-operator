@@ -1,8 +1,10 @@
-FROM registry.ci.openshift.org/ocp/4.15:cli AS oc-image
+FROM registry.ci.openshift.org/ocp/4.17:cli-artifacts AS oc-image
 
 FROM src
 
-COPY --from=oc-image /usr/bin/oc /usr/bin/oc
+ARG TARGETARCH
+
+COPY --from=oc-image /usr/share/openshift/linux_$TARGETARCH/oc.rhel8 /usr/bin/oc
 COPY --from=registry.ci.openshift.org/openshift/knative-serving-src:knative-v1.15 /go/src/github.com/openshift-knative/serving/ /go/src/knative.dev/serving/
 COPY --from=registry.ci.openshift.org/openshift/knative-eventing-src:knative-v1.15 /go/src/github.com/openshift-knative/eventing/ /go/src/knative.dev/eventing/
 COPY --from=registry.ci.openshift.org/openshift/eventing-kafka-broker-src:knative-v1.15 /go/src/github.com/openshift-knative/eventing-kafka-broker/ /go/src/knative.dev/eventing-kafka-broker/

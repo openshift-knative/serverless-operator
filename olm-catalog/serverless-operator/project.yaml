@@ -23,7 +23,7 @@ requirements:
     nodejs: 20.x
     ocpVersion:
         min: '4.13'
-        max: '4.15'
+        max: '4.17'
         label: 'v4.13'
 dependencies:
     serving: knative-v1.15
