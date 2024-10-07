@@ -51,7 +51,7 @@ function install_catalogsource {
 
     # Replace registry.redhat.io references with Konflux quay.io for test purposes as
     # images in the former location are not published yet.
-    sed -ri "s#(.*)${registry_redhat_io}/(.*@sha[0-9]+:[a-z0-9]+.*)#\1${registry}/\2#" "$csv"
+    sed -ri "s#(.*)${registry_redhat_io}/(.*@sha[0-9]+:[a-z0-9]+.*)#\1${registry_quay}/\2#" "$csv"
 
     cat "$csv"
 
@@ -89,7 +89,7 @@ function install_catalogsource {
     logger.debug 'Undo potential changes to the index Dockerfile.'
     mv "${rootdir}/_output/bkp.Dockerfile" "${rootdir}/${index_dorkerfile_path}"
   else
-    install_image_content_source_policy "$index_image" "$registry_redhat_io" "$registry"
+    install_image_content_source_policy "$index_image" "$registry_redhat_io" "$registry_quay"
   fi
 
   logger.info 'Install the catalogsource.'
