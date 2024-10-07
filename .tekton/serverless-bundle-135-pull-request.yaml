@@ -8,7 +8,7 @@ metadata:
     build.appstudio.redhat.com/target_branch: '{{target_branch}}'
     pipelinesascode.tekton.dev/max-keep-runs: "3"
     pipelinesascode.tekton.dev/on-cel-expression: event == "pull_request" && target_branch
-      == "main" 
+      == "main" && ( files.all.exists(x, x.matches('^olm-catalog/serverless-operator/manifests/')) || files.all.exists(x, x.matches('^olm-catalog/serverless-operator/metadata/')) || files.all.exists(x, x.matches('^olm-catalog/serverless-operator/Dockerfile')) ||files.all.exists(x, x.matches('^.tekton/.*serverless-bundle.*') )
   creationTimestamp: null
   labels:
     appstudio.openshift.io/application: serverless-operator-135

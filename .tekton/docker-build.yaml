@@ -50,6 +50,10 @@ spec:
     - name: workspace
       workspace: workspace
   params:
+  - default: --all-projects --org=3e1a4cca-ebfb-495f-b64c-3cc960d566b4 --exclude=test*,vendor,third_party
+    description: Append arguments to Snyk code command.
+    name: snyk-args
+    type: string
   - default: "true"
     description: Build a source image.
     name: build-source-image
@@ -128,6 +132,33 @@ spec:
     name: CHAINS-GIT_COMMIT
     value: $(tasks.clone-repository.results.commit)
   tasks:
+  - name: sast-snyk-check
+    params:
+    - name: ARGS
+      value: $(params.snyk-args)
+    - name: image-digest
+      value: $(tasks.build-image-index.results.IMAGE_DIGEST)
+    - name: image-url
+      value: $(tasks.build-image-index.results.IMAGE_URL)
+    runAfter:
+    - build-image-index
+    taskRef:
+      params:
+      - name: name
+        value: sast-snyk-check
+      - name: bundle
+        value: quay.io/konflux-ci/tekton-catalog/task-sast-snyk-check:0.2@sha256:82c42d27c9c59db6cf6c235e89f7b37f5cdfc75d0d361ca0ee91ae703ba72301
+      - name: kind
+        value: task
+      resolver: bundles
+    when:
+    - input: $(params.skip-checks)
+      operator: in
+      values:
+      - "false"
+    workspaces:
+    - name: workspace
+      workspace: workspace
   - name: prefetch-dependencies
     params:
     - name: dev-package-managers
@@ -378,31 +409,6 @@ spec:
       operator: in
       values:
       - "false"
-  - name: sast-snyk-check
-    params:
-    - name: image-digest
-      value: $(tasks.build-image-index.results.IMAGE_DIGEST)
-    - name: image-url
-      value: $(tasks.build-image-index.results.IMAGE_URL)
-    runAfter:
-    - build-image-index
-    taskRef:
-      params:
-      - name: name
-        value: sast-snyk-check
-      - name: bundle
-        value: quay.io/konflux-ci/tekton-catalog/task-sast-snyk-check:0.2@sha256:82c42d27c9c59db6cf6c235e89f7b37f5cdfc75d0d361ca0ee91ae703ba72301
-      - name: kind
-        value: task
-      resolver: bundles
-    when:
-    - input: $(params.skip-checks)
-      operator: in
-      values:
-      - "false"
-    workspaces:
-    - name: workspace
-      workspace: workspace
   - name: clamav-scan
     params:
     - name: image-digest
