@@ -139,7 +139,7 @@ function knative_eventing_kafka_broker_images() {
   export KNATIVE_EVENTING_KAFKA_BROKER_DISPATCHER=${KNATIVE_EVENTING_KAFKA_BROKER_DISPATCHER:-$(latest_registry_redhat_io_image_sha "${eventing_kafka_broker}-dispatcher:${tag}")}
   export KNATIVE_EVENTING_KAFKA_BROKER_RECEIVER=${KNATIVE_EVENTING_KAFKA_BROKER_RECEIVER:-$(latest_registry_redhat_io_image_sha "${eventing_kafka_broker}-receiver:${tag}")}
   export KNATIVE_EVENTING_KAFKA_BROKER_KAFKA_CONTROLLER=${KNATIVE_EVENTING_KAFKA_BROKER_KAFKA_CONTROLLER:-$(latest_registry_redhat_io_image_sha "${eventing_kafka_broker}-kafka-controller:${tag}")}
-  export KNATIVE_EVENTING_KAFKA_BROKER_WEBHOOK_KAFKA=${KNATIVE_EVENTING_KAFKA_BROKER_WEBHOOK_KAFKA:-$(latest_registry_redhat_io_image_sha "${eventing_kafka_broker}-webhook-kafka":${tag})}
+  export KNATIVE_EVENTING_KAFKA_BROKER_WEBHOOK_KAFKA=${KNATIVE_EVENTING_KAFKA_BROKER_WEBHOOK_KAFKA:-$(latest_registry_redhat_io_image_sha "${eventing_kafka_broker}-webhook-kafka:${tag}")}
   export KNATIVE_EVENTING_KAFKA_BROKER_POST_INSTALL=${KNATIVE_EVENTING_KAFKA_BROKER_POST_INSTALL:-$(latest_registry_redhat_io_image_sha "${eventing_kafka_broker}-post-install:${tag}")}
 }
 
