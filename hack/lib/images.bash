@@ -78,19 +78,19 @@ function knative_eventing_images() {
   export KNATIVE_EVENTING_CHANNEL_DISPATCHER=${KNATIVE_EVENTING_CHANNEL_DISPATCHER:-$(latest_registry_redhat_io_image_sha "${eventing}-channel-dispatcher:${tag}")}
   export KNATIVE_EVENTING_APISERVER_RECEIVE_ADAPTER=${KNATIVE_EVENTING_APISERVER_RECEIVE_ADAPTER:-$(latest_registry_redhat_io_image_sha "${eventing}-apiserver-receive-adapter:${tag}")}
   export KNATIVE_EVENTING_JOBSINK=${KNATIVE_EVENTING_JOBSINK:-$(latest_registry_redhat_io_image_sha "${eventing}-jobsink:${tag}")}
-
-  export KNATIVE_EVENTING_APPENDER=${KNATIVE_EVENTING_APPENDER:-$(latest_registry_redhat_io_image_sha "${eventing}-appender:${tag}")}
-  export KNATIVE_EVENTING_EVENT_DISPLAY=${KNATIVE_EVENTING_EVENT_DISPLAY:-$(latest_registry_redhat_io_image_sha "${eventing}-event-display:${tag}")}
-  export KNATIVE_EVENTING_HEARTBEATS_RECEIVER=${KNATIVE_EVENTING_HEARTBEATS_RECEIVER:-$(latest_registry_redhat_io_image_sha "${eventing}-heartbeats-receiver:${tag}")}
-  # TODO: Check if heartbeats is just a test image. Cos it's not in CSV
-  export KNATIVE_EVENTING_HEARTBEATS=${KNATIVE_EVENTING_HEARTBEATS:-$(latest_registry_redhat_io_image_sha "${eventing}-heartbeats:${tag}")}
   export KNATIVE_EVENTING_MIGRATE=${KNATIVE_EVENTING_MIGRATE:-$(latest_registry_redhat_io_image_sha "${eventing}-migrate:${tag}")}
-  export KNATIVE_EVENTING_PONG=${KNATIVE_EVENTING_PONG:-$(latest_registry_redhat_io_image_sha "${eventing}-pong:${tag}")}
-  export KNATIVE_EVENTING_SCHEMA=${KNATIVE_EVENTING_SCHEMA:-$(latest_registry_redhat_io_image_sha "${eventing}-schema:${tag}")}
+
+  # Point to Konflux Quay repo for images not present in ClusterServiceVersion.
+  export KNATIVE_EVENTING_APPENDER=${KNATIVE_EVENTING_APPENDER:-$(latest_konflux_image_sha "${eventing}-appender:${tag}")}
+  export KNATIVE_EVENTING_EVENT_DISPLAY=${KNATIVE_EVENTING_EVENT_DISPLAY:-$(latest_konflux_image_sha "${eventing}-event-display:${tag}")}
+  export KNATIVE_EVENTING_HEARTBEATS_RECEIVER=${KNATIVE_EVENTING_HEARTBEATS_RECEIVER:-$(latest_konflux_image_sha "${eventing}-heartbeats-receiver:${tag}")}
+  export KNATIVE_EVENTING_HEARTBEATS=${KNATIVE_EVENTING_HEARTBEATS:-$(latest_konflux_image_sha "${eventing}-heartbeats:${tag}")}
+  export KNATIVE_EVENTING_PONG=${KNATIVE_EVENTING_PONG:-$(latest_konflux_image_sha "${eventing}-pong:${tag}")}
+  export KNATIVE_EVENTING_SCHEMA=${KNATIVE_EVENTING_SCHEMA:-$(latest_konflux_image_sha "${eventing}-schema:${tag}")}
 
   # Test images
-  # Use konflux quay.io directly. We don't want to cope with ImageContentSourcePolicy for test images.
   local eventing_test="${eventing}-test"
+
   export KNATIVE_EVENTING_TEST_EVENT_SENDER=${KNATIVE_EVENTING_TEST_EVENT_SENDER:-$(latest_konflux_image_sha "${eventing_test}-event-sender:${tag}")}
   export KNATIVE_EVENTING_TEST_EVENTSHUB=${KNATIVE_EVENTING_TEST_EVENTSHUB:-$(latest_konflux_image_sha "${eventing_test}-eventshub:${tag}")}
   export KNATIVE_EVENTING_TEST_PRINT=${KNATIVE_EVENTING_TEST_PRINT:-$(latest_konflux_image_sha "${eventing_test}-print:${tag}")}
