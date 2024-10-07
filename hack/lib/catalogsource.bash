@@ -21,7 +21,7 @@ function install_catalogsource {
 
   default_serverless_operator_images
 
-  index_image="${SERVERLESS_INDEX}"
+  index_image="${INDEX_IMAGE:-$SERVERLESS_INDEX}"
 
   # Build bundle and index images only when running in CI or when DOCKER_REPO_OVERRIDE is defined.
   # Otherwise the latest nightly build will be used for CatalogSource.
@@ -48,6 +48,10 @@ function install_catalogsource {
       # Replace storage version migration images with quay.io variants for test purposes.
       override_storage_version_migration_images "$csv"
     fi
+
+    # Replace registry.redhat.io references with Konflux quay.io for test purposes as
+    # images in the former location are not published yet.
+    sed -ri "s#(.*)${registry_redhat_io}/(.*@sha[0-9]+:[a-z0-9]+.*)#\1${registry_quay}/\2#" "$csv"
 
     cat "$csv"
 
@@ -84,11 +88,8 @@ function install_catalogsource {
 
     logger.debug 'Undo potential changes to the index Dockerfile.'
     mv "${rootdir}/_output/bkp.Dockerfile" "${rootdir}/${index_dorkerfile_path}"
-  fi
-
-  if [ -n "${INDEX_IMAGE:-}" ]; then
-     echo "Index image : $INDEX_IMAGE"
-     index_image="$INDEX_IMAGE"
+  else
+    install_image_content_source_policy "$index_image" "$registry_redhat_io" "$registry_quay"
   fi
 
   logger.info 'Install the catalogsource.'
@@ -114,6 +115,53 @@ EOF
   fi
 
   logger.success "CatalogSource installed successfully"
+}
+
+function install_image_content_source_policy {
+  local index tmpfile registry_source registry_target
+  index="${1:?Pass index image as arg[1]}"
+  registry_source="${2:?Pass source registry arg[2]}"
+  registry_target="${3:?Pass target registry arg[3]}"
+
+  logger.info "Install ImageContentSourcePolicy"
+  tmpfile=$(mktemp /tmp/icsp.XXXXXX.yaml)
+  cat > "$tmpfile" <<EOF
+apiVersion: operator.openshift.io/v1alpha1
+kind: ImageContentSourcePolicy
+metadata:
+  labels:
+    operators.openshift.org/catalog: "true"
+  name: serverless-image-content-source-policy
+spec:
+  repositoryDigestMirrors:
+EOF
+
+    oc adm catalog mirror "$index" "$registry_target" --manifests-only=true --to-manifests=iib-manifests/
+
+    # The generated ICSP is incorrect as it replaces slashes in long repository paths with dashes and
+    # includes third-party images. Create a proper ICSP based on the generated one.
+    mirrors=$(yq read iib-manifests/imageContentSourcePolicy.yaml 'spec.repositoryDigestMirrors[*].source')
+    while IFS= read -r line; do
+      # shellcheck disable=SC2053
+      if  [[ $line == $registry_source || $line =~ $registry_source ]]; then
+        img=${line##*/} # Get image name after last slash
+        add_repository_digest_mirrors "$tmpfile" "${registry_source}/${img}" "${registry_target}/${img}"
+      fi
+    done <<< "$mirrors"
+
+  [ -n "$OPENSHIFT_CI" ] && cat "$tmpfile"
+  oc apply -f "$tmpfile"
+}
+
+function add_repository_digest_mirrors {
+  echo "Add mirror image to '${1}' - $2 = $3"
+  cat << EOF | yq write --inplace --script - "$1"
+- command: update
+  path: spec.repositoryDigestMirrors[+]
+  value:
+    mirrors: [ "${3}" ]
+    source: "${2}"
+EOF
 }
 
 # Dockerfiles might specify "FROM $XYZ" which fails OpenShift on-cluster
@@ -161,6 +209,7 @@ function build_image() {
 
 function delete_catalog_source {
   logger.info "Deleting CatalogSource $OPERATOR"
+  oc delete imagecontentsourcepolicy --ignore-not-found=true serverless-image-content-source-policy
   oc delete catalogsource --ignore-not-found=true -n "$OLM_NAMESPACE" "$OPERATOR"
   oc delete service --ignore-not-found=true -n "$OLM_NAMESPACE" serverless-index
   oc delete deployment --ignore-not-found=true -n "$OLM_NAMESPACE" serverless-index
