@@ -89,7 +89,7 @@ function install_catalogsource {
     logger.debug 'Undo potential changes to the index Dockerfile.'
     mv "${rootdir}/_output/bkp.Dockerfile" "${rootdir}/${index_dorkerfile_path}"
   else
-    install_image_content_source_policy "$index_image"
+    install_image_content_source_policy "$index_image" "$registry_redhat_io" "$registry"
   fi
 
   logger.info 'Install the catalogsource.'
@@ -118,8 +118,11 @@ EOF
 }
 
 function install_image_content_source_policy {
-  local index tmpfile
+  local index tmpfile registry_source registry_target
   index="${1:?Pass index image as arg[1]}"
+  registry_source="${2:?Pass source registry arg[2]}"
+  registry_target="${3:?Pass target registry arg[3]}"
+
   logger.info "Install ImageContentSourcePolicy"
   tmpfile=$(mktemp /tmp/icsp.XXXXXX.yaml)
   cat > "$tmpfile" <<EOF
@@ -133,15 +136,16 @@ spec:
   repositoryDigestMirrors:
 EOF
 
-    oc adm catalog mirror "$index" "$registry" --manifests-only=true --to-manifests=iib-manifests/
+    oc adm catalog mirror "$index" "$registry_target" --manifests-only=true --to-manifests=iib-manifests/
 
     # The generated ICSP is incorrect as it replaces slashes in long repository paths with dashes and
     # includes third-party images. Create a proper ICSP based on the generated one.
     mirrors=$(yq read iib-manifests/imageContentSourcePolicy.yaml 'spec.repositoryDigestMirrors[*].source')
     while IFS= read -r line; do
-      if  [[ $line == $registry_redhat_io || $line =~ $registry_redhat_io ]]; then
+      # shellcheck disable=SC2053
+      if  [[ $line == $registry_source || $line =~ $registry_source ]]; then
         img=${line##*/} # Get image name after last slash
-        add_repository_digest_mirrors "$tmpfile" "${registry_redhat_io}/${img}" "${registry}/${img}"
+        add_repository_digest_mirrors "$tmpfile" "${registry_source}/${img}" "${registry_target}/${img}"
       fi
     done <<< "$mirrors"
 
