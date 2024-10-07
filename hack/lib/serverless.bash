@@ -298,6 +298,9 @@ spec:
   - labels:
       sidecar.istio.io/inject: "false"
     name: job-sink
+  - labels:
+      sidecar.istio.io/inject: "false"
+    name: mt-broker-controller
 EOF
 
   yq merge --inplace --arrays append "$custom_resource" "$istio_patch"
