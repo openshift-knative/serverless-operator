@@ -44,11 +44,6 @@ function install_catalogsource {
     # Generate CSV from template to properly substitute operator images from env variables.
     "${rootdir}/hack/generate/csv.sh" templates/csv.yaml "$csv"
 
-    if [[ "${OPENSHIFT_BUILD_NAME:-}" = serverless-source-image* ]]; then
-      # Replace storage version migration images with quay.io variants for test purposes.
-      override_storage_version_migration_images "$csv"
-    fi
-
     # Replace registry.redhat.io references with Konflux quay.io for test purposes as
     # images in the former location are not published yet.
     sed -ri "s#(.*)${registry_redhat_io}/(.*@sha[0-9]+:[a-z0-9]+.*)#\1${registry_quay}/\2#" "$csv"
@@ -267,24 +262,4 @@ function add_user {
   timeout 600 "${occmd}"
 
   logger.info "Kubeconfig for user ${name} created"
-}
-
-# Use images from quay registry in order to test issues such as SRVCOM-1873
-# during upgrades. The issue is only reproducible if Knative version is identical
-# before/after upgrade but the migrator Job spec/image changes. Before upgrade,
-# the images are pulled from CI registry and after upgrade they're pulled from
-# quay.io. This way the Job spec is changes even though Knative version
-# remains same.
-function override_storage_version_migration_images {
-  local csv images name version
-  csv=${1:?Pass csv as arg[1]}
-  # Get all storage version migration images.
-  while IFS=$'\n' read -r line; do
-    images+=("$line");
-  done < <(grep storage-version-migration "$csv" | grep "image:" | awk '{ print $2 }' | awk -F"\"" '{ print $2 }')
-  for image_pullspec in "${images[@]}"; do
-    name=$(echo "$image_pullspec" | awk -F":" '{print $1}' | awk -F"/" '{print $NF}')
-    version=$(echo "$image_pullspec" | awk -F":" '{ print $2 }')
-    sed -i "s,${image_pullspec},quay.io/openshift-knative/${name}:${version}," "$csv"
-  done
 }
