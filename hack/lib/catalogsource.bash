@@ -5,23 +5,23 @@ source "$(dirname "${BASH_SOURCE[0]}")/../lib/images.bash"
 
 function ensure_catalogsource_installed {
   logger.info 'Check if CatalogSource is installed'
-#  if oc get catalogsource "$OPERATOR" -n "$OLM_NAMESPACE" > /dev/null 2>&1; then
-#    logger.success 'CatalogSource is already installed.'
-#    return 0
-#  fi
+  if oc get catalogsource "$OPERATOR" -n "$OLM_NAMESPACE" > /dev/null 2>&1; then
+    logger.success 'CatalogSource is already installed.'
+    return 0
+  fi
   install_catalogsource
 }
 
 function install_catalogsource {
   logger.info "Installing CatalogSource"
 
-  #ensure_catalog_pods_running
+  ensure_catalog_pods_running
 
   local rootdir csv index_image
 
-#  default_serverless_operator_images
+  default_serverless_operator_images
 
-#  index_image="${SERVERLESS_INDEX}"
+  index_image="${SERVERLESS_INDEX}"
 
   # Build bundle and index images only when running in CI or when DOCKER_REPO_OVERRIDE is defined.
   # Otherwise the latest nightly build will be used for CatalogSource.
@@ -42,16 +42,18 @@ function install_catalogsource {
     fi
 
     # Generate CSV from template to properly substitute operator images from env variables.
-    #"${rootdir}/hack/generate/csv.sh" templates/csv.yaml "$csv"
+    "${rootdir}/hack/generate/csv.sh" templates/csv.yaml "$csv"
 
     if [[ "${OPENSHIFT_BUILD_NAME:-}" = serverless-source-image* ]]; then
       # Replace storage version migration images with quay.io variants for test purposes.
       override_storage_version_migration_images "$csv"
     fi
 
-    install_image_content_source_policy "$csv"
+    # Replace registry.redhat.io references with Konflux quay.io for test purposes as
+    # images in the former location are not published yet.
+    sed -ri "s#(.*)${registry_redhat_io}/(.*@sha[0-9]+:[a-z0-9]+.*)#\1${registry}/\2#" "$csv"
 
-    #cat "$csv"
+    cat "$csv"
 
     build_image "serverless-bundle" "${rootdir}" "olm-catalog/serverless-operator/Dockerfile"
 
