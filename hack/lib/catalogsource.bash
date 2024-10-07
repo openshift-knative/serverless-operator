@@ -133,7 +133,7 @@ spec:
   repositoryDigestMirrors:
 EOF
 
-    oc adm catalog mirror "$index_image" "$registry" --manifests-only=true --to-manifests=iib-manifests/
+    oc adm catalog mirror "$index" "$registry" --manifests-only=true --to-manifests=iib-manifests/
 
     # The generated ICSP is incorrect as it replaces slashes in long repository paths with dashes and
     # includes third-party images. Create a proper ICSP based on the generated one.
