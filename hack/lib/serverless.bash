@@ -214,6 +214,17 @@ spec:
     istio: # point these to our own specific gateways now
       gateway.knative-serving.knative-ingress-gateway: knative-istio-ingressgateway.knative-serving-ingress.svc.cluster.local
       local-gateway.knative-serving.knative-local-gateway: knative-local-gateway.knative-serving-ingress.svc.cluster.local
+  deployments:
+  - labels:
+      sidecar.istio.io/inject: "true"
+    annotations:
+      sidecar.istio.io/rewriteAppHTTPProbers: "true"
+    name: activator
+  - labels:
+      sidecar.istio.io/inject: "true"
+    annotations:
+      sidecar.istio.io/rewriteAppHTTPProbers: "true"
+    name: autoscaler
 EOF
 
   yq merge --inplace --arrays append "$custom_resource" "$istio_patch"
@@ -233,17 +244,29 @@ spec:
       istio: "enabled"
       delivery-timeout: "enabled"
   workloads:
-  - annotations:
+  - labels:
+      sidecar.istio.io/inject: "true"
+    annotations:
       sidecar.istio.io/logLevel: "debug"
+      sidecar.istio.io/rewriteAppHTTPProbers: "true"
     name: pingsource-mt-adapter
-  - annotations:
+  - labels:
+      sidecar.istio.io/inject: "true"
+    annotations:
       sidecar.istio.io/logLevel: "debug"
+      sidecar.istio.io/rewriteAppHTTPProbers: "true"
     name: mt-broker-ingress
-  - annotations:
+  - labels:
+      sidecar.istio.io/inject: "true"
+    annotations:
       sidecar.istio.io/logLevel: "debug"
+      sidecar.istio.io/rewriteAppHTTPProbers: "true"
     name: mt-broker-filter
-  - annotations:
+  - labels:
+      sidecar.istio.io/inject: "true"
+    annotations:
       sidecar.istio.io/logLevel: "debug"
+      sidecar.istio.io/rewriteAppHTTPProbers: "true"
     name: imc-dispatcher
 EOF
 

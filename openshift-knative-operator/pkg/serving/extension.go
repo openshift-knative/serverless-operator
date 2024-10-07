@@ -90,9 +90,6 @@ func (e *extension) Transformers(ks base.KComponent) []mf.Transformer {
 	}
 	tf = append(tf, enableSecretInformerFilteringTransformers(ks)...)
 	tf = append(tf, monitoring.GetServingTransformers(ks)...)
-	if ks.(*operatorv1beta1.KnativeServing).Spec.Ingress.Istio.Enabled {
-		tf = append(tf, common.AddIstioSidecarInjectLabels(ks))
-	}
 	return append(tf, common.DeprecatedAPIsTranformers(e.kubeclient.Discovery())...)
 }
 
