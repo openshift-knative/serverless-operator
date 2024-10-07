@@ -225,6 +225,21 @@ spec:
     annotations:
       sidecar.istio.io/rewriteAppHTTPProbers: "true"
     name: autoscaler
+  - labels:
+      sidecar.istio.io/inject: "false"
+    name: autoscaler-hpa
+  - labels:
+      sidecar.istio.io/inject: "false"
+    name: controller
+  - labels:
+      sidecar.istio.io/inject: "false"
+    name: net-istio-controller
+  - labels:
+      sidecar.istio.io/inject: "false"
+    name: net-istio-webhook
+  - labels:
+      sidecar.istio.io/inject: "false"
+    name: webhook
 EOF
 
   yq merge --inplace --arrays append "$custom_resource" "$istio_patch"
@@ -268,6 +283,21 @@ spec:
       sidecar.istio.io/logLevel: "debug"
       sidecar.istio.io/rewriteAppHTTPProbers: "true"
     name: imc-dispatcher
+  - labels:
+      sidecar.istio.io/inject: "false"
+    name: eventing-controller
+  - labels:
+      sidecar.istio.io/inject: "false"
+    name: eventing-istio-controller
+  - labels:
+      sidecar.istio.io/inject: "false"
+    name: eventing-webhook
+  - labels:
+      sidecar.istio.io/inject: "false"
+    name: imc-controller
+  - labels:
+      sidecar.istio.io/inject: "false"
+    name: job-sink
 EOF
 
   yq merge --inplace --arrays append "$custom_resource" "$istio_patch"
@@ -345,6 +375,9 @@ spec:
       sidecar.istio.io/logLevel: "debug"
       sidecar.istio.io/rewriteAppHTTPProbers: "true"
     name: kafka-controller
+  - labels:
+      sidecar.istio.io/inject: "false"
+    name: kafka-webhook-eventing
 EOF
 
   yq merge --inplace --arrays append "$custom_resource" "$istio_patch"
