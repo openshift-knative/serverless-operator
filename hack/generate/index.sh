@@ -18,19 +18,17 @@ function generate_catalog {
   index_dir="${root_dir}/olm-catalog/serverless-operator/index"
 
   # TODO: Remove this
-  catalog_tmp_dir=./catalog-migrate
+  #catalog_tmp_dir=./catalog-migrate
 
   while IFS=$'\n' read -r ocp_version; do
     logger.info "Generating catalog for OCP ${ocp_version}"
 
-    #catalog_tmp_dir=$(mktemp -d)
+    catalog_tmp_dir=$(mktemp -d)
     mkdir -p "${index_dir}/v${ocp_version}/catalog/serverless-operator"
 
     catalog_template="${index_dir}/v${ocp_version}/catalog-template.json"
-    # TODO: Use only if it differs from last one?
-    #skopeo inspect --no-tags=true "docker://registry.redhat.io/redhat/redhat-operator-index:v${ocp_version}" | jq -r '.Digest'
 
-    #opm migrate "registry.redhat.io/redhat/redhat-operator-index:v${ocp_version}" "${catalog_tmp_dir}"
+    opm migrate "registry.redhat.io/redhat/redhat-operator-index:v${ocp_version}" "${catalog_tmp_dir}"
 
     # Generate simplified template
     opm alpha convert-template basic "${catalog_tmp_dir}/serverless-operator/catalog.json" | jq . \
@@ -44,21 +42,21 @@ function generate_catalog {
 
     add_latest_bundle "${catalog_template}"
 
-    # TODO: Add previous channel if necessary (1.34.0)
-
     # Generate full catalog
-    #opm alpha render-template basic "${catalog_template}" \
-    #  > "${index_dir}/v${ocp_version}/catalog/serverless-operator/catalog.json"
+    opm alpha render-template basic "${catalog_template}" \
+      > "${index_dir}/v${ocp_version}/catalog/serverless-operator/catalog.json"
 
-    rm -rf "${catalog_tmp_dir}"
+    #rm -rf "${catalog_tmp_dir}"
   done < <(metadata.get 'requirements.ocpVersion.list[*]')
 
 }
 
 function add_channel {
-  local channel catalog_template catalog current_version current_csv major minor micro previous_version channel_entry version
+  local channel catalog_template catalog current_version current_csv major \
+    minor micro previous_version channel_entry version
   catalog_template=${1?Pass catalog template path as arg[1]}
   channel=${2:?Pass channel name as arg[2]}
+
 
   current_version=$(metadata.get 'project.version')
   version="${3:-$current_version}"
@@ -110,9 +108,9 @@ function add_latest_bundle {
   catalog_template=${1?Pass catalog template path as arg[1]}
   catalog=$(mktemp catalog-XXX.json)
 
-  #default_serverless_operator_images
+  default_serverless_operator_images
   # TODO: Remove this
-  export SERVERLESS_BUNDLE=quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/serverless-bundle@sha256:251f4734eb923eeea8fb1b49996d1c5d52e6285819162c90a4f445f644ba4754
+  #export SERVERLESS_BUNDLE=quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/serverless-bundle@sha256:251f4734eb923eeea8fb1b49996d1c5d52e6285819162c90a4f445f644ba4754
 
   entry=$(jq '.entries[] | select(.schema=="olm.bundle") | select(.image|test("'${registry_quay}'"))' "${catalog_template}")
   # Add bundle itself
