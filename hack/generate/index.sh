@@ -16,12 +16,13 @@ function generate_catalog {
 
   root_dir="$(dirname "$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")")"
   index_dir="${root_dir}/olm-catalog/serverless-operator/index"
-  catalog_tmp_dir=$(mktemp -d)
+
   #catalog_tmp_dir=./catalog-migrate
 
   while IFS=$'\n' read -r ocp_version; do
     logger.info "Generating catalog for OCP ${ocp_version}"
 
+    catalog_tmp_dir=$(mktemp -d)
     mkdir -p "${index_dir}/v${ocp_version}/catalog/serverless-operator"
 
     catalog_template="${index_dir}/v${ocp_version}/catalog-template.json"
@@ -45,8 +46,10 @@ function generate_catalog {
     # Generate full catalog
     #opm alpha render-template basic "${catalog_template}" \
     #  > "${index_dir}/v${ocp_version}/catalog/serverless-operator/catalog.json"
+
+    rm -rf "${catalog_tmp_dir}"
   done < <(metadata.get 'requirements.ocpVersion.list[*]')
-  #rm -rf "${catalog_tmp_dir}
+
 }
 
 function add_channel {
