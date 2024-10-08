@@ -60,6 +60,9 @@ jobs:
 
       - name: Regenerate all generated files
         working-directory: ./src/github.com/${{ github.repository }}
+        env:
+          REGISTRY_REDHAT_IO_USERNAME: ${{ secrets.REGISTRY_REDHAT_IO_USERNAME }}
+          REGISTRY_REDHAT_IO_PASSWORD: ${{ secrets.REGISTRY_REDHAT_IO_PASSWORD }}
         run: make generated-files
 
       # Optional:
