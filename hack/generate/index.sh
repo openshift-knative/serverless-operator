@@ -2,7 +2,7 @@
 
 set -Eeuo pipefail
 
-target="${1:?Provide a target index yaml file as arg[1]}"
+#target="${1:?Provide a target index yaml file as arg[1]}"
 
 # shellcheck disable=SC1091,SC1090
 source "$(dirname "${BASH_SOURCE[0]}")/../lib/__sources__.bash"
@@ -79,9 +79,105 @@ EOF
   cat "${channel_entry_yaml}" >> "${target}"
 }
 
-# Clear the file.
-rm -f "${target}"
+function add_channel_entry {
+  local channel
+  channel=${1:?Provide channel name}
+}
 
-while IFS=$'\n' read -r channel; do
-  add_channel_entries "$channel" "${target}"
-done < <(metadata.get 'olm.channels.list[*]')
+function generate_catalog {
+  local root_dir index_dir
+
+#  if [[ -n "${REGISTRY_REDHAT_IO_USERNAME:-}" ]] || [[ -n "${REGISTRY_REDHAT_IO_PASSWORD:-}" ]]; then
+#    skopeo login registry.redhat.io -u "${REGISTRY_REDHAT_IO_USERNAME}" -p "${REGISTRY_REDHAT_IO_PASSWORD}"
+#  fi
+
+  root_dir="$(dirname "$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")")"
+  index_dir="${root_dir}/olm-catalog/serverless-operator/index"
+  #catalog_tmp_dir=$(mktemp -d)
+  catalog_tmp_dir=./catalog-migrate
+
+  # TODO: Use only if it differs from last one?
+  #skopeo inspect --no-tags=true "docker://registry.redhat.io/redhat/redhat-operator-index:v4.16" | jq -r '.Digest'
+
+  #opm migrate registry.redhat.io/redhat/redhat-operator-index:v4.16 "${catalog_tmp_dir}"
+
+  mkdir -p "${index_dir}/v4.16/catalog/serverless-operator"
+
+  # Generate simplified template
+  opm alpha convert-template basic "${catalog_tmp_dir}/serverless-operator/catalog.json" | jq . \
+    > "${index_dir}/v4.16/catalog-template.json"
+
+  current_version=$(metadata.get 'project.version')
+  current_csv="serverless-operator.v${current_version}"
+  major=$(versions.major "$current_version")
+  minor=$(versions.minor "$current_version")
+  micro=$(versions.micro "$current_version")
+
+  # Handle the first entry specifically as it might be a z-stream release.
+  if [[ "$micro" == "0" ]]; then
+    previous_version="${major}.$(( minor-1 )).${micro}"
+  else
+    previous_version="${major}.${minor}.0"
+  fi
+
+  while IFS=$'\n' read -r channel; do
+      catalog=$(mktemp catalog-XXX.json)
+      channel_entry=$(jq '.entries[] | select(.schema=="olm.channel" and .name=="'"${channel}"'").entries[]' "${index_dir}/v4.16/catalog-template.json")
+      # Add channel if necessary
+      if [[ "${channel_entry}" == "" ]]; then
+        jq '.entries += [{
+              "name": "'"${channel}"'",
+              "package": "serverless-operator",
+              "schema": "olm.channel"
+        }]' "${index_dir}/v4.16/catalog-template.json" > "${catalog}"
+      else
+        cp "${index_dir}/v4.16/catalog-template.json" "${catalog}"
+      fi
+
+      catalog_2=$(mktemp catalog-XXX.json)
+      entry=$(jq '.entries[] | select(.schema=="olm.channel" and .name=="'"${channel}"'").entries[]? | select(.name=="'"${current_csv}"'")' "${catalog}")
+      # Add entry to the channel
+      if [[ "${entry}" == "" ]]; then
+        jq '{
+        schema: .schema,
+        entries: [ .entries[] | select(.schema=="olm.channel" and .name=="'"${channel}"'").entries += [{
+          "name": "serverless-operator.v'"${current_version}"'",
+          "replaces": "serverless-operator.v'"${previous_version}"'",
+          "skipRange": "\u003e='"${previous_version}"' \u003c'"${current_version}"'"
+    }]]}' "${catalog}" > "${catalog_2}"
+      fi
+      mv "${catalog_2}" "${index_dir}/v4.16/catalog-template.json"
+  done < <(metadata.get 'olm.channels.list[*]')
+
+  #default_serverless_operator_images
+  # TODO: Remove this
+  export SERVERLESS_BUNDLE=quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/serverless-bundle@sha256:251f4734eb923eeea8fb1b49996d1c5d52e6285819162c90a4f445f644ba4754
+
+  catalog_3=$(mktemp catalog-XXX.json)
+  entry=$(jq '.entries[] | select(.schema=="olm.bundle") | select(.image|test("'${registry_quay}'"))' "${index_dir}/v4.16/catalog-template.json")
+  if [[ "$entry" == "" ]]; then
+    jq '.entries += [{
+          "schema": "olm.bundle",
+          "image": "'"${SERVERLESS_BUNDLE}"'",
+    }]' "${index_dir}/v4.16/catalog-template.json" > "${catalog}"
+  else
+    jq '.entries[] | select(.schema=="olm.bundle") | select(.image|test("'$registry_quay'")) | { schema, image: "'"${SERVERLESS_BUNDLE}"'" }' \
+      "${index_dir}/v4.16/catalog-template.json" > "${catalog}"
+  fi
+  mv "${catalog}" "${index_dir}/v4.16/catalog-template.json"
+
+  # Generate full catalog
+  #opm alpha render-template basic "${index_dir}/v4.16/catalog-template.json" \
+  #  > "${index_dir}/v4.16/catalog/serverless-operator/catalog.json"
+
+  #rm -rf ${catalog_tmp_dir}
+}
+
+generate_catalog
+
+# Clear the file.
+#rm -f "${target}"
+
+#while IFS=$'\n' read -r channel; do
+#  add_channel_entries "$channel" "${target}"
+#done < <(metadata.get 'olm.channels.list[*]')
