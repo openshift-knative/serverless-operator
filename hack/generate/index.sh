@@ -2,23 +2,18 @@
 
 set -Eeuo pipefail
 
-#target="${1:?Provide a target index yaml file as arg[1]}"
-
 # shellcheck disable=SC1091,SC1090
 source "$(dirname "${BASH_SOURCE[0]}")/../lib/__sources__.bash"
 
 function generate_catalog {
   local root_dir index_dir catalog_template
 
-#  if [[ -n "${REGISTRY_REDHAT_IO_USERNAME:-}" ]] || [[ -n "${REGISTRY_REDHAT_IO_PASSWORD:-}" ]]; then
-#    skopeo login registry.redhat.io -u "${REGISTRY_REDHAT_IO_USERNAME}" -p "${REGISTRY_REDHAT_IO_PASSWORD}"
-#  fi
+  if [[ -n "${REGISTRY_REDHAT_IO_USERNAME:-}" ]] || [[ -n "${REGISTRY_REDHAT_IO_PASSWORD:-}" ]]; then
+    skopeo login registry.redhat.io -u "${REGISTRY_REDHAT_IO_USERNAME}" -p "${REGISTRY_REDHAT_IO_PASSWORD}"
+  fi
 
   root_dir="$(dirname "$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")")"
   index_dir="${root_dir}/olm-catalog/serverless-operator/index"
-
-  # TODO: Remove this
-  #catalog_tmp_dir=/tmp/knative.l5RieA2e/tmp.3RrTtM9Lq9
 
   while IFS=$'\n' read -r ocp_version; do
     logger.info "Generating catalog for OCP ${ocp_version}"
