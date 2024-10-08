@@ -284,6 +284,10 @@ test-all-e2e: install-tool-sobranch
 generate-ci-config:
 	./openshift/ci-operator/generate-ci-config.sh $(BRANCH) > ci-operator-config.yaml
 
+generate-catalog:
+	./hack/generate/index.sh
+.PHONY: generate-catalog
+
 # Generates all files that are templated with release metadata.
 release-files: install-tool-sobranch install-tool-skopeo
 	./hack/generate/csv.sh \
