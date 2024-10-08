@@ -17,19 +17,20 @@ function generate_catalog {
   root_dir="$(dirname "$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")")"
   index_dir="${root_dir}/olm-catalog/serverless-operator/index"
 
-  #catalog_tmp_dir=./catalog-migrate
+  # TODO: Remove this
+  catalog_tmp_dir=./catalog-migrate
 
   while IFS=$'\n' read -r ocp_version; do
     logger.info "Generating catalog for OCP ${ocp_version}"
 
-    catalog_tmp_dir=$(mktemp -d)
+    #catalog_tmp_dir=$(mktemp -d)
     mkdir -p "${index_dir}/v${ocp_version}/catalog/serverless-operator"
 
     catalog_template="${index_dir}/v${ocp_version}/catalog-template.json"
     # TODO: Use only if it differs from last one?
     #skopeo inspect --no-tags=true "docker://registry.redhat.io/redhat/redhat-operator-index:v${ocp_version}" | jq -r '.Digest'
 
-    opm migrate "registry.redhat.io/redhat/redhat-operator-index:v${ocp_version}" "${catalog_tmp_dir}"
+    #opm migrate "registry.redhat.io/redhat/redhat-operator-index:v${ocp_version}" "${catalog_tmp_dir}"
 
     # Generate simplified template
     opm alpha convert-template basic "${catalog_tmp_dir}/serverless-operator/catalog.json" | jq . \
@@ -37,6 +38,8 @@ function generate_catalog {
 
     while IFS=$'\n' read -r channel; do
       add_channel "${catalog_template}" "$channel"
+      # Also add previous version for cases when it was not released yet
+      add_channel "${catalog_template}" "$channel" "$(metadata.get 'olm.replaces')"
     done < <(metadata.get 'olm.channels.list[*]')
 
     add_latest_bundle "${catalog_template}"
@@ -53,15 +56,17 @@ function generate_catalog {
 }
 
 function add_channel {
-  local channel catalog_template catalog current_version current_csv major minor micro previous_version channel_entry
+  local channel catalog_template catalog current_version current_csv major minor micro previous_version channel_entry version
   catalog_template=${1?Pass catalog template path as arg[1]}
   channel=${2:?Pass channel name as arg[2]}
 
   current_version=$(metadata.get 'project.version')
-  current_csv="serverless-operator.v${current_version}"
-  major=$(versions.major "$current_version")
-  minor=$(versions.minor "$current_version")
-  micro=$(versions.micro "$current_version")
+  version="${3:-$current_version}"
+
+  current_csv="serverless-operator.v${version}"
+  major=$(versions.major "${version}")
+  minor=$(versions.minor "${version}")
+  micro=$(versions.micro "${version}")
 
   # Handle the first entry specifically as it might be a z-stream release.
   if [[ "$micro" == "0" ]]; then
@@ -92,9 +97,9 @@ function add_channel {
     jq '{
       schema: .schema,
       entries: [ .entries[] | select(.schema=="olm.channel" and .name=="'"${channel}"'").entries += [{
-        "name": "serverless-operator.v'"${current_version}"'",
+        "name": "serverless-operator.v'"${version}"'",
         "replaces": "serverless-operator.v'"${previous_version}"'",
-        "skipRange": "\u003e='"${previous_version}"' \u003c'"${current_version}"'"
+        "skipRange": "\u003e='"${previous_version}"' \u003c'"${version}"'"
     }]]}' "${catalog_template}" > "${catalog}"
   fi
   mv "${catalog}" "${catalog_template}"
