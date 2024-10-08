@@ -175,8 +175,13 @@ function replace_images() {
     go_builder=$(grep "GO_BUILDER=" "$tmp_dockerfile" | cut -d"=" -f 2)
   fi
 
+  if grep -q "OPM_IMAGE=" "$tmp_dockerfile"; then
+      opm_image=$(grep "OPM_IMAGE=" "$tmp_dockerfile" | cut -d"=" -f 2)
+    fi
+
   sed -e "s|\$GO_RUNTIME|${go_runtime:-}|" \
-      -e "s|\$GO_BUILDER|${go_builder:-}|" -i "$tmp_dockerfile"
+      -e "s|\$GO_BUILDER|${go_builder:-}|" \
+      -e "s|\$OPM_IMAGE|${opm_image:-}|" -i "$tmp_dockerfile"
 
   echo "$tmp_dockerfile"
 }

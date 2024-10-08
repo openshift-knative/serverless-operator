@@ -18,17 +18,17 @@ function generate_catalog {
   index_dir="${root_dir}/olm-catalog/serverless-operator/index"
 
   # TODO: Remove this
-  catalog_tmp_dir=/tmp/knative.l5RieA2e/tmp.3RrTtM9Lq9
+  #catalog_tmp_dir=/tmp/knative.l5RieA2e/tmp.3RrTtM9Lq9
 
   while IFS=$'\n' read -r ocp_version; do
     logger.info "Generating catalog for OCP ${ocp_version}"
 
-    #catalog_tmp_dir=$(mktemp -d)
+    catalog_tmp_dir=$(mktemp -d)
     mkdir -p "${index_dir}/v${ocp_version}/catalog/serverless-operator"
 
     catalog_template="${index_dir}/v${ocp_version}/catalog-template.json"
 
-    #opm migrate "registry.redhat.io/redhat/redhat-operator-index:v${ocp_version}" "${catalog_tmp_dir}"
+    opm migrate "registry.redhat.io/redhat/redhat-operator-index:v${ocp_version}" "${catalog_tmp_dir}"
 
     # Generate simplified template
     opm alpha convert-template basic "${catalog_tmp_dir}/serverless-operator/catalog.json" | jq . \
@@ -44,7 +44,7 @@ function generate_catalog {
     opm alpha render-template basic "${catalog_template}" \
       > "${index_dir}/v${ocp_version}/catalog/serverless-operator/catalog.json"
 
-    #rm -rf "${catalog_tmp_dir}"
+    rm -rf "${catalog_tmp_dir}"
   done < <(metadata.get 'requirements.ocpVersion.list[*]')
 
 }
