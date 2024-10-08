@@ -1,6 +1,6 @@
 ARG OPM_IMAGE=registry.ci.openshift.org/origin/4.17:operator-registry
 
-FROM $OPM_IMAGE as opm
+FROM $OPM_IMAGE
 
 LABEL operators.operatorframework.io.index.configs.v1=/configs
 
