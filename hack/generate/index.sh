@@ -18,17 +18,17 @@ function generate_catalog {
   index_dir="${root_dir}/olm-catalog/serverless-operator/index"
 
   # TODO: Remove this
-  #catalog_tmp_dir=./catalog-migrate
+  catalog_tmp_dir=/tmp/knative.l5RieA2e/tmp.3RrTtM9Lq9
 
   while IFS=$'\n' read -r ocp_version; do
     logger.info "Generating catalog for OCP ${ocp_version}"
 
-    catalog_tmp_dir=$(mktemp -d)
+    #catalog_tmp_dir=$(mktemp -d)
     mkdir -p "${index_dir}/v${ocp_version}/catalog/serverless-operator"
 
     catalog_template="${index_dir}/v${ocp_version}/catalog-template.json"
 
-    opm migrate "registry.redhat.io/redhat/redhat-operator-index:v${ocp_version}" "${catalog_tmp_dir}"
+    #opm migrate "registry.redhat.io/redhat/redhat-operator-index:v${ocp_version}" "${catalog_tmp_dir}"
 
     # Generate simplified template
     opm alpha convert-template basic "${catalog_tmp_dir}/serverless-operator/catalog.json" | jq . \
@@ -39,8 +39,6 @@ function generate_catalog {
       # Also add previous version for cases when it was not released yet
       add_channel "${catalog_template}" "$channel" "$(metadata.get 'olm.replaces')"
     done < <(metadata.get 'olm.channels.list[*]')
-
-    add_latest_bundle "${catalog_template}"
 
     # Generate full catalog
     opm alpha render-template basic "${catalog_template}" \
@@ -56,7 +54,6 @@ function add_channel {
     minor micro previous_version channel_entry version
   catalog_template=${1?Pass catalog template path as arg[1]}
   channel=${2:?Pass channel name as arg[2]}
-
 
   current_version=$(metadata.get 'project.version')
   version="${3:-$current_version}"
@@ -101,36 +98,49 @@ function add_channel {
     }]]}' "${catalog_template}" > "${catalog}"
   fi
   mv "${catalog}" "${catalog_template}"
+
+  # If entry was added, add also the bundle
+  if [[ "${entry}" == "" ]]; then
+    add_latest_bundle "${catalog_template}"
+    add_previous_bundle "${catalog_template}"
+  fi
 }
 
 function add_latest_bundle {
-  local catalog_template entry catalog
+  local catalog_template
   catalog_template=${1?Pass catalog template path as arg[1]}
+  default_serverless_operator_images
+
+  add_bundle "${catalog_template}" "${SERVERLESS_BUNDLE}"
+}
+
+function add_previous_bundle {
+  local catalog_template
+  catalog_template=${1?Pass catalog template path as arg[1]}
+  default_serverless_operator_images
+
+  add_bundle "${catalog_template}" "${SERVERLESS_BUNDLE_PREVIOUS}"
+}
+
+function add_bundle {
+  local bundle catalog_template sha
+  catalog_template=${1?Pass catalog template path as arg[1]}
+  bundle="${2:?Pass bundle as arg[2]}"
   catalog=$(mktemp catalog-XXX.json)
 
-  default_serverless_operator_images
-  # TODO: Remove this
-  #export SERVERLESS_BUNDLE=quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/serverless-bundle@sha256:251f4734eb923eeea8fb1b49996d1c5d52e6285819162c90a4f445f644ba4754
+  cp "${catalog_template}" "${catalog}"
 
-  entry=$(jq '.entries[] | select(.schema=="olm.bundle") | select(.image|test("'${registry_quay}'"))' "${catalog_template}")
-  # Add bundle itself
-  if [[ "$entry" == "" ]]; then
+  sha=${bundle##*:} # Get sha
+  entry=$(jq '.entries[] | select(.schema=="olm.bundle") | select(.image|test("'${sha}'"))' "${catalog_template}")
+  if [[ "${entry}" == "" ]]; then
+    # Add bundle itself
     jq '.entries += [{
           "schema": "olm.bundle",
-          "image": "'"${SERVERLESS_BUNDLE}"'",
+          "image": "'"${bundle}"'",
     }]' "${catalog_template}" > "${catalog}"
-  else
-    jq '.entries[] | select(.schema=="olm.bundle") | select(.image|test("'$registry_quay'")) | { schema, image: "'"${SERVERLESS_BUNDLE}"'" }' \
-      "${catalog_template}" > "${catalog}"
   fi
+
   mv "${catalog}" "${catalog_template}"
 }
 
 generate_catalog
-
-# Clear the file.
-#rm -f "${target}"
-
-#while IFS=$'\n' read -r channel; do
-#  add_channel_entries "$channel" "${target}"
-#done < <(metadata.get 'olm.channels.list[*]')
