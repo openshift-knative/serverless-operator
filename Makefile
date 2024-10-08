@@ -303,9 +303,9 @@ release-files: install-tool-sobranch install-tool-skopeo
 		openshift/ci-operator/build-image/Dockerfile
 	./hack/generate/dockerfile.sh \
  		templates/index.Dockerfile \
-		olm-catalog/serverless-operator/index/Dockerfile
+		olm-catalog/serverless-operator-index/Dockerfile
 	./hack/generate/index.sh \
-		olm-catalog/serverless-operator/index/configs/index.yaml
+		olm-catalog/serverless-operator-index/configs/index.yaml
 	./hack/generate/quickstart.sh \
 		templates/serverless-application-quickstart.yaml \
 		knative-operator/deploy/resources/quickstart/serverless-application-quickstart.yaml
