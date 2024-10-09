@@ -32,9 +32,7 @@ jobs:
 
       - name: Install OPM
         run: |
-          wget https://github.com/operator-framework/operator-registry/releases/download/v1.47.0/linux-amd64-opm && \
-            chmod +x linux-amd64-opm && \
-            mv linux-amd64-opm /usr/local/bin/opm
+          go install github.com/operator-framework/operator-registry/cmd/opm@v1.47.0
 
       - name: Checkout
         uses: actions/checkout@v4
@@ -66,10 +64,16 @@ jobs:
 
       - name: Regenerate all generated files
         working-directory: ./src/github.com/${{ github.repository }}
+        run: make generated-files
+
+      # Generate catalog only if not triggered by a pull request. Credentials are not available in pre-submit phase.
+      - name: Regenerate file-based catalog
+        if: github.event_name == 'workflow_dispatch' || github.event_name == 'schedule' || ( github.event_name == 'push' && !contains(github.ref_name, 'dependabot/') )
+        working-directory: ./src/github.com/${{ github.repository }}
         env:
           REGISTRY_REDHAT_IO_USERNAME: ${{ secrets.REGISTRY_REDHAT_IO_USERNAME }}
           REGISTRY_REDHAT_IO_PASSWORD: ${{ secrets.REGISTRY_REDHAT_IO_PASSWORD }}
-        run: make generated-files generate-catalog
+        run: make generate-catalog
 
       # Optional:
       #   Since we're generating files based on a floating branch in midstream,
