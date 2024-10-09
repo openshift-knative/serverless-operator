@@ -13,7 +13,7 @@ function generate_catalog {
   fi
 
   root_dir="$(dirname "$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")")"
-  index_dir="${root_dir}/olm-catalog/serverless-operator/index"
+  index_dir="${root_dir}/olm-catalog/serverless-operator-index"
 
   while IFS=$'\n' read -r ocp_version; do
     logger.info "Generating catalog for OCP ${ocp_version}"
