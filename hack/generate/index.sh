@@ -26,7 +26,7 @@ function generate_catalog {
     opm migrate "registry.redhat.io/redhat/redhat-operator-index:v${ocp_version}" "${catalog_tmp_dir}"
 
     # Generate simplified template
-    opm alpha convert-template basic "${catalog_tmp_dir}/serverless-operator/catalog.json" | jq . \
+    opm alpha convert-template basic "${catalog_tmp_dir}/serverless-operator/catalog.json" \
       > "${catalog_template}"
 
     while IFS=$'\n' read -r channel; do
@@ -41,7 +41,6 @@ function generate_catalog {
 
     rm -rf "${catalog_tmp_dir}"
   done < <(metadata.get 'requirements.ocpVersion.list[*]')
-
 }
 
 function add_channel {
@@ -66,38 +65,57 @@ function add_channel {
   fi
 
   catalog=$(mktemp catalog-XXX.json)
-  channel_entry=$(jq '.entries[] | select(.schema=="olm.channel" and .name=="'"${channel}"'").entries[]' "${catalog_template}")
+  channel_entry=$(jq '.entries[] | select(.schema=="olm.channel" and .name=="'"${channel}"'")' "${catalog_template}")
 
   # Add channel if necessary
   if [[ "${channel_entry}" == "" ]]; then
-    jq '.entries += [{
-          "name": "'"${channel}"'",
-          "package": "serverless-operator",
-          "schema": "olm.channel"
-    }]' "${catalog_template}" > "${catalog}"
-  else
-    cp "${catalog_template}" "${catalog}"
+    copy_of_stable=$(jq '.entries[] | select(.schema=="olm.channel" and .name=="stable")' "${catalog_template}")
+    versioned_channel=$(echo "${copy_of_stable}" | \
+      jq '{ name: "'"${channel}"'", package: .package, schema: .schema, entries: .entries }')
+    jq '.entries += ['"${versioned_channel}"']' "${catalog_template}" > "${catalog}"
+    mv "${catalog}" "${catalog_template}"
   fi
-  mv "${catalog}" "${catalog_template}"
 
-  entry=$(jq '.entries[] | select(.schema=="olm.channel" and .name=="'"${channel}"'").entries[]? | select(.name=="'"${current_csv}"'")' "${catalog_template}")
+  current_csv_entry=$(jq '.entries[] | select(.schema=="olm.channel" and .name=="'"${channel}"'").entries[]? | select(.name=="'"${current_csv}"'")' "${catalog_template}")
 
-  # Add entry to the channel
-  if [[ "${entry}" == "" ]]; then
-    jq '{
-      schema: .schema,
-      entries: [ .entries[] | select(.schema=="olm.channel" and .name=="'"${channel}"'").entries += [{
-        "name": "serverless-operator.v'"${version}"'",
-        "replaces": "serverless-operator.v'"${previous_version}"'",
-        "skipRange": "\u003e='"${previous_version}"' \u003c'"${version}"'"
-    }]]}' "${catalog_template}" > "${catalog}"
-  fi
-  mv "${catalog}" "${catalog_template}"
+  should_add=0
+  # Add entry to the channel if doesn't exist yet
+  if [[ "${current_csv_entry}" == "" ]]; then
+    replaces="serverless-operator.v${previous_version}"
+    entry_with_same_replaces=$(jq '.entries[] | select(.schema=="olm.channel" and .name=="'"${channel}"'").entries[]? | select(.replaces=="'"${replaces}"'").name' "${catalog_template}")
+    if [[ "${entry_with_same_replaces}" == "" ]]; then
+      should_add=1
+      clean_catalog=$(jq . "${catalog_template}")
+    else
+      orig_entry_version="${entry_with_same_replaces##serverless-operator.v}"
+      # Only replace the entry if the version is higher. We should not replace e.g. 1.34.0 with 1.33.3
+      # even if 1.33.3 is released later.
+      if versions.ge "${version}" "${orig_entry_version}"; then
+        should_add=1
+        # Get the channel and remove the entry with the same "replaces"
+        pruned_channel=$(jq '.entries[] | select(.schema=="olm.channel" and .name=="'"${channel}"'") | del(.entries[] | select(.replaces=="'"${replaces}"'"))' "${catalog_template}")
+        # Remove the outdated channel
+        without_channel=$(jq 'del(.entries[] | select(.schema=="olm.channel" and .name=="'"${channel}"'"))' "${catalog_template}")
+        # Create catalog with the new pruned channel
+        clean_catalog=$(echo "${without_channel}" | jq '.entries += ['"${pruned_channel}"']')
+      fi
+    fi
 
-  # If entry was added, add also the bundle
-  if [[ "${entry}" == "" ]]; then
-    add_latest_bundle "${catalog_template}"
-    add_previous_bundle "${catalog_template}"
+    if (( should_add )); then
+      # Add the new channel entry for the latest bundle
+      echo "${clean_catalog}" | jq '{
+        schema: .schema,
+        entries: [ .entries[] | select(.schema=="olm.channel" and .name=="'"${channel}"'").entries += [{
+          "name": "serverless-operator.v'"${version}"'",
+          "replaces": "'"${replaces}"'",
+          "skipRange": "\u003e='"${previous_version}"' \u003c'"${version}"'"
+      }]]}' > "${catalog}"
+      mv "${catalog}" "${catalog_template}"
+
+      # If entry was added, add also the bundle
+      add_latest_bundle "${catalog_template}"
+      add_previous_bundle "${catalog_template}"
+    fi
   fi
 }
 
