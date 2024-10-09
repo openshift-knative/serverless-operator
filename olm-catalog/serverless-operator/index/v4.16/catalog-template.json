@@ -91,16 +91,6 @@
           "name": "serverless-operator.v1.33.2",
           "replaces": "serverless-operator.v1.33.0",
           "skipRange": ">=1.33.0 <1.33.2"
-        },
-        {
-          "name": "serverless-operator.v1.35.0",
-          "replaces": "serverless-operator.v1.34.0",
-          "skipRange": ">=1.34.0 <1.35.0"
-        },
-        {
-          "name": "serverless-operator.v1.34.0",
-          "replaces": "serverless-operator.v1.33.0",
-          "skipRange": ">=1.33.0 <1.34.0"
         }
       ],
       "name": "stable",
@@ -571,31 +561,6 @@
     {
       "schema": "olm.bundle",
       "image": "registry.redhat.io/openshift-serverless-1/serverless-operator-bundle@sha256:d96f2a6e9bdd2540c5c7b0ffe6a8e610b43ba227420892586a46fbdb9a3caef3"
-    },
-    {
-      "schema": "olm.bundle",
-      "image": "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/serverless-bundle@sha256:251f4734eb923eeea8fb1b49996d1c5d52e6285819162c90a4f445f644ba4754"
-    },
-    {
-      "schema": "olm.bundle",
-      "image": "registry.ci.openshift.org/knative/serverless-bundle@sha256:430c7aa5a5c4780fd4a811c027b6323d0e8de076d86b3acbb9c01f6185e18ec0"
-    },
-    {
-      "name": "stable-1.35",
-      "package": "serverless-operator",
-      "schema": "olm.channel",
-      "entries": [
-        {
-          "name": "serverless-operator.v1.35.0",
-          "replaces": "serverless-operator.v1.34.0",
-          "skipRange": ">=1.34.0 <1.35.0"
-        },
-        {
-          "name": "serverless-operator.v1.34.0",
-          "replaces": "serverless-operator.v1.33.0",
-          "skipRange": ">=1.33.0 <1.34.0"
-        }
-      ]
     }
   ]
 }
