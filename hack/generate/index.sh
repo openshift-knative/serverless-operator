@@ -82,15 +82,14 @@ function add_channel {
   # Add entry to the channel if doesn't exist yet
   if [[ "${current_csv_entry}" == "" ]]; then
     replaces="serverless-operator.v${previous_version}"
-    entry_with_same_replaces=$(jq '.entries[] | select(.schema=="olm.channel" and .name=="'"${channel}"'").entries[]? | select(.replaces=="'"${replaces}"'").name' "${catalog_template}")
+    entry_with_same_replaces=$(jq -r '.entries[] | select(.schema=="olm.channel" and .name=="'"${channel}"'").entries[]? | select(.replaces=="'"${replaces}"'").name' "${catalog_template}")
     if [[ "${entry_with_same_replaces}" == "" ]]; then
       should_add=1
       clean_catalog=$(jq . "${catalog_template}")
     else
-      orig_entry_version="${entry_with_same_replaces##serverless-operator.v}"
       # Only replace the entry if the version is higher. We should not replace e.g. 1.34.0 with 1.33.3
       # even if 1.33.3 is released later.
-      if versions.ge "${version}" "${orig_entry_version}"; then
+      if versions.ge "${current_csv}" "${entry_with_same_replaces}"; then
         should_add=1
         # Get the channel and remove the entry with the same "replaces"
         pruned_channel=$(jq '.entries[] | select(.schema=="olm.channel" and .name=="'"${channel}"'") | del(.entries[] | select(.replaces=="'"${replaces}"'"))' "${catalog_template}")
