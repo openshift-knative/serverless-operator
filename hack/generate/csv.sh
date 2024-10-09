@@ -27,12 +27,14 @@ if [[ ${USE_RELEASE_NEXT:-} == "true" ]]; then
   knative_eventing_kafka_broker_images_release
   knative_backstage_plugins_images_release
   knative_serving_images_release
+  knative_kn_plugin_func_images_release
 else
   default_knative_eventing_images
   default_knative_eventing_istio_images
   default_knative_eventing_kafka_broker_images
   default_knative_backstage_plugins_images
   default_knative_serving_images
+  default_knative_kn_plugin_func_images
 fi
 
 declare -a operator_images
@@ -125,12 +127,12 @@ image 'KUBE_RBAC_PROXY'          "${rbac_proxy}"
 image 'KN_PLUGIN_EVENT_SENDER'   "${kn_event}-sender"
 image 'KN_CLIENT'                "${ci_registry}/$(metadata.get dependencies.cli):knative-client-kn"
 
-image 'KN_PLUGIN_FUNC_UTIL'           "$(metadata.get dependencies.func.util)"
-image 'KN_PLUGIN_FUNC_TEKTON_S2I'     "$(metadata.get dependencies.func.tekton_s2i)"
-image 'KN_PLUGIN_FUNC_TEKTON_BUILDAH' "$(metadata.get dependencies.func.tekton_buildah)"
-image 'KN_PLUGIN_FUNC_NODEJS_20_MINIMAL' "$(metadata.get dependencies.func.nodejs_20_minimal)"
-image 'KN_PLUGIN_FUNC_OPENJDK_21'     "$(metadata.get dependencies.func.openjdk_21)"
-image 'KN_PLUGIN_FUNC_PYTHON_39'      "$(metadata.get dependencies.func.python-39)"
+image "KN_PLUGIN_FUNC_UTIL"               "${KNATIVE_KN_PLUGIN_FUNC_FUNC_UTIL}"
+image "KN_PLUGIN_FUNC_TEKTON_S2I"         "${KNATIVE_KN_PLUGIN_FUNC_TEKTON_S2I}"
+image "KN_PLUGIN_FUNC_TEKTON_BUILDAH"     "${KNATIVE_KN_PLUGIN_FUNC_TEKTON_BUILDAH}"
+image "KN_PLUGIN_FUNC_NODEJS_20_MINIMAL"  "${KNATIVE_KN_PLUGIN_FUNC_NODEJS_20_MINIMAL}"
+image "KN_PLUGIN_FUNC_OPENJDK_21"         "${KNATIVE_KN_PLUGIN_FUNC_OPENJDK_21}"
+image "KN_PLUGIN_FUNC_PYTHON_39"          "${KNATIVE_KN_PLUGIN_FUNC_PYTHON_39}"
 
 declare -A yaml_keys
 yaml_keys[spec.version]="$(metadata.get project.version)"
