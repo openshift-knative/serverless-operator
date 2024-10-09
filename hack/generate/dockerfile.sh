@@ -30,6 +30,7 @@ values[BUNDLE]="${SERVERLESS_BUNDLE}"
 if [[ "$template" =~ index.Dockerfile ]]; then
   while IFS=$'\n' read -r ocp_version; do
     values[OCP_VERSION]="${ocp_version}"
+    mkdir -p "${target}/v${ocp_version}"
     target_dockerfile="${target}/v${ocp_version}/Dockerfile"
 
     cp "$template" "${target_dockerfile}"
