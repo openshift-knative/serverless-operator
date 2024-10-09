@@ -39,6 +39,10 @@ if [[ "$template" =~ index.Dockerfile ]]; then
       sed --in-place "s|__${before}__|${values[${before}]}|" "${target_dockerfile}"
     done
   done < <(metadata.get 'requirements.ocpVersion.list[*]')
+
+  # For backwards compatibility with CI.
+  max_version=$(metadata.get 'requirements.ocpVersion.list[-1]')
+  cp "${target}/v${max_version}/Dockerfile" "${target}/"
 else
   cp "$template" "$target"
 
