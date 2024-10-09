@@ -96,11 +96,6 @@
           "name": "serverless-operator.v1.35.0",
           "replaces": "serverless-operator.v1.34.0",
           "skipRange": ">=1.34.0 <1.35.0"
-        },
-        {
-          "name": "serverless-operator.v1.34.0",
-          "replaces": "serverless-operator.v1.33.0",
-          "skipRange": ">=1.33.0 <1.34.0"
         }
       ],
       "name": "stable",
@@ -574,7 +569,7 @@
     },
     {
       "schema": "olm.bundle",
-      "image": "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/serverless-bundle@sha256:251f4734eb923eeea8fb1b49996d1c5d52e6285819162c90a4f445f644ba4754"
+      "image": "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/serverless-bundle@sha256:bdadea4accf8f0438854d916efb4783f9f321a684a5f4816926481161a576b3b"
     },
     {
       "schema": "olm.bundle",
@@ -586,14 +581,89 @@
       "schema": "olm.channel",
       "entries": [
         {
+          "name": "serverless-operator.v1.20.0",
+          "replaces": "serverless-operator.v1.19.0",
+          "skipRange": ">=1.19.0 <1.20.0"
+        },
+        {
+          "name": "serverless-operator.v1.21.0",
+          "replaces": "serverless-operator.v1.20.0",
+          "skipRange": ">=1.20.0 <1.21.0"
+        },
+        {
+          "name": "serverless-operator.v1.22.0",
+          "replaces": "serverless-operator.v1.21.0",
+          "skipRange": ">=1.21.0 <1.22.0"
+        },
+        {
+          "name": "serverless-operator.v1.23.0",
+          "replaces": "serverless-operator.v1.22.0",
+          "skipRange": ">=1.22.0 <1.23.0"
+        },
+        {
+          "name": "serverless-operator.v1.24.0",
+          "replaces": "serverless-operator.v1.23.0",
+          "skipRange": ">=1.23.0 <1.24.0"
+        },
+        {
+          "name": "serverless-operator.v1.25.0",
+          "replaces": "serverless-operator.v1.24.0",
+          "skipRange": ">=1.24.0 <1.25.0"
+        },
+        {
+          "name": "serverless-operator.v1.26.0",
+          "replaces": "serverless-operator.v1.25.0",
+          "skipRange": ">=1.25.0 <1.26.0"
+        },
+        {
+          "name": "serverless-operator.v1.27.0",
+          "replaces": "serverless-operator.v1.26.0",
+          "skipRange": ">=1.26.0 <1.27.0"
+        },
+        {
+          "name": "serverless-operator.v1.27.1",
+          "replaces": "serverless-operator.v1.27.0",
+          "skipRange": ">=1.26.0 <1.27.1"
+        },
+        {
+          "name": "serverless-operator.v1.28.0",
+          "replaces": "serverless-operator.v1.27.1",
+          "skipRange": ">=1.27.0 <1.28.0"
+        },
+        {
+          "name": "serverless-operator.v1.29.0",
+          "replaces": "serverless-operator.v1.28.0",
+          "skipRange": ">=1.28.0 <1.29.0"
+        },
+        {
+          "name": "serverless-operator.v1.30.0",
+          "replaces": "serverless-operator.v1.29.0",
+          "skipRange": ">=1.29.0 <1.30.0"
+        },
+        {
+          "name": "serverless-operator.v1.31.0",
+          "replaces": "serverless-operator.v1.30.0",
+          "skipRange": ">=1.30.0 <1.31.0"
+        },
+        {
+          "name": "serverless-operator.v1.32.0",
+          "replaces": "serverless-operator.v1.31.0",
+          "skipRange": ">=1.31.0 <1.32.0"
+        },
+        {
+          "name": "serverless-operator.v1.33.0",
+          "replaces": "serverless-operator.v1.32.0",
+          "skipRange": ">=1.32.0 <1.33.0"
+        },
+        {
+          "name": "serverless-operator.v1.33.2",
+          "replaces": "serverless-operator.v1.33.0",
+          "skipRange": ">=1.33.0 <1.33.2"
+        },
+        {
           "name": "serverless-operator.v1.35.0",
           "replaces": "serverless-operator.v1.34.0",
           "skipRange": ">=1.34.0 <1.35.0"
-        },
-        {
-          "name": "serverless-operator.v1.34.0",
-          "replaces": "serverless-operator.v1.33.0",
-          "skipRange": ">=1.33.0 <1.34.0"
         }
       ]
     }
