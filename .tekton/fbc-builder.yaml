@@ -50,6 +50,10 @@ spec:
     - name: workspace
       workspace: workspace
   params:
+  - default: --all-projects --org=3e1a4cca-ebfb-495f-b64c-3cc960d566b4 --exclude=test*,vendor,third_party
+    description: Append arguments to Snyk code command.
+    name: snyk-args
+    type: string
   - default: "true"
     description: Build a source image.
     name: build-source-image
@@ -116,6 +120,10 @@ spec:
     name: CHAINS-GIT_COMMIT
     value: $(tasks.clone-repository.results.commit)
   tasks:
+  - name: sast-snyk-check
+    params:
+    - name: ARGS
+      value: $(params.snyk-args)
   - name: apply-tags
     params:
     - name: ADDITIONAL_TAGS
@@ -253,6 +261,28 @@ spec:
         value: deprecated-image-check
       - name: bundle
         value: quay.io/konflux-ci/tekton-catalog/task-deprecated-image-check:0.4@sha256:d98fa9daf5ee12dfbf00880b83d092d01ce9994d79836548d2f82748bb0c64a2
+      - name: kind
+        value: task
+      resolver: bundles
+    when:
+    - input: $(params.skip-checks)
+      operator: in
+      values:
+      - "false"
+  - name: rpms-signature-scan
+    params:
+    - name: image-url
+      value: $(tasks.build-image-index.results.IMAGE_URL)
+    - name: image-digest
+      value: $(tasks.build-image-index.results.IMAGE_DIGEST)
+    runAfter:
+    - build-image-index
+    taskRef:
+      params:
+      - name: name
+        value: rpms-signature-scan
+      - name: bundle
+        value: quay.io/konflux-ci/tekton-catalog/task-rpms-signature-scan:0.2@sha256:7aa4d3c95e2b963e82fdda392f7cb3d61e3dab035416cf4a3a34e43cf3c9c9b8
       - name: kind
         value: task
       resolver: bundles
