@@ -8,7 +8,7 @@ metadata:
     build.appstudio.redhat.com/target_branch: '{{target_branch}}'
     pipelinesascode.tekton.dev/max-keep-runs: "3"
     pipelinesascode.tekton.dev/on-cel-expression: event == "pull_request" && target_branch
-      == "main" && ( files.all.exists(x, !x.matches('^olm-catalog/')) || files.all.exists(x, x.matches('^.tekton/')) )
+      == "main"  && files.all.exists(x, !x.matches('^olm-catalog/'))
   creationTimestamp: null
   labels:
     appstudio.openshift.io/application: serverless-operator-135
@@ -21,7 +21,7 @@ spec:
     - name: dockerfile
       value: serving/metadata-webhook/Dockerfile
     - name: build-args
-      value: [ VERSION=1.35.0, ]
+      value: [ VERSION=1.35.0,  GO_BUILDER=brew.registry.redhat.io/rh-osbs/openshift-golang-builder:rhel_8_golang_1.22,  GO_RUNTIME=registry.access.redhat.com/ubi8/ubi-minimal, ]
     - name: git-url
       value: '{{source_url}}'
     - name: hermetic
