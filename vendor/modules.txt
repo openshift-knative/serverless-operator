@@ -322,8 +322,8 @@ github.com/munnerz/goautoneg
 # github.com/opencontainers/go-digest v1.0.0
 ## explicit; go 1.13
 github.com/opencontainers/go-digest
-# github.com/openshift/api v3.9.0+incompatible => github.com/openshift/api v0.0.0-20231118005202-0f638a8a4705
-## explicit; go 1.19
+# github.com/openshift/api v3.9.0+incompatible => github.com/openshift/api v0.0.0-20240830023148-b7d0481c9094
+## explicit; go 1.21
 github.com/openshift/api/config/v1
 github.com/openshift/api/config/v1alpha1
 github.com/openshift/api/console/v1
@@ -1758,7 +1758,7 @@ sigs.k8s.io/yaml/goyaml.v2
 # knative.dev/pkg => knative.dev/pkg v0.0.0-20240716082220-4355f0c73608
 # knative.dev/reconciler-test => knative.dev/reconciler-test v0.0.0-20240716134925-00d94f40c470
 # knative.dev/serving => github.com/openshift-knative/serving v0.10.1-0.20240906121033-618992fcbd27
-# github.com/openshift/api => github.com/openshift/api v0.0.0-20231118005202-0f638a8a4705
+# github.com/openshift/api => github.com/openshift/api v0.0.0-20240830023148-b7d0481c9094
 # github.com/openshift/client-go => github.com/openshift/client-go v0.0.0-20230120202327-72f107311084
 # github.com/openshift/machine-config-operator => github.com/openshift/machine-config-operator v0.0.1-0.20240813185428-b1a8f6946397
 # k8s.io/kube-openapi => k8s.io/kube-openapi v0.0.0-20231010175941-2dd684a91f00
