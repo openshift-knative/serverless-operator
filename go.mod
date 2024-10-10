@@ -12,10 +12,9 @@ require (
 	github.com/manifestival/controller-runtime-client v0.4.0
 	github.com/manifestival/manifestival v0.7.2
 	github.com/openshift/api v3.9.0+incompatible
-	github.com/openshift/client-go v0.0.0-20230120202327-72f107311084
-	github.com/openshift/machine-config-operator v0.0.1-0.20220201192635-14a1ca2cb91f
+	github.com/openshift/client-go v0.0.0-20240510131258-f646d5f29250
 	github.com/operator-framework/api v0.23.0
-	github.com/operator-framework/operator-lifecycle-manager v0.25.0
+	github.com/operator-framework/operator-lifecycle-manager v0.28.0
 	github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring v0.73.2
 	github.com/prometheus-operator/prometheus-operator/pkg/client v0.73.2
 	github.com/prometheus/client_golang v1.20.4
@@ -90,7 +89,7 @@ require (
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
-	github.com/google/go-containerregistry v0.13.0 // indirect
+	github.com/google/go-containerregistry v0.17.0 // indirect
 	github.com/google/gofuzz v1.2.0 // indirect
 	github.com/google/uuid v1.6.0
 	github.com/gorilla/websocket v1.5.1 // indirect
@@ -187,9 +186,8 @@ replace (
 
 replace (
 	// OpenShift components
-	github.com/openshift/api => github.com/openshift/api v0.0.0-20231118005202-0f638a8a4705
-	github.com/openshift/client-go => github.com/openshift/client-go v0.0.0-20230120202327-72f107311084
-	github.com/openshift/machine-config-operator => github.com/openshift/machine-config-operator v0.0.1-0.20240813185428-b1a8f6946397
+	github.com/openshift/api => github.com/openshift/api v0.0.0-20240830023148-b7d0481c9094
+	github.com/openshift/client-go => github.com/openshift/client-go v0.0.0-20240510131258-f646d5f29250
 )
 
 // This replacement can be removed once we bump to k8s.io@v1.30.x, as from release 1.30+

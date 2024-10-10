@@ -171,7 +171,7 @@ github.com/google/go-cmp/cmp/internal/diff
 github.com/google/go-cmp/cmp/internal/flags
 github.com/google/go-cmp/cmp/internal/function
 github.com/google/go-cmp/cmp/internal/value
-# github.com/google/go-containerregistry v0.13.0
+# github.com/google/go-containerregistry v0.17.0
 ## explicit; go 1.18
 github.com/google/go-containerregistry/pkg/name
 # github.com/google/gofuzz v1.2.0
@@ -322,15 +322,17 @@ github.com/munnerz/goautoneg
 # github.com/opencontainers/go-digest v1.0.0
 ## explicit; go 1.13
 github.com/opencontainers/go-digest
-# github.com/openshift/api v3.9.0+incompatible => github.com/openshift/api v0.0.0-20231118005202-0f638a8a4705
-## explicit; go 1.19
+# github.com/openshift/api v3.9.0+incompatible => github.com/openshift/api v0.0.0-20240830023148-b7d0481c9094
+## explicit; go 1.21
 github.com/openshift/api/config/v1
 github.com/openshift/api/config/v1alpha1
 github.com/openshift/api/console/v1
 github.com/openshift/api/console/v1alpha1
+github.com/openshift/api/machineconfiguration/v1
+github.com/openshift/api/machineconfiguration/v1alpha1
 github.com/openshift/api/route/v1
-# github.com/openshift/client-go v0.0.0-20230120202327-72f107311084 => github.com/openshift/client-go v0.0.0-20230120202327-72f107311084
-## explicit; go 1.19
+# github.com/openshift/client-go v0.0.0-20240510131258-f646d5f29250 => github.com/openshift/client-go v0.0.0-20240510131258-f646d5f29250
+## explicit; go 1.21
 github.com/openshift/client-go/config/applyconfigurations/config/v1
 github.com/openshift/client-go/config/applyconfigurations/internal
 github.com/openshift/client-go/config/clientset/versioned/scheme
@@ -339,16 +341,17 @@ github.com/openshift/client-go/console/applyconfigurations/console/v1
 github.com/openshift/client-go/console/applyconfigurations/internal
 github.com/openshift/client-go/console/clientset/versioned/scheme
 github.com/openshift/client-go/console/clientset/versioned/typed/console/v1
+github.com/openshift/client-go/machineconfiguration/applyconfigurations/internal
+github.com/openshift/client-go/machineconfiguration/applyconfigurations/machineconfiguration/v1
+github.com/openshift/client-go/machineconfiguration/applyconfigurations/machineconfiguration/v1alpha1
+github.com/openshift/client-go/machineconfiguration/clientset/versioned
+github.com/openshift/client-go/machineconfiguration/clientset/versioned/scheme
+github.com/openshift/client-go/machineconfiguration/clientset/versioned/typed/machineconfiguration/v1
+github.com/openshift/client-go/machineconfiguration/clientset/versioned/typed/machineconfiguration/v1alpha1
 github.com/openshift/client-go/route/applyconfigurations/internal
 github.com/openshift/client-go/route/applyconfigurations/route/v1
 github.com/openshift/client-go/route/clientset/versioned/scheme
 github.com/openshift/client-go/route/clientset/versioned/typed/route/v1
-# github.com/openshift/machine-config-operator v0.0.1-0.20220201192635-14a1ca2cb91f => github.com/openshift/machine-config-operator v0.0.1-0.20240813185428-b1a8f6946397
-## explicit; go 1.18
-github.com/openshift/machine-config-operator/pkg/apis/machineconfiguration.openshift.io/v1
-github.com/openshift/machine-config-operator/pkg/generated/clientset/versioned
-github.com/openshift/machine-config-operator/pkg/generated/clientset/versioned/scheme
-github.com/openshift/machine-config-operator/pkg/generated/clientset/versioned/typed/machineconfiguration.openshift.io/v1
 # github.com/opentracing/opentracing-go v1.2.0
 ## explicit; go 1.14
 github.com/opentracing/opentracing-go/log
@@ -368,8 +371,8 @@ github.com/operator-framework/api/pkg/operators/v1
 github.com/operator-framework/api/pkg/operators/v1alpha1
 github.com/operator-framework/api/pkg/operators/v1alpha2
 github.com/operator-framework/api/pkg/operators/v2
-# github.com/operator-framework/operator-lifecycle-manager v0.25.0
-## explicit; go 1.19
+# github.com/operator-framework/operator-lifecycle-manager v0.28.0
+## explicit; go 1.22
 github.com/operator-framework/operator-lifecycle-manager/pkg/api/client
 github.com/operator-framework/operator-lifecycle-manager/pkg/api/client/clientset/versioned
 github.com/operator-framework/operator-lifecycle-manager/pkg/api/client/clientset/versioned/scheme
@@ -1758,7 +1761,6 @@ sigs.k8s.io/yaml/goyaml.v2
 # knative.dev/pkg => knative.dev/pkg v0.0.0-20240716082220-4355f0c73608
 # knative.dev/reconciler-test => knative.dev/reconciler-test v0.0.0-20240716134925-00d94f40c470
 # knative.dev/serving => github.com/openshift-knative/serving v0.10.1-0.20240906121033-618992fcbd27
-# github.com/openshift/api => github.com/openshift/api v0.0.0-20231118005202-0f638a8a4705
-# github.com/openshift/client-go => github.com/openshift/client-go v0.0.0-20230120202327-72f107311084
-# github.com/openshift/machine-config-operator => github.com/openshift/machine-config-operator v0.0.1-0.20240813185428-b1a8f6946397
+# github.com/openshift/api => github.com/openshift/api v0.0.0-20240830023148-b7d0481c9094
+# github.com/openshift/client-go => github.com/openshift/client-go v0.0.0-20240510131258-f646d5f29250
 # k8s.io/kube-openapi => k8s.io/kube-openapi v0.0.0-20231010175941-2dd684a91f00

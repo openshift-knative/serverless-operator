@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/openshift-knative/serverless-operator/test"
-	machineconfigv1 "github.com/openshift/machine-config-operator/pkg/apis/machineconfiguration.openshift.io/v1"
+	machineconfigurationv1 "github.com/openshift/api/machineconfiguration/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
 
@@ -163,10 +163,10 @@ func allMachineConfigPoolsUpdated(ctx *test.Context) (bool, error) {
 	return true, nil
 }
 
-func isMachineConfigPoolUpdated(mcp machineconfigv1.MachineConfigPool) bool {
+func isMachineConfigPoolUpdated(mcp machineconfigurationv1.MachineConfigPool) bool {
 	updated := false
 	for _, cond := range mcp.Status.Conditions {
-		if cond.Type == machineconfigv1.MachineConfigPoolUpdated &&
+		if cond.Type == machineconfigurationv1.MachineConfigPoolUpdated &&
 			cond.Status == corev1.ConditionTrue {
 			updated = true
 		}
@@ -176,7 +176,7 @@ func isMachineConfigPoolUpdated(mcp machineconfigv1.MachineConfigPool) bool {
 
 func pauseMachineConfigPool(ctx *test.Context, pause bool) error {
 	if _, err := ctx.Clients.Dynamic.
-		Resource(machineconfigv1.GroupVersion.WithResource("machineconfigpool")).
+		Resource(machineconfigurationv1.GroupVersion.WithResource("machineconfigpool")).
 		Patch(context.Background(),
 			"worker",
 			types.MergePatchType,
