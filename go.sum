@@ -707,8 +707,8 @@ github.com/openshift-knative/serving v0.10.1-0.20240906121033-618992fcbd27 h1:2c
 github.com/openshift-knative/serving v0.10.1-0.20240906121033-618992fcbd27/go.mod h1:3cgU8/864RcqA0ZPrc3jFcmS3uJL/mOlUZiYsXonwaE=
 github.com/openshift/api v0.0.0-20240830023148-b7d0481c9094 h1:J1wuGhVxpsHykZBa6Beb1gQ96Ptej9AE/BvwCBiRj1E=
 github.com/openshift/api v0.0.0-20240830023148-b7d0481c9094/go.mod h1:CxgbWAlvu2iQB0UmKTtRu1YfepRg1/vJ64n2DlIEVz4=
-github.com/openshift/client-go v0.0.0-20230120202327-72f107311084 h1:66uaqNwA+qYyQDwsMWUfjjau8ezmg1dzCqub13KZOcE=
-github.com/openshift/client-go v0.0.0-20230120202327-72f107311084/go.mod h1:M3h9m001PWac3eAudGG3isUud6yBjr5XpzLYLLTlHKo=
+github.com/openshift/client-go v0.0.0-20240510131258-f646d5f29250 h1:WQ0e89xebsNeChdYw8QrxggYkFtEQOaLBEKJDkMmcUk=
+github.com/openshift/client-go v0.0.0-20240510131258-f646d5f29250/go.mod h1:tjGjTE59N1+5W0YE4Wqf0zJpFLIY4d+EpMihDKOn1oA=
 github.com/openshift/machine-config-operator v0.0.1-0.20240813185428-b1a8f6946397 h1:buaAX79HNrNed9PfX3/1+tyeGCvFRQQrD5q0D7ITgjQ=
 github.com/openshift/machine-config-operator v0.0.1-0.20240813185428-b1a8f6946397/go.mod h1:wfPO4CO8aQC0sgZtg4k2XMzungsuak+MacXdJvbJccA=
 github.com/opentracing/opentracing-go v1.1.0/go.mod h1:UkNAQd3GIcIGf0SeVgPpRdFStlNbqXla1AfSYxPUl2o=
