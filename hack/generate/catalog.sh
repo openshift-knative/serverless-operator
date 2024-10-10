@@ -80,7 +80,7 @@ function add_channel {
     mv "${catalog}" "${catalog_template}"
   fi
 
-  current_csv_entry=$(yq read "${catalog_template}" "entries[name==${channel}].entries[name==${current_csv}]" "${catalog_template}")
+  current_csv_entry=$(yq read "${catalog_template}" "entries[name==${channel}].entries[name==${current_csv}]")
 
   should_add=0
   # Add entry to the channel if doesn't exist yet
