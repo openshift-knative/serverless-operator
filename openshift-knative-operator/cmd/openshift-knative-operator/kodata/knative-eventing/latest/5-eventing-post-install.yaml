@@ -205,6 +205,7 @@ spec:
         app.kubernetes.io/name: knative-eventing
         app.kubernetes.io/component: storage-version-migration-job
         app.kubernetes.io/version: v1.15
+        sidecar.istio.io/inject: "false"
       annotations:
         sidecar.istio.io/inject: "false"
     spec:
