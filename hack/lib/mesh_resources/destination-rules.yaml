@@ -10,3 +10,16 @@ spec:
     tls:
       mode: DISABLE
 ---
+# This DR forces mTLS to be used for DomainMappings which are routed from
+# knative-gateway to knative-local-gateway in knative-serving-ingress
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: local-gateway-force-mtls
+  namespace: knative-serving-ingress
+spec:
+  host: 'knative-local-gateway.knative-serving-ingress.svc.cluster.local'
+  trafficPolicy:
+    tls:
+      mode: ISTIO_MUTUAL
+---
