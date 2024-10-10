@@ -22,20 +22,18 @@ values[EVENTING_ISTIO_VERSION]="$(metadata.get dependencies.eventing_istio)"
 values[GOLANG_VERSION]="$(metadata.get requirements.golang)"
 values[NODEJS_VERSION]="$(metadata.get requirements.nodejs)"
 values[OCP_TARGET_VLIST]="$(metadata.get 'requirements.ocpVersion.label')"
-values[OCP_MAX_VERSION]="$(metadata.get 'requirements.ocpVersion.max')"
+values[OCP_MAX_VERSION]="$(metadata.get 'requirements.ocpVersion.list[-1]')"
 values[PREVIOUS_VERSION]="$(metadata.get olm.replaces)"
 values[BUNDLE]="${SERVERLESS_BUNDLE}"
 
-# Start fresh
-cp "$template" "$target"
-
-for before in "${!values[@]}"; do
-  echo "Value: ${before} -> ${values[$before]}"
-  sed --in-place "s|__${before}__|${values[${before}]}|" "$target"
-done
-
-# For index image, append older bundles for the "render" command.
 if [[ "$template" =~ index.Dockerfile ]]; then
+  cp "$template" "$target"
+
+  for before in "${!values[@]}"; do
+    echo "Value: ${before} -> ${values[$before]}"
+    sed --in-place "s|__${before}__|${values[${before}]}|" "$target"
+  done
+
   current_version=$(metadata.get 'project.version')
   major=$(versions.major "$current_version")
   minor=$(versions.minor "$current_version")
@@ -65,5 +63,25 @@ if [[ "$template" =~ index.Dockerfile ]]; then
   sed --in-place "s|registry.ci.openshift.org/knative/release-1.32.0:serverless-bundle|quay.io/openshift-knative/serverless-bundle:release-1.32.0|" "$target"
   # Replace the old format for 1.31.0 and older.
   sed --in-place "s|registry.ci.openshift.org/knative/release-1.31.0:serverless-bundle|registry.ci.openshift.org/knative/openshift-serverless-v1.31.0:serverless-bundle|" "$target"
+elif [[ "$template" =~ catalog.Dockerfile ]]; then
+  while IFS=$'\n' read -r ocp_version; do
+    values[OCP_VERSION]="${ocp_version}"
+    mkdir -p "${target}/v${ocp_version}"
+    target_dockerfile="${target}/v${ocp_version}/Dockerfile"
+
+    cp "$template" "${target_dockerfile}"
+
+    for before in "${!values[@]}"; do
+      echo "Value: ${before} -> ${values[$before]}"
+      sed --in-place "s|__${before}__|${values[${before}]}|" "${target_dockerfile}"
+    done
+  done < <(metadata.get 'requirements.ocpVersion.list[*]')
+else
+  cp "$template" "$target"
+
+  for before in "${!values[@]}"; do
+    echo "Value: ${before} -> ${values[$before]}"
+    sed --in-place "s|__${before}__|${values[${before}]}|" "$target"
+  done
 fi
 
