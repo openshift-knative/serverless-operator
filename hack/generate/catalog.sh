@@ -19,14 +19,15 @@ function generate_catalog {
     logger.info "Generating catalog for OCP ${ocp_version}"
 
     catalog_tmp_dir=$(mktemp -d)
+
     mkdir -p "${index_dir}/v${ocp_version}/catalog/serverless-operator"
 
-    catalog_template="${index_dir}/v${ocp_version}/catalog-template.json"
+    catalog_template="${index_dir}/v${ocp_version}/catalog-template.yaml"
 
-    opm migrate "registry.redhat.io/redhat/redhat-operator-index:v${ocp_version}" "${catalog_tmp_dir}"
+    opm migrate "registry.redhat.io/redhat/redhat-operator-index:v${ocp_version}" "${catalog_tmp_dir}" -oyaml
 
     # Generate simplified template
-    opm alpha convert-template basic "${catalog_tmp_dir}/serverless-operator/catalog.json" \
+    opm alpha convert-template basic "${catalog_tmp_dir}/serverless-operator/catalog.yaml" -oyaml \
       > "${catalog_template}"
 
     while IFS=$'\n' read -r channel; do
@@ -36,8 +37,8 @@ function generate_catalog {
     done < <(metadata.get 'olm.channels.list[*]')
 
     # Generate full catalog
-    opm alpha render-template basic "${catalog_template}" \
-      > "${index_dir}/v${ocp_version}/catalog/serverless-operator/catalog.json"
+    opm alpha render-template basic "${catalog_template}" -oyaml \
+      > "${index_dir}/v${ocp_version}/catalog/serverless-operator/catalog.yaml"
 
     rm -rf "${catalog_tmp_dir}"
   done < <(metadata.get 'requirements.ocpVersion.list[*]')
@@ -65,50 +66,49 @@ function add_channel {
   fi
 
   catalog=$(mktemp catalog-XXX.json)
-  channel_entry=$(jq '.entries[] | select(.schema=="olm.channel" and .name=="'"${channel}"'")' "${catalog_template}")
-
+  channel_entry=$(yq read "${catalog_template}" "entries[name==${channel}]")
   # Add channel if necessary
   if [[ "${channel_entry}" == "" ]]; then
-    copy_of_stable=$(jq '.entries[] | select(.schema=="olm.channel" and .name=="stable")' "${catalog_template}")
-    versioned_channel=$(echo "${copy_of_stable}" | \
-      jq '{ name: "'"${channel}"'", package: .package, schema: .schema, entries: .entries }')
-    jq '.entries += ['"${versioned_channel}"']' "${catalog_template}" > "${catalog}"
+    copy_of_stable=$(yq read "${catalog_template}" "entries[name==stable]")
+    versioned_channel=$(echo "${copy_of_stable}" | yq write - name "${channel}")
+    versioned_channel_json=$(echo "${versioned_channel}" | yq read - --tojson)
+
+    yq read "${catalog_template}" --tojson --prettyPrint | \
+      jq '.entries += ['"${versioned_channel_json}"']' | \
+      yq read - --prettyPrint > "${catalog}"
+
     mv "${catalog}" "${catalog_template}"
   fi
 
-  current_csv_entry=$(jq '.entries[] | select(.schema=="olm.channel" and .name=="'"${channel}"'").entries[]? | select(.name=="'"${current_csv}"'")' "${catalog_template}")
+  current_csv_entry=$(yq read "${catalog_template}" "entries[name==${channel}].entries[name==${current_csv}]" "${catalog_template}")
 
   should_add=0
   # Add entry to the channel if doesn't exist yet
   if [[ "${current_csv_entry}" == "" ]]; then
     replaces="serverless-operator.v${previous_version}"
-    entry_with_same_replaces=$(jq -r '.entries[] | select(.schema=="olm.channel" and .name=="'"${channel}"'").entries[]? | select(.replaces=="'"${replaces}"'").name' "${catalog_template}")
+    entry_with_same_replaces=$(yq read "${catalog_template}" "entries[name==${channel}].entries[replaces==${replaces}].name")
     if [[ "${entry_with_same_replaces}" == "" ]]; then
       should_add=1
-      clean_catalog=$(jq . "${catalog_template}")
+      cp "${catalog_template}" "${catalog}"
     else
       # Only replace the entry if the version is higher. We should not replace e.g. 1.34.0 with 1.33.3
       # even if 1.33.3 is released later.
       if versions.ge "${current_csv}" "${entry_with_same_replaces}"; then
         should_add=1
         # Get the channel and remove the entry with the same "replaces"
-        pruned_channel=$(jq '.entries[] | select(.schema=="olm.channel" and .name=="'"${channel}"'") | del(.entries[] | select(.replaces=="'"${replaces}"'"))' "${catalog_template}")
-        # Remove the outdated channel
-        without_channel=$(jq 'del(.entries[] | select(.schema=="olm.channel" and .name=="'"${channel}"'"))' "${catalog_template}")
-        # Create catalog with the new pruned channel
-        clean_catalog=$(echo "${without_channel}" | jq '.entries += ['"${pruned_channel}"']')
+        yq delete "${catalog_template}" "entries[name==${channel}].entries[replaces==${replaces}]" > "${catalog}"
       fi
     fi
 
     if (( should_add )); then
-      # Add the new channel entry for the latest bundle
-      echo "${clean_catalog}" | jq '{
-        schema: .schema,
-        entries: [ .entries[] | select(.schema=="olm.channel" and .name=="'"${channel}"'").entries += [{
-          "name": "serverless-operator.v'"${version}"'",
-          "replaces": "'"${replaces}"'",
-          "skipRange": "\u003e='"${previous_version}"' \u003c'"${version}"'"
-      }]]}' > "${catalog}"
+      cat << EOF | yq write --inplace --script - "$catalog"
+      - command: update
+        path: entries[name==${channel}].entries[+]
+        value:
+          name: "serverless-operator.v${version}"
+          replaces: "${replaces}"
+          skipRange: "\u003e=${previous_version} \u003c${version}"
+EOF
       mv "${catalog}" "${catalog_template}"
 
       # If entry was added, add also the bundle
@@ -138,21 +138,19 @@ function add_bundle {
   local bundle catalog_template sha
   catalog_template=${1?Pass catalog template path as arg[1]}
   bundle="${2:?Pass bundle as arg[2]}"
-  catalog=$(mktemp catalog-XXX.json)
-
-  cp "${catalog_template}" "${catalog}"
 
   sha=${bundle##*:} # Get sha
-  entry=$(jq '.entries[] | select(.schema=="olm.bundle") | select(.image|test("'${sha}'"))' "${catalog_template}")
+  entry=$(yq read "${catalog_template}" --tojson --prettyPrint | jq '.entries[] | select(.schema=="olm.bundle") | select(.image|test("'${sha}'"))')
   if [[ "${entry}" == "" ]]; then
     # Add bundle itself
-    jq '.entries += [{
-          "schema": "olm.bundle",
-          "image": "'"${bundle}"'",
-    }]' "${catalog_template}" > "${catalog}"
+    cat << EOF | yq write --inplace --script - "$catalog_template"
+    - command: update
+      path: entries[+]
+      value:
+        schema: "olm.bundle"
+        image: "${bundle}"
+EOF
   fi
-
-  mv "${catalog}" "${catalog_template}"
 }
 
 generate_catalog
