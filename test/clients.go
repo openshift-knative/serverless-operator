@@ -25,7 +25,7 @@ import (
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 
-	machineconfig "github.com/openshift/machine-config-operator/pkg/generated/clientset/versioned"
+	machineconfig "github.com/openshift/client-go/machineconfiguration/clientset/versioned"
 	eventingversioned "knative.dev/eventing/pkg/client/clientset/versioned"
 	operatorversioned "knative.dev/operator/pkg/client/clientset/versioned"
 	operatorv1beta1 "knative.dev/operator/pkg/client/clientset/versioned/typed/operator/v1beta1"

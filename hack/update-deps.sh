@@ -38,7 +38,7 @@ REPLACE_DEPS=(
   "knative.dev/eventing-kafka-broker=github.com/openshift-knative/eventing-kafka-broker@${EVENTING_KAFKA_BROKER_VERSION}"
   "github.com/openshift/api=github.com/openshift/api@release-${OCP_VERSION}"
   "github.com/openshift/client-go=github.com/openshift/client-go@release-${OCP_VERSION}"
-  "github.com/openshift/machine-config-operator=github.com/openshift/machine-config-operator@release-${OCP_VERSION}"
+  "github.com/openshift/api=github.com/openshift/api@release-${OCP_VERSION}"
 )
 
 # Parse flags to determine if we need to update our floating deps.

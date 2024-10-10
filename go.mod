@@ -13,7 +13,6 @@ require (
 	github.com/manifestival/manifestival v0.7.2
 	github.com/openshift/api v3.9.0+incompatible
 	github.com/openshift/client-go v0.0.0-20240510131258-f646d5f29250
-	github.com/openshift/machine-config-operator v0.0.1-0.20220201192635-14a1ca2cb91f
 	github.com/operator-framework/api v0.23.0
 	github.com/operator-framework/operator-lifecycle-manager v0.28.0
 	github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring v0.73.2
@@ -189,7 +188,6 @@ replace (
 	// OpenShift components
 	github.com/openshift/api => github.com/openshift/api v0.0.0-20240830023148-b7d0481c9094
 	github.com/openshift/client-go => github.com/openshift/client-go v0.0.0-20240510131258-f646d5f29250
-	github.com/openshift/machine-config-operator => github.com/openshift/machine-config-operator v0.0.1-0.20240813185428-b1a8f6946397
 )
 
 // This replacement can be removed once we bump to k8s.io@v1.30.x, as from release 1.30+
