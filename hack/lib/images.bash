@@ -31,7 +31,7 @@ function default_serverless_operator_images() {
   export SERVERLESS_BUNDLE=${SERVERLESS_BUNDLE:-$(latest_konflux_image_sha "${serverless_registry}-bundle:${CURRENT_VERSION_IMAGES}")}
 
   # TODO: Change this to the following line with 1.36
-  export SERVERLESS_BUNDLE_PREVIOUS=${SERVERLESS_BUNDLE_PREVIOUS:-$(latest_registry_ci_sha "registry.ci.openshift.org/knative/serverless-bundle:release-${PREVIOUS_VERSION}")}
+  export SERVERLESS_BUNDLE_PREVIOUS=${SERVERLESS_BUNDLE_PREVIOUS:-$(image_with_sha "registry.ci.openshift.org/knative/serverless-bundle:release-${PREVIOUS_VERSION}")}
   #export SERVERLESS_BUNDLE_PREVIOUS=${SERVERLESS_BUNDLE_PREVIOUS:-$(latest_konflux_image_sha "${serverless_registry_previous}-bundle:${CURRENT_VERSION_IMAGES}")}
   export DEFAULT_SERVERLESS_BUNDLE=${DEFAULT_SERVERLESS_BUNDLE:-$(latest_konflux_image_sha "${serverless_registry}-bundle:${CURRENT_VERSION_IMAGES}")}
 
@@ -217,14 +217,11 @@ function latest_registry_redhat_io_image_sha() {
 
   image_without_tag=${input%:*} # Remove tag, if any
   image_without_tag=${image_without_tag%@*} # Remove sha, if any
-  image_name=${image_without_tag##*/} # Get image name after last slash
 
-  go_bin="$(go env GOPATH)/bin"
-  export GOPATH="$PATH:$go_bin"
-  digest=$(skopeo inspect --no-tags=true "docker://${image_without_tag}:latest" | jq -r '.Digest')
-  if [ "${digest}" = "" ]; then
-    exit 1
-  fi
+  image=$(image_with_sha "${image_without_tag}:latest")
+  digest="${image##*@}" # Get only sha
+
+  image_name=${image_without_tag##*/} # Get image name after last slash
 
   echo "${registry_redhat_io}/${image_name}@${digest}"
 }
@@ -235,27 +232,21 @@ function latest_konflux_image_sha() {
   image_without_tag=${input%:*} # Remove tag, if any
   image_without_tag=${image_without_tag%@*} # Remove sha, if any
 
-  go_bin="$(go env GOPATH)/bin"
-  export GOPATH="$PATH:$go_bin"
-  digest=$(skopeo inspect --no-tags=true "docker://${image_without_tag}:latest" | jq -r '.Digest')
-  if [ "${digest}" = "" ]; then
-    exit 1
-  fi
+  image=$(image_with_sha "${image_without_tag}:latest")
 
-  echo "${image_without_tag}@${digest}"
+  echo "${image}"
 }
 
-function latest_registry_ci_sha() {
-  input=${1:?"Provide image"}
+function image_with_sha {
+  image=${1:?"Provide image"}
 
-  image_without_tag=${input%:*} # Remove tag, if any
-
-  go_bin="$(go env GOPATH)/bin"
-  export GOPATH="$PATH:$go_bin"
-  digest=$(skopeo inspect --no-tags=true "docker://${input}" | jq -r '.Digest')
+  digest=$(skopeo inspect --no-tags=true "docker://${image}" | jq -r '.Digest')
   if [ "${digest}" = "" ]; then
     exit 1
   fi
+
+  image_without_tag=${image%:*} # Remove tag, if any
+  image_without_tag=${image_without_tag%@*} # Remove sha, if any
 
   echo "${image_without_tag}@${digest}"
 }
