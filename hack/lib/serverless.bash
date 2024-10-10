@@ -203,10 +203,17 @@ function enable_istio {
 
   istio_patch="$(mktemp -t istio-XXXXX.yaml)"
   cat - << EOF > "${istio_patch}"
+metadata:
+  annotations:
+    serverless.openshift.io/disable-istio-net-policies-generation: "true"
 spec:
   ingress:
     istio:
       enabled: true
+  config:
+    istio: # point these to our own specific gateways now
+      gateway.knative-serving.knative-ingress-gateway: knative-istio-ingressgateway.knative-serving-ingress.svc.cluster.local
+      local-gateway.knative-serving.knative-local-gateway: knative-local-gateway.knative-serving-ingress.svc.cluster.local
   deployments:
   - labels:
       sidecar.istio.io/inject: "true"
@@ -218,6 +225,21 @@ spec:
     annotations:
       sidecar.istio.io/rewriteAppHTTPProbers: "true"
     name: autoscaler
+  - labels:
+      sidecar.istio.io/inject: "false"
+    name: autoscaler-hpa
+  - labels:
+      sidecar.istio.io/inject: "false"
+    name: controller
+  - labels:
+      sidecar.istio.io/inject: "false"
+    name: net-istio-controller
+  - labels:
+      sidecar.istio.io/inject: "false"
+    name: net-istio-webhook
+  - labels:
+      sidecar.istio.io/inject: "false"
+    name: webhook
 EOF
 
   yq merge --inplace --arrays append "$custom_resource" "$istio_patch"
@@ -225,10 +247,6 @@ EOF
   rm -f "${istio_patch}"
 }
 
-# If ServiceMesh is enabled:
-# - Set ingress.istio.enabled to "true"
-# - Set inject and rewriteAppHTTPProbers annotations for activator and autoscaler
-#   as "test/v1beta1/resources/operator.knative.dev_v1beta1_knativeserving_cr.yaml" has the value "prometheus".
 function enable_istio_eventing {
   local custom_resource istio_patch
   custom_resource=${1:?Pass a custom resource to be patched as arg[1]}
@@ -265,6 +283,24 @@ spec:
       sidecar.istio.io/logLevel: "debug"
       sidecar.istio.io/rewriteAppHTTPProbers: "true"
     name: imc-dispatcher
+  - labels:
+      sidecar.istio.io/inject: "false"
+    name: eventing-controller
+  - labels:
+      sidecar.istio.io/inject: "false"
+    name: eventing-istio-controller
+  - labels:
+      sidecar.istio.io/inject: "false"
+    name: eventing-webhook
+  - labels:
+      sidecar.istio.io/inject: "false"
+    name: imc-controller
+  - labels:
+      sidecar.istio.io/inject: "false"
+    name: job-sink
+  - labels:
+      sidecar.istio.io/inject: "false"
+    name: mt-broker-controller
 EOF
 
   yq merge --inplace --arrays append "$custom_resource" "$istio_patch"
@@ -292,10 +328,6 @@ EOF
   rm -f "${network_patch}"
 }
 
-# If ServiceMesh is enabled:
-# - Set ingress.istio.enabled to "true"
-# - Set inject and rewriteAppHTTPProbers annotations for activator and autoscaler
-#   as "test/v1beta1/resources/operator.knative.dev_v1beta1_knativeserving_cr.yaml" has the value "prometheus".
 function enable_istio_eventing_kafka {
   local custom_resource istio_patch
   custom_resource=${1:?Pass a custom resource to be patched as arg[1]}
@@ -346,6 +378,9 @@ spec:
       sidecar.istio.io/logLevel: "debug"
       sidecar.istio.io/rewriteAppHTTPProbers: "true"
     name: kafka-controller
+  - labels:
+      sidecar.istio.io/inject: "false"
+    name: kafka-webhook-eventing
 EOF
 
   yq merge --inplace --arrays append "$custom_resource" "$istio_patch"

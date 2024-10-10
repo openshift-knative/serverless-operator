@@ -31,9 +31,6 @@ function deploy_certmanager_operator {
   oc apply -n "${deployment_namespace}" -f "${certmanager_resources_dir}"/serving-ca-certificate.yaml || return $?
 
   sync_trust_bundle "knative-selfsigned-ca" "knative-serving" "knative-serving-ingress" || return $?
-  if [[ $MESH == "true" ]]; then
-    sync_trust_bundle "knative-selfsigned-ca" "istio-system" || return $?
-  fi
 
   # eventing resources
   oc apply -f "${certmanager_resources_dir}"/selfsigned-issuer.yaml || return $?
@@ -67,7 +64,7 @@ function sync_trust_bundle {
 
    for ns in "${namespaces[@]}"; do
      echo "Syncing trust-bundle for namespace: ${ns}"
-     oc create namespace "${ns}" --dry-run=client -o yaml | oc apply -f -
+     oc get namespace "${ns}" || oc create namespace "${ns}"
      oc label namespace "${ns}" knative.openshift.io/part-of="openshift-serverless" --overwrite
      oc create configmap -n "${ns}" knative-ca-bundle --from-file=tls.crt --from-file=ca.crt \
         --dry-run=client -o yaml | kubectl apply -n "${ns}" -f - || return $?

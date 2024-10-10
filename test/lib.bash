@@ -693,35 +693,6 @@ function delete_users {
   rm -fv users.htpasswd
 }
 
-function add_networkpolicy {
-  local NAMESPACE=${1:?Pass a namespace as arg[1]}
-  cat <<EOF | oc apply -f -
----
-kind: NetworkPolicy
-apiVersion: networking.k8s.io/v1
-metadata:
-  name: deny-by-default
-  namespace: "$NAMESPACE"
-spec:
-  podSelector:
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-  name: allow-from-system-namespace
-  namespace: "$NAMESPACE"
-spec:
-  ingress:
-  - from:
-    - namespaceSelector:
-        matchLabels:
-          knative.openshift.io/part-of: "openshift-serverless"
-  podSelector: {}
-  policyTypes:
-  - Ingress
-EOF
-}
-
 function wait_for_leader_controller() {
   local leader
   echo -n "Waiting for a leader Controller"
