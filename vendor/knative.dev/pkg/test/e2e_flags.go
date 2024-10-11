@@ -22,7 +22,6 @@ package test
 import (
 	"bytes"
 	"flag"
-	"log"
 	"text/template"
 
 	env "knative.dev/pkg/environment"
@@ -59,7 +58,6 @@ func SetupLoggingFlags() {
 
 // ImagePath is a helper function to transform an image name into an image reference that can be pulled.
 func ImagePath(name string) string {
-	log.Println("Got image template", Flags.ImageTemplate)
 	tpl, err := template.New("image").Parse(Flags.ImageTemplate)
 	if err != nil {
 		panic("could not parse image template: " + err.Error())
