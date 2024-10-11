@@ -22,6 +22,10 @@ jobs:
       - name: Setup Golang
         uses: openshift-knative/hack/actions/setup-go@main
 
+      - name: Install OPM
+        run: |
+          go install github.com/operator-framework/operator-registry/cmd/opm@v1.47.0
+
       - name: Checkout openshift-knative/serverless-operator
         uses: actions/checkout@v4
         with:
@@ -91,6 +95,14 @@ jobs:
       - name: Regenerate all generated files
         working-directory: ./src/github.com/${{ github.repository }}
         run: make generated-files
+
+      # Generate catalog only if not triggered by a pull request. Credentials are not available in pre-submit phase.
+      - name: Regenerate file-based catalog
+        working-directory: ./src/github.com/${{ github.repository }}
+        env:
+          REGISTRY_REDHAT_IO_USERNAME: ${{ secrets.REGISTRY_REDHAT_IO_USERNAME }}
+          REGISTRY_REDHAT_IO_PASSWORD: ${{ secrets.REGISTRY_REDHAT_IO_PASSWORD }}
+        run: make generate-catalog
 
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v7
