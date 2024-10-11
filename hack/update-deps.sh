@@ -20,7 +20,7 @@ EVENTING_VERSION="release-v1.15"
 EVENTING_KAFKA_BROKER_VERSION="release-v1.15"
 SERVING_VERSION="release-v1.15"
 GO_VERSION="$(metadata.get requirements.golang)"
-OCP_VERSION="$(metadata.get requirements.ocpVersion.min)"
+OCP_VERSION="$(metadata.get requirements.ocpVersion.max)"
 
 # The list of dependencies that we track at HEAD and periodically
 # float forward in this repository.
@@ -36,9 +36,8 @@ REPLACE_DEPS=(
   "knative.dev/eventing=github.com/openshift-knative/eventing@${EVENTING_VERSION}"
   "knative.dev/serving=github.com/openshift-knative/serving@${SERVING_VERSION}"
   "knative.dev/eventing-kafka-broker=github.com/openshift-knative/eventing-kafka-broker@${EVENTING_KAFKA_BROKER_VERSION}"
-  "github.com/openshift/api=github.com/openshift/api@release-${OCP_VERSION}"
   "github.com/openshift/client-go=github.com/openshift/client-go@release-${OCP_VERSION}"
-  "github.com/openshift/machine-config-operator=github.com/openshift/machine-config-operator@release-${OCP_VERSION}"
+  "github.com/openshift/api=github.com/openshift/api@release-${OCP_VERSION}"
 )
 
 # Parse flags to determine if we need to update our floating deps.
