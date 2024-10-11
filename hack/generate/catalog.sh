@@ -30,6 +30,8 @@ function generate_catalog {
     opm alpha convert-template basic "${catalog_tmp_dir}/serverless-operator/catalog.yaml" -oyaml \
       > "${catalog_template}"
 
+    default_serverless_operator_images
+
     while IFS=$'\n' read -r channel; do
       add_channel "${catalog_template}" "$channel"
       # Also add previous version for cases when it was not released yet
@@ -39,6 +41,9 @@ function generate_catalog {
     # Generate full catalog
     opm alpha render-template basic "${catalog_template}" -oyaml \
       > "${index_dir}/v${ocp_version}/catalog/serverless-operator/catalog.yaml"
+
+    # Replace quay.io with registry.redhat.io for bundle image.
+    sed -ri "s#(.*)(${SERVERLESS_BUNDLE})(.*)#\1${SERVERLESS_BUNDLE_REDHAT_IO}\3#" "${index_dir}/v${ocp_version}/catalog/serverless-operator/catalog.yaml"
 
     rm -rf "${catalog_tmp_dir}"
   done < <(metadata.get 'requirements.ocpVersion.list[*]')
@@ -121,16 +126,12 @@ EOF
 function add_latest_bundle {
   local catalog_template
   catalog_template=${1?Pass catalog template path as arg[1]}
-  default_serverless_operator_images
-
   add_bundle "${catalog_template}" "${SERVERLESS_BUNDLE}"
 }
 
 function add_previous_bundle {
   local catalog_template
   catalog_template=${1?Pass catalog template path as arg[1]}
-  default_serverless_operator_images
-
   add_bundle "${catalog_template}" "${SERVERLESS_BUNDLE_PREVIOUS}"
 }
 

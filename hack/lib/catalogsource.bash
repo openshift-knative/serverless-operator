@@ -144,6 +144,9 @@ EOF
       fi
     done <<< "$mirrors"
 
+    # Add mapping for bundle image separately as the extracted mirrors don't include it.
+    add_repository_digest_mirrors "$tmpfile" "${registry_source}/serverless-bundle" "${registry_target}/serverless-bundle"
+
   [ -n "$OPENSHIFT_CI" ] && cat "$tmpfile"
   oc apply -f "$tmpfile"
 }
@@ -209,7 +212,6 @@ function build_image() {
 
 function delete_catalog_source {
   logger.info "Deleting CatalogSource $OPERATOR"
-  oc delete imagecontentsourcepolicy --ignore-not-found=true serverless-image-content-source-policy
   oc delete catalogsource --ignore-not-found=true -n "$OLM_NAMESPACE" "$OPERATOR"
   oc delete service --ignore-not-found=true -n "$OLM_NAMESPACE" serverless-index
   oc delete deployment --ignore-not-found=true -n "$OLM_NAMESPACE" serverless-index
@@ -219,6 +221,7 @@ function delete_catalog_source {
   oc delete buildconfig --ignore-not-found=true -n "$OLM_NAMESPACE" serverless-bundle
   logger.info "Wait for the ${OPERATOR} pod to disappear"
   timeout 300 "[[ \$(oc get pods -n ${OPERATORS_NAMESPACE} | grep -c ${OPERATOR}) -gt 0 ]]"
+  oc delete imagecontentsourcepolicy --ignore-not-found=true serverless-image-content-source-policy
   logger.success 'CatalogSource deleted'
 }
 
