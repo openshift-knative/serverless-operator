@@ -436,8 +436,7 @@ function run_rolling_upgrade_tests {
   default_knative_eventing_kafka_broker_images
   default_knative_serving_images
 
-  # Mapping based on https://github.com/openshift/release/tree/master/core-services/image-mirroring/knative
-  # for non-REKT tests.
+  # Mapping for non-REKT tests.
   image_template=$(
     cat <<-EOF
 {{- with .Name }}
