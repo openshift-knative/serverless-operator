@@ -285,7 +285,7 @@ generate-ci-config:
 	./openshift/ci-operator/generate-ci-config.sh $(BRANCH) > ci-operator-config.yaml
 
 # Generates all files that are templated with release metadata.
-release-files: install-tool-sobranch
+release-files: install-tool-sobranch install-tool-skopeo
 	./hack/generate/csv.sh \
 		templates/csv.yaml \
 		olm-catalog/serverless-operator/manifests/serverless-operator.clusterserviceversion.yaml
@@ -303,9 +303,9 @@ release-files: install-tool-sobranch
 		openshift/ci-operator/build-image/Dockerfile
 	./hack/generate/dockerfile.sh \
  		templates/index.Dockerfile \
-		olm-catalog/serverless-operator/index/Dockerfile
+		olm-catalog/serverless-operator-index/Dockerfile
 	./hack/generate/index.sh \
-		olm-catalog/serverless-operator/index/configs/index.yaml
+		olm-catalog/serverless-operator-index/configs/index.yaml
 	./hack/generate/quickstart.sh \
 		templates/serverless-application-quickstart.yaml \
 		knative-operator/deploy/resources/quickstart/serverless-application-quickstart.yaml
@@ -372,6 +372,9 @@ fix-lint:
 
 install-tool-sobranch:
 	GOFLAGS='' go install github.com/openshift-knative/hack/cmd/sobranch@latest
+
+install-tool-skopeo:
+	GOFLAGS='' go install -tags="exclude_graphdriver_btrfs containers_image_openpgp" github.com/containers/skopeo/cmd/skopeo@v1.16.1
 
 install-tool-generate:
 	GOFLAGS='' go install github.com/openshift-knative/hack/cmd/generate@latest
