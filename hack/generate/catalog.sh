@@ -121,6 +121,7 @@ EOF
       add_previous_bundle "${catalog_template}"
     fi
   fi
+  rm -f "${catalog}"
 }
 
 function add_latest_bundle {
