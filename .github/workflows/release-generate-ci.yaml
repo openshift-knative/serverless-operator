@@ -79,3 +79,16 @@ jobs:
           delete-branch: true
           body: |
             Serverless Operator CI config for ${{ github.ref_name }}.
+
+      - name: Trigger Konflux and CI generation
+        if: ${{ always() }}
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.SERVERLESS_QE_ROBOT }}
+          script: |
+            github.rest.actions.createWorkflowDispatch({
+              owner: context.repo.owner,
+              repo: 'hack',
+              workflow_id: 'release-generate-ci.yaml',
+              ref: 'main',
+            })
