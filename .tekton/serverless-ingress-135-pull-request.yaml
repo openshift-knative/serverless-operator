@@ -21,7 +21,10 @@ spec:
     - name: dockerfile
       value: serving/ingress/Dockerfile
     - name: build-args
-      value: [ VERSION=1.35.0,  GO_BUILDER=brew.registry.redhat.io/rh-osbs/openshift-golang-builder:rhel_8_golang_1.22,  GO_RUNTIME=registry.access.redhat.com/ubi8/ubi-minimal, ]
+      value:
+        - VERSION=1.35.0
+        - GO_BUILDER=brew.registry.redhat.io/rh-osbs/openshift-golang-builder:rhel_8_golang_1.22
+        - GO_RUNTIME=registry.access.redhat.com/ubi8/ubi-minimal
     - name: git-url
       value: '{{source_url}}'
     - name: hermetic

@@ -20,7 +20,10 @@ spec:
     - name: dockerfile
       value: knative-operator/Dockerfile
     - name: build-args
-      value: [ VERSION=1.35.0,  GO_BUILDER=brew.registry.redhat.io/rh-osbs/openshift-golang-builder:rhel_8_golang_1.22,  GO_RUNTIME=registry.access.redhat.com/ubi8/ubi-minimal, ]
+      value:
+        - VERSION=1.35.0
+        - GO_BUILDER=brew.registry.redhat.io/rh-osbs/openshift-golang-builder:rhel_8_golang_1.22
+        - GO_RUNTIME=registry.access.redhat.com/ubi8/ubi-minimal
     - name: git-url
       value: '{{source_url}}'
     - name: hermetic
@@ -30,7 +33,9 @@ spec:
     - name: revision
       value: '{{revision}}'
     - name: additional-tags
-      value: [ latest, ]
+      value:
+        - 1.35.0
+        - latest
   pipelineRef:
     name: docker-build
   taskRunTemplate: {}
