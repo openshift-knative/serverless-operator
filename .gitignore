@@ -5,3 +5,4 @@ users.htpasswd
 # certs created by hack/lib/mesh.bash
 example.com.*
 custom.example.com.*
+/iib-manifests

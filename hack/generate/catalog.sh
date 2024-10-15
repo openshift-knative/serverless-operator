@@ -155,4 +155,8 @@ EOF
   fi
 }
 
+logger.info "Generating ImageContextSourcePolicy"
+create_image_content_source_policy "registry.ci.openshift.org/knative/${CURRENT_VERSION_IMAGES}:serverless-index" "$registry_redhat_io" "$registry_quay" "olm-catalog/serverless-operator-index/image_content_source_policy.yaml"
+
+logger.info "Generating catalog"
 generate_catalog
