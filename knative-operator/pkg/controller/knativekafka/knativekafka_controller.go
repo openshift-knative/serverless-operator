@@ -128,7 +128,7 @@ func add(mgr manager.Manager, r *ReconcileKnativeKafka) error {
 	}
 
 	// Watch for changes to primary resource KnativeKafka
-	err = c.Watch(source.Kind(mgr.GetCache(), &serverlessoperatorv1alpha1.KnativeKafka{}), &handler.EnqueueRequestForObject{})
+	err = c.Watch(source.Kind(mgr.GetCache(), &serverlessoperatorv1alpha1.KnativeKafka{}, &handler.TypedEnqueueRequestForObject[*serverlessoperatorv1alpha1.KnativeKafka]{}))
 	if err != nil {
 		return err
 	}
@@ -146,7 +146,7 @@ func add(mgr manager.Manager, r *ReconcileKnativeKafka) error {
 			// We cannot watch cert-manager resources since it's an optional addon.
 			continue
 		}
-		err = c.Watch(source.Kind(mgr.GetCache(), t), common.EnqueueRequestByOwnerAnnotations(common.KafkaOwnerName, common.KafkaOwnerNamespace))
+		err = c.Watch(source.Kind(mgr.GetCache(), t, common.EnqueueRequestByOwnerAnnotations(common.KafkaOwnerName, common.KafkaOwnerNamespace)))
 		if err != nil {
 			return err
 		}
@@ -158,22 +158,22 @@ func add(mgr manager.Manager, r *ReconcileKnativeKafka) error {
 	}
 
 	for _, t := range gvkToEventingResource {
-		err = c.Watch(source.Kind(mgr.GetCache(), t), filteredGlobalResync(context.Background(), mgr.GetLogger(), r, func(object client.Object) bool {
+		err = c.Watch(source.Kind(mgr.GetCache(), t, filteredGlobalResync(context.Background(), mgr.GetLogger(), r, func(object client.Object) bool {
 			return object.GetNamespace() == "knative-eventing" && dependentConfigMaps.Has(object.GetName())
-		}))
+		})))
 		if err != nil {
 			return err
 		}
 	}
 
 	// watch KnativeEventing instances as KnativeKafka instances are dependent on them
-	err = c.Watch(source.Kind(mgr.GetCache(), &operatorv1beta1.KnativeEventing{}), filteredGlobalResync(context.Background(), mgr.GetLogger(), r, func(_ client.Object) bool {
-		return true
-	}))
+	err = c.Watch(source.Kind(mgr.GetCache(), client.Object(&operatorv1beta1.KnativeEventing{}), filteredGlobalResync(context.Background(), mgr.GetLogger(), r,
+		func(obj client.Object) bool {
+			return true
+		})))
 	if err != nil {
 		return err
 	}
-
 	return nil
 }
 

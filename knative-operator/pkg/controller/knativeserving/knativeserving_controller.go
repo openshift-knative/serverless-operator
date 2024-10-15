@@ -107,19 +107,19 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 
 	// Watch for changes to primary resource KnativeServing, only in the expected namespace.
 	requiredNs := os.Getenv(requiredNsEnvName)
-	err = c.Watch(source.Kind(mgr.GetCache(), &operatorv1beta1.KnativeServing{}), &handler.EnqueueRequestForObject{}, predicate.NewPredicateFuncs(func(obj client.Object) bool {
+	err = c.Watch(source.Kind(mgr.GetCache(), client.Object(&operatorv1beta1.KnativeServing{}), &handler.EnqueueRequestForObject{}, predicate.NewPredicateFuncs(func(obj client.Object) bool {
 		if requiredNs == "" {
 			return true
 		}
 		return obj.GetNamespace() == requiredNs
-	}))
+	})))
 	if err != nil {
 		return err
 	}
 
 	// Watch for changes to owned ConfigMaps
-	err = c.Watch(source.Kind(mgr.GetCache(), &corev1.ConfigMap{}), handler.EnqueueRequestForOwner(
-		mgr.GetScheme(), mgr.GetRESTMapper(), &operatorv1beta1.KnativeServing{}, handler.OnlyControllerOwner()))
+	err = c.Watch(source.Kind(mgr.GetCache(), client.Object(&corev1.ConfigMap{}), handler.EnqueueRequestForOwner(
+		mgr.GetScheme(), mgr.GetRESTMapper(), &operatorv1beta1.KnativeServing{}, handler.OnlyControllerOwner())))
 	if err != nil {
 		return err
 	}
@@ -161,12 +161,12 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 			}
 			return nil
 		})
-		if err = c.Watch(source.Kind(mgr.GetCache(), &configv1.ClusterOperator{}), handler.EnqueueRequestsFromMapFunc(enqueueRequests), common.SkipPredicate{}); err != nil {
+		if err = c.Watch(source.Kind(mgr.GetCache(), client.Object(&configv1.ClusterOperator{}), handler.EnqueueRequestsFromMapFunc(enqueueRequests), common.SkipPredicate{})); err != nil {
 			return err
 		}
 	}
 	for _, t := range gvkToResource {
-		err = c.Watch(source.Kind(mgr.GetCache(), t), common.EnqueueRequestByOwnerAnnotations(socommon.ServingOwnerName, socommon.ServingOwnerNamespace))
+		err = c.Watch(source.Kind(mgr.GetCache(), t, common.EnqueueRequestByOwnerAnnotations(socommon.ServingOwnerName, socommon.ServingOwnerNamespace)))
 		if err != nil {
 			return err
 		}
@@ -209,7 +209,7 @@ func (r *ReconcileKnativeServing) Reconcile(_ context.Context, request reconcile
 
 	// If previously not set let's add a watch for ConsoleCLIDownload
 	if consoleutil.IsConsoleInstalled() && !cliDownloadWatchSet.Load() {
-		if err = (*r.c).Watch(source.Kind(r.cache, &consolev1.ConsoleCLIDownload{}), common.EnqueueRequestByOwnerAnnotations(socommon.ServingOwnerName, socommon.ServingOwnerNamespace)); err != nil {
+		if err = (*r.c).Watch(source.Kind(r.cache, client.Object(&consolev1.ConsoleCLIDownload{}), common.EnqueueRequestByOwnerAnnotations(socommon.ServingOwnerName, socommon.ServingOwnerNamespace))); err != nil {
 			return reconcile.Result{}, err
 		}
 		cliDownloadWatchSet.Store(true)

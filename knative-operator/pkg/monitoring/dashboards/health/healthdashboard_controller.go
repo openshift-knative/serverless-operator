@@ -2,7 +2,6 @@ package health
 
 import (
 	"context"
-
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -36,7 +35,8 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 		return err
 	}
 
-	err = c.Watch(source.Kind(mgr.GetCache(), &corev1.ConfigMap{}), common.EnqueueRequestByOwnerAnnotations(common.ServerlessOperatorOwnerName, common.ServerlessOperatorOwnerNamespace), skipCreatePredicate{})
+	err = c.Watch(source.Kind(mgr.GetCache(), client.Object(&corev1.ConfigMap{}),
+		common.EnqueueRequestByOwnerAnnotations(common.ServerlessOperatorOwnerName, common.ServerlessOperatorOwnerNamespace), skipCreatePredicate{}))
 	if err != nil {
 		return err
 	}
