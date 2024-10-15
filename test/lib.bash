@@ -451,7 +451,7 @@ function run_rolling_upgrade_tests {
 {{- else if eq . "wathola-forwarder"   }}${KNATIVE_EVENTING_TEST_WATHOLA_FORWARDER}
 {{- else if eq . "wathola-receiver"    }}${KNATIVE_EVENTING_TEST_WATHOLA_RECEIVER}
 {{- else if eq . "wathola-sender"      }}${KNATIVE_EVENTING_TEST_WATHOLA_SENDER}
-{{- else                               }}${KNATIVE_SERVING_IMAGE_PREFIX}-{{.}}:latest{{end -}}
+{{- else                               }}${KNATIVE_SERVING_IMAGE_PREFIX}-test-{{.}}:latest{{end -}}
 {{end -}}
 EOF
 )
