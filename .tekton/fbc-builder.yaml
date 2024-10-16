@@ -50,10 +50,6 @@ spec:
     - name: workspace
       workspace: workspace
   params:
-  - default: --all-projects --org=3e1a4cca-ebfb-495f-b64c-3cc960d566b4 --exclude=test*,vendor,third_party
-    description: Append arguments to Snyk code command.
-    name: snyk-args
-    type: string
   - default: "true"
     description: Build a source image.
     name: build-source-image
@@ -120,10 +116,6 @@ spec:
     name: CHAINS-GIT_COMMIT
     value: $(tasks.clone-repository.results.commit)
   tasks:
-  - name: sast-snyk-check
-    params:
-    - name: ARGS
-      value: $(params.snyk-args)
   - name: apply-tags
     params:
     - name: ADDITIONAL_TAGS
