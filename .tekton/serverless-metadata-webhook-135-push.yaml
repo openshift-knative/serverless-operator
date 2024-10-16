@@ -6,13 +6,13 @@ metadata:
     build.appstudio.redhat.com/commit_sha: '{{revision}}'
     build.appstudio.redhat.com/target_branch: '{{target_branch}}'
     pipelinesascode.tekton.dev/max-keep-runs: "3"
-    pipelinesascode.tekton.dev/on-cel-expression: event == "push" && target_branch == "main" && files.all.exists(x, !x.matches('^olm-catalog/'))
+    pipelinesascode.tekton.dev/on-cel-expression: event == "push" && target_branch == "main"  && files.all.exists(x, !x.matches('^olm-catalog/'))
   creationTimestamp: null
   labels:
     appstudio.openshift.io/application: serverless-operator-135
-    appstudio.openshift.io/component: serverless-metadata-webhook-main
+    appstudio.openshift.io/component: serverless-metadata-webhook-135
     pipelines.appstudio.openshift.io/type: build
-  name: serverless-metadata-webhook-main-on-push
+  name: serverless-metadata-webhook-135-on-push
   namespace: ocp-serverless-tenant
 spec:
   params:
@@ -39,17 +39,6 @@ spec:
     name: docker-build
   taskRunTemplate: {}
   workspaces:
-    - name: workspace
-      volumeClaimTemplate:
-        metadata:
-          creationTimestamp: null
-        spec:
-          accessModes:
-            - ReadWriteOnce
-          resources:
-            requests:
-              storage: 1Gi
-        status: {}
     - name: git-auth
       secret:
         secretName: '{{ git_auth_secret }}'

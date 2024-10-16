@@ -6,29 +6,32 @@ metadata:
     build.appstudio.redhat.com/commit_sha: '{{revision}}'
     build.appstudio.redhat.com/target_branch: '{{target_branch}}'
     pipelinesascode.tekton.dev/max-keep-runs: "3"
-    pipelinesascode.tekton.dev/on-cel-expression: event == "push" && target_branch == "main" && ( files.all.exists(x, x.matches('^olm-catalog/serverless-operator-index/')) || files.all.exists(x, x.matches('^.tekton/')) )
+    pipelinesascode.tekton.dev/on-cel-expression: event == "push" && target_branch == "main" && ( files.all.exists(x, x.matches('^olm-catalog/serverless-operator-index/v4.15/')) || files.all.exists(x, x.matches('^.tekton/')) )
   creationTimestamp: null
   labels:
-    appstudio.openshift.io/application: serverless-operator-135
-    appstudio.openshift.io/component: serverless-index-main
+    appstudio.openshift.io/application: serverless-operator-135-fbc-415
+    appstudio.openshift.io/component: serverless-index-135-fbc-415
     pipelines.appstudio.openshift.io/type: build
-  name: serverless-index-main-on-push
+  name: serverless-index-135-fbc-415-on-push
   namespace: ocp-serverless-tenant
 spec:
   params:
     - name: dockerfile
-      value: olm-catalog/serverless-operator-index/Dockerfile
+      value: Dockerfile
+    - name: path-context
+      value: ./olm-catalog/serverless-operator-index/v4.15
     - name: build-args
       value:
         - VERSION=1.35.0
         - GO_BUILDER=brew.registry.redhat.io/rh-osbs/openshift-golang-builder:rhel_8_golang_1.22
         - GO_RUNTIME=registry.access.redhat.com/ubi8/ubi-minimal
+        - OPM_IMAGE=registry.redhat.io/openshift4/ose-operator-registry-rhel9:v4.15
     - name: git-url
       value: '{{source_url}}'
     - name: hermetic
-      value: "false"
+      value: "true"
     - name: output-image
-      value: quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/serverless-index:{{revision}}
+      value: quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135-fbc-415/serverless-index-135-fbc-415:{{revision}}
     - name: revision
       value: '{{revision}}'
     - name: additional-tags
