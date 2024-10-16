@@ -2,7 +2,6 @@ package monitoring
 
 import (
 	"fmt"
-	"k8s.io/utils/pointer"
 
 	corev1 "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
@@ -11,9 +10,9 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/intstr"
+	"k8s.io/utils/ptr"
 
 	commonutil "github.com/openshift-knative/serverless-operator/knative-operator/pkg/common"
-
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 )
 
@@ -157,7 +156,7 @@ func serviceMonitor(component string) *monitoringv1.ServiceMonitor {
 						SafeTLSConfig: monitoringv1.SafeTLSConfig{
 							CA:         monitoringv1.SecretOrConfigMap{},
 							Cert:       monitoringv1.SecretOrConfigMap{},
-							ServerName: pointer.String(fmt.Sprintf("kafka-broker-%s-sm-service.{{.Namespace}}.svc", component)),
+							ServerName: ptr.To(fmt.Sprintf("kafka-broker-%s-sm-service.{{.Namespace}}.svc", component)),
 						},
 						CAFile: "/etc/prometheus/configmaps/serving-certs-ca-bundle/service-ca.crt",
 					},
