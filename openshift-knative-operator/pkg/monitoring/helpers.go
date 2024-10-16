@@ -3,6 +3,7 @@ package monitoring
 import (
 	"context"
 	"fmt"
+	"k8s.io/utils/pointer"
 	"os"
 	"strconv"
 	"strings"
@@ -168,7 +169,7 @@ func createServiceMonitor(component string, ns string, serviceName string) monit
 				TLSConfig: &monitoringv1.TLSConfig{
 					CAFile: "/etc/prometheus/configmaps/serving-certs-ca-bundle/service-ca.crt",
 					SafeTLSConfig: monitoringv1.SafeTLSConfig{
-						ServerName: fmt.Sprintf("%s.%s.svc", serviceName, ns),
+						ServerName: pointer.String(fmt.Sprintf("%s.%s.svc", serviceName, ns)),
 					},
 				},
 			},
