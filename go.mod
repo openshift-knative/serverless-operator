@@ -57,7 +57,6 @@ require (
 	golang.org/x/exp v0.0.0-20240506185415-9bf2ced13842 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20240903143218-8af14fe29dc1 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20240903143218-8af14fe29dc1 // indirect
-	k8s.io/gengo/v2 v2.0.0-20240228010128-51d4e06bde70 // indirect
 )
 
 require (
@@ -204,7 +203,7 @@ replace (
 	// This replacement can be removed once we bump to k8s.io@v1.30.x, as from release 1.30+
 	// https://github.com/kubernetes/code-generator/blob/release-1.30/go.mod, code-generator will use
 	// the new v2 version of kube-openapi.
-	k8s.io/kube-openapi => k8s.io/kube-openapi v0.0.0-20240228011516-70dd3763d340
+	k8s.io/kube-openapi => k8s.io/kube-openapi v0.0.0-20231010175941-2dd684a91f00
 	k8s.io/utils => k8s.io/utils v0.0.0-20240310230437-4693a0247e57
 	sigs.k8s.io/controller-runtime => sigs.k8s.io/controller-runtime v0.17.6
 )
