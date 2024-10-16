@@ -84,7 +84,10 @@ function install_catalogsource {
     logger.debug 'Undo potential changes to the index Dockerfile.'
     mv "${rootdir}/_output/bkp.Dockerfile" "${rootdir}/${index_dorkerfile_path}"
   else
-    install_image_content_source_policy "$index_image" "$registry_redhat_io" "$registry_quay"
+    tmpfile=$(mktemp /tmp/icsp.XXXXXX.yaml)
+    create_image_content_source_policy "$index_image" "$registry_redhat_io" "$registry_quay" "$tmpfile"
+    oc apply -f "$tmpfile"
+    [ -n "$OPENSHIFT_CI" ] && cat "$output_file"
   fi
 
   logger.info 'Install the catalogsource.'
@@ -112,15 +115,15 @@ EOF
   logger.success "CatalogSource installed successfully"
 }
 
-function install_image_content_source_policy {
-  local index tmpfile registry_source registry_target
+function create_image_content_source_policy {
+  local index registry_source registry_target
   index="${1:?Pass index image as arg[1]}"
   registry_source="${2:?Pass source registry arg[2]}"
   registry_target="${3:?Pass target registry arg[3]}"
+  output_file="${4:?Pass output file arg[4]}"
 
   logger.info "Install ImageContentSourcePolicy"
-  tmpfile=$(mktemp /tmp/icsp.XXXXXX.yaml)
-  cat > "$tmpfile" <<EOF
+  cat > "$output_file" <<EOF
 apiVersion: operator.openshift.io/v1alpha1
 kind: ImageContentSourcePolicy
 metadata:
@@ -131,24 +134,22 @@ spec:
   repositoryDigestMirrors:
 EOF
 
+    rm -rf iib-manifests
     oc adm catalog mirror "$index" "$registry_target" --manifests-only=true --to-manifests=iib-manifests/
 
     # The generated ICSP is incorrect as it replaces slashes in long repository paths with dashes and
     # includes third-party images. Create a proper ICSP based on the generated one.
-    mirrors=$(yq read iib-manifests/imageContentSourcePolicy.yaml 'spec.repositoryDigestMirrors[*].source')
+    mirrors=$(yq read iib-manifests/imageContentSourcePolicy.yaml 'spec.repositoryDigestMirrors[*].source' | sort)
     while IFS= read -r line; do
       # shellcheck disable=SC2053
       if  [[ $line == $registry_source || $line =~ $registry_source ]]; then
         img=${line##*/} # Get image name after last slash
-        add_repository_digest_mirrors "$tmpfile" "${registry_source}/${img}" "${registry_target}/${img}"
+        add_repository_digest_mirrors "$output_file" "${registry_source}/${img}" "${registry_target}/${img}"
       fi
     done <<< "$mirrors"
 
     # Add mapping for bundle image separately as the extracted mirrors don't include it.
-    add_repository_digest_mirrors "$tmpfile" "${registry_source}/serverless-bundle" "${registry_target}/serverless-bundle"
-
-  [ -n "$OPENSHIFT_CI" ] && cat "$tmpfile"
-  oc apply -f "$tmpfile"
+    add_repository_digest_mirrors "$output_file" "${registry_source}/serverless-bundle" "${registry_target}/serverless-bundle"
 }
 
 function add_repository_digest_mirrors {

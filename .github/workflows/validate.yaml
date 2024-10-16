@@ -26,6 +26,12 @@ jobs:
       - name: Setup Golang
         uses: openshift-knative/hack/actions/setup-go@main
 
+      - name: Install CLI tools from OpenShift Mirror
+        uses: redhat-actions/openshift-tools-installer@v1
+        with:
+          # Installs the latest release of oc with the major version 4.
+          oc: "4"
+
       - name: Install yq
         run: |
           go install github.com/mikefarah/yq/v3@latest
