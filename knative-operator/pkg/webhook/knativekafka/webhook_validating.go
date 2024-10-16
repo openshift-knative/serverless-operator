@@ -16,11 +16,11 @@ import (
 // Validator validates KnativeKafka CR's
 type Validator struct {
 	client  client.Client
-	decoder *admission.Decoder
+	decoder admission.Decoder
 }
 
 // NewValidator creates a new Valicator instance to validate KnativeKafka CRs.
-func NewValidator(client client.Client, decoder *admission.Decoder) *Validator {
+func NewValidator(client client.Client, decoder admission.Decoder) *Validator {
 	return &Validator{
 		client:  client,
 		decoder: decoder,

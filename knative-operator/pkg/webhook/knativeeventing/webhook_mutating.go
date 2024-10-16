@@ -11,11 +11,11 @@ import (
 
 // Configurator annotates KEs
 type Configurator struct {
-	decoder *admission.Decoder
+	decoder admission.Decoder
 }
 
 // NewConfigurator creates a new Configurator instance to configure KnativeEventing CRs.
-func NewConfigurator(decoder *admission.Decoder) *Configurator {
+func NewConfigurator(decoder admission.Decoder) *Configurator {
 	return &Configurator{
 		decoder: decoder,
 	}

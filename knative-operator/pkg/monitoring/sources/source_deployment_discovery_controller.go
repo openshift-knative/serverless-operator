@@ -65,7 +65,7 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 		}
 		return nil
 	})
-	return c.Watch(source.Kind(mgr.GetCache(), &appsv1.Deployment{}), handler.EnqueueRequestsFromMapFunc(enqueueRequests), skipDeletePredicate{}, skipSystemNamespaceSources{})
+	return c.Watch(source.Kind(mgr.GetCache(), client.Object(&appsv1.Deployment{}), handler.EnqueueRequestsFromMapFunc(enqueueRequests), skipDeletePredicate{}, skipSystemNamespaceSources{}))
 }
 
 // blank assignment to verify that ReconcileSourceDeployment implements reconcile.Reconciler

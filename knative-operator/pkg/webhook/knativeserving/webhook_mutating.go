@@ -11,11 +11,11 @@ import (
 
 // Configurator annotates Kss
 type Configurator struct {
-	decoder *admission.Decoder
+	decoder admission.Decoder
 }
 
 // NewConfigurator creates a new Configurator instance to configure KnativeServing CRs.
-func NewConfigurator(decoder *admission.Decoder) *Configurator {
+func NewConfigurator(decoder admission.Decoder) *Configurator {
 	return &Configurator{
 		decoder: decoder,
 	}
