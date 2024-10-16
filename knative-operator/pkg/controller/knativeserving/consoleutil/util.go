@@ -25,7 +25,7 @@ func IsConsoleInstalled() bool {
 // and checks if it is available.
 func IsClusterOperatorAvailable(status configv1.ClusterOperatorStatus) bool {
 	for _, cond := range status.Conditions {
-		if cond.Type == configv1.OperatorAvailable && cond.Status == configv1.ConditionTrue {
+		if cond.Type == configv1.OperatorAvailable && (cond.Status == configv1.ConditionTrue || cond.Reason == "Unmanaged") {
 			return true
 		}
 	}
