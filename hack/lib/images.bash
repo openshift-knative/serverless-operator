@@ -61,6 +61,8 @@ function knative_serving_images() {
   export KNATIVE_SERVING_CONTROLLER=${KNATIVE_SERVING_CONTROLLER:-$(latest_registry_redhat_io_image_sha "${serving}-controller:${tag}")}
   export KNATIVE_SERVING_WEBHOOK=${KNATIVE_SERVING_WEBHOOK:-$(latest_registry_redhat_io_image_sha "${serving}-webhook:${tag}")}
   export KNATIVE_SERVING_STORAGE_VERSION_MIGRATION=${KNATIVE_SERVING_STORAGE_VERSION_MIGRATION:-$(latest_registry_redhat_io_image_sha "${serving}-storage-version-migration:${tag}")}
+
+  export KNATIVE_SERVING_IMAGE_PREFIX="${serving}"
 }
 
 function knative_eventing_images_release() {
@@ -151,6 +153,8 @@ function knative_eventing_kafka_broker_images() {
   export KNATIVE_EVENTING_KAFKA_BROKER_KAFKA_CONTROLLER=${KNATIVE_EVENTING_KAFKA_BROKER_KAFKA_CONTROLLER:-$(latest_registry_redhat_io_image_sha "${eventing_kafka_broker}-kafka-controller:${tag}")}
   export KNATIVE_EVENTING_KAFKA_BROKER_WEBHOOK_KAFKA=${KNATIVE_EVENTING_KAFKA_BROKER_WEBHOOK_KAFKA:-$(latest_registry_redhat_io_image_sha "${eventing_kafka_broker}-webhook-kafka:${tag}")}
   export KNATIVE_EVENTING_KAFKA_BROKER_POST_INSTALL=${KNATIVE_EVENTING_KAFKA_BROKER_POST_INSTALL:-$(latest_registry_redhat_io_image_sha "${eventing_kafka_broker}-post-install:${tag}")}
+
+  export KNATIVE_EVENTING_KAFKA_BROKER_TEST_KAFKA_CONSUMER=${KNATIVE_EVENTING_KAFKA_BROKER_TEST_KAFKA_CONSUMER:-$(latest_konflux_image_sha "${eventing_kafka_broker}-test-kafka-consumer")}
 }
 
 function knative_kn_plugin_func_images_release() {
