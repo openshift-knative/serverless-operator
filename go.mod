@@ -193,6 +193,8 @@ replace (
 
 replace (
 	// Kubernetes components
+	// TODO: we should update to Kubernetes 1.30 in the S-O release 1.36
+	// https://issues.redhat.com/browse/SRVCOM-3384
 	k8s.io/api => k8s.io/api v0.29.9
 	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.29.9
 	k8s.io/apimachinery => k8s.io/apimachinery v0.29.9
