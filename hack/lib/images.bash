@@ -24,15 +24,16 @@ function default_serverless_operator_images() {
   export SERVERLESS_OPENSHIFT_KNATIVE_OPERATOR=${SERVERLESS_OPENSHIFT_KNATIVE_OPERATOR:-$(latest_registry_redhat_io_image_sha "${serverless_registry}-openshift-kn-operator:${CURRENT_VERSION_IMAGES}")}
   export SERVERLESS_INGRESS=${SERVERLESS_INGRESS:-$(latest_registry_redhat_io_image_sha "${serverless_registry}-ingress:${CURRENT_VERSION_IMAGES}")}
 
-  export SERVERLESS_BUNDLE=${SERVERLESS_BUNDLE:-$(get_bundle_image_for_version "${CURRENT_VERSION}")}
-  export SERVERLESS_BUNDLE_REDHAT_IO=${SERVERLESS_BUNDLE_REDHAT_IO:-$(latest_registry_redhat_io_image_sha "${serverless_registry}-bundle:${CURRENT_VERSION_IMAGES}")}
+  export SERVERLESS_BUNDLE=${SERVERLESS_BUNDLE:-$(get_bundle_for_version "${CURRENT_VERSION}")}
+  export DEFAULT_SERVERLESS_BUNDLE=${DEFAULT_SERVERLESS_BUNDLE:-$(get_bundle_for_version "${CURRENT_VERSION}")}
 
-  export DEFAULT_SERVERLESS_BUNDLE=${DEFAULT_SERVERLESS_BUNDLE:-$(get_bundle_image_for_version "${CURRENT_VERSION}")}
+  export SERVERLESS_BUNDLE_REDHAT_IO=${SERVERLESS_BUNDLE_REDHAT_IO:-$(latest_registry_redhat_io_image_sha "${serverless_registry}-bundle:${CURRENT_VERSION_IMAGES}")}
 
   export INDEX_IMAGE=${INDEX_IMAGE:-$(latest_konflux_image_sha "${registry_quay}-fbc-${latest_ocp}/serverless-index-${quay_registry_app_version}-fbc-${latest_ocp}:${CURRENT_VERSION_IMAGES}")}
 }
 
-function get_bundle_image_for_version() {
+# Bundle image is specific as we need to pull older versions for including in the catalog.
+function get_bundle_for_version() {
   local version app_version bundle
   version=${1:?"Provide version for Bundle image"}
 
@@ -42,6 +43,7 @@ function get_bundle_image_for_version() {
   bundle="${registry_prefix_quay}${app_version}/serverless-bundle"
 
   image=$(image_with_sha "${bundle}:latest")
+  # As a backup, try also CI registry. This it temporary until the previous version gets to Konflux.
   if [[ "${image}" == "" ]]; then
     image=$(image_with_sha "registry.ci.openshift.org/knative/serverless-bundle:release-${version}")
   fi
