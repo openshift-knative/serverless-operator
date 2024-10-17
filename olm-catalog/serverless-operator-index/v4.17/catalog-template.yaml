@@ -51,12 +51,12 @@ entries:
       - name: serverless-operator.v1.33.0
         replaces: serverless-operator.v1.32.0
         skipRange: '>=1.32.0 <1.33.0'
-      - name: serverless-operator.v1.35.0
-        replaces: serverless-operator.v1.34.0
-        skipRange: '>=1.34.0 <1.35.0'
       - name: serverless-operator.v1.34.0
         replaces: serverless-operator.v1.33.0
         skipRange: '>=1.33.0 <1.34.0'
+      - name: serverless-operator.v1.35.0
+        replaces: serverless-operator.v1.34.0
+        skipRange: '>=1.34.0 <1.35.0'
     name: stable
     package: serverless-operator
     schema: olm.channel
@@ -290,50 +290,6 @@ entries:
     name: stable-1.33
     package: serverless-operator
     schema: olm.channel
-  - image: registry.redhat.io/openshift-serverless-1/serverless-operator-bundle@sha256:003a5c5c3682db69aa57da4c05ed3ccbaf94fb80a4972c8ddcf91eb3d5e299b9
-    schema: olm.bundle
-  - image: registry.redhat.io/openshift-serverless-1/serverless-operator-bundle@sha256:1905984e13c9d165aad06f954904fc33d3f3a6e2f0041f98bc5840d05a87abaf
-    schema: olm.bundle
-  - image: registry.redhat.io/openshift-serverless-1/serverless-operator-bundle@sha256:0d73e731e7defc5d1da1aa3a347b419ce5d6f2b6b880403cb2e0871a8b3bb240
-    schema: olm.bundle
-  - image: registry.redhat.io/openshift-serverless-1/serverless-operator-bundle@sha256:8da1dda3de163dc82927ad732d560e9c5c7daca3a8d3b46110b561441c483af9
-    schema: olm.bundle
-  - image: registry.redhat.io/openshift-serverless-1/serverless-operator-bundle@sha256:0422f8843fc62c2b72e01ffefd33db912a1ad3d70ac297882d3663c9b7299f10
-    schema: olm.bundle
-  - image: registry.redhat.io/openshift-serverless-1/serverless-operator-bundle@sha256:edb6116289b3c722aca7614eb06b655e2081ebda74a9b7a82261ae1fa1e76408
-    schema: olm.bundle
-  - image: registry.redhat.io/openshift-serverless-1/serverless-operator-bundle@sha256:0516545990ec466969730d43136016c10e7dc34f633bf2646463d12145d9f917
-    schema: olm.bundle
-  - image: registry.redhat.io/openshift-serverless-1/serverless-operator-bundle@sha256:832677abddada05258b4610b6584d442dd20c5bdd55ae8fbddb83ac133b3f12e
-    schema: olm.bundle
-  - image: registry.redhat.io/openshift-serverless-1/serverless-operator-bundle@sha256:2f82fcdc9a5424a2e195fda62ce0a018970e0211f253eb0d5ae47a72dd0bb6fc
-    schema: olm.bundle
-  - image: registry.redhat.io/openshift-serverless-1/serverless-operator-bundle@sha256:91b90a9ba578595836772b4f7ecccebf77d1dcaf04c62e3f532d9beed90eb465
-    schema: olm.bundle
-  - image: registry.redhat.io/openshift-serverless-1/serverless-operator-bundle@sha256:12373623440b5b1aaea228550674ee69fe926ac6f12e7adffb5592afe1b98fca
-    schema: olm.bundle
-  - image: registry.redhat.io/openshift-serverless-1/serverless-operator-bundle@sha256:16b39335e97bcc7c970a8ba385c61d8333e9912faaee813ccf8520d434b7bb7a
-    schema: olm.bundle
-  - image: registry.redhat.io/openshift-serverless-1/serverless-operator-bundle@sha256:ffcf75e33c5bf527488fc196bd94bf615ac06ba5735d87cf568777f27817d214
-    schema: olm.bundle
-  - image: registry.redhat.io/openshift-serverless-1/serverless-operator-bundle@sha256:51ac9aced282f62c8fb2d3696da3696b8496d8f877e9846fe3a4a743ccd63bea
-    schema: olm.bundle
-  - image: registry.redhat.io/openshift-serverless-1/serverless-operator-bundle@sha256:469ae5fc8a478d6d06b13e218a000f34dd988eb69a9488a6349d67c76bda5b49
-    schema: olm.bundle
-  - image: registry.redhat.io/openshift-serverless-1/serverless-operator-bundle@sha256:a82288782b61ea46d068cc09ee10608d3201c136abfc767e4d37734775101390
-    schema: olm.bundle
-  - image: registry.redhat.io/openshift-serverless-1/serverless-operator-bundle@sha256:b84351200cba437c323f7f21d0cb58e0a443d772376a9ea6de1278a68d1c2c7d
-    schema: olm.bundle
-  - image: registry.redhat.io/openshift-serverless-1/serverless-operator-bundle@sha256:828d31bf8a441091b8aed03da213a6b4ffae260070eff58c3319156f9bf04f5a
-    schema: olm.bundle
-  - image: registry.redhat.io/openshift-serverless-1/serverless-operator-bundle@sha256:9bee3204d9fafe46f9f188e7ea10ac4843eaaf72a5f9dda68f6d8d7a92310218
-    schema: olm.bundle
-  - image: registry.redhat.io/openshift-serverless-1/serverless-operator-bundle@sha256:d96f2a6e9bdd2540c5c7b0ffe6a8e610b43ba227420892586a46fbdb9a3caef3
-    schema: olm.bundle
-  - schema: olm.bundle
-    image: quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/serverless-bundle@sha256:62d1451f5c944c6fbb6ffaade5e210b5d85f0caffe56a527deff480c24cc8aeb
-  - schema: olm.bundle
-    image: registry.ci.openshift.org/knative/serverless-bundle@sha256:430c7aa5a5c4780fd4a811c027b6323d0e8de076d86b3acbb9c01f6185e18ec0
   - entries:
       - name: serverless-operator.v1.20.0
         replaces: serverless-operator.v1.19.0
@@ -380,12 +336,108 @@ entries:
       - name: serverless-operator.v1.33.0
         replaces: serverless-operator.v1.32.0
         skipRange: '>=1.32.0 <1.33.0'
-      - name: serverless-operator.v1.35.0
-        replaces: serverless-operator.v1.34.0
-        skipRange: '>=1.34.0 <1.35.0'
       - name: serverless-operator.v1.34.0
         replaces: serverless-operator.v1.33.0
         skipRange: '>=1.33.0 <1.34.0'
+    name: stable-1.34
+    package: serverless-operator
+    schema: olm.channel
+  - image: registry.redhat.io/openshift-serverless-1/serverless-operator-bundle@sha256:003a5c5c3682db69aa57da4c05ed3ccbaf94fb80a4972c8ddcf91eb3d5e299b9
+    schema: olm.bundle
+  - image: registry.redhat.io/openshift-serverless-1/serverless-operator-bundle@sha256:1905984e13c9d165aad06f954904fc33d3f3a6e2f0041f98bc5840d05a87abaf
+    schema: olm.bundle
+  - image: registry.redhat.io/openshift-serverless-1/serverless-operator-bundle@sha256:0d73e731e7defc5d1da1aa3a347b419ce5d6f2b6b880403cb2e0871a8b3bb240
+    schema: olm.bundle
+  - image: registry.redhat.io/openshift-serverless-1/serverless-operator-bundle@sha256:8da1dda3de163dc82927ad732d560e9c5c7daca3a8d3b46110b561441c483af9
+    schema: olm.bundle
+  - image: registry.redhat.io/openshift-serverless-1/serverless-operator-bundle@sha256:0422f8843fc62c2b72e01ffefd33db912a1ad3d70ac297882d3663c9b7299f10
+    schema: olm.bundle
+  - image: registry.redhat.io/openshift-serverless-1/serverless-operator-bundle@sha256:edb6116289b3c722aca7614eb06b655e2081ebda74a9b7a82261ae1fa1e76408
+    schema: olm.bundle
+  - image: registry.redhat.io/openshift-serverless-1/serverless-operator-bundle@sha256:0516545990ec466969730d43136016c10e7dc34f633bf2646463d12145d9f917
+    schema: olm.bundle
+  - image: registry.redhat.io/openshift-serverless-1/serverless-operator-bundle@sha256:832677abddada05258b4610b6584d442dd20c5bdd55ae8fbddb83ac133b3f12e
+    schema: olm.bundle
+  - image: registry.redhat.io/openshift-serverless-1/serverless-operator-bundle@sha256:2f82fcdc9a5424a2e195fda62ce0a018970e0211f253eb0d5ae47a72dd0bb6fc
+    schema: olm.bundle
+  - image: registry.redhat.io/openshift-serverless-1/serverless-operator-bundle@sha256:91b90a9ba578595836772b4f7ecccebf77d1dcaf04c62e3f532d9beed90eb465
+    schema: olm.bundle
+  - image: registry.redhat.io/openshift-serverless-1/serverless-operator-bundle@sha256:12373623440b5b1aaea228550674ee69fe926ac6f12e7adffb5592afe1b98fca
+    schema: olm.bundle
+  - image: registry.redhat.io/openshift-serverless-1/serverless-operator-bundle@sha256:16b39335e97bcc7c970a8ba385c61d8333e9912faaee813ccf8520d434b7bb7a
+    schema: olm.bundle
+  - image: registry.redhat.io/openshift-serverless-1/serverless-operator-bundle@sha256:ffcf75e33c5bf527488fc196bd94bf615ac06ba5735d87cf568777f27817d214
+    schema: olm.bundle
+  - image: registry.redhat.io/openshift-serverless-1/serverless-operator-bundle@sha256:51ac9aced282f62c8fb2d3696da3696b8496d8f877e9846fe3a4a743ccd63bea
+    schema: olm.bundle
+  - image: registry.redhat.io/openshift-serverless-1/serverless-operator-bundle@sha256:469ae5fc8a478d6d06b13e218a000f34dd988eb69a9488a6349d67c76bda5b49
+    schema: olm.bundle
+  - image: registry.redhat.io/openshift-serverless-1/serverless-operator-bundle@sha256:a82288782b61ea46d068cc09ee10608d3201c136abfc767e4d37734775101390
+    schema: olm.bundle
+  - image: registry.redhat.io/openshift-serverless-1/serverless-operator-bundle@sha256:b84351200cba437c323f7f21d0cb58e0a443d772376a9ea6de1278a68d1c2c7d
+    schema: olm.bundle
+  - image: registry.redhat.io/openshift-serverless-1/serverless-operator-bundle@sha256:828d31bf8a441091b8aed03da213a6b4ffae260070eff58c3319156f9bf04f5a
+    schema: olm.bundle
+  - image: registry.redhat.io/openshift-serverless-1/serverless-operator-bundle@sha256:9bee3204d9fafe46f9f188e7ea10ac4843eaaf72a5f9dda68f6d8d7a92310218
+    schema: olm.bundle
+  - image: registry.redhat.io/openshift-serverless-1/serverless-operator-bundle@sha256:d96f2a6e9bdd2540c5c7b0ffe6a8e610b43ba227420892586a46fbdb9a3caef3
+    schema: olm.bundle
+  - image: registry.redhat.io/openshift-serverless-1/serverless-operator-bundle@sha256:82b9bfb8b83701db1a9b891d1ffc1e782d4b0f971fc9a53525942845c2602934
+    schema: olm.bundle
+  - schema: olm.bundle
+    image: quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/serverless-bundle@sha256:6ff255f75a2e264362cf55019add38a46fddcb6d37204899a007da58023ae2b9
+  - entries:
+      - name: serverless-operator.v1.20.0
+        replaces: serverless-operator.v1.19.0
+        skipRange: '>=1.19.0 <1.20.0'
+      - name: serverless-operator.v1.21.0
+        replaces: serverless-operator.v1.20.0
+        skipRange: '>=1.20.0 <1.21.0'
+      - name: serverless-operator.v1.22.0
+        replaces: serverless-operator.v1.21.0
+        skipRange: '>=1.21.0 <1.22.0'
+      - name: serverless-operator.v1.23.0
+        replaces: serverless-operator.v1.22.0
+        skipRange: '>=1.22.0 <1.23.0'
+      - name: serverless-operator.v1.24.0
+        replaces: serverless-operator.v1.23.0
+        skipRange: '>=1.23.0 <1.24.0'
+      - name: serverless-operator.v1.25.0
+        replaces: serverless-operator.v1.24.0
+        skipRange: '>=1.24.0 <1.25.0'
+      - name: serverless-operator.v1.26.0
+        replaces: serverless-operator.v1.25.0
+        skipRange: '>=1.25.0 <1.26.0'
+      - name: serverless-operator.v1.27.0
+        replaces: serverless-operator.v1.26.0
+        skipRange: '>=1.26.0 <1.27.0'
+      - name: serverless-operator.v1.27.1
+        replaces: serverless-operator.v1.27.0
+        skipRange: '>=1.26.0 <1.27.1'
+      - name: serverless-operator.v1.28.0
+        replaces: serverless-operator.v1.27.1
+        skipRange: '>=1.27.0 <1.28.0'
+      - name: serverless-operator.v1.29.0
+        replaces: serverless-operator.v1.28.0
+        skipRange: '>=1.28.0 <1.29.0'
+      - name: serverless-operator.v1.30.0
+        replaces: serverless-operator.v1.29.0
+        skipRange: '>=1.29.0 <1.30.0'
+      - name: serverless-operator.v1.31.0
+        replaces: serverless-operator.v1.30.0
+        skipRange: '>=1.30.0 <1.31.0'
+      - name: serverless-operator.v1.32.0
+        replaces: serverless-operator.v1.31.0
+        skipRange: '>=1.31.0 <1.32.0'
+      - name: serverless-operator.v1.33.0
+        replaces: serverless-operator.v1.32.0
+        skipRange: '>=1.32.0 <1.33.0'
+      - name: serverless-operator.v1.34.0
+        replaces: serverless-operator.v1.33.0
+        skipRange: '>=1.33.0 <1.34.0'
+      - name: serverless-operator.v1.35.0
+        replaces: serverless-operator.v1.34.0
+        skipRange: '>=1.34.0 <1.35.0'
     name: stable-1.35
     package: serverless-operator
     schema: olm.channel
