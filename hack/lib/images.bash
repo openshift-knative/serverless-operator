@@ -14,6 +14,8 @@ quay_registry_app_version=${CURRENT_VERSION/./} # 1.34.0 -> 134.0
 quay_registry_app_version=${quay_registry_app_version%.*} # 134.0 -> 134
 quay_registry_app_version_previous=${PREVIOUS_VERSION/./}
 quay_registry_app_version_previous=${quay_registry_app_version_previous%.*}
+latest_ocp=$(metadata.get 'requirements.ocpVersion.list[-1]')
+latest_ocp=${latest_ocp/./} # 4.17 -> 417
 registry_prefix_quay="quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-"
 registry_quay="${registry_prefix_quay}${quay_registry_app_version}"
 registry_quay_previous="${registry_prefix_quay}${quay_registry_app_version_previous}"
@@ -36,7 +38,7 @@ function default_serverless_operator_images() {
   #export SERVERLESS_BUNDLE_PREVIOUS=${SERVERLESS_BUNDLE_PREVIOUS:-$(latest_konflux_image_sha "${serverless_registry_previous}-bundle:${CURRENT_VERSION_IMAGES}")}
   export DEFAULT_SERVERLESS_BUNDLE=${DEFAULT_SERVERLESS_BUNDLE:-$(latest_konflux_image_sha "${serverless_registry}-bundle:${CURRENT_VERSION_IMAGES}")}
 
-  export SERVERLESS_INDEX=${SERVERLESS_INDEX:-$(latest_konflux_image_sha "${serverless_registry}-index:${CURRENT_VERSION_IMAGES}")}
+  export INDEX_IMAGE=${INDEX_IMAGE:-$(latest_konflux_image_sha "${registry_quay}-fbc-${latest_ocp}/serverless-index-${quay_registry_app_version}-fbc-${latest_ocp}:${CURRENT_VERSION_IMAGES}")}
 }
 
 function knative_serving_images_release() {
