@@ -11,13 +11,12 @@ CURRENT_VERSION="$(metadata.get project.version)"
 
 quay_registry_app_version=${CURRENT_VERSION/./} # 1.34.0 -> 134.0
 quay_registry_app_version=${quay_registry_app_version%.*} # 134.0 -> 134
-latest_ocp=$(metadata.get 'requirements.ocpVersion.list[-1]')
-latest_ocp=${latest_ocp/./} # 4.17 -> 417
 registry_prefix_quay="quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-"
 registry_quay="${registry_prefix_quay}${quay_registry_app_version}"
 registry_redhat_io="registry.redhat.io/openshift-serverless-1"
 
 function default_serverless_operator_images() {
+  local ocp_version
   local serverless_registry="${registry_quay}/serverless"
 
   export SERVERLESS_KNATIVE_OPERATOR=${SERVERLESS_KNATIVE_OPERATOR:-$(latest_registry_redhat_io_image_sha "${serverless_registry}-kn-operator:${CURRENT_VERSION_IMAGES}")}
@@ -29,7 +28,15 @@ function default_serverless_operator_images() {
 
   export SERVERLESS_BUNDLE_REDHAT_IO=${SERVERLESS_BUNDLE_REDHAT_IO:-$(latest_registry_redhat_io_image_sha "${serverless_registry}-bundle:${CURRENT_VERSION_IMAGES}")}
 
-  export INDEX_IMAGE=${INDEX_IMAGE:-$(latest_konflux_image_sha "${registry_quay}-fbc-${latest_ocp}/serverless-index-${quay_registry_app_version}-fbc-${latest_ocp}:${CURRENT_VERSION_IMAGES}")}
+  # Use the current OCP version if the cluster is running otherwise use the latest.
+  if oc get clusterversion &>/dev/null; then
+    ocp_version=$(oc get clusterversion version -o jsonpath='{.status.desired.version}')
+  else
+    ocp_version=$(metadata.get 'requirements.ocpVersion.list[-1]')
+  fi
+  ocp_version=${ocp_version/./} # 4.17 -> 417
+
+  export INDEX_IMAGE=${INDEX_IMAGE:-$(latest_konflux_image_sha "${registry_quay}-fbc-${ocp_version}/serverless-index-${quay_registry_app_version}-fbc-${ocp_version}:${CURRENT_VERSION_IMAGES}")}
 }
 
 # Bundle image is specific as we need to pull older versions for including in the catalog.
