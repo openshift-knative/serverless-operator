@@ -32,6 +32,8 @@ function generate_catalog {
 
     default_serverless_operator_images
 
+    set -x
+
     while IFS=$'\n' read -r channel; do
       add_channel "${catalog_template}" "$channel"
       # Also add previous version for cases when it was not released yet
@@ -119,6 +121,8 @@ EOF
       # If entry was added, add also the bundle
       add_latest_bundle "${catalog_template}"
       add_previous_bundle "${catalog_template}"
+
+      add_bundle "${catalog_template}" "$(get_bundle_image_for_version "${version}")"
     fi
   fi
   rm -f "${catalog}"
