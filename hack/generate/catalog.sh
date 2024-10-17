@@ -117,7 +117,7 @@ EOF
       mv "${catalog}" "${catalog_template}"
 
       # If entry was added, add also the bundle
-      add_bundle "${catalog_template}" "$(get_bundle_image_for_version "${version}")"
+      add_bundle "${catalog_template}" "$(get_bundle_for_version "${version}")"
     fi
   fi
   rm -f "${catalog}"
