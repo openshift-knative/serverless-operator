@@ -117,23 +117,10 @@ EOF
       mv "${catalog}" "${catalog_template}"
 
       # If entry was added, add also the bundle
-      add_latest_bundle "${catalog_template}"
-      add_previous_bundle "${catalog_template}"
+      add_bundle "${catalog_template}" "$(get_bundle_for_version "${version}")"
     fi
   fi
   rm -f "${catalog}"
-}
-
-function add_latest_bundle {
-  local catalog_template
-  catalog_template=${1?Pass catalog template path as arg[1]}
-  add_bundle "${catalog_template}" "${SERVERLESS_BUNDLE}"
-}
-
-function add_previous_bundle {
-  local catalog_template
-  catalog_template=${1?Pass catalog template path as arg[1]}
-  add_bundle "${catalog_template}" "${SERVERLESS_BUNDLE_PREVIOUS}"
 }
 
 function add_bundle {

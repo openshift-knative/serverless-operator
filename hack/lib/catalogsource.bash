@@ -21,7 +21,7 @@ function install_catalogsource {
 
   default_serverless_operator_images
 
-  index_image="${INDEX_IMAGE:-$SERVERLESS_INDEX}"
+  index_image="${INDEX_IMAGE}"
 
   # Build bundle and index images only when running in CI or when DOCKER_REPO_OVERRIDE is defined.
   # Otherwise the latest nightly build will be used for CatalogSource.

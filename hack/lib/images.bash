@@ -8,35 +8,58 @@ ci_registry="${ci_registry_host}/openshift"
 
 export CURRENT_VERSION_IMAGES=${CURRENT_VERSION_IMAGES:-"main"}
 CURRENT_VERSION="$(metadata.get project.version)"
-PREVIOUS_VERSION="$(metadata.get olm.replaces)"
 
 quay_registry_app_version=${CURRENT_VERSION/./} # 1.34.0 -> 134.0
 quay_registry_app_version=${quay_registry_app_version%.*} # 134.0 -> 134
-quay_registry_app_version_previous=${PREVIOUS_VERSION/./}
-quay_registry_app_version_previous=${quay_registry_app_version_previous%.*}
 registry_prefix_quay="quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-"
 registry_quay="${registry_prefix_quay}${quay_registry_app_version}"
-registry_quay_previous="${registry_prefix_quay}${quay_registry_app_version_previous}"
 registry_redhat_io="registry.redhat.io/openshift-serverless-1"
 
-
 function default_serverless_operator_images() {
+  local ocp_version
   local serverless_registry="${registry_quay}/serverless"
-  local serverless_registry_previous="${registry_quay_previous}/serverless"
 
   export SERVERLESS_KNATIVE_OPERATOR=${SERVERLESS_KNATIVE_OPERATOR:-$(latest_registry_redhat_io_image_sha "${serverless_registry}-kn-operator:${CURRENT_VERSION_IMAGES}")}
   export SERVERLESS_OPENSHIFT_KNATIVE_OPERATOR=${SERVERLESS_OPENSHIFT_KNATIVE_OPERATOR:-$(latest_registry_redhat_io_image_sha "${serverless_registry}-openshift-kn-operator:${CURRENT_VERSION_IMAGES}")}
   export SERVERLESS_INGRESS=${SERVERLESS_INGRESS:-$(latest_registry_redhat_io_image_sha "${serverless_registry}-ingress:${CURRENT_VERSION_IMAGES}")}
 
-  export SERVERLESS_BUNDLE=${SERVERLESS_BUNDLE:-$(latest_konflux_image_sha "${serverless_registry}-bundle:${CURRENT_VERSION_IMAGES}")}
+  export SERVERLESS_BUNDLE=${SERVERLESS_BUNDLE:-$(get_bundle_for_version "${CURRENT_VERSION}")}
+  export DEFAULT_SERVERLESS_BUNDLE=${DEFAULT_SERVERLESS_BUNDLE:-$(get_bundle_for_version "${CURRENT_VERSION}")}
+
   export SERVERLESS_BUNDLE_REDHAT_IO=${SERVERLESS_BUNDLE_REDHAT_IO:-$(latest_registry_redhat_io_image_sha "${serverless_registry}-bundle:${CURRENT_VERSION_IMAGES}")}
 
-  # TODO: Change this to the following line with 1.36
-  export SERVERLESS_BUNDLE_PREVIOUS=${SERVERLESS_BUNDLE_PREVIOUS:-$(image_with_sha "registry.ci.openshift.org/knative/serverless-bundle:release-${PREVIOUS_VERSION}")}
-  #export SERVERLESS_BUNDLE_PREVIOUS=${SERVERLESS_BUNDLE_PREVIOUS:-$(latest_konflux_image_sha "${serverless_registry_previous}-bundle:${CURRENT_VERSION_IMAGES}")}
-  export DEFAULT_SERVERLESS_BUNDLE=${DEFAULT_SERVERLESS_BUNDLE:-$(latest_konflux_image_sha "${serverless_registry}-bundle:${CURRENT_VERSION_IMAGES}")}
+  # Use the current OCP version if the cluster is running otherwise use the latest.
+  if oc get clusterversion &>/dev/null; then
+    ocp_version=$(oc get clusterversion version -o jsonpath='{.status.desired.version}')
+  else
+    ocp_version=$(metadata.get 'requirements.ocpVersion.list[-1]')
+  fi
+  ocp_version=${ocp_version/./} # 4.17 -> 417
 
-  export SERVERLESS_INDEX=${SERVERLESS_INDEX:-$(latest_konflux_image_sha "${serverless_registry}-index:${CURRENT_VERSION_IMAGES}")}
+  export INDEX_IMAGE=${INDEX_IMAGE:-$(latest_konflux_image_sha "${registry_quay}-fbc-${ocp_version}/serverless-index-${quay_registry_app_version}-fbc-${ocp_version}:${CURRENT_VERSION_IMAGES}")}
+}
+
+# Bundle image is specific as we need to pull older versions for including in the catalog.
+function get_bundle_for_version() {
+  local version app_version bundle
+  version=${1:?"Provide version for Bundle image"}
+
+  app_version=${version/./} # 1.34.0 -> 134.0
+  app_version=${app_version%.*} # 134.0 -> 134
+
+  bundle="${registry_prefix_quay}${app_version}/serverless-bundle"
+
+  image=$(image_with_sha "${bundle}:latest")
+  # As a backup, try also CI registry. This it temporary until the previous version gets to Konflux.
+  if [[ "${image}" == "" ]]; then
+    image=$(image_with_sha "registry.ci.openshift.org/knative/serverless-bundle:release-${version}")
+  fi
+
+  if [[ "${image}" == "" ]]; then
+    exit 1
+  fi
+
+  echo "$image"
 }
 
 function knative_serving_images_release() {
@@ -224,6 +247,11 @@ function latest_registry_redhat_io_image_sha() {
   image_without_tag=${image_without_tag%@*} # Remove sha, if any
 
   image=$(image_with_sha "${image_without_tag}:latest")
+
+  if [ "${image}" = "" ]; then
+    exit 1
+  fi
+
   digest="${image##*@}" # Get only sha
 
   image_name=${image_without_tag##*/} # Get image name after last slash
@@ -239,6 +267,10 @@ function latest_konflux_image_sha() {
 
   image=$(image_with_sha "${image_without_tag}:latest")
 
+  if [ "${image}" = "" ]; then
+    exit 1
+  fi
+
   echo "${image}"
 }
 
@@ -247,7 +279,7 @@ function image_with_sha {
 
   digest=$(skopeo inspect --no-tags=true "docker://${image}" | jq -r '.Digest')
   if [ "${digest}" = "" ]; then
-    exit 1
+    echo ""
   fi
 
   image_without_tag=${image%:*} # Remove tag, if any

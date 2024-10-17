@@ -28,7 +28,7 @@ if [[ $on_cluster_builds = true ]]; then
   #  image-registry.openshift-image-registry.svc:5000/openshift-marketplace/knative-openshift-ingress:latest
   build_image "serverless-ingress" "${root_dir}" "serving/ingress/Dockerfile" || exit 1
 
-  logger.info 'Images build'
+  logger.info 'Image builds finished'
 
 else
   tmp_dockerfile=$(replace_images openshift-knative-operator/Dockerfile)
