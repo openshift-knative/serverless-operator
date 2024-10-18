@@ -419,6 +419,11 @@ function downstream_soak_tests {
   SYSTEM_NAMESPACE="${SYSTEM_NAMESPACE:-"knative-eventing"}"
   export SYSTEM_NAMESPACE
 
+  # Patch kafka-source-dispatcher CPU requests to 300m for higher density (soak tests do not generate high dataplane load)
+  oc patch knativekafka.operator.serverless.openshift.io knative-kafka -n "${EVENTING_NAMESPACE}" \
+    --type 'merge' \
+    --patch '{"spec": {"workloads": [{"name":"kafka-source-dispatcher","resources":[{"container":"kafka-source-dispatcher","requests":{"cpu":"300m"}}]}]}}'
+
   RUN_FLAGS=(-failfast -timeout=240m -parallel=512)
   if [ -n "${OPERATOR_TEST_FLAGS:-}" ]; then
     IFS=" " read -r -a RUN_FLAGS <<< "$OPERATOR_TEST_FLAGS"
