@@ -142,6 +142,25 @@ EOF
   fi
 }
 
+function upgrade_service_mesh_proxy_image() {
+  sm_proxy_image=$(yq r olm-catalog/serverless-operator/project.yaml 'dependencies.service_mesh_proxy')
+  sm_proxy_image_stream=$(skopeo inspect --no-tags=true "docker://${sm_proxy_image}" | jq -r '.Labels.version')
+  sm_proxy_image_stream=${sm_proxy_image_stream%.*}
+  sm_proxy_image=$(latest_konflux_image_sha "${sm_proxy_image}" "${sm_proxy_image_stream}")
+  yq w --inplace olm-catalog/serverless-operator/project.yaml 'dependencies.service_mesh_proxy' "${sm_proxy_image}"
+}
+
+function upgrade_dependencies_images {
+  if [[ -n "${REGISTRY_REDHAT_IO_USERNAME:-}" ]] || [[ -n "${REGISTRY_REDHAT_IO_PASSWORD:-}" ]]; then
+    skopeo login registry.redhat.io -u "${REGISTRY_REDHAT_IO_USERNAME}" -p "${REGISTRY_REDHAT_IO_PASSWORD}"
+  fi
+
+  upgrade_service_mesh_proxy_image
+}
+
+logger.info "Upgrading registry.redhat.io images"
+upgrade_dependencies_images
+
 logger.info "Generating ImageContextSourcePolicy"
 create_image_content_source_policy "registry.ci.openshift.org/knative/${CURRENT_VERSION_IMAGES}:serverless-index" "$registry_redhat_io" "$registry_quay" "olm-catalog/serverless-operator-index/image_content_source_policy.yaml"
 

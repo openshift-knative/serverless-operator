@@ -212,7 +212,7 @@ function default_knative_ingress_images() {
   kourier_registry="${registry_prefix_quay}${kourier_app_version}/net-kourier"
 
   export KNATIVE_KOURIER_CONTROL=${KNATIVE_KOURIER_CONTROL:-$(latest_registry_redhat_io_image_sha "${kourier_registry}-kourier:${knative_kourier}")}
-  export KNATIVE_KOURIER_GATEWAY=${KNATIVE_KOURIER_GATEWAY:-"quay.io/maistra-dev/proxyv2-ubi8:$(metadata.get dependencies.maistra)"}
+  export KNATIVE_KOURIER_GATEWAY=${KNATIVE_KOURIER_GATEWAY:-"$(metadata.get dependencies.service_mesh_proxy)"}
 
   knative_istio="$(metadata.get dependencies.net_istio)"
   istio_app_version=$(get_app_version_from_tag "${knative_istio}")
@@ -261,11 +261,12 @@ function latest_registry_redhat_io_image_sha() {
 
 function latest_konflux_image_sha() {
   input=${1:?"Provide image"}
+  tag=${2:-"latest"}
 
   image_without_tag=${input%:*} # Remove tag, if any
   image_without_tag=${image_without_tag%@*} # Remove sha, if any
 
-  image=$(image_with_sha "${image_without_tag}:latest")
+  image=$(image_with_sha "${image_without_tag}:${tag}")
 
   if [ "${image}" = "" ]; then
     exit 1
