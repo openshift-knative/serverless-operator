@@ -16,7 +16,7 @@ source "$(dirname "${BASH_SOURCE[0]}")/../lib/images.bash"
 client_version="$(metadata.get dependencies.cli)"
 kn_event="${ci_registry_host}/knative/release-${client_version#knative-v}:client-plugin-event"
 
-rbac_proxy="registry.ci.openshift.org/origin/$(metadata.get 'requirements.ocpVersion.list[-1]'):kube-rbac-proxy"
+rbac_proxy=$(metadata.get 'dependencies.kube_rbac_proxy')
 
 default_serverless_operator_images
 default_knative_ingress_images

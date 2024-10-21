@@ -150,12 +150,22 @@ function upgrade_service_mesh_proxy_image() {
   yq w --inplace olm-catalog/serverless-operator/project.yaml 'dependencies.service_mesh_proxy' "${sm_proxy_image}"
 }
 
+function upgrade_kube_rbac_proxy_image() {
+  local image image_stream
+  image=$(metadata.get 'dependencies.kube_rbac_proxy')
+  image_stream=$(metadata.get 'requirements.ocpVersion.list[-1]')
+  image=$(latest_konflux_image_sha "${image}" "v${image_stream}")
+  yq w --inplace olm-catalog/serverless-operator/project.yaml 'dependencies.kube_rbac_proxy' "${image}"
+}
+
 function upgrade_dependencies_images {
   if [[ -n "${REGISTRY_REDHAT_IO_USERNAME:-}" ]] || [[ -n "${REGISTRY_REDHAT_IO_PASSWORD:-}" ]]; then
     skopeo login registry.redhat.io -u "${REGISTRY_REDHAT_IO_USERNAME}" -p "${REGISTRY_REDHAT_IO_PASSWORD}"
   fi
 
   upgrade_service_mesh_proxy_image
+
+  upgrade_kube_rbac_proxy_image
 }
 
 logger.info "Upgrading registry.redhat.io images"
