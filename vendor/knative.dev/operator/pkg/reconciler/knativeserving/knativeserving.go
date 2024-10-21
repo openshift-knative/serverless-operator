@@ -106,6 +106,10 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, ks *v1beta1.KnativeServi
 
 	logger.Infow("Reconciling KnativeServing", "status", ks.Status)
 
+	if err := common.IsVersionValidMigrationEligible(ks); err != nil {
+		ks.Status.MarkVersionMigrationNotEligible(err.Error())
+		return nil
+	}
 	ks.Status.MarkVersionMigrationEligible()
 
 	if err := r.extension.Reconcile(ctx, ks); err != nil {
