@@ -12,6 +12,9 @@ metadata:
     features.operators.openshift.io/token-auth-aws: "false"
     features.operators.openshift.io/token-auth-azure: "false"
     features.operators.openshift.io/token-auth-gcp: "false"
+    features.operators.openshift.io/cni: "false"
+    features.operators.openshift.io/cnf: "false"
+    features.operators.openshift.io/csi: "false"
     alm-examples: |-
       [
         {
@@ -827,7 +830,7 @@ spec:
                 serviceAccountName: knative-operator
                 containers:
                   - name: knative-operator
-                    image: registry.redhat.io/openshift-serverless-1/serverless-openshift-kn-operator@sha256:30142b70773486270b965c9d23c4cbfd1b48122f71d25f726f4e1ab7453b99a3
+                    image: registry.redhat.io/openshift-serverless-1/serverless-openshift-kn-operator@sha256:25ee3bcdf8a904965de9b79dcfd542336670fd9400b4275457221dfe9d59c395
                     readinessProbe:
                       periodSeconds: 1
                       httpGet:
@@ -990,7 +993,7 @@ spec:
                           - ALL
                 containers:
                   - name: knative-openshift
-                    image: registry.redhat.io/openshift-serverless-1/serverless-kn-operator@sha256:b83aa5a33d1369ab2cbfd7a89d09b8fda964e4e2fdb47621c5f02ae0d8f7519f
+                    image: registry.redhat.io/openshift-serverless-1/serverless-kn-operator@sha256:43d8d181a2c4ac0af2a8314a549131e4a110ad8eead7a5b41bbb9f405dabb0dd
                     imagePullPolicy: Always
                     readinessProbe:
                       httpGet:
@@ -1170,7 +1173,7 @@ spec:
                 serviceAccountName: knative-openshift-ingress
                 containers:
                   - name: knative-openshift-ingress
-                    image: registry.redhat.io/openshift-serverless-1/serverless-ingress@sha256:b8440e5a6e1ef035ed1d0ddaba68e409304ebec20effce8943fdab7a48a217f0
+                    image: registry.redhat.io/openshift-serverless-1/serverless-ingress@sha256:61a03cac6b24cf0095b5d37b3f7b2330bb6da2227b3244e7c6edbee728432c3a
                     imagePullPolicy: Always
                     ports:
                       - containerPort: 9090
@@ -1319,11 +1322,11 @@ spec:
         - knativeeventings.operator.knative.dev
   relatedImages:
     - name: "knative-operator"
-      image: "registry.redhat.io/openshift-serverless-1/serverless-openshift-kn-operator@sha256:30142b70773486270b965c9d23c4cbfd1b48122f71d25f726f4e1ab7453b99a3"
+      image: "registry.redhat.io/openshift-serverless-1/serverless-openshift-kn-operator@sha256:25ee3bcdf8a904965de9b79dcfd542336670fd9400b4275457221dfe9d59c395"
     - name: "knative-openshift"
-      image: "registry.redhat.io/openshift-serverless-1/serverless-kn-operator@sha256:b83aa5a33d1369ab2cbfd7a89d09b8fda964e4e2fdb47621c5f02ae0d8f7519f"
+      image: "registry.redhat.io/openshift-serverless-1/serverless-kn-operator@sha256:43d8d181a2c4ac0af2a8314a549131e4a110ad8eead7a5b41bbb9f405dabb0dd"
     - name: "knative-openshift-ingress"
-      image: "registry.redhat.io/openshift-serverless-1/serverless-ingress@sha256:b8440e5a6e1ef035ed1d0ddaba68e409304ebec20effce8943fdab7a48a217f0"
+      image: "registry.redhat.io/openshift-serverless-1/serverless-ingress@sha256:61a03cac6b24cf0095b5d37b3f7b2330bb6da2227b3244e7c6edbee728432c3a"
     - name: "IMAGE_queue-proxy"
       image: "registry.redhat.io/openshift-serverless-1/kn-serving-queue@sha256:2e8f546a6928176613c7d5ac48cf5e1440f39876e8526fcb83d8413088b086cc"
     - name: "IMAGE_activator"
