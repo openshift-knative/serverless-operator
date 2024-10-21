@@ -40,7 +40,7 @@ func JobTransform(obj base.KComponent) mf.Transformer {
 
 			component := "serving"
 			if _, ok := obj.(*v1beta1.KnativeEventing); ok {
-				component = "eventing"
+				component = ""
 			}
 			if job.GetName() == "" {
 				job.SetName(fmt.Sprintf("%s%s-%s", job.GetGenerateName(), component, TargetVersion(obj)))
