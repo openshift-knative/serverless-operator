@@ -31,6 +31,7 @@ function default_serverless_operator_images() {
   # Use the current OCP version if the cluster is running otherwise use the latest.
   if oc get clusterversion &>/dev/null; then
     ocp_version=$(oc get clusterversion version -o jsonpath='{.status.desired.version}')
+    ocp_version=$(versions.major_minor "$ocp_version")
   else
     ocp_version=$(metadata.get 'requirements.ocpVersion.list[-1]')
   fi
