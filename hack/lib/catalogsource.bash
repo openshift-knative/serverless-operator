@@ -144,7 +144,8 @@ EOF
       # shellcheck disable=SC2053
       if  [[ $line == $registry_source || $line =~ $registry_source ]]; then
         img=${line##*/} # Get image name after last slash
-        add_repository_digest_mirrors "$output_file" "${registry_source}/${img}" "${registry_target}/${img}"
+        target_img=${img%-rhel*} # remove -rhelXYZ suffix from image name
+        add_repository_digest_mirrors "$output_file" "${registry_source}/${img}" "${registry_target}/${target_img}"
       fi
     done <<< "$mirrors"
 
