@@ -15,6 +15,10 @@ registry_prefix_quay="quay.io/redhat-user-workloads/ocp-serverless-tenant/server
 registry_quay="${registry_prefix_quay}${quay_registry_app_version}"
 registry_redhat_io="registry.redhat.io/openshift-serverless-1"
 
+function get_serverless_operator_rhel_version() {
+  sorhel --so-version="${CURRENT_VERSION}"
+}
+
 function default_serverless_operator_images() {
   local ocp_version
   local serverless_registry="${registry_quay}/serverless"
@@ -257,7 +261,7 @@ function latest_registry_redhat_io_image_sha() {
 
   image_name=${image_without_tag##*/} # Get image name after last slash
 
-  echo "${registry_redhat_io}/${image_name}@${digest}"
+  echo "${registry_redhat_io}/${image_name}-rhel$(get_serverless_operator_rhel_version)@${digest}"
 }
 
 function latest_konflux_image_sha() {

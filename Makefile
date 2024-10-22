@@ -289,7 +289,7 @@ generate-catalog:
 .PHONY: generate-catalog
 
 # Generates all files that are templated with release metadata.
-release-files: install-tool-sobranch install-tool-skopeo
+release-files: install-tool-sobranch install-tool-skopeo install-tool-sorhel
 	./hack/generate/csv.sh \
 		templates/csv.yaml \
 		olm-catalog/serverless-operator/manifests/serverless-operator.clusterserviceversion.yaml
@@ -388,3 +388,6 @@ install-tool-skopeo:
 
 install-tool-generate:
 	GOFLAGS='' go install github.com/openshift-knative/hack/cmd/generate@latest
+
+install-tool-sorhel:
+	GOFLAGS='' go install github.com/openshift-knative/hack/cmd/sorhel@latest
