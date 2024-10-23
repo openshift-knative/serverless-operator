@@ -25,7 +25,7 @@ function install_catalogsource {
 
   # Build bundle and index images only when running in CI or when DOCKER_REPO_OVERRIDE is defined,
   # unless overridden by FORCE_KONFLUX_INDEX.
-  if { [ -n "$OPENSHIFT_CI" ] || [ -n "$DOCKER_REPO_OVERRIDE" ]; } && [ -z "$FORCE_KONFLUX_INDEX" ]; then
+  if { [ -n "$OPENSHIFT_CI" ] || [ -n "$DOCKER_REPO_OVERRIDE" ]; } && [ -z "${FORCE_KONFLUX_INDEX:-}" ]; then
     index_image=image-registry.openshift-image-registry.svc:5000/$OLM_NAMESPACE/serverless-index:latest
     rootdir="$(dirname "$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")")"
 
