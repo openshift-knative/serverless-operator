@@ -140,7 +140,17 @@ EOF
       # shellcheck disable=SC2053
       if  [[ $line == $registry_source || $line =~ $registry_source ]]; then
         img=${line##*/} # Get image name after last slash
-        target_img=${img%-rhel*} # remove -rhelXYZ suffix from image name
+
+        # remove rhel suffix
+        if [[ "${img}" =~ ^serverless-openshift-kn-rhel[0-9]+-operator$ ]]; then
+          # serverless-openshift-kn-operator is special, as it has rhel in the middle of the name
+          # see https://redhat-internal.slack.com/archives/CKR568L8G/p1729684088850349
+          target_img="serverless-openshift-kn-operator"
+        else
+          # for other images simply remove the suffix
+          target_img=${img%-rhel*} # remove -rhelXYZ suffix from image name
+        fi
+
         add_repository_digest_mirrors "$output_file" "${registry_source}/${img}" "${registry_target}/${target_img}"
       fi
     done <<< "$mirrors"

@@ -261,7 +261,17 @@ function latest_registry_redhat_io_image_sha() {
 
   image_name=${image_without_tag##*/} # Get image name after last slash
 
-  echo "${registry_redhat_io}/${image_name}-rhel$(get_serverless_operator_rhel_version)@${digest}"
+  # Add rhel suffix
+  if [ "${image_name}" == "serverless-openshift-kn-operator" ]; then
+    # serverless-openshift-kn-operator is special, as it has rhel in the middle of the name
+    # see https://redhat-internal.slack.com/archives/CKR568L8G/p1729684088850349
+    image_name="serverless-openshift-kn-rhel$(get_serverless_operator_rhel_version)-operator"
+  else
+    # for other images simply add it as a suffix
+    image_name="${image_name}-rhel$(get_serverless_operator_rhel_version)"
+  fi
+
+  echo "${registry_redhat_io}/${image_name}@${digest}"
 }
 
 function latest_konflux_image_sha() {
