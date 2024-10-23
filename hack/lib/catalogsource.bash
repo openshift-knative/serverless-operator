@@ -112,7 +112,7 @@ EOF
 }
 
 function create_image_content_source_policy {
-  local index registry_source registry_target
+  local index registry_source registry_target rootdir
   index="${1:?Pass index image as arg[1]}"
   registry_source="${2:?Pass source registry arg[2]}"
   registry_target="${3:?Pass target registry arg[3]}"
@@ -131,15 +131,19 @@ spec:
 EOF
 
     rm -rf iib-manifests
-    oc adm catalog mirror "$index" "$registry_target" --manifests-only=true --to-manifests=iib-manifests/
-
+    rootdir="$(dirname "$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")")"
+    if oc adm catalog mirror "$index" "$registry_target" --manifests-only=true --to-manifests=iib-manifests/ ; then
+      mirrors=$(yq read iib-manifests/imageContentSourcePolicy.yaml 'spec.repositoryDigestMirrors[*].source' | sort)
+    else
+      mirrors=$(yq read "${rootdir}/olm-catalog/serverless-operator/manifests/serverless-operator.clusterserviceversion.yaml" 'spec.relatedImages[*].image' | grep "${registry_source}" | sort | uniq)
+    fi
     # The generated ICSP is incorrect as it replaces slashes in long repository paths with dashes and
     # includes third-party images. Create a proper ICSP based on the generated one.
-    mirrors=$(yq read iib-manifests/imageContentSourcePolicy.yaml 'spec.repositoryDigestMirrors[*].source' | sort)
     while IFS= read -r line; do
       # shellcheck disable=SC2053
       if  [[ $line == $registry_source || $line =~ $registry_source ]]; then
         img=${line##*/} # Get image name after last slash
+        img=${img%@*} # Remove sha
 
         # remove rhel suffix
         if [[ "${img}" =~ ^serverless-openshift-kn-rhel[0-9]+-operator$ ]]; then
