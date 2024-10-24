@@ -44,10 +44,6 @@ function install_catalogsource {
     # Generate CSV from template to properly substitute operator images from env variables.
     "${rootdir}/hack/generate/csv.sh" templates/csv.yaml "$csv"
 
-    # Replace registry.redhat.io references with Konflux quay.io for test purposes as
-    # images in the former location are not published yet.
-    sed -ri "s#(.*)${registry_redhat_io}/(.*@sha[0-9]+:[a-z0-9]+.*)#\1${registry_quay}/\2#" "$csv"
-
     cat "$csv"
 
     build_image "serverless-bundle" "${rootdir}" "olm-catalog/serverless-operator/Dockerfile"
@@ -83,12 +79,12 @@ function install_catalogsource {
 
     logger.debug 'Undo potential changes to the index Dockerfile.'
     mv "${rootdir}/_output/bkp.Dockerfile" "${rootdir}/${index_dorkerfile_path}"
-  else
-    tmpfile=$(mktemp /tmp/icsp.XXXXXX.yaml)
-    create_image_content_source_policy "$index_image" "$registry_redhat_io" "$registry_quay" "$tmpfile"
-    oc apply -f "$tmpfile"
-    [ -n "$OPENSHIFT_CI" ] && cat "$output_file"
   fi
+
+  tmpfile=$(mktemp /tmp/icsp.XXXXXX.yaml)
+  create_image_content_source_policy "$index_image" "$registry_redhat_io" "$registry_quay" "$tmpfile"
+  oc apply -f "$tmpfile"
+  [ -n "$OPENSHIFT_CI" ] && cat "$output_file"
 
   logger.info 'Install the catalogsource.'
   cat <<EOF | oc apply -n "$OLM_NAMESPACE" -f -
@@ -116,7 +112,7 @@ EOF
 }
 
 function create_image_content_source_policy {
-  local index registry_source registry_target
+  local index registry_source registry_target rootdir
   index="${1:?Pass index image as arg[1]}"
   registry_source="${2:?Pass source registry arg[2]}"
   registry_target="${3:?Pass target registry arg[3]}"
@@ -135,16 +131,31 @@ spec:
 EOF
 
     rm -rf iib-manifests
-    oc adm catalog mirror "$index" "$registry_target" --manifests-only=true --to-manifests=iib-manifests/
-
+    rootdir="$(dirname "$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")")"
+    if oc adm catalog mirror "$index" "$registry_target" --manifests-only=true --to-manifests=iib-manifests/ ; then
+      mirrors=$(yq read iib-manifests/imageContentSourcePolicy.yaml 'spec.repositoryDigestMirrors[*].source' | sort)
+    else
+      mirrors=$(yq read "${rootdir}/olm-catalog/serverless-operator/manifests/serverless-operator.clusterserviceversion.yaml" 'spec.relatedImages[*].image' | grep "${registry_source}" | sort | uniq)
+    fi
     # The generated ICSP is incorrect as it replaces slashes in long repository paths with dashes and
     # includes third-party images. Create a proper ICSP based on the generated one.
-    mirrors=$(yq read iib-manifests/imageContentSourcePolicy.yaml 'spec.repositoryDigestMirrors[*].source' | sort)
     while IFS= read -r line; do
       # shellcheck disable=SC2053
       if  [[ $line == $registry_source || $line =~ $registry_source ]]; then
         img=${line##*/} # Get image name after last slash
-        add_repository_digest_mirrors "$output_file" "${registry_source}/${img}" "${registry_target}/${img}"
+        img=${img%@*} # Remove sha
+
+        # remove rhel suffix
+        if [[ "${img}" =~ ^serverless-openshift-kn-rhel[0-9]+-operator$ ]]; then
+          # serverless-openshift-kn-operator is special, as it has rhel in the middle of the name
+          # see https://redhat-internal.slack.com/archives/CKR568L8G/p1729684088850349
+          target_img="serverless-openshift-kn-operator"
+        else
+          # for other images simply remove the suffix
+          target_img=${img%-rhel*} # remove -rhelXYZ suffix from image name
+        fi
+
+        add_repository_digest_mirrors "$output_file" "${registry_source}/${img}" "${registry_target}/${target_img}"
       fi
     done <<< "$mirrors"
 
