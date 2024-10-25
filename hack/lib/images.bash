@@ -30,7 +30,9 @@ function default_serverless_operator_images() {
   export SERVERLESS_BUNDLE=${SERVERLESS_BUNDLE:-$(get_bundle_for_version "${CURRENT_VERSION}")}
   export DEFAULT_SERVERLESS_BUNDLE=${DEFAULT_SERVERLESS_BUNDLE:-$(get_bundle_for_version "${CURRENT_VERSION}")}
 
-  export SERVERLESS_BUNDLE_REDHAT_IO=${SERVERLESS_BUNDLE_REDHAT_IO:-$(latest_registry_redhat_io_image_sha "${serverless_registry}-bundle:${CURRENT_VERSION_IMAGES}")}
+  SERVERLESS_BUNDLE_REDHAT_IO=${SERVERLESS_BUNDLE_REDHAT_IO:-$(latest_registry_redhat_io_image_sha "${serverless_registry}-bundle:${CURRENT_VERSION_IMAGES}")}
+  # Bundle image is in different locations in quay.io and registry.redhat.io
+  export SERVERLESS_BUNDLE_REDHAT_IO=${SERVERLESS_BUNDLE_REDHAT_IO//serverless-bundle/serverless-operator-bundle}
 
   # Use the current OCP version if the cluster is running otherwise use the latest.
   if oc get clusterversion &>/dev/null; then
