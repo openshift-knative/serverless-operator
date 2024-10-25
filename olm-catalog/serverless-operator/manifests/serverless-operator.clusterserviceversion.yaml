@@ -830,7 +830,7 @@ spec:
                 serviceAccountName: knative-operator
                 containers:
                   - name: knative-operator
-                    image: registry.redhat.io/openshift-serverless-1/serverless-openshift-kn-operator@sha256:25ee3bcdf8a904965de9b79dcfd542336670fd9400b4275457221dfe9d59c395
+                    image: registry.redhat.io/openshift-serverless-1/serverless-openshift-kn-rhel8-operator@sha256:bacaa4e6cb25927c214c6d51ffc1bee0e3a0f0b70877f9d1eee8c6d739ad8ba4
                     readinessProbe:
                       periodSeconds: 1
                       httpGet:
