@@ -12,6 +12,8 @@ function generate_catalog {
     skopeo login registry.redhat.io -u "${REGISTRY_REDHAT_IO_USERNAME}" -p "${REGISTRY_REDHAT_IO_PASSWORD}"
   fi
 
+  default_serverless_operator_images
+
   root_dir="$(dirname "$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")")"
   index_dir="${root_dir}/olm-catalog/serverless-operator-index"
 
@@ -29,8 +31,6 @@ function generate_catalog {
     # Generate simplified template
     opm alpha convert-template basic "${catalog_tmp_dir}/serverless-operator/catalog.yaml" -oyaml \
       > "${catalog_template}"
-
-    default_serverless_operator_images
 
     while IFS=$'\n' read -r channel; do
       add_channel "${catalog_template}" "$channel"
@@ -171,8 +171,8 @@ function upgrade_dependencies_images {
 logger.info "Upgrading registry.redhat.io images"
 upgrade_dependencies_images
 
-logger.info "Generating ImageContextSourcePolicy"
-create_image_content_source_policy "registry.ci.openshift.org/knative/${CURRENT_VERSION_IMAGES}:serverless-index" "$registry_redhat_io" "$registry_quay" "olm-catalog/serverless-operator-index/image_content_source_policy.yaml"
-
 logger.info "Generating catalog"
 generate_catalog
+
+logger.info "Generating ImageContextSourcePolicy"
+create_image_content_source_policy "${INDEX_IMAGE}" "$registry_redhat_io" "$registry_quay" "olm-catalog/serverless-operator-index/image_content_source_policy.yaml"
