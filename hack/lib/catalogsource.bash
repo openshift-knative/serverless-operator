@@ -160,7 +160,7 @@ EOF
     done <<< "$mirrors"
 
     # Add mapping for bundle image separately as the extracted mirrors don't include it.
-    add_repository_digest_mirrors "$output_file" "${registry_source}/serverless-bundle" "${registry_target}/serverless-bundle"
+    add_repository_digest_mirrors "$output_file" "${registry_source}/serverless-operator-bundle" "${registry_target}/serverless-bundle"
 }
 
 function add_repository_digest_mirrors {
