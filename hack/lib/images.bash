@@ -15,6 +15,10 @@ registry_prefix_quay="quay.io/redhat-user-workloads/ocp-serverless-tenant/server
 registry_quay="${registry_prefix_quay}${quay_registry_app_version}"
 registry_redhat_io="registry.redhat.io/openshift-serverless-1"
 
+function get_serverless_operator_rhel_version() {
+  sorhel --so-version="${CURRENT_VERSION}"
+}
+
 function default_serverless_operator_images() {
   local ocp_version
   local serverless_registry="${registry_quay}/serverless"
@@ -256,6 +260,16 @@ function latest_registry_redhat_io_image_sha() {
   digest="${image##*@}" # Get only sha
 
   image_name=${image_without_tag##*/} # Get image name after last slash
+
+  # Add rhel suffix
+  if [ "${image_name}" == "serverless-openshift-kn-operator" ]; then
+    # serverless-openshift-kn-operator is special, as it has rhel in the middle of the name
+    # see https://redhat-internal.slack.com/archives/CKR568L8G/p1729684088850349
+    image_name="serverless-openshift-kn-rhel$(get_serverless_operator_rhel_version)-operator"
+  else
+    # for other images simply add it as a suffix
+    image_name="${image_name}-rhel$(get_serverless_operator_rhel_version)"
+  fi
 
   echo "${registry_redhat_io}/${image_name}@${digest}"
 }
