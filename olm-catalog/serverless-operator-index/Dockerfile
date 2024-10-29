@@ -15,7 +15,7 @@ registry.ci.openshift.org/knative/release-1.34.0:serverless-bundle \
     /bin/opm render --skip-tls-verify -o yaml \
 registry.ci.openshift.org/knative/release-1.33.0:serverless-bundle \
 registry.ci.openshift.org/knative/release-1.34.0:serverless-bundle \
-      quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/serverless-bundle@sha256:3118f4b62bdb0e30849123b84c20054d464c0bfc397929937db55f3ca3767560 >> /configs/index.yaml
+      quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/serverless-bundle@sha256:efefd78e77480d345629e47cdc38cc99e1f1720b063c5c0b18a16496828535a8 >> /configs/index.yaml
 
 # The base image is expected to contain
 # /bin/opm (with a serve subcommand) and /bin/grpc_health_probe
