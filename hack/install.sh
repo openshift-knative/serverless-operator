@@ -20,6 +20,8 @@ use_spot_instances
 scale_up_workers
 create_namespaces "${SYSTEM_NAMESPACES[@]}"
 
-install_certmanager
+if [[ $INSTALL_CERTMANAGER == "true" ]]; then
+  install_certmanager
+fi
 ensure_catalogsource_installed
 ensure_serverless_installed
