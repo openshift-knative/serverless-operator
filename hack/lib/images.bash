@@ -268,9 +268,9 @@ function latest_registry_redhat_io_image_sha() {
     # serverless-openshift-kn-operator is special, as it has rhel in the middle of the name
     # see https://redhat-internal.slack.com/archives/CKR568L8G/p1729684088850349
     image_name="serverless-openshift-kn-rhel$(get_serverless_operator_rhel_version)-operator"
-  elif [ "${image_name}" == "serverless-operator-bundle" ]; then
-    # serverless-operator-bundle is special, as it has no rhelXYZ in the name
-    image_name="serverless-operator-bundle"
+  elif [ "${image_name}" == "serverless-bundle" ]; then
+    # serverless-bundle is special, as it has no rhelXYZ in the name
+    image_name="serverless-bundle"
   else
     # for other images simply add it as a suffix
     image_name="${image_name}-rhel$(get_serverless_operator_rhel_version)"
