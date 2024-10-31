@@ -132,7 +132,7 @@ spec:
       source: "registry.redhat.io/openshift-serverless-1/serverless-kn-operator-rhel8"
     - mirrors: ["quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/serverless-openshift-kn-operator"]
       source: "registry.redhat.io/openshift-serverless-1/serverless-openshift-kn-rhel8-operator"
-    - mirrors: ["quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/serverless-operator-bundle"]
+    - mirrors: ["quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/serverless-bundle"]
       source: "registry.redhat.io/openshift-serverless-1/serverless-operator-bundle"
     - mirrors: ["quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/serverless-operator-bundle"]
       source: "registry.redhat.io/openshift-serverless-1/serverless-operator-bundle-rhel8"
@@ -172,5 +172,3 @@ spec:
       source: "registry.redhat.io/openshift-serverless-1/eventing-kafka-broker-webhook-rhel8"
     - mirrors: ["quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/knative-client-plugin-event-sender"]
       source: "registry.redhat.io/openshift-serverless-1/knative-client-plugin-event-sender-rhel8"
-    - mirrors: ["quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/serverless-bundle"]
-      source: "registry.redhat.io/openshift-serverless-1/serverless-operator-bundle"
