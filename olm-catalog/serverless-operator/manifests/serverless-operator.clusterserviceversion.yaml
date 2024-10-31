@@ -937,7 +937,7 @@ spec:
                       - name: "IMAGE_KN_PLUGIN_EVENT_SENDER"
                         value: "registry.ci.openshift.org/knative/release-1.15:client-plugin-event-sender"
                       - name: "IMAGE_KN_CLIENT"
-                        value: "registry.ci.openshift.org/openshift/knative-v1.15:knative-client-kn"
+                        value: "registry.redhat.io/openshift-serverless-1/kn-client-kn-rhel8@"
                       - name: "IMAGE_KN_PLUGIN_FUNC_UTIL"
                         value: "registry.redhat.io/openshift-serverless-1/kn-plugin-func-func-util-rhel8@sha256:da3263b8d1961358ef384d35f152eb43260052bc0788f5f85cb101a492934117"
                       - name: "IMAGE_KN_PLUGIN_FUNC_TEKTON_S2I"
@@ -981,7 +981,7 @@ spec:
                 serviceAccountName: knative-openshift
                 initContainers:
                   - name: cli-artifacts
-                    image: registry.ci.openshift.org/openshift/knative-v1.15:knative-client-cli-artifacts
+                    image: registry.redhat.io/openshift-serverless-1/kn-client-cli-artifacts-rhel8@sha256:f4808dfe9c84a9eb36bfcbf3fb35869398d250899636508c2b6aec603bb6f1c3
                     imagePullPolicy: Always
                     command: ["sh", "-c", "rm -rf /cli-artifacts/* && cp /usr/share/kn/**/* /cli-artifacts && chmod 444 /cli-artifacts/*"]
                     volumeMounts:
@@ -1111,7 +1111,7 @@ spec:
                       - name: "IMAGE_KN_PLUGIN_EVENT_SENDER"
                         value: "registry.ci.openshift.org/knative/release-1.15:client-plugin-event-sender"
                       - name: "IMAGE_KN_CLIENT"
-                        value: "registry.ci.openshift.org/openshift/knative-v1.15:knative-client-kn"
+                        value: "registry.redhat.io/openshift-serverless-1/kn-client-kn-rhel8@"
                       - name: "IMAGE_KN_PLUGIN_FUNC_UTIL"
                         value: "registry.redhat.io/openshift-serverless-1/kn-plugin-func-func-util-rhel8@sha256:da3263b8d1961358ef384d35f152eb43260052bc0788f5f85cb101a492934117"
                       - name: "IMAGE_KN_PLUGIN_FUNC_TEKTON_S2I"
@@ -1386,7 +1386,7 @@ spec:
     - name: "IMAGE_KN_PLUGIN_EVENT_SENDER"
       image: "registry.ci.openshift.org/knative/release-1.15:client-plugin-event-sender"
     - name: "IMAGE_KN_CLIENT"
-      image: "registry.ci.openshift.org/openshift/knative-v1.15:knative-client-kn"
+      image: "registry.redhat.io/openshift-serverless-1/kn-client-kn-rhel8@"
     - name: "IMAGE_KN_PLUGIN_FUNC_UTIL"
       image: "registry.redhat.io/openshift-serverless-1/kn-plugin-func-func-util-rhel8@sha256:da3263b8d1961358ef384d35f152eb43260052bc0788f5f85cb101a492934117"
     - name: "IMAGE_KN_PLUGIN_FUNC_TEKTON_S2I"

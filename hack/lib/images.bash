@@ -211,6 +211,25 @@ function knative_kn_plugin_func_images() {
   export KNATIVE_KN_PLUGIN_FUNC_PYTHON_39=${KNATIVE_KN_PLUGIN_FUNC_UTIL:-"$(metadata.get dependencies.func.python-39)"}
 }
 
+function knative_client_images_release() {
+  knative_client_images "${USE_IMAGE_RELEASE_TAG}"
+}
+
+function default_knative_client_images() {
+  knative_client_images "$(metadata.get dependencies.cli)"
+}
+
+function knative_client_images() {
+  local knative_client tag app_version
+  tag=${1:?"Provide tag for kn-client images"}
+
+  app_version=$(get_app_version_from_tag "${tag}")
+  knative_client="${registry_prefix_quay}${app_version}/kn-client"
+
+  export KNATIVE_KN_CLIENT=${KNATIVE_KN_CLIENT:-$(latest_registry_redhat_io_image_sha "${knative_client}-kn:${tag}")}
+  export KNATIVE_KN_CLIENT_CLI_ARTIFACTS=${KNATIVE_KN_CLIENT_CLI_ARTIFACTS:-$(latest_registry_redhat_io_image_sha "${knative_client}-cli-artifacts:${tag}")}
+}
+
 function default_knative_ingress_images() {
   local kourier_registry istio_registry knative_kourier knative_istio kourier_app_version istio_app_version
 

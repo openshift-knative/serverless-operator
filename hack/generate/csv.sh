@@ -12,7 +12,7 @@ source "$(dirname "${BASH_SOURCE[0]}")/../lib/metadata.bash"
 # shellcheck disable=SC1091,SC1090
 source "$(dirname "${BASH_SOURCE[0]}")/../lib/images.bash"
 
-# TODO migrate CLI images to Konflux
+# TODO migrate event-sender cli plugin images to Konflux
 client_version="$(metadata.get dependencies.cli)"
 kn_event="${ci_registry_host}/knative/release-${client_version#knative-v}:client-plugin-event"
 
@@ -28,6 +28,7 @@ if [[ ${USE_RELEASE_NEXT:-} == "true" ]]; then
   knative_backstage_plugins_images_release
   knative_serving_images_release
   knative_kn_plugin_func_images_release
+  knative_client_images_release
 else
   default_knative_eventing_images
   default_knative_eventing_istio_images
@@ -35,6 +36,7 @@ else
   default_knative_backstage_plugins_images
   default_knative_serving_images
   default_knative_kn_plugin_func_images
+  default_knative_client_images
 fi
 
 declare -a operator_images
@@ -125,7 +127,7 @@ kafka_image "knative-kafka-storage-version-migrator__migrate"    "${KNATIVE_EVEN
 
 image 'KUBE_RBAC_PROXY'          "${rbac_proxy}"
 image 'KN_PLUGIN_EVENT_SENDER'   "${kn_event}-sender"
-image 'KN_CLIENT'                "${ci_registry}/$(metadata.get dependencies.cli):knative-client-kn"
+image 'KN_CLIENT'                "${KNATIVE_KN_CLIENT}"
 
 image "KN_PLUGIN_FUNC_UTIL"               "${KNATIVE_KN_PLUGIN_FUNC_FUNC_UTIL}"
 image "KN_PLUGIN_FUNC_TEKTON_S2I"         "${KNATIVE_KN_PLUGIN_FUNC_TEKTON_S2I}"
@@ -239,7 +241,7 @@ add_upstream_operator_deployment_env "$target" "KNATIVE_EVENTING_VERSION" "${eve
 add_upstream_operator_deployment_env "$target" "KNATIVE_EVENTING_KAFKA_BROKER_VERSION" "${ekb_version/knative-v/}" # Remove `knative-v` prefix if exists
 
 # Override the image for the CLI artifact deployment
-yq write --inplace "$target" "spec.install.spec.deployments(name==knative-openshift).spec.template.spec.initContainers(name==cli-artifacts).image" "${ci_registry}/$(metadata.get dependencies.cli):knative-client-cli-artifacts"
+yq write --inplace "$target" "spec.install.spec.deployments(name==knative-openshift).spec.template.spec.initContainers(name==cli-artifacts).image" "${KNATIVE_KN_CLIENT_CLI_ARTIFACTS}"
 
 for name in "${!yaml_keys[@]}"; do
   echo "Value: ${name} -> ${yaml_keys[$name]}"
