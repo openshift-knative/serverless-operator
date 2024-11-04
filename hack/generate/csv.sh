@@ -12,10 +12,6 @@ source "$(dirname "${BASH_SOURCE[0]}")/../lib/metadata.bash"
 # shellcheck disable=SC1091,SC1090
 source "$(dirname "${BASH_SOURCE[0]}")/../lib/images.bash"
 
-# TODO migrate event-sender cli plugin images to Konflux
-client_version="$(metadata.get dependencies.cli)"
-kn_event="${ci_registry_host}/knative/release-${client_version#knative-v}:client-plugin-event"
-
 rbac_proxy=$(metadata.get 'dependencies.kube_rbac_proxy')
 
 default_serverless_operator_images
@@ -29,6 +25,7 @@ if [[ ${USE_RELEASE_NEXT:-} == "true" ]]; then
   knative_serving_images_release
   knative_kn_plugin_func_images_release
   knative_client_images_release
+  knative_kn_plugin_event_images_release
 else
   default_knative_eventing_images
   default_knative_eventing_istio_images
@@ -37,6 +34,7 @@ else
   default_knative_serving_images
   default_knative_kn_plugin_func_images
   default_knative_client_images
+  default_knative_kn_plugin_event_images
 fi
 
 declare -a operator_images
@@ -126,7 +124,7 @@ kafka_image "kafka-controller-post-install__post-install"        "${KNATIVE_EVEN
 kafka_image "knative-kafka-storage-version-migrator__migrate"    "${KNATIVE_EVENTING_STORAGE_VERSION_MIGRATION}" # Use eventing core image
 
 image 'KUBE_RBAC_PROXY'          "${rbac_proxy}"
-image 'KN_PLUGIN_EVENT_SENDER'   "${kn_event}-sender"
+image 'KN_PLUGIN_EVENT_SENDER'   "${KNATIVE_KN_PLUGIN_EVENT_SENDER}"
 image 'KN_CLIENT'                "${KNATIVE_KN_CLIENT}"
 
 image "KN_PLUGIN_FUNC_UTIL"               "${KNATIVE_KN_PLUGIN_FUNC_FUNC_UTIL}"

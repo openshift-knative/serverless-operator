@@ -211,6 +211,24 @@ function knative_kn_plugin_func_images() {
   export KNATIVE_KN_PLUGIN_FUNC_PYTHON_39=${KNATIVE_KN_PLUGIN_FUNC_UTIL:-"$(metadata.get dependencies.func.python-39)"}
 }
 
+function knative_kn_plugin_event_images_release() {
+  knative_kn_plugin_event_images "${USE_IMAGE_RELEASE_TAG}"
+}
+
+function default_knative_kn_plugin_event_images() {
+  knative_kn_plugin_event_images "$(metadata.get dependencies.cli)"
+}
+
+function knative_kn_plugin_event_images() {
+  local knative_kn_plugin_event tag app_version
+  tag=${1:?"Provide tag for kn-plugin-event images"}
+
+  app_version=$(get_app_version_from_tag "${tag}")
+  knative_kn_plugin_event="${registry_prefix_quay}${app_version}/kn-plugin-event"
+
+  export KNATIVE_KN_PLUGIN_EVENT_SENDER=${KNATIVE_KN_PLUGIN_EVENT_SENDER:-$(latest_registry_redhat_io_image_sha "${knative_kn_plugin_event}-sender:${tag}")}
+}
+
 function knative_client_images_release() {
   knative_client_images "${USE_IMAGE_RELEASE_TAG}"
 }
