@@ -213,6 +213,12 @@ function build_image() {
     logger.info "Create an image build for ${name}"
     oc -n "${OLM_NAMESPACE}" new-build \
       --strategy=docker --name "$name" --dockerfile "$(cat "${tmp_dockerfile}")"
+
+    imageStreamTag=$(oc get BuildConfig -n "${OLM_NAMESPACE}" "$name" -o json | \
+      jq -r '.spec.strategy.dockerStrategy.from.name')
+
+    logger.info "Import the ${imageStreamTag} ImageStreamTag"
+    oc import-image -n "${OLM_NAMESPACE}" "$imageStreamTag"
   else
     logger.info "${name} image build is already created"
   fi
