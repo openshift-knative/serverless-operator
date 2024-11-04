@@ -201,7 +201,7 @@ function replace_images() {
 }
 
 function build_image() {
-  local name from_dir dockerfile_path tmp_dockerfile
+  local name from_dir dockerfile_path tmp_dockerfile image_stream_tag
   name=${1:?Pass a name of image to be built as arg[1]}
   from_dir=${2:?Pass context dir}
   dockerfile_path=${3:?Pass dockerfile path}
@@ -214,11 +214,11 @@ function build_image() {
     oc -n "${OLM_NAMESPACE}" new-build \
       --strategy=docker --name "$name" --dockerfile "$(cat "${tmp_dockerfile}")"
 
-    imageStreamTag=$(oc get BuildConfig -n "${OLM_NAMESPACE}" "$name" -o json | \
+    image_stream_tag=$(oc get BuildConfig -n "${OLM_NAMESPACE}" "$name" -o json | \
       jq -r '.spec.strategy.dockerStrategy.from.name')
 
-    logger.info "Import the ${imageStreamTag} ImageStreamTag"
-    oc import-image -n "${OLM_NAMESPACE}" "$imageStreamTag"
+    logger.info "Wait for the ${image_stream_tag} ImageStreamTag to be imported"
+    timeout 60 "! oc get imagestreamtag -n \"${OLM_NAMESPACE}\" \"$image_stream_tag\" -o json | jq -re .image.dockerImageReference"
   else
     logger.info "${name} image build is already created"
   fi
