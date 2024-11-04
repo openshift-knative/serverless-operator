@@ -19,6 +19,8 @@ oc apply -f docs/gitops/application.yaml
 
 # Grant admin permission to openshift gitops controller in knative-eventing
 oc adm policy add-role-to-user admin system:serviceaccount:openshift-gitops:openshift-gitops-argocd-application-controller -n knative-eventing
+oc adm policy add-role-to-user admin system:serviceaccount:openshift-gitops:openshift-gitops-argocd-application-controller -n knative-serving
+oc adm policy add-role-to-user admin system:serviceaccount:openshift-gitops:openshift-gitops-argocd-application-controller -n knative-serving-ingress
 
 # Access the Argo CD UI by navigating to the openshift-gitops-server route
 oc get routes -n openshift-gitops openshift-gitops-server
@@ -34,9 +36,11 @@ oc get routes -n openshift-gitops openshift-gitops-server
 ### Verify installation
 
 ```shell
-# Verify that KnativeEventing is ready and pods are present
+# Verify that KnativeEventing, KnativeServing are ready and pods are present
 oc get knativeeventing -n knative-eventing
 oc get pods -n knative-eventing
+oc get knativeserving -n knative-serving
+oc get pods -n knative-serving
 ```
 
 ### Reproduce SRVCOM-2200

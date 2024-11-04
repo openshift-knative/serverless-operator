@@ -97,4 +97,10 @@ func TestKnativeServing(t *testing.T) {
 	t.Run("make sure no gcr.io references are there", func(t *testing.T) {
 		VerifyNoDisallowedImageReference(t, caCtx, servingNamespace)
 	})
+
+	VerifyDashboards(t, caCtx, ServingDashboards)
+	VerifyNamespaceMetadata(t, caCtx, servingNamespace)
+	if os.Getenv("MESH") != "true" {
+		VerifyNamespaceMetadata(t, caCtx, servingNamespace+"-ingress")
+	}
 }

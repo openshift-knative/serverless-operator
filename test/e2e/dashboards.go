@@ -21,6 +21,12 @@ var (
 		"grafana-dashboard-definition-knative-eventing-channel",
 		"grafana-dashboard-definition-knative-eventing-kafka-sink",
 	}
+
+	ServingDashboards = []string{
+		"grafana-dashboard-knative-serving-queue-proxy",
+		"grafana-dashboard-definition-knative-serving-resources",
+		"grafana-dashboard-definition-knative-serving-scaling-debugging",
+	}
 )
 
 func VerifyDashboards(t *testing.T, caCtx *test.Context, dashboards []string) {

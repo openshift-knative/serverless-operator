@@ -1,0 +1,15 @@
+diff --git a/vendor/knative.dev/operator/pkg/reconciler/knativeserving/knativeserving.go b/vendor/knative.dev/operator/pkg/reconciler/knativeserving/knativeserving.go
+index 4b8eca0b0..fb3c1a57c 100644
+--- a/vendor/knative.dev/operator/pkg/reconciler/knativeserving/knativeserving.go
++++ b/vendor/knative.dev/operator/pkg/reconciler/knativeserving/knativeserving.go
+@@ -117,6 +117,10 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, ks *v1beta1.KnativeServi
+ 		security.AppendTargetSecurity,
+ 		common.AppendAdditionalManifests,
+ 		r.appendExtensionManifests,
++		func(ctx context.Context, manifest *mf.Manifest, component base.KComponent) error {
++			*manifest = manifest.Filter(mf.Not(mf.All(mf.ByKind("Namespace"), mf.ByName("kourier-system"))))
++			return nil
++		},
+ 		r.transform,
+ 		manifests.Install,
+ 		common.CheckDeployments,
