@@ -9,7 +9,9 @@ COPY --from=builder /usr/bin/oc /usr/bin/oc
 COPY --from=builder /usr/bin/gather /usr/bin/gather_original
 
 # Copy all collection scripts to /usr/bin
-COPY bin/* /usr/bin/
+COPY must-gather/bin/* /usr/bin/
+
+RUN microdnf install -y rsync tar
 
 LABEL \
       com.redhat.component="openshift-serverless-1-must-gather-rhel8-container" \
