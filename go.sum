@@ -1426,8 +1426,8 @@ github.com/posener/complete v1.1.1/go.mod h1:em0nMJCgc9GFtwrmVmEMR/ZL6WyhyjMBndr
 github.com/pquerna/cachecontrol v0.1.0/go.mod h1:NrUG3Z7Rdu85UNR3vm7SOsl1nFIeSiQnrHV5K9mBcUI=
 github.com/prashantv/gostub v1.1.0 h1:BTyx3RfQjRHnUWaGF9oQos79AlQ5k8WNktv7VGvVH4g=
 github.com/prashantv/gostub v1.1.0/go.mod h1:A5zLQHz7ieHGG7is6LLXLz7I8+3LZzsrV0P1IAHhP5U=
-github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring v0.76.2 h1:BpGDC87A2SaxbKgONsFLEX3kRcRJee2aLQbjXsuz0hA=
-github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring v0.76.2/go.mod h1:Rd8YnCqz+2FYsiGmE2DMlaLjQRB4v2jFNnzCt9YY4IM=
+github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring v0.78.0 h1:b2L36QF60oB8Ty97UOCOnN2VnRbT6eaxzYda9kmk9zE=
+github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring v0.78.0/go.mod h1:SvsRXw4m1F2vk7HquU5h475bFpke27mIUswfyw9u3ug=
 github.com/prometheus-operator/prometheus-operator/pkg/client v0.76.2 h1:yncs8NglhE3hB+viNsabCAF9TBBDOBljHUyxHC5fSGY=
 github.com/prometheus-operator/prometheus-operator/pkg/client v0.76.2/go.mod h1:AfbzyEUFxJmSoTiMcgNHHjDKcorBVd9TIwx0viURgEw=
 github.com/prometheus/client_golang v0.9.1/go.mod h1:7SWBe2y4D6OKWSNQJUaRYU/AaXPKyh/dDVn+NZz0KFw=
