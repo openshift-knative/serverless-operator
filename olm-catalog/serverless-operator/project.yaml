@@ -58,7 +58,7 @@ dependencies:
   # backstage-plugins midstream branch or commit
   backstage_plugins_artifacts_branch: release-v1.15
   cli: knative-v1.15
-  kube_rbac_proxy: registry.redhat.io/openshift4/ose-kube-rbac-proxy-rhel9@sha256:99a3b38ad971d2220e6ab67ebead14f2e988bf22c85792b50ffbc9f23325e417
+  kube_rbac_proxy: registry.redhat.io/openshift4/ose-kube-rbac-proxy-rhel9@sha256:42be2d5bb4d09f4fa31602f8521af07b0c1f27f47379d1529b769bc7bd61abc9
   func:
     promotion_tag: knative-v1.15
     tekton_s2i: registry.redhat.io/source-to-image/source-to-image-rhel8@sha256:6a6025914296a62fdf2092c3a40011bd9b966a6806b094d51eec5e1bd5026ef4
