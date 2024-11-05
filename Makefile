@@ -340,8 +340,6 @@ generate-dockerfiles: install-tool-generate
 
 	git apply knative-operator/dockerfile.patch
 	git apply openshift-knative-operator/dockerfile.patch
-	generate-must-gather-dockerfile
-generate-must-gather-dockerfile: install-tool-generate
 	$(shell go env GOPATH)/bin/generate \
 		--generators must-gather-dockerfile \
 		--project-file olm-catalog/serverless-operator/project.yaml \
