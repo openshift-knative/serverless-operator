@@ -166,6 +166,28 @@ rules:
   - get
   - list
   - watch
+
+---
+
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: jobsinks-addressable-resolver
+  labels:
+    duck.knative.dev/addressable: "true"
+    app.kubernetes.io/version: v1.15
+    app.kubernetes.io/name: knative-eventing
+# Do not use this role directly. These rules will be added to the "addressable-resolver" role.
+rules:
+- apiGroups:
+    - sinks.knative.dev
+  resources:
+    - jobsinks
+    - jobsinks/status
+  verbs:
+    - get
+    - list
+    - watch
 ---
 # Copyright 2019 The Knative Authors
 #
@@ -3392,6 +3414,10 @@ spec:
                       name:
                         description: The name of the applied EventPolicy
                         type: string
+                observedGeneration:
+                  description: ObservedGeneration is the 'Generation' of the Service that was last processed by the controller.
+                  type: integer
+                  format: int64
                 conditions:
                   description: Conditions the latest available observations of a resource's current state.
                   type: array
