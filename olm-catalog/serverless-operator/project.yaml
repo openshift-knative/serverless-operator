@@ -23,14 +23,14 @@ requirements:
   nodejs: 20.x
   ocpVersion:
     list:
-      - "4.13"
       - "4.14"
       - "4.15"
       - "4.16"
       - "4.17"
-    min: '4.13'
-    max: '4.17'
-    label: 'v4.13'
+      - "4.18"
+    min: '4.14'
+    max: '4.18'
+    label: 'v4.14'
 dependencies:
   serving: knative-v1.15
   # serving midstream branch name
