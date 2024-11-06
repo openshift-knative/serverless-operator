@@ -1,5 +1,5 @@
 # DO NOT EDIT! Generated Dockerfile for must-gather.
-ARG MUSTGATHER=quay.io/openshift/origin-must-gather:4.13
+ARG MUSTGATHER=quay.io/openshift/origin-must-gather:4.18
 ARG RUNTIME=registry.access.redhat.com/ubi8/ubi-minimal
 FROM $MUSTGATHER AS mustgather
 
