@@ -1,12 +1,11 @@
 # DO NOT EDIT! Generated Dockerfile for must-gather.
-ARG MUSTGATHER=brew.registry.redhat.io/rh-osbs/openshift-ose-must-gather:latest
+ARG MUSTGATHER=quay.io/openshift/origin-must-gather:4.13
 ARG RUNTIME=registry.access.redhat.com/ubi8/ubi-minimal
-FROM $MUSTGATHER AS builder
+FROM $MUSTGATHER AS mustgather
 
 FROM $RUNTIME
 
-COPY --from=builder /usr/bin/oc /usr/bin/oc
-COPY --from=builder /usr/bin/gather /usr/bin/gather_original
+COPY --from=mustgather /usr/bin/oc /usr/bin/oc
 
 # Copy all collection scripts to /usr/bin
 COPY must-gather/bin/* /usr/bin/
