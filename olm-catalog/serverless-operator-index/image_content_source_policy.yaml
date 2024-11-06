@@ -6,6 +6,20 @@ metadata:
   name: serverless-image-content-source-policy
 spec:
   repositoryDigestMirrors:
+    - mirrors: ["quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/backstage-plugins-eventmesh"]
+      source: "registry.redhat.io/openshift-serverless-1/backstage-plugins-eventmesh-rhel8"
+    - mirrors: ["quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/eventing-istio-controller"]
+      source: "registry.redhat.io/openshift-serverless-1/eventing-istio-controller-rhel8"
+    - mirrors: ["quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/eventing-kafka-broker-controller"]
+      source: "registry.redhat.io/openshift-serverless-1/eventing-kafka-broker-controller-rhel8"
+    - mirrors: ["quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/eventing-kafka-broker-dispatcher"]
+      source: "registry.redhat.io/openshift-serverless-1/eventing-kafka-broker-dispatcher-rhel8"
+    - mirrors: ["quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/eventing-kafka-broker-receiver"]
+      source: "registry.redhat.io/openshift-serverless-1/eventing-kafka-broker-receiver-rhel8"
+    - mirrors: ["quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/eventing-kafka-broker-webhook"]
+      source: "registry.redhat.io/openshift-serverless-1/eventing-kafka-broker-webhook-rhel8"
+    - mirrors: ["quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/knative-client-plugin-event-sender"]
+      source: "registry.redhat.io/openshift-serverless-1/knative-client-plugin-event-sender-rhel8"
     - mirrors: ["quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/client-kn"]
       source: "registry.redhat.io/openshift-serverless-1/client-kn-rhel8"
     - mirrors: ["quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/eventing-apiserver-receive-adapter"]
@@ -62,8 +76,6 @@ spec:
       source: "registry.redhat.io/openshift-serverless-1/func-utils-rhel8"
     - mirrors: ["quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/ingress"]
       source: "registry.redhat.io/openshift-serverless-1/ingress-rhel8-operator"
-    - mirrors: ["quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/knative"]
-      source: "registry.redhat.io/openshift-serverless-1/knative-rhel8-operator"
     - mirrors: ["quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-backstage-plugins-eventmesh"]
       source: "registry.redhat.io/openshift-serverless-1/kn-backstage-plugins-eventmesh-rhel8"
     - mirrors: ["quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-cli-artifacts"]
@@ -118,6 +130,8 @@ spec:
       source: "registry.redhat.io/openshift-serverless-1/kn-serving-storage-version-migration-rhel8"
     - mirrors: ["quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-serving-webhook"]
       source: "registry.redhat.io/openshift-serverless-1/kn-serving-webhook-rhel8"
+    - mirrors: ["quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/knative"]
+      source: "registry.redhat.io/openshift-serverless-1/knative-rhel8-operator"
     - mirrors: ["quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kourier-control"]
       source: "registry.redhat.io/openshift-serverless-1/kourier-control-rhel8"
     - mirrors: ["quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/net-istio-controller"]
@@ -134,8 +148,6 @@ spec:
       source: "registry.redhat.io/openshift-serverless-1/serverless-openshift-kn-rhel8-operator"
     - mirrors: ["quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/serverless-bundle"]
       source: "registry.redhat.io/openshift-serverless-1/serverless-operator-bundle"
-    - mirrors: ["quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/serverless-operator-bundle"]
-      source: "registry.redhat.io/openshift-serverless-1/serverless-operator-bundle-rhel8"
     - mirrors: ["quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/serverless"]
       source: "registry.redhat.io/openshift-serverless-1/serverless-rhel8-operator"
     - mirrors: ["quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/serving-activator"]
@@ -158,17 +170,3 @@ spec:
       source: "registry.redhat.io/openshift-serverless-1/serving-webhook-rhel8"
     - mirrors: ["quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/svls-must-gather"]
       source: "registry.redhat.io/openshift-serverless-1/svls-must-gather-rhel8"
-    - mirrors: ["quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/backstage-plugins-eventmesh"]
-      source: "registry.redhat.io/openshift-serverless-1/backstage-plugins-eventmesh-rhel8"
-    - mirrors: ["quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/eventing-istio-controller"]
-      source: "registry.redhat.io/openshift-serverless-1/eventing-istio-controller-rhel8"
-    - mirrors: ["quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/eventing-kafka-broker-controller"]
-      source: "registry.redhat.io/openshift-serverless-1/eventing-kafka-broker-controller-rhel8"
-    - mirrors: ["quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/eventing-kafka-broker-dispatcher"]
-      source: "registry.redhat.io/openshift-serverless-1/eventing-kafka-broker-dispatcher-rhel8"
-    - mirrors: ["quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/eventing-kafka-broker-receiver"]
-      source: "registry.redhat.io/openshift-serverless-1/eventing-kafka-broker-receiver-rhel8"
-    - mirrors: ["quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/eventing-kafka-broker-webhook"]
-      source: "registry.redhat.io/openshift-serverless-1/eventing-kafka-broker-webhook-rhel8"
-    - mirrors: ["quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/knative-client-plugin-event-sender"]
-      source: "registry.redhat.io/openshift-serverless-1/knative-client-plugin-event-sender-rhel8"

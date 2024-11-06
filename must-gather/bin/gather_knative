@@ -1,0 +1,64 @@
+#!/bin/bash
+#
+# Run this script to collect knative-related debug information
+
+set -Euox pipefail
+
+BIN=oc
+LOGS_DIR=${LOGS_DIR:-must-gather-logs}
+
+# Describe and Get all api resources of Serverless across cluster
+
+APIRESOURCES=$(${BIN} get crds -o jsonpath="{.items[*].metadata.name}" | tr ' ' '\n' | grep -e knative.dev -e serverless.openshift.io)
+
+for APIRESOURCE in ${APIRESOURCES[@]}
+do
+  NAMESPACES=$(${BIN} get ${APIRESOURCE} --all-namespaces=true -o jsonpath='{range .items[*]}{@.metadata.namespace}{"\n"}{end}' | uniq)
+  for NAMESPACE in ${NAMESPACES[@]}
+  do
+    mkdir -p ${LOGS_DIR}/${NAMESPACE}/${APIRESOURCE}
+    ${BIN} describe ${APIRESOURCE} -n ${NAMESPACE} > ${LOGS_DIR}/${NAMESPACE}/${APIRESOURCE}/describe.log
+    ${BIN} get ${APIRESOURCE} -n ${NAMESPACE} -o=yaml > ${LOGS_DIR}/${NAMESPACE}/${APIRESOURCE}/get.yaml
+  done
+done
+
+
+# Collect oc adm inspect and extra resources in knative system namespaces.
+
+NAMESPACES=(knative-eventing knative-serving knative-serving-ingress)
+APIRESOURCES=(roles rolebindings serviceaccounts leases)
+
+for NAMESPACE in ${NAMESPACES[@]}
+do
+  ${BIN} adm inspect namespace ${NAMESPACE} --dest-dir=${LOGS_DIR}
+  for APIRESOURCE in ${APIRESOURCES[@]}
+  do
+    mkdir -p ${LOGS_DIR}/namespaces/${NAMESPACE}/extra/${APIRESOURCE}
+    ${BIN} describe ${APIRESOURCE} -n ${NAMESPACE} > ${LOGS_DIR}/namespaces/${NAMESPACE}/extra/${APIRESOURCE}/describe.log
+    ${BIN} get ${APIRESOURCE} -n ${NAMESPACE} -o=yaml > ${LOGS_DIR}/namespaces/${NAMESPACE}/extra/${APIRESOURCE}/get.yaml
+  done
+done
+
+
+# Collect clusterroles and clusterrolebindings
+
+KEY="knative"
+NAMESPACE="kube-system"
+APIRESOURCES=(clusterroles clusterrolebindings)
+
+for APIRESOURCE in ${APIRESOURCES[@]}
+do
+  NAMES=$(${BIN} get ${APIRESOURCE} -o jsonpath="{.items[*].metadata.name}" | tr ' ' '\n' | grep ${KEY})
+  for NAME in ${NAMES[@]}
+  do
+    mkdir -p ${LOGS_DIR}/${NAMESPACE}/${APIRESOURCE}
+    ${BIN} describe ${APIRESOURCE} ${NAME} > ${LOGS_DIR}/${NAMESPACE}/${APIRESOURCE}/${NAME}-describe.log
+    ${BIN} get ${APIRESOURCE} ${NAME} -o=yaml > ${LOGS_DIR}/${NAMESPACE}/${APIRESOURCE}/${NAME}.yaml
+  done
+done
+
+
+# Collect operator stuff
+
+NAMESPACE=$(${BIN} get pods --all-namespaces -l name=knative-openshift -o jsonpath="{.items[0].metadata.namespace}")
+${BIN} adm inspect namespace ${NAMESPACE} --dest-dir=${LOGS_DIR}
