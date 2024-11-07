@@ -9,12 +9,12 @@ COPY olm-catalog/serverless-operator/index/configs /configs
 
 RUN /bin/opm init serverless-operator --default-channel=stable --output yaml >> /configs/index.yaml
 RUN /bin/opm render --skip-tls-verify -o yaml \
-quay.io/openshift-knative/serverless-bundle:release-1.32.0 \
 registry.ci.openshift.org/knative/release-1.33.0:serverless-bundle \
-      registry.ci.openshift.org/knative/release-1.34.0:serverless-bundle >> /configs/index.yaml || \
+registry.ci.openshift.org/knative/release-1.34.0:serverless-bundle \
+      registry.ci.openshift.org/knative/release-1.34.1:serverless-bundle >> /configs/index.yaml || \
     /bin/opm render --skip-tls-verify -o yaml \
-quay.io/openshift-knative/serverless-bundle:release-1.32.0 \
 registry.ci.openshift.org/knative/release-1.33.0:serverless-bundle \
+registry.ci.openshift.org/knative/release-1.34.0:serverless-bundle \
       registry.ci.openshift.org/knative/serverless-bundle:main >> /configs/index.yaml
 
 # The base image is expected to contain
