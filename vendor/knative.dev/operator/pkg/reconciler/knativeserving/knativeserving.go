@@ -117,6 +117,10 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, ks *v1beta1.KnativeServi
 		security.AppendTargetSecurity,
 		common.AppendAdditionalManifests,
 		r.appendExtensionManifests,
+		func(ctx context.Context, manifest *mf.Manifest, component base.KComponent) error {
+			*manifest = manifest.Filter(mf.Not(mf.All(mf.ByKind("Namespace"), mf.ByName("kourier-system"))))
+			return nil
+		},
 		r.transform,
 		manifests.Install,
 		common.CheckDeployments,

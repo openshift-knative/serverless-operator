@@ -4,6 +4,7 @@ ARG GO_RUNTIME=registry.access.redhat.com/ubi8/ubi-minimal
 
 FROM $GO_BUILDER as builder
 
+WORKDIR /go/src/serving/ingress/cmd/ingress
 COPY . .
 
 ENV CGO_ENABLED=1
