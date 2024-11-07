@@ -1,11 +1,13 @@
 # DO NOT EDIT! Generated Dockerfile for must-gather.
-ARG MUSTGATHER=quay.io/openshift/origin-must-gather:4.13
+ARG CLI_ARTIFACTS=registry.ci.openshift.org/ocp/4.13:cli-artifacts
 ARG RUNTIME=registry.access.redhat.com/ubi8/ubi-minimal
-FROM $MUSTGATHER AS mustgather
+FROM $CLI_ARTIFACTS AS cli-artifacts
 
 FROM $RUNTIME
 
-COPY --from=mustgather /usr/bin/oc /usr/bin/oc
+ARG TARGETARCH
+
+COPY --from=cli-artifacts /usr/share/openshift/linux_$TARGETARCH/oc /usr/bin/oc
 
 # Copy all collection scripts to /usr/bin
 COPY must-gather/bin/* /usr/bin/
