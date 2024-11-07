@@ -72,7 +72,7 @@ metadata:
     repository: https://github.com/openshift-knative/serverless-operator
     support: Red Hat
     olm.skipRange: '>=1.34.0 <1.35.0'
-    operators.openshift.io/must-gather-image: quay.io/openshift-knative/must-gather
+    operators.openshift.io/must-gather-image: registry.redhat.io/openshift-serverless-1/serverless-must-gather-rhel8@sha256:b5b54104598d5c60f602b1056772af02c9a1940b191226a362c0b13e34ff20ee
   labels:
     operatorframework.io/arch.amd64: supported
     operatorframework.io/arch.ppc64le: supported
@@ -1420,6 +1420,6 @@ spec:
     - name: "KAFKA_IMAGE_knative-kafka-storage-version-migrator__migrate"
       image: "registry.redhat.io/openshift-serverless-1/kn-eventing-migrate-rhel8@sha256:16628700b0b4ac8a079cc46750aefd829dc278e538a9f0d41473392f3896eaf2"
     - name: "IMAGE_MUST_GATHER"
-      image: "quay.io/openshift-knative/must-gather"
+      image: "registry.redhat.io/openshift-serverless-1/serverless-must-gather-rhel8@sha256:b5b54104598d5c60f602b1056772af02c9a1940b191226a362c0b13e34ff20ee"
   replaces: serverless-operator.v1.34.0
   version: 1.35.0

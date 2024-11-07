@@ -26,6 +26,7 @@ function default_serverless_operator_images() {
   export SERVERLESS_KNATIVE_OPERATOR=${SERVERLESS_KNATIVE_OPERATOR:-$(latest_registry_redhat_io_image_sha "${serverless_registry}-kn-operator:${CURRENT_VERSION_IMAGES}")}
   export SERVERLESS_OPENSHIFT_KNATIVE_OPERATOR=${SERVERLESS_OPENSHIFT_KNATIVE_OPERATOR:-$(latest_registry_redhat_io_image_sha "${serverless_registry}-openshift-kn-operator:${CURRENT_VERSION_IMAGES}")}
   export SERVERLESS_INGRESS=${SERVERLESS_INGRESS:-$(latest_registry_redhat_io_image_sha "${serverless_registry}-ingress:${CURRENT_VERSION_IMAGES}")}
+  export SERVERLESS_MUST_GATHER=${SERVERLESS_MUST_GATHER:-$(latest_registry_redhat_io_image_sha "${serverless_registry}-must-gather:${CURRENT_VERSION_IMAGES}")}
 
   export SERVERLESS_BUNDLE=${SERVERLESS_BUNDLE:-$(get_bundle_for_version "${CURRENT_VERSION}")}
   export DEFAULT_SERVERLESS_BUNDLE=${DEFAULT_SERVERLESS_BUNDLE:-$(get_bundle_for_version "${CURRENT_VERSION}")}

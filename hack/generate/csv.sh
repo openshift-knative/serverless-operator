@@ -138,7 +138,7 @@ declare -A yaml_keys
 yaml_keys[spec.version]="$(metadata.get project.version)"
 yaml_keys[metadata.name]="$(metadata.get project.name).v$(metadata.get project.version)"
 yaml_keys['metadata.annotations[olm.skipRange]']="$(metadata.get olm.skipRange)"
-yaml_keys['metadata.annotations[operators.openshift.io/must-gather-image]']="$(metadata.get dependencies.mustgather.image)"
+yaml_keys['metadata.annotations[operators.openshift.io/must-gather-image]']="${SERVERLESS_MUST_GATHER}"
 yaml_keys[spec.minKubeVersion]="$(metadata.get requirements.kube.minVersion)"
 yaml_keys[spec.replaces]="$(metadata.get project.name).v$(metadata.get olm.replaces)"
 
@@ -221,7 +221,7 @@ for name in "${kafka_images[@]}"; do
   add_downstream_operator_deployment_env "$target" "KAFKA_IMAGE_${name}" "${kafka_images_addresses[$name]}"
 done
 
-add_related_image "$target" "IMAGE_MUST_GATHER" "$(metadata.get dependencies.mustgather.image)"
+add_related_image "$target" "IMAGE_MUST_GATHER" "${SERVERLESS_MUST_GATHER}"
 
 # Add Knative Kafka version to the downstream operator
 add_downstream_operator_deployment_env "$target" "CURRENT_VERSION" "$(metadata.get project.version)"
