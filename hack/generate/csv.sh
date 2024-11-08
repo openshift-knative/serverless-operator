@@ -222,6 +222,7 @@ for name in "${kafka_images[@]}"; do
 done
 
 add_related_image "$target" "IMAGE_MUST_GATHER" "${SERVERLESS_MUST_GATHER}"
+add_related_image "$target" "IMAGE_KN_CLIENT_CLI_ARTIFACTS" "${KNATIVE_KN_CLIENT_CLI_ARTIFACTS}"
 
 # Add Knative Kafka version to the downstream operator
 add_downstream_operator_deployment_env "$target" "CURRENT_VERSION" "$(metadata.get project.version)"

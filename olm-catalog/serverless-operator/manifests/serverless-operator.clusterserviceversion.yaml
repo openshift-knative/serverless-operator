@@ -1421,5 +1421,7 @@ spec:
       image: "registry.redhat.io/openshift-serverless-1/kn-eventing-migrate-rhel8@sha256:16628700b0b4ac8a079cc46750aefd829dc278e538a9f0d41473392f3896eaf2"
     - name: "IMAGE_MUST_GATHER"
       image: "registry.redhat.io/openshift-serverless-1/serverless-must-gather-rhel8@sha256:73bd7baf5f1875f5f5c64509c7675f9476ba3bbcd0b032bdf91e51ff9ffb0e7b"
+    - name: "IMAGE_KN_CLIENT_CLI_ARTIFACTS"
+      image: "registry.redhat.io/openshift-serverless-1/kn-client-cli-artifacts-rhel8@sha256:82a41eaae2cd8b6004dcb663a2cd359c09fecf646bf5beaec330463abea0ea90"
   replaces: serverless-operator.v1.34.0
   version: 1.35.0
