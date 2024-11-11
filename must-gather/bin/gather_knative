@@ -11,26 +11,34 @@ LOGS_DIR=${LOGS_DIR:-must-gather-logs}
 
 APIRESOURCES=$(${BIN} get crds -o jsonpath="{.items[*].metadata.name}" | tr ' ' '\n' | grep -e knative.dev -e serverless.openshift.io)
 
+COLLECT_NAMESPACES=()
+
 for APIRESOURCE in ${APIRESOURCES[@]}
 do
   NAMESPACES=$(${BIN} get ${APIRESOURCE} --all-namespaces=true -o jsonpath='{range .items[*]}{@.metadata.namespace}{"\n"}{end}' | uniq)
   for NAMESPACE in ${NAMESPACES[@]}
   do
+    COLLECT_NAMESPACES+=("${NAMESPACE}")
     mkdir -p ${LOGS_DIR}/${NAMESPACE}/${APIRESOURCE}
     ${BIN} describe ${APIRESOURCE} -n ${NAMESPACE} > ${LOGS_DIR}/${NAMESPACE}/${APIRESOURCE}/describe.log
     ${BIN} get ${APIRESOURCE} -n ${NAMESPACE} -o=yaml > ${LOGS_DIR}/${NAMESPACE}/${APIRESOURCE}/get.yaml
   done
 done
 
+SYSTEM_NAMESPACES=(knative-eventing knative-serving knative-serving-ingress)
 
-# Collect oc adm inspect and extra resources in knative system namespaces.
-
-NAMESPACES=(knative-eventing knative-serving knative-serving-ingress)
-APIRESOURCES=(roles rolebindings serviceaccounts leases)
-
-for NAMESPACE in ${NAMESPACES[@]}
+# Collect oc adm inspect in all namespaces with Serverless resources.
+COLLECT_NAMESPACES+=("${SYSTEM_NAMESPACES[@]}")
+for NAMESPACE in $(echo "${COLLECT_NAMESPACES[@]}" | tr " " "\n" | sort --unique)
 do
   ${BIN} adm inspect namespace ${NAMESPACE} --dest-dir=${LOGS_DIR}
+done
+
+# Collect extra resources in knative system namespaces.
+APIRESOURCES=(roles rolebindings serviceaccounts leases)
+
+for NAMESPACE in ${SYSTEM_NAMESPACES[@]}
+do
   for APIRESOURCE in ${APIRESOURCES[@]}
   do
     mkdir -p ${LOGS_DIR}/namespaces/${NAMESPACE}/extra/${APIRESOURCE}
@@ -38,7 +46,6 @@ do
     ${BIN} get ${APIRESOURCE} -n ${NAMESPACE} -o=yaml > ${LOGS_DIR}/namespaces/${NAMESPACE}/extra/${APIRESOURCE}/get.yaml
   done
 done
-
 
 # Collect clusterroles and clusterrolebindings
 
