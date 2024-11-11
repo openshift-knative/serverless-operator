@@ -14,5 +14,7 @@ default_knative_eventing_kafka_broker_images
 default_knative_backstage_plugins_images
 default_knative_serving_images
 default_knative_ingress_images
+default_knative_kn_plugin_func_images
+default_knative_client_images
 
 envsubst < "$template" > "$target"

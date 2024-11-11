@@ -26,6 +26,7 @@ function default_serverless_operator_images() {
   export SERVERLESS_KNATIVE_OPERATOR=${SERVERLESS_KNATIVE_OPERATOR:-$(latest_registry_redhat_io_image_sha "${serverless_registry}-kn-operator:${CURRENT_VERSION_IMAGES}")}
   export SERVERLESS_OPENSHIFT_KNATIVE_OPERATOR=${SERVERLESS_OPENSHIFT_KNATIVE_OPERATOR:-$(latest_registry_redhat_io_image_sha "${serverless_registry}-openshift-kn-operator:${CURRENT_VERSION_IMAGES}")}
   export SERVERLESS_INGRESS=${SERVERLESS_INGRESS:-$(latest_registry_redhat_io_image_sha "${serverless_registry}-ingress:${CURRENT_VERSION_IMAGES}")}
+  export SERVERLESS_MUST_GATHER=${SERVERLESS_MUST_GATHER:-$(latest_registry_redhat_io_image_sha "${serverless_registry}-must-gather:${CURRENT_VERSION_IMAGES}")}
 
   export SERVERLESS_BUNDLE=${SERVERLESS_BUNDLE:-$(get_bundle_for_version "${CURRENT_VERSION}")}
   export DEFAULT_SERVERLESS_BUNDLE=${DEFAULT_SERVERLESS_BUNDLE:-$(get_bundle_for_version "${CURRENT_VERSION}")}
@@ -209,6 +210,43 @@ function knative_kn_plugin_func_images() {
   export KNATIVE_KN_PLUGIN_FUNC_NODEJS_20_MINIMAL=${KNATIVE_KN_PLUGIN_FUNC_UTIL:-"$(metadata.get dependencies.func.nodejs_20_minimal)"}
   export KNATIVE_KN_PLUGIN_FUNC_OPENJDK_21=${KNATIVE_KN_PLUGIN_FUNC_UTIL:-"$(metadata.get dependencies.func.openjdk_21)"}
   export KNATIVE_KN_PLUGIN_FUNC_PYTHON_39=${KNATIVE_KN_PLUGIN_FUNC_UTIL:-"$(metadata.get dependencies.func.python-39)"}
+}
+
+function knative_kn_plugin_event_images_release() {
+  knative_kn_plugin_event_images "${USE_IMAGE_RELEASE_TAG}"
+}
+
+function default_knative_kn_plugin_event_images() {
+  knative_kn_plugin_event_images "$(metadata.get dependencies.cli)"
+}
+
+function knative_kn_plugin_event_images() {
+  local knative_kn_plugin_event tag app_version
+  tag=${1:?"Provide tag for kn-plugin-event images"}
+
+  app_version=$(get_app_version_from_tag "${tag}")
+  knative_kn_plugin_event="${registry_prefix_quay}${app_version}/kn-plugin-event"
+
+  export KNATIVE_KN_PLUGIN_EVENT_SENDER=${KNATIVE_KN_PLUGIN_EVENT_SENDER:-$(latest_registry_redhat_io_image_sha "${knative_kn_plugin_event}-sender:${tag}")}
+}
+
+function knative_client_images_release() {
+  knative_client_images "${USE_IMAGE_RELEASE_TAG}"
+}
+
+function default_knative_client_images() {
+  knative_client_images "$(metadata.get dependencies.cli)"
+}
+
+function knative_client_images() {
+  local knative_client tag app_version
+  tag=${1:?"Provide tag for kn-client images"}
+
+  app_version=$(get_app_version_from_tag "${tag}")
+  knative_client="${registry_prefix_quay}${app_version}/kn-client"
+
+  export KNATIVE_KN_CLIENT=${KNATIVE_KN_CLIENT:-$(latest_registry_redhat_io_image_sha "${knative_client}-kn:${tag}")}
+  export KNATIVE_KN_CLIENT_CLI_ARTIFACTS=${KNATIVE_KN_CLIENT_CLI_ARTIFACTS:-$(latest_registry_redhat_io_image_sha "${knative_client}-cli-artifacts:${tag}")}
 }
 
 function default_knative_ingress_images() {
