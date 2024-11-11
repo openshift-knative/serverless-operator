@@ -830,7 +830,7 @@ spec:
                 serviceAccountName: knative-operator
                 containers:
                   - name: knative-operator
-                    image: registry.redhat.io/openshift-serverless-1/serverless-openshift-kn-rhel8-operator@sha256:47822a7b95679ea90c1a953f7948c3e8d12e9bbdd002bcc67c86223ae57f0b52
+                    image: registry.redhat.io/openshift-serverless-1/serverless-openshift-kn-rhel8-operator@sha256:60cc08a98a63cd7b235b056c13b34f13a1aeb36e3598a111199d3ef7be6e756b
                     readinessProbe:
                       periodSeconds: 1
                       httpGet:
@@ -995,7 +995,7 @@ spec:
                           - ALL
                 containers:
                   - name: knative-openshift
-                    image: registry.redhat.io/openshift-serverless-1/serverless-kn-operator-rhel8@sha256:5058e9c600d6f3f9553d8f4c6a4dc1f4a43049a3d93240ed505f2f5d3108658b
+                    image: registry.redhat.io/openshift-serverless-1/serverless-kn-operator-rhel8@sha256:d1520e74c889f34be0e42a79271d1689cb3cd50f3566d891ca2ef60e8dcbc565
                     imagePullPolicy: Always
                     readinessProbe:
                       httpGet:
@@ -1177,7 +1177,7 @@ spec:
                 serviceAccountName: knative-openshift-ingress
                 containers:
                   - name: knative-openshift-ingress
-                    image: registry.redhat.io/openshift-serverless-1/serverless-ingress-rhel8@sha256:3eb9407f9505f4aa91158fcd432c03ceca26d8273fa1678cf304079049f0d9ed
+                    image: registry.redhat.io/openshift-serverless-1/serverless-ingress-rhel8@sha256:38c9120e8fbd9baf65c82205b2c8396b6759a08dac9006fe0677a2a3a615e25f
                     imagePullPolicy: Always
                     ports:
                       - containerPort: 9090
@@ -1326,11 +1326,11 @@ spec:
         - knativeeventings.operator.knative.dev
   relatedImages:
     - name: "knative-operator"
-      image: "registry.redhat.io/openshift-serverless-1/serverless-openshift-kn-rhel8-operator@sha256:47822a7b95679ea90c1a953f7948c3e8d12e9bbdd002bcc67c86223ae57f0b52"
+      image: "registry.redhat.io/openshift-serverless-1/serverless-openshift-kn-rhel8-operator@sha256:60cc08a98a63cd7b235b056c13b34f13a1aeb36e3598a111199d3ef7be6e756b"
     - name: "knative-openshift"
-      image: "registry.redhat.io/openshift-serverless-1/serverless-kn-operator-rhel8@sha256:5058e9c600d6f3f9553d8f4c6a4dc1f4a43049a3d93240ed505f2f5d3108658b"
+      image: "registry.redhat.io/openshift-serverless-1/serverless-kn-operator-rhel8@sha256:d1520e74c889f34be0e42a79271d1689cb3cd50f3566d891ca2ef60e8dcbc565"
     - name: "knative-openshift-ingress"
-      image: "registry.redhat.io/openshift-serverless-1/serverless-ingress-rhel8@sha256:3eb9407f9505f4aa91158fcd432c03ceca26d8273fa1678cf304079049f0d9ed"
+      image: "registry.redhat.io/openshift-serverless-1/serverless-ingress-rhel8@sha256:38c9120e8fbd9baf65c82205b2c8396b6759a08dac9006fe0677a2a3a615e25f"
     - name: "IMAGE_queue-proxy"
       image: "registry.redhat.io/openshift-serverless-1/kn-serving-queue-rhel8@sha256:f6f9208f8da20ea331d1d0062814d332931d059a8e7e811b6bc3b82d96ebb498"
     - name: "IMAGE_activator"
