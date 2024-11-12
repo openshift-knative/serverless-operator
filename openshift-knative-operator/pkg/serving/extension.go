@@ -39,6 +39,7 @@ const (
 	defaultDomainTemplate                      = "{{.Name}}-{{.Namespace}}.{{.Domain}}"
 	networkingCertificatesReconcilerLease      = "controller.knative.dev.networking.pkg.certificates.reconciler.reconciler"
 	controlProtocolCertificatesReconcilerLease = "controller.knative.dev.control-protocol.pkg.certificates.reconciler.reconciler"
+	maxRevisionTimeoutSeconds                  = "max-revision-timeout-seconds"
 )
 
 var oldResourceRemoved atomic.Bool
@@ -268,7 +269,7 @@ func (e *extension) cleanupOldResources(ctx context.Context, ns string) error {
 func overrideActivatorTerminationGracePeriod(ks base.KComponent) mf.Transformer {
 	comp := ks.(*operatorv1beta1.KnativeServing)
 	if v := monitoring.GetCmDataforName(comp.Spec.Config, "config-defaults"); v != nil {
-		if maxTimeout, ok := v["max-revision-timeout-seconds"]; ok {
+		if maxTimeout, ok := v[maxRevisionTimeoutSeconds]; ok {
 			return func(u *unstructured.Unstructured) error {
 				if u.GetKind() == "Deployment" && u.GetName() == "activator" {
 					dep := &appsv1.Deployment{}
