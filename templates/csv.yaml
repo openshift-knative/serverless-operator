@@ -190,7 +190,7 @@ spec:
     - kafka
   links:
     - name: Documentation
-      url: https://access.redhat.com/documentation/en-us/openshift_container_platform/__OCP_TARGET__/html/serverless/index
+      url: https://docs.redhat.com/en/documentation/red_hat_openshift_serverless/__VERSION_MAJOR_MINOR__/html/installing_openshift_serverless/index
     - name: Source Repository
       url: https://github.com/openshift-knative/serverless-operator
   maintainers:
