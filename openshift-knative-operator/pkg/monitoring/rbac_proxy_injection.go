@@ -35,7 +35,7 @@ func InjectRbacProxyContainer(deployments sets.Set[string], cfg base.ConfigMapDa
 	}
 	logLevel := DefaultKubeRbacProxyLogLevel
 	if cfg != nil {
-		if deploymentData := getCmDataforName(cfg, "config-deployment"); deploymentData != nil {
+		if deploymentData := GetCmDataforName(cfg, "config-deployment"); deploymentData != nil {
 			if cpuRequest, ok := deploymentData["kube-rbac-proxy-cpu-request"]; ok {
 				resources.Requests["cpu"] = resource.MustParse(cpuRequest)
 			}
@@ -49,7 +49,7 @@ func InjectRbacProxyContainer(deployments sets.Set[string], cfg base.ConfigMapDa
 				resources.Limits["memory"] = resource.MustParse(memLimit)
 			}
 		}
-		if loggingData := getCmDataforName(cfg, "config-logging"); loggingData != nil {
+		if loggingData := GetCmDataforName(cfg, "config-logging"); loggingData != nil {
 			if logLevelStr, ok := loggingData["loglevel.kube-rbac-proxy"]; ok {
 				logLevel, _ = strconv.Atoi(logLevelStr)
 			}
@@ -142,7 +142,7 @@ func ExtensionDeploymentOverrides(overrides []base.WorkloadOverride, deployments
 	return operator.OverridesTransform(ovs, nil)
 }
 
-func getCmDataforName(cfg base.ConfigMapData, name string) map[string]string {
+func GetCmDataforName(cfg base.ConfigMapData, name string) map[string]string {
 	if cfg[name] != nil {
 		return cfg[name]
 	}
