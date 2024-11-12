@@ -38,8 +38,15 @@ function generate_catalog {
       add_channel "${catalog_template}" "$channel" "$(metadata.get 'olm.replaces')"
     done < <(metadata.get 'olm.channels.list[*]')
 
+    level=none
+    # For 4.17 and newer the olm.bundle.object must be converted to olm.csv.metadata
+    # See https://github.com/konflux-ci/build-definitions/blob/main/task/fbc-validation/0.1/USAGE.md#bundle-metadata-in-the-appropriate-format.
+    if versions.ge "$ocp_version" "4.17" ; then
+      level="bundle-object-to-csv-metadata"
+    fi
+
     # Generate full catalog
-    opm alpha render-template basic "${catalog_template}" -oyaml \
+    opm alpha render-template basic --migrate-level="$level" "${catalog_template}" -oyaml \
       > "${index_dir}/v${ocp_version}/catalog/serverless-operator/catalog.yaml"
 
     # Replace quay.io with registry.redhat.io for bundle image.
