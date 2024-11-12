@@ -35,6 +35,7 @@ func TestMakeRoute(t *testing.T) {
 		ingress *networkingv1alpha1.Ingress
 		want    []*routev1.Route
 		wantErr error
+		timeout string
 	}{
 		{
 			name:    "no rules",
@@ -85,6 +86,44 @@ func TestMakeRoute(t *testing.T) {
 					WildcardPolicy: routev1.WildcardPolicyNone,
 				},
 			}},
+		}, {
+			name: "valid, default timeout modified by env var",
+			ingress: ingress(withRules(
+				rule(withHosts([]string{localDomain, externalDomain}))),
+			),
+			want: []*routev1.Route{{
+				ObjectMeta: metav1.ObjectMeta{
+					Labels: map[string]string{
+						networking.IngressLabelKey:        "ingress",
+						serving.RouteLabelKey:             "route1",
+						serving.RouteNamespaceLabelKey:    "default",
+						OpenShiftIngressLabelKey:          "ingress",
+						OpenShiftIngressNamespaceLabelKey: "default",
+					},
+					Annotations: map[string]string{
+						TimeoutAnnotation: "900s",
+					},
+					Namespace: lbNamespace,
+					Name:      routeName0,
+				},
+				Spec: routev1.RouteSpec{
+					Host: externalDomain,
+					To: routev1.RouteTargetReference{
+						Kind:   "Service",
+						Name:   lbService,
+						Weight: ptr.Int32(100),
+					},
+					Port: &routev1.RoutePort{
+						TargetPort: intstr.FromString(HTTPPort),
+					},
+					TLS: &routev1.TLSConfig{
+						Termination:                   routev1.TLSTerminationEdge,
+						InsecureEdgeTerminationPolicy: routev1.InsecureEdgeTerminationPolicyAllow,
+					},
+					WildcardPolicy: routev1.WildcardPolicyNone,
+				},
+			}},
+			timeout: "900",
 		},
 		{
 			name: "valid but disabled",
@@ -375,6 +414,14 @@ func TestMakeRoute(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
+			if test.timeout != "" {
+				t.Setenv(HAProxyTimeoutEnv, test.timeout)
+				DefaultTimeout = getDefaultHAProxyTimeout()
+				defer func() {
+					t.Setenv(HAProxyTimeoutEnv, "")
+					DefaultTimeout = getDefaultHAProxyTimeout()
+				}()
+			}
 			routes, err := MakeRoutes(test.ingress)
 			if test.want != nil && !cmp.Equal(routes, test.want) {
 				t.Errorf("got = %v, want: %v, diff: %s", routes, test.want, cmp.Diff(routes, test.want))
@@ -382,6 +429,7 @@ func TestMakeRoute(t *testing.T) {
 			if !errors.Is(err, test.wantErr) {
 				t.Errorf("got = %v, want: %v", err, test.wantErr)
 			}
+
 		})
 	}
 }

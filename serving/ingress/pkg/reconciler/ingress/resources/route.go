@@ -4,6 +4,8 @@ import (
 	"crypto/sha256"
 	"errors"
 	"fmt"
+	"os"
+	"strconv"
 	"strings"
 
 	socommon "github.com/openshift-knative/serverless-operator/pkg/common"
@@ -27,11 +29,13 @@ const (
 
 	OpenShiftIngressLabelKey          = socommon.ServingDownstreamDomain + "/ingressName"
 	OpenShiftIngressNamespaceLabelKey = socommon.ServingDownstreamDomain + "/ingressNamespace"
+
+	HAProxyTimeoutEnv = "ROUTE_HAPROXY_TIMEOUT"
 )
 
 // DefaultTimeout is set by DefaultMaxRevisionTimeoutSeconds. So, the OpenShift Route's timeout
 // should not have any effect on Knative services by default.
-var DefaultTimeout = fmt.Sprintf("%vs", config.DefaultMaxRevisionTimeoutSeconds)
+var DefaultTimeout = getDefaultHAProxyTimeout()
 
 // ErrNoValidLoadbalancerDomain indicates that the current ingress does not have a DomainInternal field, or
 // said field does not contain a value we can work with.
@@ -181,4 +185,12 @@ func routeName(uid, host string) string {
 
 func hashHost(host string) string {
 	return fmt.Sprintf("%x", sha256.Sum256([]byte(host)))[0:6]
+}
+
+func getDefaultHAProxyTimeout() string {
+	timeout := os.Getenv(HAProxyTimeoutEnv)
+	if _, err := strconv.ParseInt(timeout, 10, 64); err == nil {
+		return fmt.Sprintf("%vs", timeout)
+	}
+	return fmt.Sprintf("%vs", config.DefaultMaxRevisionTimeoutSeconds)
 }

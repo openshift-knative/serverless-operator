@@ -1199,6 +1199,8 @@ spec:
                             fieldPath: metadata.namespace
                       - name: KUBERNETES_MIN_VERSION
                         value: "v1.0.0"
+                      - name: ROUTE_HAPROXY_TIMEOUT
+                        value: "600"
                     securityContext:
                       allowPrivilegeEscalation: false
                       readOnlyRootFilesystem: true
