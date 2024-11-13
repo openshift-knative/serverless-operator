@@ -62,8 +62,8 @@ dependencies:
     operator: 1.14.1
     # Previous versions required for downgrade testing
     previous:
-        serving: knative-v1.12
-        eventing: knative-v1.12
-        eventing_kafka_broker: knative-v1.12
+        serving: knative-v1.14
+        eventing: knative-v1.14
+        eventing_kafka_broker: knative-v1.14
     mustgather:
         image: quay.io/openshift-knative/must-gather
