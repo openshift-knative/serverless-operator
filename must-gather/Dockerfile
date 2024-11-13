@@ -14,6 +14,12 @@ COPY must-gather/bin/* /usr/bin/
 
 RUN microdnf install -y rsync tar
 
+ENV LOGS_DIR="/must-gather"
+RUN mkdir -p $LOGS_DIR && \
+    chown -R 65532:65532 $LOGS_DIR
+
+USER 65532
+
 LABEL \
       com.redhat.component="openshift-serverless-1-must-gather-rhel8-container" \
       name="openshift-serverless-1/svls-must-gather-rhel8" \
