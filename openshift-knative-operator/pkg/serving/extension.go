@@ -185,12 +185,10 @@ func (e *extension) Reconcile(ctx context.Context, comp base.KComponent) error {
 	return monitoring.ReconcileMonitoringForServing(ctx, e.kubeclient, ks)
 }
 
-func (e *extension) Finalize(ctx context.Context, comp base.KComponent) error {
+func (e *extension) Finalize(_ context.Context, comp base.KComponent) error {
 	ks := comp.(*operatorv1beta1.KnativeServing)
-
 	// Also default to Kourier here to pick the right manifest to uninstall.
 	defaultToKourier(ks)
-
 	return nil
 }
 
