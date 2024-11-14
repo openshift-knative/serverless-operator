@@ -7,6 +7,8 @@ function run_testselect {
     hack_tmp_dir=$(mktemp -d)
     git clone --branch main https://github.com/openshift-knative/hack "$hack_tmp_dir"
     pushd "$hack_tmp_dir" || return $?
+    # Reset to golang 1.21 compatible version
+    git reset --hard 4f091fa4be68d8122775b009c21c5c0f2d7c7a6c
     go install github.com/openshift-knative/hack/cmd/testselect
     popd || return $?
     rm -rf "$hack_tmp_dir"
