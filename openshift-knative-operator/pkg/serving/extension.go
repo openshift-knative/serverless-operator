@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 	"sync/atomic"
 
@@ -13,11 +14,14 @@ import (
 	"github.com/openshift-knative/serverless-operator/pkg/client/clientset/versioned"
 	ocpclient "github.com/openshift-knative/serverless-operator/pkg/client/injection/client"
 	socommon "github.com/openshift-knative/serverless-operator/pkg/common"
+	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/tools/cache"
 	"knative.dev/operator/pkg/apis/operator/base"
 	operatorv1beta1 "knative.dev/operator/pkg/apis/operator/v1beta1"
@@ -35,6 +39,7 @@ const (
 	defaultDomainTemplate                      = "{{.Name}}-{{.Namespace}}.{{.Domain}}"
 	networkingCertificatesReconcilerLease      = "controller.knative.dev.networking.pkg.certificates.reconciler.reconciler"
 	controlProtocolCertificatesReconcilerLease = "controller.knative.dev.control-protocol.pkg.certificates.reconciler.reconciler"
+	maxRevisionTimeoutSeconds                  = "max-revision-timeout-seconds"
 )
 
 var oldResourceRemoved atomic.Bool
@@ -90,6 +95,7 @@ func (e *extension) Transformers(ks base.KComponent) []mf.Transformer {
 	}
 	tf = append(tf, enableSecretInformerFilteringTransformers(ks)...)
 	tf = append(tf, monitoring.GetServingTransformers(ks)...)
+	tf = append(tf, overrideActivatorTerminationGracePeriod(ks))
 	return append(tf, common.DeprecatedAPIsTranformers(e.kubeclient.Discovery())...)
 }
 
@@ -257,5 +263,29 @@ func (e *extension) cleanupOldResources(ctx context.Context, ns string) error {
 		return fmt.Errorf("failed to delete old internal TLS secret: %w", err)
 	}
 
+	return nil
+}
+
+func overrideActivatorTerminationGracePeriod(ks base.KComponent) mf.Transformer {
+	comp := ks.(*operatorv1beta1.KnativeServing)
+	if v := monitoring.GetCmDataforName(comp.Spec.Config, "config-defaults"); v != nil {
+		if maxTimeout, ok := v[maxRevisionTimeoutSeconds]; ok {
+			return func(u *unstructured.Unstructured) error {
+				if u.GetKind() == "Deployment" && u.GetName() == "activator" {
+					dep := &appsv1.Deployment{}
+					if err := scheme.Scheme.Convert(u, dep, nil); err != nil {
+						return err
+					}
+					parsedMaxTimeout, err := strconv.ParseInt(maxTimeout, 10, 64)
+					if err != nil {
+						return err
+					}
+					dep.Spec.Template.Spec.TerminationGracePeriodSeconds = ptr.Int64(parsedMaxTimeout)
+					return scheme.Scheme.Convert(dep, u, nil)
+				}
+				return nil
+			}
+		}
+	}
 	return nil
 }
