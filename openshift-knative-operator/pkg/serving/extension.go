@@ -188,13 +188,6 @@ func (e *extension) Reconcile(ctx context.Context, comp base.KComponent) error {
 func (e *extension) Finalize(ctx context.Context, comp base.KComponent) error {
 	ks := comp.(*operatorv1beta1.KnativeServing)
 
-	// Delete the ingress namespaces manually. Manifestival won't do it for us in upgrade cases.
-	// See: https://github.com/manifestival/manifestival/issues/85
-	err := e.kubeclient.CoreV1().Namespaces().Delete(ctx, kourierNamespace(ks.GetNamespace()), metav1.DeleteOptions{})
-	if err != nil && !apierrors.IsNotFound(err) {
-		return fmt.Errorf("failed to remove ingress namespace: %w", err)
-	}
-
 	// Also default to Kourier here to pick the right manifest to uninstall.
 	defaultToKourier(ks)
 

@@ -1,8 +1,61 @@
 diff --git a/vendor/knative.dev/operator/pkg/reconciler/knativeserving/knativeserving.go b/vendor/knative.dev/operator/pkg/reconciler/knativeserving/knativeserving.go
-index 4b8eca0b0..fb3c1a57c 100644
+index 4b8eca0b0..0398dfbf9 100644
 --- a/vendor/knative.dev/operator/pkg/reconciler/knativeserving/knativeserving.go
 +++ b/vendor/knative.dev/operator/pkg/reconciler/knativeserving/knativeserving.go
-@@ -117,6 +117,10 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, ks *v1beta1.KnativeServi
+@@ -19,14 +19,15 @@ package knativeserving
+ import (
+ 	"context"
+ 	"fmt"
++	"os"
+
+-	mf "github.com/manifestival/manifestival"
+ 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+ 	"k8s.io/client-go/kubernetes"
+
+ 	"knative.dev/pkg/logging"
+ 	pkgreconciler "knative.dev/pkg/reconciler"
+-
++	mf "github.com/manifestival/manifestival"
++	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+ 	"knative.dev/operator/pkg/apis/operator/base"
+ 	"knative.dev/operator/pkg/apis/operator/v1beta1"
+ 	clientset "knative.dev/operator/pkg/client/clientset/versioned"
+@@ -86,7 +87,12 @@ func (r *Reconciler) FinalizeKind(ctx context.Context, original *v1beta1.Knative
+ 		logger.Error("Unable to fetch installed manifest; no cluster-scoped resources will be finalized", err)
+ 		return nil
+ 	}
+-
++	// we need this to apply the correct namespace to the resources otherwise it defaults to knative-serving
++	*manifest, err = manifest.Transform(overrideKourierNamespace(original))
++	if err != nil {
++		logger.Error("Unable to apply kourier namespace transform", err)
++		return nil
++	}
+ 	if manifest == nil {
+ 		return nil
+ 	}
+@@ -97,6 +103,20 @@ func (r *Reconciler) FinalizeKind(ctx context.Context, original *v1beta1.Knative
+ 	return nil
+ }
+
++func overrideKourierNamespace(ks base.KComponent) mf.Transformer {
++	if ns, required := os.LookupEnv("REQUIRED_SERVING_INGRESS_NAMESPACE"); required {
++		nsInjector := mf.InjectNamespace(ns)
++		return func(u *unstructured.Unstructured) error {
++			provider := u.GetLabels()["networking.knative.dev/ingress-provider"]
++			if provider != "kourier" {
++				return nil
++			}
++			return nsInjector(u)
++		}
++	}
++	return nil
++}
++
+ // ReconcileKind compares the actual state with the desired, and attempts to
+ // converge the two.
+ func (r *Reconciler) ReconcileKind(ctx context.Context, ks *v1beta1.KnativeServing) pkgreconciler.Event {
+@@ -117,6 +137,10 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, ks *v1beta1.KnativeServi
  		security.AppendTargetSecurity,
  		common.AppendAdditionalManifests,
  		r.appendExtensionManifests,
@@ -13,3 +66,4 @@ index 4b8eca0b0..fb3c1a57c 100644
  		r.transform,
  		manifests.Install,
  		common.CheckDeployments,
+
