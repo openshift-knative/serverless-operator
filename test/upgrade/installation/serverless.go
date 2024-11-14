@@ -137,29 +137,35 @@ func DowngradeServerless(ctx *test.Context) error {
 	}
 
 	knativeServing := test.ServingNamespace
+	servingVersion := strings.TrimPrefix(test.Flags.ServingVersionPrevious, "v")
+	servingInStateFunc := v1beta1.IsKnativeServingWithVersionReady(servingVersion)
 	if _, err := v1beta1.WaitForKnativeServingState(ctx,
 		knativeServing,
 		knativeServing,
-		v1beta1.IsKnativeServingWithVersionReady(strings.TrimPrefix(test.Flags.ServingVersionPrevious, "v")),
+		servingInStateFunc,
 	); err != nil {
-		return fmt.Errorf("serving downgrade failed: %w", err)
+		return fmt.Errorf("expected ready KnativeServing at version %s: %w", servingVersion, err)
 	}
 
 	knativeEventing := test.EventingNamespace
+	eventingVersion := strings.TrimPrefix(test.Flags.EventingVersionPrevious, "v")
+	eventingInStateFunc := v1beta1.IsKnativeEventingWithVersionReady(eventingVersion)
 	if _, err := v1beta1.WaitForKnativeEventingState(ctx,
 		knativeEventing,
 		knativeEventing,
-		v1beta1.IsKnativeEventingWithVersionReady(strings.TrimPrefix(test.Flags.EventingVersionPrevious, "v")),
+		eventingInStateFunc,
 	); err != nil {
-		return fmt.Errorf("eventing downgrade failed: %w", err)
+		return fmt.Errorf("expected ready KnativeEventing at version %s: %w", eventingVersion, err)
 	}
 
+	knativeKafkaVersion := strings.TrimPrefix(test.Flags.KafkaVersionPrevious, "v")
+	kafkaInStateFunc := v1alpha1.IsKnativeKafkaWithVersionReady(knativeKafkaVersion)
 	if _, err := v1alpha1.WaitForKnativeKafkaState(ctx,
 		"knative-kafka",
 		knativeEventing,
-		v1alpha1.IsKnativeKafkaWithVersionReady(strings.TrimPrefix(test.Flags.KafkaVersionPrevious, "v")),
+		kafkaInStateFunc,
 	); err != nil {
-		return fmt.Errorf("knative kafka downgrade failed: %w", err)
+		return fmt.Errorf("expected ready KnativeKafka at version %s: %w", knativeKafkaVersion, err)
 	}
 
 	return nil
