@@ -23,8 +23,9 @@ func ServerlessDowngradeOperations(ctx *test.Context, glob environment.GlobalEnv
 			if err := installation.DowngradeServerless(ctx); err != nil {
 				c.T.Error("Serverless downgrade failed:", err)
 			}
-			installation.CleanupTriggerv2ConsumerGroups(c, glob)
-			installation.CleanupTriggerv2Deployments(c, glob)
+			// Tests are disabled on z-stream releases. It was relevant for 1.33 -> 1.34 upgrade/downgrade scenario
+			//installation.CleanupTriggerv2ConsumerGroups(c, glob)
+			//installation.CleanupTriggerv2Deployments(c, glob)
 		}),
 	}
 }
