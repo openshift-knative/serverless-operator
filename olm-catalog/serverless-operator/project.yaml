@@ -31,6 +31,8 @@ requirements:
     min: '4.14'
     max: '4.18'
     label: 'v4.14'
+    # OCP stream for kube-rbac-proxy image.
+    kube-rbac-proxy: "4.17"
 dependencies:
   serving: knative-v1.15
   # serving midstream branch name

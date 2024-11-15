@@ -40,7 +40,7 @@ function default_serverless_operator_images() {
     ocp_version=$(oc get clusterversion version -o jsonpath='{.status.desired.version}')
     ocp_version=$(versions.major_minor "$ocp_version")
   else
-    ocp_version=$(metadata.get 'requirements.ocpVersion.list[-1]')
+    ocp_version=$(metadata.get 'requirements.ocpVersion.min')
   fi
   ocp_version=${ocp_version/./} # 4.17 -> 417
 
