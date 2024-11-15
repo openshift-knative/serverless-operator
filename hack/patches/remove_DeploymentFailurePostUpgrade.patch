@@ -1,0 +1,14 @@
+# See https://github.com/openshift-knative/serverless-operator/pull/2748#issuecomment-2208313010
+#
+diff --git a/vendor/knative.dev/serving/test/upgrade/postupgrade.go b/vendor/knative.dev/serving/test/upgrade/postupgrade.go
+index 61f5b1121..299e9a4c2 100644
+--- a/vendor/knative.dev/serving/test/upgrade/postupgrade.go
++++ b/vendor/knative.dev/serving/test/upgrade/postupgrade.go
+@@ -42,7 +42,6 @@ func ServingPostUpgradeTests() []pkgupgrade.Operation {
+ 		CreateNewServicePostUpgradeTest(),
+ 		InitialScalePostUpgradeTest(),
+ 		CRDStoredVersionPostUpgradeTest(),
+-		DeploymentFailurePostUpgrade(),
+ 	}
+ }
+ 
