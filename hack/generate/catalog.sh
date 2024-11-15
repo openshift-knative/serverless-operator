@@ -160,7 +160,7 @@ function upgrade_service_mesh_proxy_image() {
 function upgrade_kube_rbac_proxy_image() {
   local image image_stream
   image=$(metadata.get 'dependencies.kube_rbac_proxy')
-  image_stream=$(metadata.get 'requirements.ocpVersion.list[-1]')
+  image_stream=$(metadata.get 'requirements.ocpVersion.kube-rbac-proxy')
   image=$(latest_konflux_image_sha "${image}" "v${image_stream}")
   yq w --inplace olm-catalog/serverless-operator/project.yaml 'dependencies.kube_rbac_proxy' "${image}"
 }
