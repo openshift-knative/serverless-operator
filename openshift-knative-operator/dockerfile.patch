@@ -1,10 +1,10 @@
 diff --git a/openshift-knative-operator/Dockerfile b/openshift-knative-operator/Dockerfile
-index 45fc30a2e..3ab357b44 100755
+index 1791886dc..09210c8b7 100755
 --- a/openshift-knative-operator/Dockerfile
 +++ b/openshift-knative-operator/Dockerfile
-@@ -19,6 +19,9 @@ RUN microdnf install tzdata
- 
+@@ -19,6 +19,9 @@ ARG VERSION=
  COPY --from=builder /usr/bin/main /usr/bin/openshift-knative-operator
+ COPY LICENSE /licenses/
  
 +ENV KO_DATA_PATH="/var/run/ko"
 +COPY openshift-knative-operator/cmd/openshift-knative-operator/kodata $KO_DATA_PATH

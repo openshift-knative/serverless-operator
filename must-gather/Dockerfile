@@ -11,6 +11,7 @@ COPY --from=cli-artifacts /usr/share/openshift/linux_$TARGETARCH/oc /usr/bin/oc
 
 # Copy all collection scripts to /usr/bin
 COPY must-gather/bin/* /usr/bin/
+COPY LICENSE /licenses/
 
 RUN microdnf install -y rsync tar
 
