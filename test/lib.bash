@@ -372,7 +372,7 @@ function downstream_kitchensink_e2e_tests {
 
   logger.info "Running Knative kitchensink tests"
 
-  local images_file
+  local images_file, workloads_patch
 
   images_file="$(dirname "$(realpath "${BASH_SOURCE[0]}")")/images-rekt.yaml"
 
@@ -382,6 +382,16 @@ function downstream_kitchensink_e2e_tests {
     oc -n openshift-config get secret pull-secret -o yaml | \
       sed -e 's/name: .*/name: kn-test-image-pull-secret/' -e 's/namespace: .*/namespace: default/' | oc apply -f -
   fi
+
+  # Patch dispatchers CPU requests to 300m for higher density (kitchensink tests do not generate high dataplane load)
+  workloads_patch='{"spec": {"workloads": ['\
+$( (for dispatcher in kafka-source-dispatcher kafka-channel-dispatcher kafka-broker-dispatcher; \
+  do echo '{"name":"'"$dispatcher"'","resources":[{"container":"'"$dispatcher"'","requests":{"cpu":"300m"}}]}'; \
+done;) | paste -sd "," - )']}}'
+
+  oc patch knativekafka.operator.serverless.openshift.io knative-kafka -n "${EVENTING_NAMESPACE}" \
+    --type 'merge' \
+    --patch "$workloads_patch"
 
   # Used by the tests to get common ConfigMaps like config-logging
   SYSTEM_NAMESPACE="${SYSTEM_NAMESPACE:-"knative-eventing"}"
