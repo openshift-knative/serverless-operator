@@ -44,6 +44,12 @@ function install_catalogsource {
     # Generate CSV from template to properly substitute operator images from env variables.
     "${rootdir}/hack/generate/csv.sh" templates/csv.yaml "$csv"
 
+    # Replace registry.redhat.io references with Konflux quay.io for test purposes as
+    # images in the former location are not published yet.
+    sed -ri "s#(.*)${registry_redhat_io}/(.*@sha[0-9]+:[a-z0-9]+.*)#\1${registry_quay}/\2#" "$csv"
+    # Remove rhel suffix.
+    sed -ri "s#(.*${registry_quay}/.*)-rhel[[:digit:]]+(.*)#\1\2#" "$csv"
+
     cat "$csv"
 
     build_image "serverless-bundle" "${rootdir}" "olm-catalog/serverless-operator/Dockerfile"
@@ -79,12 +85,19 @@ function install_catalogsource {
 
     logger.debug 'Undo potential changes to the index Dockerfile.'
     mv "${rootdir}/_output/bkp.Dockerfile" "${rootdir}/${index_dorkerfile_path}"
+  else
+    tmpfile=$(mktemp /tmp/icsp.XXXXXX.yaml)
+    # Use ImageContentSourcePolicy only with the FBC from Konflux as
+    # updating machine config pools takes a while.
+    create_image_content_source_policy "$index_image" "$registry_redhat_io" "$registry_quay" "$tmpfile"
+    [ -n "$OPENSHIFT_CI" ] && cat "$tmpfile"
+    if oc apply -f "$tmpfile"; then
+      echo "Wait for machineconfigpool update to start"
+      timeout 120 "[[ True != \$(oc get machineconfigpool --no-headers=true '-o=custom-columns=UPDATING:.status.conditions[?(@.type==\"Updating\")].status' | uniq) ]]"
+      echo "Wait until all machineconfigpools are updated"
+      timeout 1800 "[[ True != \$(oc get machineconfigpool --no-headers=true '-o=custom-columns=UPDATED:.status.conditions[?(@.type==\"Updated\")].status' | uniq) ]]"
+    fi
   fi
-
-  tmpfile=$(mktemp /tmp/icsp.XXXXXX.yaml)
-  create_image_content_source_policy "$index_image" "$registry_redhat_io" "$registry_quay" "$tmpfile"
-  oc apply -f "$tmpfile"
-  [ -n "$OPENSHIFT_CI" ] && cat "$output_file"
 
   logger.info 'Install the catalogsource.'
   cat <<EOF | oc apply -n "$OLM_NAMESPACE" -f -
