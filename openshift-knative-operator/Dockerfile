@@ -19,6 +19,9 @@ ARG VERSION=
 COPY --from=builder /usr/bin/main /usr/bin/openshift-knative-operator
 COPY LICENSE /licenses/
 
+ENV KO_DATA_PATH="/var/run/ko"
+COPY openshift-knative-operator/cmd/openshift-knative-operator/kodata $KO_DATA_PATH
+
 USER 65532
 
 LABEL \

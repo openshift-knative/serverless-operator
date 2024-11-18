@@ -19,6 +19,8 @@ ARG VERSION=
 COPY --from=builder /usr/bin/main /usr/bin/knative-operator
 COPY LICENSE /licenses/
 
+COPY knative-operator/deploy /deploy
+
 USER 65532
 
 LABEL \
