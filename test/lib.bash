@@ -424,7 +424,7 @@ function downstream_soak_tests {
     --type 'merge' \
     --patch '{"spec": {"workloads": [{"name":"kafka-source-dispatcher","resources":[{"container":"kafka-source-dispatcher","requests":{"cpu":"300m"}}]}]}}'
 
-  RUN_FLAGS=(-failfast -timeout=240m -parallel=512)
+  RUN_FLAGS=(-failfast -timeout=150m -parallel=512)
   if [ -n "${OPERATOR_TEST_FLAGS:-}" ]; then
     IFS=" " read -r -a RUN_FLAGS <<< "$OPERATOR_TEST_FLAGS"
   fi
