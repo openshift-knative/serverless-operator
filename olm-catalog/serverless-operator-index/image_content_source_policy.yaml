@@ -80,6 +80,10 @@ spec:
       source: "registry.redhat.io/openshift-serverless-1/kn-backstage-plugins-eventmesh-rhel8"
     - mirrors: ["quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-cli-artifacts"]
       source: "registry.redhat.io/openshift-serverless-1/kn-cli-artifacts-rhel8"
+    - mirrors: ["quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-client-cli-artifacts"]
+      source: "registry.redhat.io/openshift-serverless-1/kn-client-cli-artifacts-rhel8"
+    - mirrors: ["quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-client-kn"]
+      source: "registry.redhat.io/openshift-serverless-1/kn-client-kn-rhel8"
     - mirrors: ["quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-ekb-dispatcher"]
       source: "registry.redhat.io/openshift-serverless-1/kn-ekb-dispatcher-rhel8"
     - mirrors: ["quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-ekb-kafka-controller"]
@@ -114,6 +118,8 @@ spec:
       source: "registry.redhat.io/openshift-serverless-1/kn-eventing-mtping-rhel8"
     - mirrors: ["quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-eventing-webhook"]
       source: "registry.redhat.io/openshift-serverless-1/kn-eventing-webhook-rhel8"
+    - mirrors: ["quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-plugin-event-sender"]
+      source: "registry.redhat.io/openshift-serverless-1/kn-plugin-event-sender-rhel8"
     - mirrors: ["quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-plugin-func-func-util"]
       source: "registry.redhat.io/openshift-serverless-1/kn-plugin-func-func-util-rhel8"
     - mirrors: ["quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-serving-activator"]
@@ -144,6 +150,8 @@ spec:
       source: "registry.redhat.io/openshift-serverless-1/serverless-ingress-rhel8"
     - mirrors: ["quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/serverless-kn-operator"]
       source: "registry.redhat.io/openshift-serverless-1/serverless-kn-operator-rhel8"
+    - mirrors: ["quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/serverless-must-gather"]
+      source: "registry.redhat.io/openshift-serverless-1/serverless-must-gather-rhel8"
     - mirrors: ["quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/serverless-openshift-kn-operator"]
       source: "registry.redhat.io/openshift-serverless-1/serverless-openshift-kn-rhel8-operator"
     - mirrors: ["quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/serverless-bundle"]
