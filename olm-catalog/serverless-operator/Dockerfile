@@ -29,4 +29,5 @@ LABEL \
       distribution-scope="authoritative-source-only" \
       url="https://catalog.redhat.com/software/container-stacks/detail/5ec53fcb110f56bd24f2ddc5" \
       release="1.35.0" \
+      io.openshift.tags="bundle" \
       vendor="Red Hat, Inc."
