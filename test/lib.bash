@@ -144,6 +144,24 @@ function downstream_serving_e2e_tests {
       --kubeconfigs "${kubeconfigs_str}" \
       --imagetemplate "${IMAGE_TEMPLATE}" \
       "$@"
+
+    if [[ $(oc get Infrastructure cluster -ojson | jq .spec.platformSpec.type) == "\"AWS\"" ]]; then
+      oc -n openshift-ingress-operator patch ingresscontroller/default --type=merge --patch='{"spec":{"endpointPublishingStrategy": {"type":"LoadBalancerService", "loadBalancer": {"scope":"External", "providerParameters":{"type":"AWS", "aws": {"type":"Classic", "classicLoadBalancer": {"connectionIdleTimeout":"20m"}}}}}}}'
+      oc patch knativeservings.operator.knative.dev knative-serving -n "${SERVING_NAMESPACE}" \
+         --type 'merge' \
+         --patch '{"spec": {"config": {"defaults": {"max-revision-timeout-seconds": "900", "revision-response-start-timeout-seconds": "700", "revision-timeout-seconds": "800"} }}}'
+
+      go_test_e2e "${RUN_FLAGS[@]}" ./test/servinge2e/servicemesh/longrunning \
+        --kubeconfigs "${kubeconfigs_str}" \
+        --imagetemplate "${IMAGE_TEMPLATE}" \
+        "$@"
+
+      oc -n openshift-ingress-operator patch ingresscontroller/default --type=merge --patch='{"spec":{"endpointPublishingStrategy": {"type":"LoadBalancerService", "loadBalancer": {"scope":"External", "providerParameters":{"type":"AWS", "aws": {"type":"Classic", "classicLoadBalancer": {"connectionIdleTimeout":null}}}}}}}'
+      oc patch knativeservings.operator.knative.dev knative-serving -n "${SERVING_NAMESPACE}" \
+         --type 'merge' \
+         --patch '{"spec": {"config": {"defaults": {"max-revision-timeout-seconds": null, "revision-response-start-timeout-seconds": null, "revision-timeout-seconds": "300"} }}}'
+    fi
+
   else
     go_test_e2e "${RUN_FLAGS[@]}" ./test/servinge2e/ ./test/servinge2e/kourier/ \
       --kubeconfigs "${kubeconfigs_str}" \

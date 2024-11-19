@@ -94,6 +94,7 @@ DEFAULT_IMAGE_TEMPLATE=$(
   cat <<-EOF
 {{- with .Name }}
 {{- if eq . "httpproxy" }}${QUAY_REGISTRY}/serving/{{.}}:${KNATIVE_SERVING_VERSION#knative-}
+{{- else if eq . "autoscale" }}${QUAY_REGISTRY}/serving/{{.}}:${KNATIVE_SERVING_VERSION#knative-}
 {{- else if eq . "recordevents" }}${QUAY_REGISTRY}/eventing/{{.}}:${KNATIVE_EVENTING_VERSION#knative-}
 {{- else if eq . "wathola-forwarder" }}${QUAY_REGISTRY}/eventing/{{.}}:${KNATIVE_EVENTING_VERSION#knative-}
 {{- else if eq . "kafka" }}quay.io/strimzi/kafka:latest-kafka-3.4.0

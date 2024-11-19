@@ -416,10 +416,8 @@ func TestMakeRoute(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			if test.timeout != "" {
 				t.Setenv(HAProxyTimeoutEnv, test.timeout)
-				DefaultTimeout = getDefaultHAProxyTimeout()
 				defer func() {
 					t.Setenv(HAProxyTimeoutEnv, "")
-					DefaultTimeout = getDefaultHAProxyTimeout()
 				}()
 			}
 			routes, err := MakeRoutes(test.ingress)

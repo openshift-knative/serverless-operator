@@ -23,6 +23,7 @@ const (
 	TimeoutAnnotation                = "haproxy.router.openshift.io/timeout"
 	DisableRouteAnnotation           = socommon.ServingDownstreamDomain + "/disableRoute"
 	EnablePassthroughRouteAnnotation = socommon.ServingDownstreamDomain + "/enablePassthrough"
+	SetRouteTimeoutAnnotation        = socommon.ServingDownstreamDomain + "/setRouteTimeout"
 
 	HTTPPort  = "http2"
 	HTTPSPort = "https"
@@ -35,7 +36,7 @@ const (
 
 // DefaultTimeout is set by DefaultMaxRevisionTimeoutSeconds. So, the OpenShift Route's timeout
 // should not have any effect on Knative services by default.
-var DefaultTimeout = getDefaultHAProxyTimeout()
+var DefaultTimeout = fmt.Sprintf("%vs", config.DefaultMaxRevisionTimeoutSeconds)
 
 // ErrNoValidLoadbalancerDomain indicates that the current ingress does not have a DomainInternal field, or
 // said field does not contain a value we can work with.
@@ -87,7 +88,11 @@ func makeRoute(ci *networkingv1alpha1.Ingress, host string, rule networkingv1alp
 	}
 
 	// Set timeout for OpenShift Route
-	annotations[TimeoutAnnotation] = DefaultTimeout
+	timeout, err := getHAProxyTimeout(ci)
+	if err != nil {
+		return nil, err
+	}
+	annotations[TimeoutAnnotation] = timeout
 
 	labels := kmap.Union(ci.Labels, map[string]string{
 		networking.IngressLabelKey:        ci.GetName(),
@@ -187,10 +192,21 @@ func hashHost(host string) string {
 	return fmt.Sprintf("%x", sha256.Sum256([]byte(host)))[0:6]
 }
 
-func getDefaultHAProxyTimeout() string {
-	timeout := os.Getenv(HAProxyTimeoutEnv)
-	if _, err := strconv.ParseInt(timeout, 10, 64); err == nil {
-		return fmt.Sprintf("%vs", timeout)
+func getHAProxyTimeout(ci *networkingv1alpha1.Ingress) (string, error) {
+	var timeout string
+	if ci != nil && ci.Annotations[SetRouteTimeoutAnnotation] != "" {
+		timeout = ci.Annotations[SetRouteTimeoutAnnotation]
+		if _, err := strconv.ParseInt(timeout, 10, 64); err != nil {
+			return "", fmt.Errorf("invalid timeout value: %s", timeout)
+		}
+		return fmt.Sprintf("%vs", timeout), nil
 	}
-	return fmt.Sprintf("%vs", config.DefaultMaxRevisionTimeoutSeconds)
+	timeout = os.Getenv(HAProxyTimeoutEnv)
+	if timeout != "" {
+		if _, err := strconv.ParseInt(timeout, 10, 64); err != nil {
+			return "", fmt.Errorf("invalid timeout value: %s", timeout)
+		}
+		return fmt.Sprintf("%vs", timeout), nil
+	}
+	return DefaultTimeout, nil
 }
