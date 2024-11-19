@@ -28,7 +28,7 @@ spec:
         - GO_RUNTIME=registry.access.redhat.com/ubi8/ubi-minimal
         - JAVA_BUILDER=registry.access.redhat.com/ubi8/openjdk-21
         - JAVA_RUNTIME=registry.access.redhat.com/ubi8/openjdk-21-runtime
-        - OPM_IMAGE=registry.redhat.io/openshift4/ose-operator-registry-rhel9:v4.15
+        - OPM_IMAGE=brew.registry.redhat.io/rh-osbs/openshift-ose-operator-registry-rhel9:v4.15
     - name: git-url
       value: '{{source_url}}'
     - name: hermetic
