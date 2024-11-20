@@ -7,7 +7,7 @@ FROM $RUNTIME
 
 ARG TARGETARCH
 
-COPY --from=cli-artifacts /usr/share/openshift/linux_$TARGETARCH/oc /usr/bin/oc
+COPY --from=cli-artifacts /usr/share/openshift/linux_$TARGETARCH/oc.rhel8 /usr/bin/oc
 
 # Copy all collection scripts to /usr/bin
 COPY must-gather/bin/* /usr/bin/
