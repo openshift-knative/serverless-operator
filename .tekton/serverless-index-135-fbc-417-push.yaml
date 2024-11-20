@@ -23,11 +23,11 @@ spec:
     - name: build-args
       value:
         - VERSION=1.35.0
-        - CLI_ARTIFACTS=registry.redhat.io/openshift4/ose-cli-artifacts:v4.14
         - GO_BUILDER=brew.registry.redhat.io/rh-osbs/openshift-golang-builder:rhel_8_golang_1.22
         - GO_RUNTIME=registry.access.redhat.com/ubi8/ubi-minimal
         - JAVA_BUILDER=registry.access.redhat.com/ubi8/openjdk-21
         - JAVA_RUNTIME=registry.access.redhat.com/ubi8/openjdk-21-runtime
+        - CLI_ARTIFACTS=registry.redhat.io/openshift4/ose-cli:v4.14
         - OPM_IMAGE=brew.registry.redhat.io/rh-osbs/openshift-ose-operator-registry-rhel9:v4.17
     - name: git-url
       value: '{{source_url}}'
