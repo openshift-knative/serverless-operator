@@ -372,7 +372,7 @@ function downstream_kitchensink_e2e_tests {
 
   logger.info "Running Knative kitchensink tests"
 
-  local images_file, workloads_patch
+  local images_file workloads_patch
 
   images_file="$(dirname "$(realpath "${BASH_SOURCE[0]}")")/images-rekt.yaml"
 
