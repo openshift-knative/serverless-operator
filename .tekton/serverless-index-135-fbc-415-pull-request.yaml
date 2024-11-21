@@ -38,6 +38,8 @@ spec:
       value: 5d
     - name: output-image
       value: quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135-fbc-415/serverless-index-135-fbc-415:on-pr-{{revision}}
+    - name: skip-fbc-related-image-check
+      value: "true"
     - name: revision
       value: '{{revision}}'
   pipelineRef:

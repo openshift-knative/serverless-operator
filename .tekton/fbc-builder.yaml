@@ -50,6 +50,10 @@ spec:
     - name: workspace
       workspace: workspace
   params:
+  - default: "false"
+    description: Skip fbc-related-image-check
+    name: skip-fbc-related-image-check
+    type: string
   - default: []
     description: Array of --build-arg values ("arg=value" strings) for buildah
     name: build-args
@@ -120,6 +124,26 @@ spec:
     name: CHAINS-GIT_COMMIT
     value: $(tasks.clone-repository.results.commit)
   tasks:
+  - name: fbc-related-image-check
+    runAfter:
+    - fbc-validate
+    taskRef:
+      params:
+      - name: name
+        value: fbc-related-image-check
+      - name: bundle
+        value: quay.io/konflux-ci/tekton-catalog/task-fbc-related-image-check:0.1@sha256:17dc33ef07a8f87d1a8a2f6d4f496123e0db5d29bbe7ff7956462dc5d95c3170
+      - name: kind
+        value: task
+      resolver: bundles
+    when:
+    - input: $(params.skip-fbc-related-image-check)
+      operator: in
+      values:
+      - "false"
+    workspaces:
+    - name: workspace
+      workspace: workspace
   - name: build-container
     params:
     - name: BUILD_ARGS
@@ -309,26 +333,6 @@ spec:
         value: fbc-validation
       - name: bundle
         value: quay.io/konflux-ci/tekton-catalog/task-fbc-validation:0.1@sha256:da1d06650b27433da952b08ba846dd996025e858a54ed7337d61fbf2f954e1fe
-      - name: kind
-        value: task
-      resolver: bundles
-    when:
-    - input: $(params.skip-checks)
-      operator: in
-      values:
-      - "false"
-    workspaces:
-    - name: workspace
-      workspace: workspace
-  - name: fbc-related-image-check
-    runAfter:
-    - fbc-validate
-    taskRef:
-      params:
-      - name: name
-        value: fbc-related-image-check
-      - name: bundle
-        value: quay.io/konflux-ci/tekton-catalog/task-fbc-related-image-check:0.1@sha256:17dc33ef07a8f87d1a8a2f6d4f496123e0db5d29bbe7ff7956462dc5d95c3170
       - name: kind
         value: task
       resolver: bundles
