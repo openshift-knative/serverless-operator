@@ -8,4 +8,5 @@ const (
 	RecordEventsImg     = "recordevents"
 	WatholaForwarderImg = "wathola-forwarder"
 	KafkaImg            = "kafka"
+	AutoscaleImg        = "autoscale"
 )
