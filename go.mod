@@ -1,9 +1,6 @@
 module github.com/openshift-knative/serverless-operator
 
 go 1.22.0
-
-toolchain go1.22.7
-
 require (
 	github.com/blang/semver/v4 v4.0.0
 	github.com/coreos/go-semver v0.3.1
@@ -23,7 +20,7 @@ require (
 	github.com/stretchr/testify v1.9.0
 	go.uber.org/zap v1.27.0
 	golang.org/x/sync v0.9.0
-	google.golang.org/grpc v1.67.1
+	google.golang.org/grpc v1.68.0
 	k8s.io/api v0.31.0
 	k8s.io/apimachinery v0.31.0
 	k8s.io/client-go v0.31.0
