@@ -6,12 +6,22 @@ set -Eeuo pipefail
 source "$(dirname "${BASH_SOURCE[0]}")/../lib/__sources__.bash"
 
 function add_component {
+  local component image_ref revision
+  component=${2}
+  image_ref=${3}
+  revision="$(skopeo inspect --no-tags=true "docker://${image_ref}" | jq -r '.Labels["vcs-ref"]')"
+  git_repo="$(kubectl get component ${component} -ojsonpath='{.spec.source.git.url}')"
+
   cat << EOF | yq write --inplace --script - "$1"
 - command: update
   path: spec.components[+]
   value:
-    name: "${2}"
-    containerImage: "${3}"
+    name: "${component}"
+    containerImage: "${image_ref}"
+    source:
+      git:
+        url: "${git_repo}"
+        revision: "${revision}"
 EOF
 }
 
