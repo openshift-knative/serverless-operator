@@ -42,16 +42,16 @@ EOF
     if  [[ $image_ref =~ $registry_redhat_io ]]; then
       image=${image_ref##*/} # Get image name after last slash
       image_sha=${image_ref##*@} # Get SHA of image
-      component_name=${image%@*} # Remove sha
-      component_name=${component_name/-rhel[0-9]/} # Remove -rhelX part
+      image=${image%@*} # Remove sha
+      image=${image/-rhel[0-9]/} # Remove -rhelX part
 
-      if [[ $component_name =~ serverless ]]; then
-        component_name="${component_name}-${so_version}"
+      if [[ $image =~ serverless ]]; then
+        component_name="${image}-${so_version}"
       else
-        component_name="${component_name}-${serving_version}"
+        component_name="${image}-${serving_version}"
       fi
 
-      component_image_ref="${registry_quay}/${component_name}@${image_sha}"
+      component_image_ref="${registry_quay}/${image}@${image_sha}"
 
       add_component "${snapshot_file}" "${component_name}" "${component_image_ref}"
     fi
@@ -61,7 +61,7 @@ EOF
   bundle_repo="${registry_quay}/serverless-bundle"
   bundle_image="${registry_quay}/serverless-bundle:$(metadata.get project.version)"
   bundle_digest=$(skopeo inspect --no-tags=true "docker://${bundle_image}" | jq -r '.Digest')
-  add_component ${snapshot_file} "serverless-bundle-${so_version}" "${bundle_repo}@sha256:${bundle_digest}"
+  add_component ${snapshot_file} "serverless-bundle-${so_version}" "${bundle_repo}@${bundle_digest}"
 
   cat "${snapshot_file}"
   rm -f "${snapshot_file}"
