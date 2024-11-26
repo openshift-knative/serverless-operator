@@ -4,6 +4,7 @@ FROM $GO_RUNTIME
 
 COPY olm-catalog/serverless-operator/manifests /manifests
 COPY olm-catalog/serverless-operator/metadata/annotations.yaml /metadata/annotations.yaml
+COPY LICENSE /licenses/
 
 USER 65532
 
