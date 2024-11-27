@@ -4,22 +4,21 @@ metadata:
   annotations:
     build.appstudio.openshift.io/repo: https://github.com/openshift-knative/serverless-operator?rev={{revision}}
     build.appstudio.redhat.com/commit_sha: '{{revision}}'
+    build.appstudio.redhat.com/pull_request_number: '{{pull_request_number}}'
     build.appstudio.redhat.com/target_branch: '{{target_branch}}'
     pipelinesascode.tekton.dev/max-keep-runs: "3"
-    pipelinesascode.tekton.dev/on-cel-expression: event == "push" && target_branch == "main" && ( files.all.exists(x, x.matches('^olm-catalog/serverless-operator-index/v4.14/')) || files.all.exists(x, x.matches('^.tekton/')) )
+    pipelinesascode.tekton.dev/on-cel-expression: event == "pull_request" && target_branch == "main" && ( files.all.exists(x, x.matches('^olm-catalog/serverless-operator/')) || files.all.exists(x, x.matches('^.tekton/')) )
   creationTimestamp: null
   labels:
-    appstudio.openshift.io/application: serverless-operator-135-fbc-414
-    appstudio.openshift.io/component: serverless-index-135-fbc-414
+    appstudio.openshift.io/application: serverless-operator-136
+    appstudio.openshift.io/component: serverless-bundle-136
     pipelines.appstudio.openshift.io/type: build
-  name: serverless-index-135-fbc-414-on-push
+  name: serverless-bundle-136-on-pull-request
   namespace: ocp-serverless-tenant
 spec:
   params:
     - name: dockerfile
-      value: Dockerfile
-    - name: path-context
-      value: ./olm-catalog/serverless-operator-index/v4.14
+      value: olm-catalog/serverless-operator/Dockerfile
     - name: build-args
       value:
         - VERSION=1.35.0
@@ -28,34 +27,27 @@ spec:
         - GO_RUNTIME=registry.access.redhat.com/ubi8/ubi-minimal
         - JAVA_BUILDER=registry.access.redhat.com/ubi8/openjdk-21
         - JAVA_RUNTIME=registry.access.redhat.com/ubi8/openjdk-21-runtime
-        - OPM_IMAGE=registry.redhat.io/openshift4/ose-operator-registry:v4.14
     - name: git-url
       value: '{{source_url}}'
     - name: hermetic
       value: "true"
+    - name: image-expires-after
+      value: 5d
     - name: output-image
-      value: quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135-fbc-414/serverless-index-135-fbc-414:{{revision}}
+      value: quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/serverless-bundle:on-pr-{{revision}}
+    - name: build-platforms
+      value:
+        - linux/x86_64
     - name: revision
       value: '{{revision}}'
-    - name: additional-tags
-      value:
-        - 1.35.0
-        - latest
+    - name: prefetch-input
+      value: '[{"type":"rpm"}]'
+    - name: prefetch-input-dev-package-managers
+      value: 'true'
   pipelineRef:
-    name: fbc-builder
+    name: docker-build
   taskRunTemplate: {}
   workspaces:
-    - name: workspace
-      volumeClaimTemplate:
-        metadata:
-          creationTimestamp: null
-        spec:
-          accessModes:
-            - ReadWriteOnce
-          resources:
-            requests:
-              storage: 1Gi
-        status: {}
     - name: git-auth
       secret:
         secretName: '{{ git_auth_secret }}'

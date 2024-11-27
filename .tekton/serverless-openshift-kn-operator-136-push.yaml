@@ -4,16 +4,15 @@ metadata:
   annotations:
     build.appstudio.openshift.io/repo: https://github.com/openshift-knative/serverless-operator?rev={{revision}}
     build.appstudio.redhat.com/commit_sha: '{{revision}}'
-    build.appstudio.redhat.com/pull_request_number: '{{pull_request_number}}'
     build.appstudio.redhat.com/target_branch: '{{target_branch}}'
     pipelinesascode.tekton.dev/max-keep-runs: "3"
-    pipelinesascode.tekton.dev/on-cel-expression: event == "pull_request" && target_branch == "main"  && files.all.exists(x, !x.matches('^olm-catalog/'))
+    pipelinesascode.tekton.dev/on-cel-expression: event == "push" && target_branch == "main"  && files.all.exists(x, !x.matches('^olm-catalog/'))
   creationTimestamp: null
   labels:
-    appstudio.openshift.io/application: serverless-operator-135
-    appstudio.openshift.io/component: serverless-openshift-kn-operator-135
+    appstudio.openshift.io/application: serverless-operator-136
+    appstudio.openshift.io/component: serverless-openshift-kn-operator-136
     pipelines.appstudio.openshift.io/type: build
-  name: serverless-openshift-kn-operator-135-on-pull-request
+  name: serverless-openshift-kn-operator-136-on-push
   namespace: ocp-serverless-tenant
 spec:
   params:
@@ -31,15 +30,14 @@ spec:
       value: '{{source_url}}'
     - name: hermetic
       value: "true"
-    - name: image-expires-after
-      value: 5d
     - name: output-image
-      value: quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/serverless-openshift-kn-operator:on-pr-{{revision}}
-    - name: build-platforms
-      value:
-        - linux/x86_64
+      value: quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/serverless-openshift-kn-operator:{{revision}}
     - name: revision
       value: '{{revision}}'
+    - name: additional-tags
+      value:
+        - 1.35.0
+        - latest
     - name: prefetch-input
       value: '[{"type":"rpm"}]'
     - name: prefetch-input-dev-package-managers
