@@ -6,11 +6,14 @@ set -Eeuo pipefail
 source "$(dirname "${BASH_SOURCE[0]}")/../lib/__sources__.bash"
 
 function add_component {
-  local component image_ref revision
+  local component image_ref parameters git_repo revision dockerfile
   component=${2}
   image_ref=${3}
-  revision="$(skopeo inspect --no-tags=true "docker://${image_ref}" | jq -r '.Labels["vcs-ref"]')"
-  git_repo="$(kubectl get component ${component} -ojsonpath='{.spec.source.git.url}')"
+
+  parameters="$(cosign download attestation "${image_ref}" | jq -r '.payload' | base64 -d | jq -c '.predicate.invocation.parameters')"
+  git_repo="$(echo "${parameters}" | jq -r '."git-url"')"
+  revision="$(echo "${parameters}" | jq -r ".revision")"
+  dockerfile="$(echo "${parameters}" | jq -r ".dockerfile")"
 
   cat << EOF | yq write --inplace --script - "$1"
 - command: update
@@ -22,13 +25,14 @@ function add_component {
       git:
         url: "${git_repo}"
         revision: "${revision}"
+        dockerfileUrl: "${dockerfile}"
 EOF
 }
 
 function create_snapshot {
-  local snapshot_file rootdir so_version serving_version
+  local rootdir snapshot_file so_version serving_version
   rootdir="$(dirname "$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")")"
-  snapshot_file="$(mktemp override-snapshot-XXXXX.json)"
+  snapshot_file=${1}
 
   serving_version="$(metadata.get dependencies.serving)"
   serving_version="${serving_version/knative-v/}" # -> 1.15
@@ -71,10 +75,8 @@ EOF
   bundle_repo="${registry_quay}/serverless-bundle"
   bundle_image="${registry_quay}/serverless-bundle:$(metadata.get project.version)"
   bundle_digest=$(skopeo inspect --no-tags=true "docker://${bundle_image}" | jq -r '.Digest')
-  add_component ${snapshot_file} "serverless-bundle-${so_version}" "${bundle_repo}@${bundle_digest}"
-
-  cat "${snapshot_file}"
-  rm -f "${snapshot_file}"
+  add_component "${snapshot_file}" "serverless-bundle-${so_version}" "${bundle_repo}@${bundle_digest}"
 }
 
-create_snapshot
+target="${1:?Provide a target file for the override snapshot as arg[1]}"
+create_snapshot "${target}"
