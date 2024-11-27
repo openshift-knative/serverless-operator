@@ -11,10 +11,6 @@ RUN /bin/opm init serverless-operator --default-channel=stable --output yaml >> 
 RUN /bin/opm render --skip-tls-verify -o yaml \
 registry.ci.openshift.org/knative/release-1.33.0:serverless-bundle \
 registry.ci.openshift.org/knative/release-1.34.0:serverless-bundle \
-      registry.ci.openshift.org/knative/release-1.35.0:serverless-bundle >> /configs/index.yaml || \
-    /bin/opm render --skip-tls-verify -o yaml \
-registry.ci.openshift.org/knative/release-1.33.0:serverless-bundle \
-registry.ci.openshift.org/knative/release-1.34.0:serverless-bundle \
       quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/serverless-bundle@sha256:0d5feb3c9f59246d16db1c687e3c1085fcc8a360cd51974197a878944df06b1d >> /configs/index.yaml
 
 # The base image is expected to contain
