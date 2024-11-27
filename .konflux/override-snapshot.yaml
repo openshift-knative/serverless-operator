@@ -1,0 +1,268 @@
+apiVersion: appstudio.redhat.com/v1alpha1
+kind: Snapshot
+metadata:
+  name: override-snapshot
+  labels:
+    test.appstudio.openshift.io/type: override
+spec:
+  application: serverless-operator-135
+  components:
+    - name: "kn-backstage-plugins-eventmesh-115"
+      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-backstage-plugins-eventmesh@sha256:b91e759e75a9c15b17cc1ea66dc26f24d6f0d78f0fe1adb2812635623639fc83"
+      source:
+        git:
+          url: "https://github.com/openshift-knative/backstage-plugins"
+          revision: "fcd453a02ad60384faa8fe2f591dfb998338c3c8"
+          dockerfileUrl: "openshift/ci-operator/knative-images/eventmesh/Dockerfile"
+    - name: "kn-client-cli-artifacts-115"
+      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-client-cli-artifacts@sha256:c710808404e4c2fb2d3131b5dfbb0939263a2cf49e0dc64b5ad5a99c19cf2e50"
+      source:
+        git:
+          url: "https://github.com/openshift-knative/client"
+          revision: "81c5c9d5dbb499b6d13985b7b9c50d5df07e2397"
+          dockerfileUrl: "openshift/ci-operator/knative-images/cli-artifacts/Dockerfile"
+    - name: "kn-client-kn-115"
+      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-client-kn@sha256:4be5297b86aaf82e8faeecb178bcc71772658403d46912b59f7d096aac48eef7"
+      source:
+        git:
+          url: "https://github.com/openshift-knative/client.git"
+          revision: "d7750564ed10d5f73d840b44b7169cf8b9d7b6a3"
+          dockerfileUrl: "openshift/ci-operator/knative-images/kn/Dockerfile"
+    - name: "kn-ekb-dispatcher-115"
+      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-ekb-dispatcher@sha256:b48f6e01fd3ce82aaa8bbd13e6c141bf03283da8779108f0b74f630ea11c668d"
+      source:
+        git:
+          url: "https://github.com/openshift-knative/eventing-kafka-broker"
+          revision: "47696a9fd7618b87e05af7c95e6d54d8fa31e1be"
+          dockerfileUrl: "openshift/ci-operator/static-images/dispatcher/hermetic/Dockerfile"
+    - name: "kn-ekb-kafka-controller-115"
+      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-ekb-kafka-controller@sha256:ee500884177c5f3aea315aa3dba089fe0293c4687a15a7f223d65e0c4d5ee0e4"
+      source:
+        git:
+          url: "https://github.com/openshift-knative/eventing-kafka-broker"
+          revision: "47696a9fd7618b87e05af7c95e6d54d8fa31e1be"
+          dockerfileUrl: "openshift/ci-operator/knative-images/kafka-controller/Dockerfile"
+    - name: "kn-ekb-post-install-115"
+      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-ekb-post-install@sha256:f6fe641a3fd0ac3065eccbc116b859d700a009a4c1f5d86e4ea694cfeab49265"
+      source:
+        git:
+          url: "https://github.com/openshift-knative/eventing-kafka-broker"
+          revision: "47696a9fd7618b87e05af7c95e6d54d8fa31e1be"
+          dockerfileUrl: "openshift/ci-operator/knative-images/post-install/Dockerfile"
+    - name: "kn-ekb-receiver-115"
+      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-ekb-receiver@sha256:7fb3155f7b5292b784891fca026912ce64540104e3a27523976aa2054f72a8ee"
+      source:
+        git:
+          url: "https://github.com/openshift-knative/eventing-kafka-broker"
+          revision: "365353c75215a9e1296fd09c1c14a901c75c9f61"
+          dockerfileUrl: "openshift/ci-operator/static-images/receiver/hermetic/Dockerfile"
+    - name: "kn-ekb-webhook-kafka-115"
+      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-ekb-webhook-kafka@sha256:afa54f0a233fb241b41c72a410d8cc342790759f6cb60d2756711953df59ceac"
+      source:
+        git:
+          url: "https://github.com/openshift-knative/eventing-kafka-broker"
+          revision: "47696a9fd7618b87e05af7c95e6d54d8fa31e1be"
+          dockerfileUrl: "openshift/ci-operator/knative-images/webhook-kafka/Dockerfile"
+    - name: "kn-eventing-apiserver-receive-adapter-115"
+      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-eventing-apiserver-receive-adapter@sha256:8c394d2b05cfbeacfb7800f1c555676542ba44e6f9746830cc58e5a964ac8874"
+      source:
+        git:
+          url: "https://github.com/openshift-knative/eventing"
+          revision: "efacbc466fb74b59c2fde6430508882f6f8e287f"
+          dockerfileUrl: "openshift/ci-operator/knative-images/apiserver_receive_adapter/Dockerfile"
+    - name: "kn-eventing-channel-controller-115"
+      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-eventing-channel-controller@sha256:7248baba1f9e6c1bfbf43bea08fd3272f87a5aee41390888ddd37eb2dbc1a451"
+      source:
+        git:
+          url: "https://github.com/openshift-knative/eventing"
+          revision: "efacbc466fb74b59c2fde6430508882f6f8e287f"
+          dockerfileUrl: "openshift/ci-operator/knative-images/channel_controller/Dockerfile"
+    - name: "kn-eventing-channel-dispatcher-115"
+      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-eventing-channel-dispatcher@sha256:491ed4ffc15adb12459e15cbb0a92b9572637a6b7164587b08bc4b452caabd47"
+      source:
+        git:
+          url: "https://github.com/openshift-knative/eventing"
+          revision: "efacbc466fb74b59c2fde6430508882f6f8e287f"
+          dockerfileUrl: "openshift/ci-operator/knative-images/channel_dispatcher/Dockerfile"
+    - name: "kn-eventing-controller-115"
+      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-eventing-controller@sha256:a10c5d1137b6000ab82b7f3a6ec1d382470a995e09c2f53f8b9a977e97cdefd2"
+      source:
+        git:
+          url: "https://github.com/openshift-knative/eventing"
+          revision: "efacbc466fb74b59c2fde6430508882f6f8e287f"
+          dockerfileUrl: "openshift/ci-operator/knative-images/controller/Dockerfile"
+    - name: "kn-eventing-filter-115"
+      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-eventing-filter@sha256:be5f4c4063c2495af323d995cc91a42ed2eeed6554d32cfb88e63b4cf9c5e9a7"
+      source:
+        git:
+          url: "https://github.com/openshift-knative/eventing"
+          revision: "efacbc466fb74b59c2fde6430508882f6f8e287f"
+          dockerfileUrl: "openshift/ci-operator/knative-images/filter/Dockerfile"
+    - name: "kn-eventing-ingress-115"
+      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-eventing-ingress@sha256:d7bc8a045878aad8385e2959a46d0fc41b1c8af5a32b5fb49141ff53111d9a95"
+      source:
+        git:
+          url: "https://github.com/openshift-knative/eventing"
+          revision: "efacbc466fb74b59c2fde6430508882f6f8e287f"
+          dockerfileUrl: "openshift/ci-operator/knative-images/ingress/Dockerfile"
+    - name: "kn-eventing-istio-controller-115"
+      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-eventing-istio-controller@sha256:d99049813c202b2fb6ba893627665f1f682e3e05db9fff246a4ea1df1b641a07"
+      source:
+        git:
+          url: "https://github.com/openshift-knative/eventing-istio"
+          revision: "de212d908861b7a89b9cfdf5c110426256872c7d"
+          dockerfileUrl: "openshift/ci-operator/knative-images/controller/Dockerfile"
+    - name: "kn-eventing-jobsink-115"
+      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-eventing-jobsink@sha256:36a0bd6c217418ab855f24b917e43f325152e5a712830288f328585c0f6323b6"
+      source:
+        git:
+          url: "https://github.com/openshift-knative/eventing"
+          revision: "efacbc466fb74b59c2fde6430508882f6f8e287f"
+          dockerfileUrl: "openshift/ci-operator/knative-images/jobsink/Dockerfile"
+    - name: "kn-eventing-migrate-115"
+      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-eventing-migrate@sha256:4d51a880f0f230911c3b8834a67dacddd3d6414c65e7f1eae6d0c05641008de1"
+      source:
+        git:
+          url: "https://github.com/openshift-knative/eventing"
+          revision: "efacbc466fb74b59c2fde6430508882f6f8e287f"
+          dockerfileUrl: "openshift/ci-operator/knative-images/migrate/Dockerfile"
+    - name: "kn-eventing-mtchannel-broker-115"
+      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-eventing-mtchannel-broker@sha256:04cbb57b37c57e53d4d37a1f54b91bf7eee0666fb8101510897e5ead9afd7d17"
+      source:
+        git:
+          url: "https://github.com/openshift-knative/eventing"
+          revision: "efacbc466fb74b59c2fde6430508882f6f8e287f"
+          dockerfileUrl: "openshift/ci-operator/knative-images/mtchannel_broker/Dockerfile"
+    - name: "kn-eventing-mtping-115"
+      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-eventing-mtping@sha256:8270bde9e7fa7f82cc7d23a88323f9ef4de46bade3f0ac767a4d84169a9f4e4a"
+      source:
+        git:
+          url: "https://github.com/openshift-knative/eventing"
+          revision: "efacbc466fb74b59c2fde6430508882f6f8e287f"
+          dockerfileUrl: "openshift/ci-operator/knative-images/mtping/Dockerfile"
+    - name: "kn-eventing-webhook-115"
+      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-eventing-webhook@sha256:21a9ae1a661da2e14f9454cd367d376579dbec3a117eac94ccb484d6e9bd4354"
+      source:
+        git:
+          url: "https://github.com/openshift-knative/eventing"
+          revision: "efacbc466fb74b59c2fde6430508882f6f8e287f"
+          dockerfileUrl: "openshift/ci-operator/knative-images/webhook/Dockerfile"
+    - name: "kn-plugin-event-sender-115"
+      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-plugin-event-sender@sha256:1d2a8b786bd09301530d37440ce6501527cfd511ba78d97da5eda952a6558ebe"
+      source:
+        git:
+          url: "https://github.com/openshift-knative/kn-plugin-event"
+          revision: "db3a977daffc948331d4245149ddf02642be5c37"
+          dockerfileUrl: "openshift/ci-operator/images/kn-event-sender/Dockerfile"
+    - name: "kn-plugin-func-func-util-115"
+      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-plugin-func-func-util@sha256:63fbd304ffb93e5883b987ac90a476cd9ff9946f164ca8acb9c1a95fee84bcb3"
+      source:
+        git:
+          url: "https://github.com/openshift-knative/kn-plugin-func"
+          revision: "52a2d08610a5ad7210b66904f947c4f3ed5e422f"
+          dockerfileUrl: "openshift/ci-operator/knative-images/func-util/Dockerfile"
+    - name: "kn-serving-activator-115"
+      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-serving-activator@sha256:eacffba1b6ae9910726890953bca8af72eef1f23b67de87731c20b03f84eb64e"
+      source:
+        git:
+          url: "https://github.com/openshift-knative/serving"
+          revision: "fd62d96a5194b806a0ebfef3cc8bdc4b8fd3cf00"
+          dockerfileUrl: "openshift/ci-operator/knative-images/activator/Dockerfile"
+    - name: "kn-serving-autoscaler-hpa-115"
+      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-serving-autoscaler-hpa@sha256:bbed471d612c38ce66b5f87fac69c3ef4388114ce993b6ec926beed51c41815b"
+      source:
+        git:
+          url: "https://github.com/openshift-knative/serving"
+          revision: "fd62d96a5194b806a0ebfef3cc8bdc4b8fd3cf00"
+          dockerfileUrl: "openshift/ci-operator/knative-images/autoscaler-hpa/Dockerfile"
+    - name: "kn-serving-autoscaler-115"
+      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-serving-autoscaler@sha256:636da647e5ce879e7b5c80df4c22f5f5a416ef4db96ffb4cada7f533fb5dd714"
+      source:
+        git:
+          url: "https://github.com/openshift-knative/serving"
+          revision: "fd62d96a5194b806a0ebfef3cc8bdc4b8fd3cf00"
+          dockerfileUrl: "openshift/ci-operator/knative-images/autoscaler/Dockerfile"
+    - name: "kn-serving-controller-115"
+      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-serving-controller@sha256:579ce1e0648f965f7fa625bfdc5099d440e1a690e40566f9b2b7a67964a264ec"
+      source:
+        git:
+          url: "https://github.com/openshift-knative/serving"
+          revision: "fd62d96a5194b806a0ebfef3cc8bdc4b8fd3cf00"
+          dockerfileUrl: "openshift/ci-operator/knative-images/controller/Dockerfile"
+    - name: "kn-serving-queue-115"
+      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-serving-queue@sha256:723c4d19370575cb4ce79d4a60cb68f64ae419f2cce6b9f611dce4201def7eac"
+      source:
+        git:
+          url: "https://github.com/openshift-knative/serving"
+          revision: "fd62d96a5194b806a0ebfef3cc8bdc4b8fd3cf00"
+          dockerfileUrl: "openshift/ci-operator/knative-images/queue/Dockerfile"
+    - name: "kn-serving-storage-version-migration-115"
+      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-serving-storage-version-migration@sha256:45409f1c04ceef5e398f419cfd403d16ee37f987e8cd3070d00323b82af45d70"
+      source:
+        git:
+          url: "https://github.com/openshift-knative/serving"
+          revision: "fd62d96a5194b806a0ebfef3cc8bdc4b8fd3cf00"
+          dockerfileUrl: "openshift/ci-operator/knative-images/migrate/Dockerfile"
+    - name: "kn-serving-webhook-115"
+      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-serving-webhook@sha256:dbde2b08a6fd2399312fb8da0b028853b9933c0f72189346bfc8bd60cd70aefa"
+      source:
+        git:
+          url: "https://github.com/openshift-knative/serving"
+          revision: "fd62d96a5194b806a0ebfef3cc8bdc4b8fd3cf00"
+          dockerfileUrl: "openshift/ci-operator/knative-images/webhook/Dockerfile"
+    - name: "net-istio-controller-115"
+      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/net-istio-controller@sha256:23d2b4f48506f3ddf4f91636563d20e7cc05b56d90e538791e7cf6f927227195"
+      source:
+        git:
+          url: "https://github.com/openshift-knative/net-istio"
+          revision: "fb4ed9cb6417825a2dc6463bf48b8580e7f0e249"
+          dockerfileUrl: "openshift/ci-operator/knative-images/controller/Dockerfile"
+    - name: "net-istio-webhook-115"
+      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/net-istio-webhook@sha256:785725db4bbd2709613c270f65fd0adeb0969772c2f55475b987b51ec4201654"
+      source:
+        git:
+          url: "https://github.com/openshift-knative/net-istio"
+          revision: "fb4ed9cb6417825a2dc6463bf48b8580e7f0e249"
+          dockerfileUrl: "openshift/ci-operator/knative-images/webhook/Dockerfile"
+    - name: "net-kourier-kourier-115"
+      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/net-kourier-kourier@sha256:d50e5d1877297d3975931aae6bbbc37e29d33bea0de13c18342b281686c5ed86"
+      source:
+        git:
+          url: "https://github.com/openshift-knative/net-kourier"
+          revision: "ecc321f6ce091110031e321cad07ee18a2b06681"
+          dockerfileUrl: "openshift/ci-operator/knative-images/kourier/Dockerfile"
+    - name: "serverless-ingress-135"
+      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/serverless-ingress@sha256:f2c1dd4b83833413611c3056578db13889d8cee9026fbc739890465506f0aa9c"
+      source:
+        git:
+          url: "https://github.com/openshift-knative/serverless-operator"
+          revision: "6ee34735852390042f346ad503f19d917dd6ff87"
+          dockerfileUrl: "serving/ingress/Dockerfile"
+    - name: "serverless-kn-operator-135"
+      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/serverless-kn-operator@sha256:05a301408a6c687900aa605161e280da3c6ccfdcea7df1f1b95b5879b794f23d"
+      source:
+        git:
+          url: "https://github.com/openshift-knative/serverless-operator"
+          revision: "6ee34735852390042f346ad503f19d917dd6ff87"
+          dockerfileUrl: "knative-operator/Dockerfile"
+    - name: "serverless-must-gather-135"
+      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/serverless-must-gather@sha256:cf172b93a447fedc1de4a1c38e33e992105747119642ae0606a4d26d3e1abf33"
+      source:
+        git:
+          url: "https://github.com/openshift-knative/serverless-operator"
+          revision: "b8d4f8e61de94a640a522dc04db36aced8138e66"
+          dockerfileUrl: "must-gather/Dockerfile"
+    - name: "serverless-openshift-kn-operator-135"
+      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/serverless-openshift-kn-operator@sha256:6d025e7be6e96249827985a8329e54bed93c3b0a08795fd31ca9502b9e664da1"
+      source:
+        git:
+          url: "https://github.com/openshift-knative/serverless-operator"
+          revision: "b8d4f8e61de94a640a522dc04db36aced8138e66"
+          dockerfileUrl: "openshift-knative-operator/Dockerfile"
+    - name: "serverless-bundle-135"
+      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/serverless-bundle@sha256:f4f26ea2db068487bc81d657cd28b16d8e352cff74b8d9ca6415403b198a88ed"
+      source:
+        git:
+          url: "https://github.com/openshift-knative/serverless-operator.git"
+          revision: "c9eb519cfff2016485e157a8f1f761c9559eda22"
+          dockerfileUrl: "olm-catalog/serverless-operator/Dockerfile"
