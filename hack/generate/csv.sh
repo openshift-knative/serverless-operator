@@ -2,8 +2,6 @@
 
 set -Eeuo pipefail
 
-set -x
-
 template="${1:?Provide template file as arg[1]}"
 target="${2:?Provide a target CSV file as arg[2]}"
 

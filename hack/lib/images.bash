@@ -34,8 +34,14 @@ function default_serverless_operator_images() {
   export SERVERLESS_INGRESS=${SERVERLESS_INGRESS:-$(latest_registry_redhat_io_image_sha "${serverless_registry}-ingress:${CURRENT_VERSION_IMAGES}" "true")}
   export SERVERLESS_MUST_GATHER=${SERVERLESS_MUST_GATHER:-$(latest_registry_redhat_io_image_sha "${serverless_registry}-must-gather:${CURRENT_VERSION_IMAGES}" "true")}
 
-  export SERVERLESS_BUNDLE=${SERVERLESS_BUNDLE:-$(get_bundle_for_version "${CURRENT_VERSION}")}
-  export DEFAULT_SERVERLESS_BUNDLE=${DEFAULT_SERVERLESS_BUNDLE:-$(get_bundle_for_version "${CURRENT_VERSION}")}
+  # Differentiate between the bundle living on the Konflux quay registry (which is the actually
+  # pullable URL) and the "final" bundle image URL eventually getting on registry.redhat.io.
+  #
+  # The actually pullable URL is used to generate the index images for FBC components and it
+  # has to be (eventually) pullable.
+
+  export SERVERLESS_BUNDLE=${SERVERLESS_BUNDLE:-$(latest_konflux_image_sha "${serverless_registry}-bundle" "latest" "true")}
+  export DEFAULT_SERVERLESS_BUNDLE=${DEFAULT_SERVERLESS_BUNDLE:-$(latest_konflux_image_sha "${serverless_registry}-bundle" "latest" "true")}
 
   SERVERLESS_BUNDLE_REDHAT_IO=${SERVERLESS_BUNDLE_REDHAT_IO:-$(latest_registry_redhat_io_image_sha "${serverless_registry}-bundle:${CURRENT_VERSION_IMAGES}" "true")}
   # Bundle image is in different locations in quay.io and registry.redhat.io
@@ -51,29 +57,6 @@ function default_serverless_operator_images() {
   ocp_version=${ocp_version/./} # 4.17 -> 417
 
   export INDEX_IMAGE=${INDEX_IMAGE:-$(latest_konflux_image_sha "${registry_quay}-fbc-${ocp_version}/serverless-index-${quay_registry_app_version}-fbc-${ocp_version}:${CURRENT_VERSION_IMAGES}" "latest" "true")}
-}
-
-# Bundle image is specific as we need to pull older versions for including in the catalog.
-function get_bundle_for_version() {
-  local version app_version bundle
-  version=${1:?"Provide version for Bundle image"}
-
-  app_version=${version/./} # 1.34.0 -> 134.0
-  app_version=${app_version%.*} # 134.0 -> 134
-
-  bundle="${registry_prefix_quay}${app_version}/serverless-bundle"
-
-  image=$(image_with_sha "${bundle}:latest")
-  # As a backup, try also CI registry. This it temporary until the previous version gets to Konflux.
-  if [[ "${image}" == "" ]]; then
-    image=$(image_with_sha "registry.ci.openshift.org/knative/serverless-bundle:release-${version}")
-  fi
-
-  if [[ "${image}" == "" ]]; then
-    exit 1
-  fi
-
-  echo "$image"
 }
 
 function knative_serving_images_release() {
