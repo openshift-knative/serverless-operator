@@ -5,27 +5,36 @@ readonly EXCLUDE_FILES=(
   'olm-catalog/serverless-operator/manifests/serverless-operator.clusterserviceversion.yaml'
   'olm-catalog/serverless-operator-index/Dockerfile'
   'test/images-rekt.yaml'
+  '.konflux/override-snapshot.yaml'
 )
 # Define the patterns to exclude
 readonly EXCLUDE_PATTERNS=(
   '*sha256:*'
+  '*revision: *'
 )
 
 # Function to check if a file should be excluded
 function should_exclude() {
   local file="$1"
-  for pattern in "${EXCLUDE_PATTERNS[@]}"; do
-    diff="$(git --no-pager -c color.ui=never diff --unified=0 "$file" | grep '^[+-][\ a-z]')"
-    while IFS= read -r line; do
+
+  diff="$(git --no-pager -c color.ui=never diff --unified=0 "$file" | grep '^[+-][\ a-z]')"
+  while IFS= read -r line; do
+    line_matched_pattern=false
+    for pattern in "${EXCLUDE_PATTERNS[@]}"; do
       # shellcheck disable=SC2053
       if  [[ $line == $pattern || $line =~ $pattern ]]; then
-        echo "Excluding line $line since matches pattern $pattern"
-      else
-        echo "line '$line' doesn't match pattern '$pattern', failing the exclude check"
-        return 1
+        echo "Excluding line $line since it matches pattern $pattern"
+        line_matched_pattern=true
+        break
       fi
-    done <<< "$diff"
-  done
+    done
+
+    if [[ "$line_matched_pattern" == "false" ]]; then
+      echo "line '$line' doesn't match any of the patterns. Failing the exclude check"
+      return 1
+    fi
+
+  done <<< "$diff"
 
   return 0
 }
