@@ -43,9 +43,10 @@ function create_snapshot {
 apiVersion: appstudio.redhat.com/v1alpha1
 kind: Snapshot
 metadata:
-  name: override-snapshot
+  generateName: serverless-operator-${so_version}-override-snapshot-
   labels:
     test.appstudio.openshift.io/type: override
+    application: serverless-operator-${so_version}
 spec:
   application: serverless-operator-${so_version}
 EOF
