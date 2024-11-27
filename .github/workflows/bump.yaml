@@ -22,6 +22,10 @@ jobs:
       - name: Setup Golang
         uses: openshift-knative/hack/actions/setup-go@main
 
+      - name: Install yq
+        run: |
+          go install github.com/mikefarah/yq/v3@latest
+
       - name: Install OPM
         run: |
           go install github.com/operator-framework/operator-registry/cmd/opm@v1.47.0
