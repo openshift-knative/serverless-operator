@@ -67,12 +67,11 @@ function get_bundle_for_version() {
   app_version=${version/./} # 1.34.0 -> 134.0
   app_version=${app_version%.*} # 134.0 -> 134
 
-
-  image=$(latest_konflux_image_sha "${registry_prefix_quay}${app_version}/serverless-bundle" "${version}" "false")
+  image=$(image_with_sha "${registry_prefix_quay}${app_version}/serverless-bundle:latest")
   # As a backup, try also CI registry.
   local ci_bundle="registry.ci.openshift.org/knative/serverless-bundle"
   if [[ "${image}" == "" ]]; then
-    image=$(image_with_sha "${ci_bundle}:release-${version}")
+    image=$(image_with_sha "${ci_bundle}:release-${version}" || echo "")
   fi
   if [[ "${image}" == "" ]]; then
     image=$(image_with_sha "${ci_bundle}:knative-main")
