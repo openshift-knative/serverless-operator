@@ -4,21 +4,22 @@ metadata:
   annotations:
     build.appstudio.openshift.io/repo: https://github.com/openshift-knative/serverless-operator?rev={{revision}}
     build.appstudio.redhat.com/commit_sha: '{{revision}}'
-    build.appstudio.redhat.com/pull_request_number: '{{pull_request_number}}'
     build.appstudio.redhat.com/target_branch: '{{target_branch}}'
     pipelinesascode.tekton.dev/max-keep-runs: "3"
-    pipelinesascode.tekton.dev/on-cel-expression: event == "pull_request" && target_branch == "main"  && files.all.exists(x, !x.matches('^olm-catalog/'))
+    pipelinesascode.tekton.dev/on-cel-expression: event == "push" && target_branch == "main" && ( files.all.exists(x, x.matches('^olm-catalog/serverless-operator-index/v4.18/')) || files.all.exists(x, x.matches('^.tekton/')) )
   creationTimestamp: null
   labels:
-    appstudio.openshift.io/application: serverless-operator-135
-    appstudio.openshift.io/component: serverless-metadata-webhook-135
+    appstudio.openshift.io/application: serverless-operator-136-fbc-418
+    appstudio.openshift.io/component: serverless-index-136-fbc-418
     pipelines.appstudio.openshift.io/type: build
-  name: serverless-metadata-webhook-135-on-pull-request
+  name: serverless-index-136-fbc-418-on-push
   namespace: ocp-serverless-tenant
 spec:
   params:
     - name: dockerfile
-      value: serving/metadata-webhook/Dockerfile
+      value: Dockerfile
+    - name: path-context
+      value: ./olm-catalog/serverless-operator-index/v4.18
     - name: build-args
       value:
         - VERSION=1.35.0
@@ -27,27 +28,34 @@ spec:
         - GO_RUNTIME=registry.access.redhat.com/ubi8/ubi-minimal
         - JAVA_BUILDER=registry.access.redhat.com/ubi8/openjdk-21
         - JAVA_RUNTIME=registry.access.redhat.com/ubi8/openjdk-21-runtime
+        - OPM_IMAGE=brew.registry.redhat.io/rh-osbs/openshift-ose-operator-registry-rhel9:v4.18
     - name: git-url
       value: '{{source_url}}'
     - name: hermetic
       value: "true"
-    - name: image-expires-after
-      value: 5d
     - name: output-image
-      value: quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/serverless-metadata-webhook:on-pr-{{revision}}
-    - name: build-platforms
-      value:
-        - linux/x86_64
+      value: quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136-fbc-418/serverless-index-136-fbc-418:{{revision}}
     - name: revision
       value: '{{revision}}'
-    - name: prefetch-input
-      value: '[{"type":"rpm"}]'
-    - name: prefetch-input-dev-package-managers
-      value: 'true'
+    - name: additional-tags
+      value:
+        - 1.35.0
+        - latest
   pipelineRef:
-    name: docker-build
+    name: fbc-builder
   taskRunTemplate: {}
   workspaces:
+    - name: workspace
+      volumeClaimTemplate:
+        metadata:
+          creationTimestamp: null
+        spec:
+          accessModes:
+            - ReadWriteOnce
+          resources:
+            requests:
+              storage: 1Gi
+        status: {}
     - name: git-auth
       secret:
         secretName: '{{ git_auth_secret }}'

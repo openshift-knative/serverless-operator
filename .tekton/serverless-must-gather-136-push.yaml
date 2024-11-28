@@ -9,15 +9,15 @@ metadata:
     pipelinesascode.tekton.dev/on-cel-expression: event == "push" && target_branch == "main"  && files.all.exists(x, !x.matches('^olm-catalog/'))
   creationTimestamp: null
   labels:
-    appstudio.openshift.io/application: serverless-operator-135
-    appstudio.openshift.io/component: serverless-openshift-kn-operator-135
+    appstudio.openshift.io/application: serverless-operator-136
+    appstudio.openshift.io/component: serverless-must-gather-136
     pipelines.appstudio.openshift.io/type: build
-  name: serverless-openshift-kn-operator-135-on-push
+  name: serverless-must-gather-136-on-push
   namespace: ocp-serverless-tenant
 spec:
   params:
     - name: dockerfile
-      value: openshift-knative-operator/Dockerfile
+      value: must-gather/Dockerfile
     - name: build-args
       value:
         - VERSION=1.35.0
@@ -31,7 +31,7 @@ spec:
     - name: hermetic
       value: "true"
     - name: output-image
-      value: quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/serverless-openshift-kn-operator:{{revision}}
+      value: quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/serverless-must-gather:{{revision}}
     - name: revision
       value: '{{revision}}'
     - name: additional-tags
