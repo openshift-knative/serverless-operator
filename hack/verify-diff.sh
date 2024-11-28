@@ -11,6 +11,7 @@ readonly EXCLUDE_FILES=(
 readonly EXCLUDE_PATTERNS=(
   '*sha256:*'
   '*revision: *'
+  '*url: "https://github.com/openshift-knative/(*.git|*)"' # some repos in the override-snapshot have the .git suffix, some not ¯\_(ツ)_/¯
 )
 
 # Function to check if a file should be excluded
