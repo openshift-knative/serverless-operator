@@ -129,6 +129,8 @@ if [ "${USE_RELEASE_NEXT}" = "true" ]; then
   export USE_ARTIFACTS_RELEASE_BRANCH="release-next"
 fi
 
+echo "Branch and Tag: ${USE_ARTIFACTS_RELEASE_BRANCH} - ${USE_IMAGE_RELEASE_TAG}"
+
 if [ "${USE_IMAGE_RELEASE_TAG}" != "" ] && [ "${USE_ARTIFACTS_RELEASE_BRANCH}" != "" ]; then
   root_dir="$(dirname "$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")")"
   yq w --inplace "${root_dir}/olm-catalog/serverless-operator/project.yaml" 'dependencies.eventing' "${USE_IMAGE_RELEASE_TAG}"
