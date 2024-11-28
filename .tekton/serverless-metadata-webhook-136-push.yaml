@@ -6,18 +6,18 @@ metadata:
     build.appstudio.redhat.com/commit_sha: '{{revision}}'
     build.appstudio.redhat.com/target_branch: '{{target_branch}}'
     pipelinesascode.tekton.dev/max-keep-runs: "3"
-    pipelinesascode.tekton.dev/on-cel-expression: event == "push" && target_branch == "main" && ( files.all.exists(x, x.matches('^olm-catalog/serverless-operator/')) || files.all.exists(x, x.matches('^.tekton/')) )
+    pipelinesascode.tekton.dev/on-cel-expression: event == "push" && target_branch == "main"  && files.all.exists(x, !x.matches('^olm-catalog/'))
   creationTimestamp: null
   labels:
-    appstudio.openshift.io/application: serverless-operator-135
-    appstudio.openshift.io/component: serverless-bundle-135
+    appstudio.openshift.io/application: serverless-operator-136
+    appstudio.openshift.io/component: serverless-metadata-webhook-136
     pipelines.appstudio.openshift.io/type: build
-  name: serverless-bundle-135-on-push
+  name: serverless-metadata-webhook-136-on-push
   namespace: ocp-serverless-tenant
 spec:
   params:
     - name: dockerfile
-      value: olm-catalog/serverless-operator/Dockerfile
+      value: serving/metadata-webhook/Dockerfile
     - name: build-args
       value:
         - VERSION=1.35.0
@@ -31,7 +31,7 @@ spec:
     - name: hermetic
       value: "true"
     - name: output-image
-      value: quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/serverless-bundle:{{revision}}
+      value: quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/serverless-metadata-webhook:{{revision}}
     - name: revision
       value: '{{revision}}'
     - name: additional-tags
