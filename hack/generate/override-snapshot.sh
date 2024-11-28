@@ -29,10 +29,10 @@ function add_component {
 EOF
 }
 
-function create_snapshot {
+function create_component_snapshot {
   local rootdir snapshot_file so_version serving_version
   rootdir="$(dirname "$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")")"
-  snapshot_file=${1}
+  snapshot_file="${1}/override-snapshot.yaml"
 
   serving_version="$(metadata.get dependencies.serving)"
   serving_version="${serving_version/knative-v/}" # -> 1.15
@@ -79,5 +79,36 @@ EOF
   add_component "${snapshot_file}" "serverless-bundle-${so_version}" "${bundle_repo}@${bundle_digest}"
 }
 
-target="${1:?Provide a target file for the override snapshot as arg[1]}"
-create_snapshot "${target}"
+function create_fbc_snapshots {
+  local snapshot_dir so_version
+  rootdir="$(dirname "$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")")"
+  snapshot_dir="${1}"
+
+  so_version=$(get_app_version_from_tag "$(metadata.get dependencies.serving)")
+
+  while IFS= read -r ocp_version; do
+    ocp_version=${ocp_version/./}
+    snapshot_file="${snapshot_dir}/override-snapshot-fbc-${ocp_version}.yaml"
+
+    cat > "${snapshot_file}" <<EOF
+apiVersion: appstudio.redhat.com/v1alpha1
+kind: Snapshot
+metadata:
+  generateName: serverless-operator-${so_version}-fbc-${ocp_version}-override-snapshot-
+  labels:
+    test.appstudio.openshift.io/type: override
+    application: serverless-operator-${so_version}-fbc-${ocp_version}
+spec:
+  application: serverless-operator-${so_version}-fbc-${ocp_version}
+EOF
+
+  index_image="${registry_quay}-fbc-${ocp_version}/serverless-index-${so_version}-fbc-${ocp_version}"
+  index_image_digest="$(skopeo inspect --no-tags docker://"${index_image}:latest" | jq -r .Digest)"
+  add_component "${snapshot_file}" "serverless-index-${so_version}-fbc-${ocp_version}" "${index_image}@${index_image_digest}"
+
+  done <<< "$(yq read "${rootdir}/olm-catalog/serverless-operator/project.yaml" 'requirements.ocpVersion.list[*]')"
+}
+
+target_dir="${1:?Provide a target directory for the override snapshots as arg[1]}"
+create_component_snapshot "${target_dir}"
+create_fbc_snapshots "${target_dir}"
