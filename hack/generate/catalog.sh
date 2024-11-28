@@ -56,23 +56,6 @@ function generate_catalog {
   done < <(metadata.get 'requirements.ocpVersion.list[*]')
 }
 
-# Bundle image is specific as we need to pull older versions for including in the catalog.
-function get_bundle_for_version() {
-  local version app_version
-  version=${1:?"Provide version for Bundle image"}
-
-  app_version=${version/./} # 1.34.0 -> 134.0
-  app_version=${app_version%.*} # 134.0 -> 134
-
-  # shellcheck disable=SC2154
-  image=$(latest_konflux_image_sha "${registry_prefix_quay}${app_version}/serverless-bundle" "${version}" "true")
-  if [[ "${image}" == "" ]]; then
-    exit 1
-  fi
-
-  echo "$image"
-}
-
 function add_channel {
   local channel catalog_template catalog current_version current_csv major \
     minor micro previous_version channel_entry version

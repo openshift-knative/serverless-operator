@@ -27,6 +27,7 @@ function install_catalogsource {
   # unless overridden by FORCE_KONFLUX_INDEX.
   if { [ -n "$OPENSHIFT_CI" ] || [ -n "$DOCKER_REPO_OVERRIDE" ]; } && [ -z "${FORCE_KONFLUX_INDEX:-}" ]; then
     index_image=image-registry.openshift-image-registry.svc:5000/$OLM_NAMESPACE/serverless-index:latest
+    bundle_image=image-registry.openshift-image-registry.svc:5000/$OLM_NAMESPACE/serverless-bundle:latest
     rootdir="$(dirname "$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")")"
 
     csv="${rootdir}/olm-catalog/serverless-operator/manifests/serverless-operator.clusterserviceversion.yaml"
@@ -67,19 +68,14 @@ function install_catalogsource {
     # will push images to ${OLM_NAMESPACE} namespace, allow the ${OPERATORS_NAMESPACE} namespace to pull those images.
     oc adm policy add-role-to-group system:image-puller system:serviceaccounts:"${OPERATORS_NAMESPACE}" --namespace "${OLM_NAMESPACE}"
 
-    local index_dorkerfile_path="olm-catalog/serverless-operator-index/Dockerfile"
+    local index_dorkerfile_path="${rootdir}/olm-catalog/serverless-operator-index/Dockerfile"
 
     logger.debug "Create a backup of the index Dockerfile."
     cp "${index_dorkerfile_path}" "${rootdir}/_output/bkp.Dockerfile"
 
     # Replace bundle reference with previously built bundle
-    bundle="${DEFAULT_SERVERLESS_BUNDLE%:*}" # Remove the tag from the match
-    bundle="${DEFAULT_SERVERLESS_BUNDLE%@*}" # Remove the sha from the match
-    if ! grep "${bundle}" "${rootdir}/${index_dorkerfile_path}"; then
-      logger.error "Bundle ${bundle} not found in Dockerfile."
-      return 1
-    fi
-    sed -ri "s#(.*)(${bundle})(:[a-z0-9]*)?(@sha[0-9]+:[a-z0-9]+)?(.*)#\1image-registry.openshift-image-registry.svc:5000/${OLM_NAMESPACE}/serverless-bundle:latest\5#" "${rootdir}/${index_dorkerfile_path}"
+    export SERVERLESS_BUNDLE="${bundle_image}"
+	  "${rootdir}/hack/generate/dockerfile.sh" "${rootdir}/templates/index.Dockerfile" "${index_dorkerfile_path}"
 
     build_image "serverless-index" "${rootdir}" "${index_dorkerfile_path}"
 

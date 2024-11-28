@@ -40,8 +40,8 @@ function default_serverless_operator_images() {
   # The actually pullable URL is used to generate the index images for FBC components and it
   # has to be (eventually) pullable.
 
-  export SERVERLESS_BUNDLE=${SERVERLESS_BUNDLE:-$(latest_konflux_image_sha "${serverless_registry}-bundle" "latest" "true")}
-  export DEFAULT_SERVERLESS_BUNDLE=${DEFAULT_SERVERLESS_BUNDLE:-$(latest_konflux_image_sha "${serverless_registry}-bundle" "latest" "true")}
+  export SERVERLESS_BUNDLE=${SERVERLESS_BUNDLE:-$(get_bundle_for_version "${CURRENT_VERSION}")}
+  export DEFAULT_SERVERLESS_BUNDLE=${DEFAULT_SERVERLESS_BUNDLE:-$(get_bundle_for_version "${CURRENT_VERSION}")}
 
   SERVERLESS_BUNDLE_REDHAT_IO=${SERVERLESS_BUNDLE_REDHAT_IO:-$(latest_registry_redhat_io_image_sha "${serverless_registry}-bundle:${CURRENT_VERSION_IMAGES}" "true")}
   # Bundle image is in different locations in quay.io and registry.redhat.io
@@ -57,6 +57,32 @@ function default_serverless_operator_images() {
   ocp_version=${ocp_version/./} # 4.17 -> 417
 
   export INDEX_IMAGE=${INDEX_IMAGE:-$(latest_konflux_image_sha "${registry_quay}-fbc-${ocp_version}/serverless-index-${quay_registry_app_version}-fbc-${ocp_version}:${CURRENT_VERSION_IMAGES}" "latest" "true")}
+}
+
+# Bundle image is specific as we need to pull older versions for including in the catalog.
+function get_bundle_for_version() {
+  local version app_version
+  version=${1:?"Provide version for Bundle image"}
+
+  app_version=${version/./} # 1.34.0 -> 134.0
+  app_version=${app_version%.*} # 134.0 -> 134
+
+
+  image=$(latest_konflux_image_sha "${registry_prefix_quay}${app_version}/serverless-bundle" "${version}" "false")
+  # As a backup, try also CI registry.
+  local ci_bundle="registry.ci.openshift.org/knative/serverless-bundle"
+  if [[ "${image}" == "" ]]; then
+    image=$(image_with_sha "${ci_bundle}:release-${version}")
+  fi
+  if [[ "${image}" == "" ]]; then
+    image=$(image_with_sha "${ci_bundle}:knative-main")
+  fi
+
+  if [[ "${image}" == "" ]]; then
+    exit 1
+  fi
+
+  echo "$image"
 }
 
 function knative_serving_images_release() {
