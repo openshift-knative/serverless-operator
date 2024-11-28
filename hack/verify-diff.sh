@@ -5,7 +5,7 @@ readonly EXCLUDE_FILES=(
   'olm-catalog/serverless-operator/manifests/serverless-operator.clusterserviceversion.yaml'
   'olm-catalog/serverless-operator-index/Dockerfile'
   'test/images-rekt.yaml'
-  '.konflux/override-snapshot.yaml'
+  '.konflux-release/*'
 )
 # Define the patterns to exclude
 readonly EXCLUDE_PATTERNS=(
