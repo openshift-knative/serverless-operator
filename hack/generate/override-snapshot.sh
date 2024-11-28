@@ -30,14 +30,14 @@ EOF
 }
 
 function create_component_snapshot {
-  local rootdir snapshot_file so_version serving_version
-  rootdir="$(dirname "$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")")"
+  local snapshot_file so_version so_semversion serving_version tmp_catalog_dir max_ocp_version latest_index_image
   snapshot_file="${1}/override-snapshot.yaml"
 
   serving_version="$(metadata.get dependencies.serving)"
   serving_version="${serving_version/knative-v/}" # -> 1.15
-  serving_version=${serving_version/./}
-  so_version=$(get_app_version_from_tag "$(metadata.get dependencies.serving)")
+  serving_version="${serving_version/./}"
+  so_version="$(get_app_version_from_tag "$(metadata.get dependencies.serving)")"
+  so_semversion="$(metadata.get project.version)"
 
   cat > "${snapshot_file}" <<EOF
 apiVersion: appstudio.redhat.com/v1alpha1
@@ -51,6 +51,14 @@ spec:
   application: serverless-operator-${so_version}
 EOF
 
+  tmp_catalog_dir=$(mktemp -d)
+  max_ocp_version="$(metadata.get requirements.ocpVersion.max)"
+  max_ocp_version=${max_ocp_version/./}
+  latest_index_image="${registry_quay}-fbc-${max_ocp_version}/serverless-index-${so_version}-fbc-${max_ocp_version}:latest"
+
+  # get catalog from latest index, so we can get the referenced images from there
+  opm migrate "${latest_index_image}" "${tmp_catalog_dir}" -o json
+
   while IFS= read -r image_ref; do
     # shellcheck disable=SC2053
 
@@ -60,27 +68,30 @@ EOF
       image=${image%@*} # Remove sha
       image=${image/-rhel[0-9]/} # Remove -rhelX part
 
-      if [[ $image =~ serverless ]]; then
+      component_image_ref="${registry_quay}/${image}@${image_sha}"
+
+      if [[ $image == "serverless-operator-bundle" ]]; then
+        # bundle component is named in konflux serverless-bundle-<version>
+
+        component_name="serverless-bundle-${so_version}"
+        component_image_ref="${registry_quay}/serverless-bundle@${image_sha}"
+      elif [[ $image =~ serverless ]]; then
         component_name="${image}-${so_version}"
       else
         component_name="${image}-${serving_version}"
       fi
 
-      component_image_ref="${registry_quay}/${image}@${image_sha}"
-
       add_component "${snapshot_file}" "${component_name}" "${component_image_ref}"
     fi
-  done <<< "$(yq read "${rootdir}/olm-catalog/serverless-operator/manifests/serverless-operator.clusterserviceversion.yaml" 'spec.relatedImages[*].image' | sort | uniq)"
+  done <<< "$(jq -r '. | select(.name == "serverless-operator.v'${so_semversion}'") | .relatedImages[].image' "${tmp_catalog_dir}/serverless-operator/catalog.json" | sort | uniq)"
+  # ^ we take the images from the catalogs relatedImages section for the given SO version. We could also extract the bundle image from the catalog (jq -r '. | select(.name == "serverless-operator.v'${so_semversion}'") | .image')
+  # and extract the CSV from there and use the CSVs relatedImages section.
 
-  # Add bundle, as this is not referenced in the CSV
-  bundle_repo="${registry_quay}/serverless-bundle"
-  bundle_image="${registry_quay}/serverless-bundle:$(metadata.get project.version)"
-  bundle_digest=$(skopeo inspect --no-tags=true "docker://${bundle_image}" | jq -r '.Digest')
-  add_component "${snapshot_file}" "serverless-bundle-${so_version}" "${bundle_repo}@${bundle_digest}"
+  rm -rf "${tmp_catalog_dir}"
 }
 
 function create_fbc_snapshots {
-  local snapshot_dir so_version
+  local rootdir snapshot_dir so_version
   rootdir="$(dirname "$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")")"
   snapshot_dir="${1}"
 

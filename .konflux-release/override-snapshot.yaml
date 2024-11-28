@@ -107,11 +107,11 @@ spec:
           revision: "efacbc466fb74b59c2fde6430508882f6f8e287f"
           dockerfileUrl: "openshift/ci-operator/knative-images/ingress/Dockerfile"
     - name: "kn-eventing-istio-controller-115"
-      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-eventing-istio-controller@sha256:d99049813c202b2fb6ba893627665f1f682e3e05db9fff246a4ea1df1b641a07"
+      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-eventing-istio-controller@sha256:c447424e26c10681b313332f7e1cf972c506363a0842f5e8f78d9d0cf3a8efc9"
       source:
         git:
           url: "https://github.com/openshift-knative/eventing-istio"
-          revision: "de212d908861b7a89b9cfdf5c110426256872c7d"
+          revision: "de0068817a252cec0ae5bf5f3c1a3d9b013f0fcd"
           dockerfileUrl: "openshift/ci-operator/knative-images/controller/Dockerfile"
     - name: "kn-eventing-jobsink-115"
       containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-eventing-jobsink@sha256:36a0bd6c217418ab855f24b917e43f325152e5a712830288f328585c0f6323b6"
@@ -233,37 +233,37 @@ spec:
           revision: "ecc321f6ce091110031e321cad07ee18a2b06681"
           dockerfileUrl: "openshift/ci-operator/knative-images/kourier/Dockerfile"
     - name: "serverless-ingress-135"
-      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/serverless-ingress@sha256:f2c1dd4b83833413611c3056578db13889d8cee9026fbc739890465506f0aa9c"
+      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/serverless-ingress@sha256:e25924d87d8f688c9f54530008d9a5ea8065f64694a90e820bba23e1e22314c2"
       source:
         git:
           url: "https://github.com/openshift-knative/serverless-operator"
-          revision: "6ee34735852390042f346ad503f19d917dd6ff87"
+          revision: "cd837d501290d9bb577c1eeb18a62fb9413883fa"
           dockerfileUrl: "serving/ingress/Dockerfile"
     - name: "serverless-kn-operator-135"
-      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/serverless-kn-operator@sha256:05a301408a6c687900aa605161e280da3c6ccfdcea7df1f1b95b5879b794f23d"
+      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/serverless-kn-operator@sha256:b3ee0703174a1dce19dbeec0568ea29ef8e06278d75a33ba67dedd58de8c5706"
       source:
         git:
           url: "https://github.com/openshift-knative/serverless-operator"
-          revision: "6ee34735852390042f346ad503f19d917dd6ff87"
+          revision: "cd837d501290d9bb577c1eeb18a62fb9413883fa"
           dockerfileUrl: "knative-operator/Dockerfile"
     - name: "serverless-must-gather-135"
-      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/serverless-must-gather@sha256:cf172b93a447fedc1de4a1c38e33e992105747119642ae0606a4d26d3e1abf33"
+      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/serverless-must-gather@sha256:38c9b6a20ab4d51c216f58d364b7f85906b04459e001d864d936e479901b5d3a"
       source:
         git:
           url: "https://github.com/openshift-knative/serverless-operator"
-          revision: "b8d4f8e61de94a640a522dc04db36aced8138e66"
+          revision: "cd837d501290d9bb577c1eeb18a62fb9413883fa"
           dockerfileUrl: "must-gather/Dockerfile"
     - name: "serverless-openshift-kn-operator-135"
-      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/serverless-openshift-kn-operator@sha256:6d025e7be6e96249827985a8329e54bed93c3b0a08795fd31ca9502b9e664da1"
+      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/serverless-openshift-kn-operator@sha256:629032a1164e8ea17849813f046c56673eb176aff0f6bf7c7649766daf0b155d"
+      source:
+        git:
+          url: "https://github.com/openshift-knative/serverless-operator"
+          revision: "cd837d501290d9bb577c1eeb18a62fb9413883fa"
+          dockerfileUrl: "openshift-knative-operator/Dockerfile"
+    - name: "serverless-bundle-135"
+      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/serverless-bundle@sha256:0d5feb3c9f59246d16db1c687e3c1085fcc8a360cd51974197a878944df06b1d"
       source:
         git:
           url: "https://github.com/openshift-knative/serverless-operator"
           revision: "b8d4f8e61de94a640a522dc04db36aced8138e66"
-          dockerfileUrl: "openshift-knative-operator/Dockerfile"
-    - name: "serverless-bundle-135"
-      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/serverless-bundle@sha256:f4f26ea2db068487bc81d657cd28b16d8e352cff74b8d9ca6415403b198a88ed"
-      source:
-        git:
-          url: "https://github.com/openshift-knative/serverless-operator.git"
-          revision: "c9eb519cfff2016485e157a8f1f761c9559eda22"
           dockerfileUrl: "olm-catalog/serverless-operator/Dockerfile"
