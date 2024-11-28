@@ -22,6 +22,7 @@ var sinksAll = []component{
 	kafkaChannelParallel,
 	ksvc,
 	kafkaSink,
+	jobSink,
 }
 
 var sinksShort = []component{
