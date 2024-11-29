@@ -323,6 +323,7 @@ release-files: install-tools
   	tenant-1,tenant-2,serving-tests,serverless-tests,eventing-e2e0,eventing-e2e1,eventing-e2e2,eventing-e2e3,eventing-e2e4
 	./hack/generate/override-snapshot.sh \
   	.konflux-release/
+	./hack/generate/metadata-webhook.sh
 
 generate-dockerfiles: install-tool-generate
 	GOFLAGS='' go install github.com/openshift-knative/hack/cmd/generate@latest
