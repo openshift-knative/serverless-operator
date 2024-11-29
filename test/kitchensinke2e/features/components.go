@@ -21,6 +21,7 @@ import (
 	brokerresources "knative.dev/eventing/test/rekt/resources/broker"
 	channelresources "knative.dev/eventing/test/rekt/resources/channel"
 	"knative.dev/eventing/test/rekt/resources/containersource"
+	"knative.dev/eventing/test/rekt/resources/jobsink"
 	parallelresources "knative.dev/eventing/test/rekt/resources/parallel"
 	"knative.dev/eventing/test/rekt/resources/pingsource"
 	sequenceresources "knative.dev/eventing/test/rekt/resources/sequence"
@@ -280,6 +281,18 @@ var kafkaSink = genericComponent{
 			kafkasink.Install(name, topic, testpkg.BootstrapServersPlaintextArr,
 				kafkasink.WithNumPartitions(10),
 				kafkasink.WithReplicationFactor(1))(ctx, t)
+		}
+	},
+}
+
+var jobSink = genericComponent{
+	shortLabel: "josi",
+	label:      "JobSink",
+	kind:       "JobSink",
+	gvr:        jobsink.GVR(),
+	install: func(name string, _ ...manifest.CfgFn) feature.StepFn {
+		return func(ctx context.Context, t feature.T) {
+			jobsink.Install(name, jobsink.WithForwarderJob("non-existent-url"))(ctx, t)
 		}
 	},
 }
