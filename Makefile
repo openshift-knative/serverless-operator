@@ -322,6 +322,8 @@ release-files: install-tools
 	./hack/generate/mesh-auth-policies.sh \
   	tenant-1,tenant-2,serving-tests,serverless-tests,eventing-e2e0,eventing-e2e1,eventing-e2e2,eventing-e2e3,eventing-e2e4
 	./hack/generate/metadata-webhook.sh
+	./hack/generate/override-snapshot.sh \
+  	.konflux-release/
 
 generate-dockerfiles: install-tool-generate
 	GOFLAGS='' go install github.com/openshift-knative/hack/cmd/generate@latest
@@ -399,4 +401,10 @@ install-tool-generate:
 install-tool-sorhel:
 	GOFLAGS='' go install github.com/openshift-knative/hack/cmd/sorhel@latest
 
-install-tools: install-tool-sobranch install-tool-skopeo install-tool-generate install-tool-sorhel
+install-tool-cosign:
+	GOFLAGS='' go install github.com/sigstore/cosign/cmd/cosign@latest
+
+install-tool-opm:
+	GOFLAGS='' go install github.com/operator-framework/operator-registry/cmd/opm@v1.47.0
+
+install-tools: install-tool-sobranch install-tool-skopeo install-tool-generate install-tool-sorhel install-tool-cosign install-tool-opm
