@@ -13,12 +13,12 @@ LABEL operators.operatorframework.io.bundle.manifests.v1=manifests/
 LABEL operators.operatorframework.io.bundle.metadata.v1=metadata/
 LABEL operators.operatorframework.io.bundle.package.v1=serverless-operator
 LABEL operators.operatorframework.io.bundle.channel.default.v1="stable"
-LABEL operators.operatorframework.io.bundle.channels.v1="stable,stable-1.35"
+LABEL operators.operatorframework.io.bundle.channels.v1="stable,stable-1.36"
 
 LABEL \
       com.redhat.component="openshift-serverless-1-serverless-operator-bundle-container" \
       name="openshift-serverless-1/serverless-operator-bundle" \
-      version="1.35.0" \
+      version="1.36.0" \
       summary="Red Hat OpenShift Serverless Bundle" \
       maintainer="serverless-support@redhat.com" \
       description="Red Hat OpenShift Serverless Bundle" \
@@ -29,6 +29,6 @@ LABEL \
       com.redhat.delivery.backport=false \
       distribution-scope="authoritative-source-only" \
       url="https://catalog.redhat.com/software/container-stacks/detail/5ec53fcb110f56bd24f2ddc5" \
-      release="1.35.0" \
+      release="1.36.0" \
       io.openshift.tags="bundle" \
       vendor="Red Hat, Inc."

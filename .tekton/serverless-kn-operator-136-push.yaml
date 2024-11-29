@@ -36,7 +36,7 @@ spec:
       value: '{{revision}}'
     - name: additional-tags
       value:
-        - 1.35.0
+        - 1.36.0
         - latest
     - name: prefetch-input
       value: '[{"type":"rpm"}]'
