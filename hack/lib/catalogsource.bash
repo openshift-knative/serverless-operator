@@ -43,13 +43,10 @@ function install_catalogsource {
     fi
 
     # Generate CSV from template to properly substitute operator images from env variables.
-    "${rootdir}/hack/generate/csv.sh" templates/csv.yaml "$csv"
-
-    # Replace registry.redhat.io references with Konflux quay.io for test purposes as
+    #
+    # Pass "true" to replace registry.redhat.io references with Konflux quay.io for test purposes as
     # images in the former location are not published yet.
-    sed -ri "s#(.*)${registry_redhat_io}/(.*@sha[0-9]+:[a-z0-9]+.*)#\1${registry_quay}/\2#" "$csv"
-    # Remove rhel suffix.
-    sed -ri "s#(.*${registry_quay}/.*)-rhel[[:digit:]]+(.*)#\1\2#" "$csv"
+    "${rootdir}/hack/generate/csv.sh" templates/csv.yaml "$csv" "true"
 
     cat "$csv"
 

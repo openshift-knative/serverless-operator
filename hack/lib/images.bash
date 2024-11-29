@@ -15,6 +15,8 @@ registry_prefix_quay="quay.io/redhat-user-workloads/ocp-serverless-tenant/server
 registry_quay="${registry_prefix_quay}${quay_registry_app_version}"
 registry_redhat_io="registry.redhat.io/openshift-serverless-1"
 
+export FORCE_USE_QUAY_IMAGES=${FORCE_USE_QUAY_IMAGES:-"false"}
+
 function get_serverless_operator_rhel_version() {
   sorhel --so-version="${CURRENT_VERSION}"
 }
@@ -310,6 +312,11 @@ function latest_registry_redhat_io_image_sha() {
 
   if [ "${image}" = "" ]; then
     exit 1
+  fi
+
+  if [ "${FORCE_USE_QUAY_IMAGES}" = "true" ]; then
+    echo "${image}"
+    return
   fi
 
   if [[ "$image" == *@* ]]; then

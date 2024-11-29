@@ -4,6 +4,9 @@ set -Eeuo pipefail
 
 template="${1:?Provide template file as arg[1]}"
 target="${2:?Provide a target CSV file as arg[2]}"
+force_use_quay_images=${3:-"false"}
+
+export FORCE_USE_QUAY_IMAGES="${force_use_quay_images}"
 
 # shellcheck disable=SC1091,SC1090
 source "$(dirname "${BASH_SOURCE[0]}")/../lib/common.bash"
