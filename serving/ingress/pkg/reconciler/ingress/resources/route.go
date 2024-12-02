@@ -87,6 +87,8 @@ func makeRoute(ci *networkingv1alpha1.Ingress, host string, rule networkingv1alp
 		return nil, nil
 	}
 
+	annotations = cleanArgoMetadata(annotations)
+
 	// Set timeout for OpenShift Route
 	timeout, err := getHAProxyTimeout(ci)
 	if err != nil {
@@ -99,6 +101,8 @@ func makeRoute(ci *networkingv1alpha1.Ingress, host string, rule networkingv1alp
 		OpenShiftIngressLabelKey:          ci.GetName(),
 		OpenShiftIngressNamespaceLabelKey: ci.GetNamespace(),
 	})
+
+	labels = cleanArgoMetadata(labels)
 
 	name := routeName(string(ci.GetUID()), host)
 	serviceName := ""
@@ -209,4 +213,14 @@ func getHAProxyTimeout(ci *networkingv1alpha1.Ingress) (string, error) {
 		return fmt.Sprintf("%vs", timeout), nil
 	}
 	return DefaultTimeout, nil
+}
+
+func cleanArgoMetadata(metadata map[string]string) map[string]string {
+	cleanedMetadata := make(map[string]string)
+	for key, value := range metadata {
+		if !strings.HasPrefix(key, "argocd.argoproj.io") && !strings.HasPrefix(key, "app.kubernetes.io/instance") {
+			cleanedMetadata[key] = value
+		}
+	}
+	return cleanedMetadata
 }
