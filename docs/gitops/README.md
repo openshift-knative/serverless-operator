@@ -10,6 +10,40 @@ oc apply -f docs/gitops/gitops-subscription.yaml
 # ...
 oc get csv -n openshift-gitops -w
 ```
+### Install Serverless Catalog Source
+
+If you are developing the Serverless operator, you can use the local catalog source as follows.
+
+```shell
+# Install the local catalog index
+export DOCKER_REPO_OVERRIDE=...
+make image; make install-with-argo-cd
+
+# Modify the 100-subscriptions.yaml to use the local catalog source
+# add the CatalogSource
+apiVersion: operators.coreos.com/v1alpha1
+kind: CatalogSource
+metadata:
+  name: serverless-operator
+  namespace: openshift-marketplace
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
+spec:
+  displayName: Serverless Operator
+  image: image-registry.openshift-image-registry.svc:5000/openshift-marketplace/serverless-index:latest
+  publisher: Red Hat
+  sourceType: grpc
+ ---
+
+# Modify the Susbcription to point to the right source
+apiVersion: operators.coreos.com/v1alpha1
+kind: Subscription
+metadata:
+...
+  source: "serverless-operator"
+...
+````
+
 
 ### Creating Argo CD application
 
@@ -21,7 +55,7 @@ oc apply -f docs/gitops/application.yaml
 oc adm policy add-role-to-user admin system:serviceaccount:openshift-gitops:openshift-gitops-argocd-application-controller -n knative-eventing
 oc adm policy add-role-to-user admin system:serviceaccount:openshift-gitops:openshift-gitops-argocd-application-controller -n knative-serving
 oc adm policy add-role-to-user admin system:serviceaccount:openshift-gitops:openshift-gitops-argocd-application-controller -n knative-serving-ingress
-
+oc adm policy add-role-to-user admin system:serviceaccount:openshift-gitops:openshift-gitops-argocd-application-controller -n default
 # Access the Argo CD UI by navigating to the openshift-gitops-server route
 oc get routes -n openshift-gitops openshift-gitops-server
 

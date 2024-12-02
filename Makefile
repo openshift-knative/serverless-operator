@@ -9,6 +9,9 @@ images:
 install: install-tools
 	./hack/install.sh
 
+install-with-argo-cd: install-tools
+	INSTALL_WITH_ARGO_CD="true" ./hack/install.sh
+
 install-operator: install-tools
 	INSTALL_SERVING="false" INSTALL_EVENTING="false" ./hack/install.sh
 
