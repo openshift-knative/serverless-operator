@@ -553,7 +553,7 @@ func withArgoCDMetadata(ing *networkingv1alpha1.Ingress) {
 	if labels == nil {
 		labels = map[string]string{}
 	}
-	annos[ArgoCDPrefix+"key"] = "value"
+	annos[ArgoCDPrefix+"/key"] = "value"
 	labels[KubernetesApplicationLabelKey] = "true"
 	ing.SetAnnotations(annos)
 	ing.SetLabels(labels)
