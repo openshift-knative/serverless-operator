@@ -24,6 +24,8 @@ const (
 	DisableRouteAnnotation           = socommon.ServingDownstreamDomain + "/disableRoute"
 	EnablePassthroughRouteAnnotation = socommon.ServingDownstreamDomain + "/enablePassthrough"
 	SetRouteTimeoutAnnotation        = socommon.ServingDownstreamDomain + "/setRouteTimeout"
+	ArgoCDPrefix                     = "argocd.argoproj.io"
+	KubernetesApplicationLabelKey    = "app.kubernetes.io/instance"
 
 	HTTPPort  = "http2"
 	HTTPSPort = "https"
@@ -87,7 +89,7 @@ func makeRoute(ci *networkingv1alpha1.Ingress, host string, rule networkingv1alp
 		return nil, nil
 	}
 
-	annotations = cleanArgoMetadata(annotations)
+	annotations = cleanArgoCDAnnotations(annotations)
 
 	// Set timeout for OpenShift Route
 	timeout, err := getHAProxyTimeout(ci)
@@ -102,7 +104,7 @@ func makeRoute(ci *networkingv1alpha1.Ingress, host string, rule networkingv1alp
 		OpenShiftIngressNamespaceLabelKey: ci.GetNamespace(),
 	})
 
-	labels = cleanArgoMetadata(labels)
+	labels = cleanArgoCDLabels(labels)
 
 	name := routeName(string(ci.GetUID()), host)
 	serviceName := ""
@@ -215,12 +217,22 @@ func getHAProxyTimeout(ci *networkingv1alpha1.Ingress) (string, error) {
 	return DefaultTimeout, nil
 }
 
-func cleanArgoMetadata(metadata map[string]string) map[string]string {
-	cleanedMetadata := make(map[string]string)
-	for key, value := range metadata {
-		if !strings.HasPrefix(key, "argocd.argoproj.io") && !strings.HasPrefix(key, "app.kubernetes.io/instance") {
-			cleanedMetadata[key] = value
+func cleanArgoCDAnnotations(annos map[string]string) map[string]string {
+	cleanedAnnos := make(map[string]string)
+	for key, value := range annos {
+		if !strings.HasPrefix(key, ArgoCDPrefix) {
+			cleanedAnnos[key] = value
 		}
 	}
-	return cleanedMetadata
+	return cleanedAnnos
+}
+
+func cleanArgoCDLabels(labels map[string]string) map[string]string {
+	cleanedLabels := make(map[string]string)
+	for key, value := range labels {
+		if !strings.HasPrefix(key, ArgoCDPrefix) && key != KubernetesApplicationLabelKey {
+			cleanedLabels[key] = value
+		}
+	}
+	return cleanedLabels
 }
