@@ -247,7 +247,7 @@ spec:
           revision: "511168ab8c84d76504417e6a8ecdb77dafc4c0e0"
           dockerfileUrl: "knative-operator/Dockerfile"
     - name: "serverless-must-gather-135"
-      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/serverless-must-gather@sha256:6dcc21031bd95cbc48c44c3e52b178f4cc50a6ee78268d24612c4cfda54a2a35"
+      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/serverless-must-gather@sha256:ed9a319a12902e2ee61b8f6274db99c5e7b8bd5be967652e8fe29fae6b95edbf"
       source:
         git:
           url: "https://github.com/openshift-knative/serverless-operator"
