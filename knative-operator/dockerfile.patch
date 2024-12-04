@@ -1,10 +1,10 @@
 diff --git a/knative-operator/Dockerfile b/knative-operator/Dockerfile
-index 0fd4719f9..2aedacb3c 100755
+index 044413409..f55fe650e 100755
 --- a/knative-operator/Dockerfile
 +++ b/knative-operator/Dockerfile
-@@ -19,6 +19,8 @@ RUN microdnf install tzdata
- 
+@@ -19,6 +19,8 @@ ARG VERSION=
  COPY --from=builder /usr/bin/main /usr/bin/knative-operator
+ COPY LICENSE /licenses/
  
 +COPY knative-operator/deploy /deploy
 +
