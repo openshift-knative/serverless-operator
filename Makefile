@@ -286,6 +286,8 @@ generate-ci-config:
 
 generate-catalog:
 	./hack/generate/catalog.sh
+	./hack/generate/override-snapshot.sh \
+  	.konflux-release/
 .PHONY: generate-catalog
 
 # Generates all files that are templated with release metadata.
@@ -321,8 +323,6 @@ release-files: install-tools
 		test/images-rekt.yaml
 	./hack/generate/mesh-auth-policies.sh \
   	tenant-1,tenant-2,serving-tests,serverless-tests,eventing-e2e0,eventing-e2e1,eventing-e2e2,eventing-e2e3,eventing-e2e4
-	./hack/generate/override-snapshot.sh \
-  	.konflux-release/
 	./hack/generate/metadata-webhook.sh
 
 generate-dockerfiles: install-tool-generate
