@@ -4,7 +4,7 @@ ARG GO_RUNTIME=registry.access.redhat.com/ubi8/ubi-minimal
 
 FROM $GO_BUILDER as builder
 
-WORKDIR /go/src/knative-operator/cmd/knative-operator
+WORKDIR /workspace
 COPY . .
 
 ENV CGO_ENABLED=1
@@ -17,6 +17,7 @@ FROM $GO_RUNTIME
 ARG VERSION=
 
 COPY --from=builder /usr/bin/main /usr/bin/knative-operator
+COPY LICENSE /licenses/
 
 COPY knative-operator/deploy /deploy
 
