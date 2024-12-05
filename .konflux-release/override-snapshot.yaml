@@ -107,7 +107,7 @@ spec:
           revision: "efacbc466fb74b59c2fde6430508882f6f8e287f"
           dockerfileUrl: "openshift/ci-operator/knative-images/ingress/Dockerfile"
     - name: "kn-eventing-istio-controller-115"
-      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-eventing-istio-controller@sha256:d99049813c202b2fb6ba893627665f1f682e3e05db9fff246a4ea1df1b641a07"
+      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-eventing-istio-controller@sha256:95f3b187ea432ae474d4512af5ab9c8077b155e0ba7463ee958202ce683cc234"
       source:
         git:
           url: "https://github.com/openshift-knative/eventing-istio"
