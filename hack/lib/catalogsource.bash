@@ -91,7 +91,8 @@ function install_catalogsource {
     # updating machine config pools takes a while.
     create_image_content_source_policy "$index_image" "$registry_redhat_io" "$registry_quay" "$tmpfile"
     [ -n "$OPENSHIFT_CI" ] && cat "$tmpfile"
-    if oc apply -f "$tmpfile"; then
+    # See: https://github.com/kubernetes/kubernetes/issues/52577#issuecomment-2516606002
+    if LANG=C oc apply -f "$tmpfile" | grep -v unchanged; then
       echo "Wait for machineconfigpool update to start"
       timeout 120 "[[ True != \$(oc get machineconfigpool --no-headers=true '-o=custom-columns=UPDATING:.status.conditions[?(@.type==\"Updating\")].status' | uniq) ]]"
       echo "Wait until all machineconfigpools are updated"
@@ -115,8 +116,12 @@ EOF
   # Ensure the Index pod is created with the right pull secret. The Pod's service account needs
   # to be linked with the right pull secret before creating the Pod. This is to prevent race conditions.
   timeout 120 "[[ \$(oc -n $OLM_NAMESPACE get pods -l olm.catalogSource=serverless-operator --no-headers | wc -l) != 1 ]]"
+
   index_pod=$(oc -n "$OLM_NAMESPACE" get pods -l olm.catalogSource=serverless-operator -oname)
-  if ! oc -n "$OLM_NAMESPACE" get "$index_pod" -ojsonpath='{.spec.imagePullSecrets}' | grep dockercfg &>/dev/null; then
+  # check if pull secrets are present, see: https://unix.stackexchange.com/a/388462
+  # shellcheck disable=SC2266
+  if oc -n "$OLM_NAMESPACE" get "$index_pod" -ojsonpath='{.spec.imagePullSecrets}' | [ ! -t 0 ]; then
+    # wait until they have dockercfg one
     timeout 120 "[[ \$(oc -n $OLM_NAMESPACE get sa serverless-operator -ojsonpath='{.imagePullSecrets}' | grep -c dockercfg) == 0 ]]"
     oc -n "$OLM_NAMESPACE" delete pods -l olm.catalogSource=serverless-operator
   fi
