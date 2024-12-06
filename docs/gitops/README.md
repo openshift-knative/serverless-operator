@@ -17,7 +17,7 @@ If you are developing the Serverless operator, you can use the local catalog sou
 ```shell
 # Install the local catalog index
 export DOCKER_REPO_OVERRIDE=...
-make image; make install-with-argo-cd
+INSTALL_WITH_ARGO_CD=true make images dev
 
 # Modify the 100-subscriptions.yaml to use the local catalog source
 # add the CatalogSource

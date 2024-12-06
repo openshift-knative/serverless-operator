@@ -18,15 +18,10 @@ dump_state.setup
 
 use_spot_instances
 scale_up_workers
-if [[ ${INSTALL_WITH_ARGO_CD:-} != "true" ]]; then
-  create_namespaces "${SYSTEM_NAMESPACES[@]}"
-  if [[ $INSTALL_CERTMANAGER == "true" ]]; then
-    install_certmanager
-  fi
-fi
+create_namespaces "${SYSTEM_NAMESPACES[@]}"
 
+if [[ $INSTALL_CERTMANAGER == "true" ]]; then
+  install_certmanager
+fi
 ensure_catalogsource_installed
-
-if [[ ${INSTALL_WITH_ARGO_CD:-} != "true" ]]; then
-  ensure_serverless_installed
-fi
+ensure_serverless_installed
