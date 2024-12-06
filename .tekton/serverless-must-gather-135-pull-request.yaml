@@ -44,6 +44,9 @@ spec:
       value: '[{"type":"rpm"}]'
     - name: prefetch-input-dev-package-managers
       value: 'true'
+    - name: additional-tags
+      value:
+        - $(context.pipelineRun.name)
   pipelineRef:
     name: docker-build
   taskRunTemplate: {}
