@@ -93,7 +93,7 @@ spec:
           revision: "efacbc466fb74b59c2fde6430508882f6f8e287f"
           dockerfileUrl: "openshift/ci-operator/knative-images/controller/Dockerfile"
     - name: "kn-eventing-filter-115"
-      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-eventing-filter@sha256:be5f4c4063c2495af323d995cc91a42ed2eeed6554d32cfb88e63b4cf9c5e9a7"
+      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-eventing-filter@sha256:e7e8ddbcf7c875fa4f14b2bbe8d02690148bfae31dcb83bc2f09ecd1299f67d8"
       source:
         git:
           url: "https://github.com/openshift-knative/eventing"
