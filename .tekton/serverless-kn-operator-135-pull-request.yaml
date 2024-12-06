@@ -46,7 +46,7 @@ spec:
       value: 'true'
     - name: additional-tags
       value:
-        - $(context.pipelineRun.name)
+        - $(context.pipelineRun.uid)-{{revision}}
   pipelineRef:
     name: docker-build
   taskRunTemplate: {}
