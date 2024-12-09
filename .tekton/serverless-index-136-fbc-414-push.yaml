@@ -39,23 +39,13 @@ spec:
       value: '{{revision}}'
     - name: additional-tags
       value:
+        - $(context.pipelineRun.uid)-{{revision}}
         - 1.35.0
         - latest
   pipelineRef:
     name: fbc-builder
   taskRunTemplate: {}
   workspaces:
-    - name: workspace
-      volumeClaimTemplate:
-        metadata:
-          creationTimestamp: null
-        spec:
-          accessModes:
-            - ReadWriteOnce
-          resources:
-            requests:
-              storage: 1Gi
-        status: {}
     - name: git-auth
       secret:
         secretName: '{{ git_auth_secret }}'
