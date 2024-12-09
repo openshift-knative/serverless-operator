@@ -13,6 +13,13 @@ import (
 	"knative.dev/serving/pkg/apis/serving"
 )
 
+type testCase struct {
+	name               string
+	labels             map[string]string // Ksvc Labels
+	annotations        map[string]string // Revision template Annotations
+	expectIstioSidecar bool              // Whether it is expected for the istio-proxy sidecar to be injected into the pod
+}
+
 // Smoke tests for networking which access public and cluster-local
 // services from within the cluster.
 func TestServiceToServiceCalls(t *testing.T) {
