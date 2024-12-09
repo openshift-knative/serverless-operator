@@ -2,10 +2,14 @@ package kourier
 
 import (
 	"context"
+	"crypto/tls"
+	"crypto/x509"
 	"fmt"
+	"net"
 	"net/http"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/openshift-knative/serverless-operator/serving/ingress/pkg/reconciler/ingress/resources"
 	"github.com/openshift-knative/serverless-operator/test"
@@ -163,4 +167,61 @@ func TestCustomOpenShiftRoute(t *testing.T) {
 	if resp.StatusCode != 200 || strings.TrimSpace(string(resp.Body)) != expectedResponse {
 		t.Fatalf("Expecting a HTTP 200 response with %q, got %d: %s", expectedResponse, resp.StatusCode, string(resp.Body))
 	}
+}
+
+func lookupOpenShiftRouterIP(ctx *test.Context) net.IP {
+	// Deploy an auxiliary ksvc accessible via an OpenShift route, so that we have a route hostname that we can resolve
+	aux := test.Service("aux", test.Namespace, pkgTest.ImagePath(test.HelloworldGoImg), nil, nil)
+	aux = test.WithServiceReadyOrFail(ctx, aux)
+
+	ips, err := net.LookupIP(aux.Status.URL.Host)
+	if err != nil {
+		ctx.T.Fatalf("Error looking up ksvc's hostname IP address: %v", err)
+	}
+	if len(ips) == 0 {
+		ctx.T.Fatalf("No IP address found for %s", aux.Status.URL.Host)
+	}
+
+	ctx.T.Logf("Resolved the following IPs %v as the OpenShift Router address and use %v for test", ips, ips[0])
+	return ips[0]
+}
+
+// newSpoofClientWithTLS returns a Spoof client that always connects to the given IP address with 'customDomain' as SNI header
+func newSpoofClientWithTLS(ctx *test.Context, customDomain, ip string, certPool *x509.CertPool) (*spoof.SpoofingClient, error) {
+	transport := &http.Transport{
+		DialContext: func(_ context.Context, _, _ string) (net.Conn, error) {
+			// We ignore the request address, force the given <IP>:80
+			return net.Dial("tcp", ip+":80")
+		},
+		DialTLSContext: func(_ context.Context, _, _ string) (net.Conn, error) {
+			// We ignore the request address, force the given <IP>:443
+			conn, err := net.Dial("tcp", ip+":443")
+			if err != nil {
+				return nil, err
+			}
+
+			tlsConfig := &tls.Config{
+				RootCAs:    certPool,
+				ServerName: customDomain,
+			}
+
+			c := tls.Client(conn, tlsConfig)
+			err = c.Handshake()
+			if err != nil {
+				_ = c.Close()
+				return nil, err
+			}
+
+			return c, nil
+		},
+	}
+
+	sc := &spoof.SpoofingClient{
+		Client:          &http.Client{Transport: transport},
+		RequestInterval: time.Second,
+		RequestTimeout:  time.Minute,
+		Logf:            ctx.T.Logf,
+	}
+
+	return sc, nil
 }
