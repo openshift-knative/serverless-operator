@@ -32,6 +32,13 @@ assignees: ''
 - [ ] Verify that [`knative-istio-authz-chart`](https://github.com/openshift-knative/knative-istio-authz-chart/branches) has a branch with the same name as the `release-1.X` branch created previously in   serverless-operator
 - [ ] Verify that [`knative-istio-authz-chart`'s `Chart.yaml`](https://github.com/openshift-knative/knative-istio-authz-chart/blob/main/Chart.yaml) has `version` and `appVersion` set to the next version.
 
+## Monitor Build Status
+
+Once the `serverless-operator` branch is cut and PRs related to the release we're releasing are in,
+Konflux pipelines will run (if they haven't already) and build the various artifacts.
+You can check their aggregated status using the
+[Build Status Dashboard](https://openshift-knative.github.io/hack/).
+
 ### Pre-checks
 - [ ] Make sure that all dependent repos have a release branch for the new version and [CI set up](https://github.com/openshift-knative/hack)
 - [ ] Make sure that the [automated PR to point the CSV to the old branch is merged](https://github.com/openshift-knative/serverless-operator/pulls?q=is%3Apr+author%3Aapp%2Fgithub-actions+release-+is%3Aopen) like in https://github.com/openshift-knative/serverless-operator/pull/1881
