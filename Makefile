@@ -286,9 +286,12 @@ generate-ci-config:
 
 generate-catalog:
 	./hack/generate/catalog.sh
+.PHONY: generate-catalog
+
+generate-override-snapshot: install-tool-cosign install-tool-opm
 	./hack/generate/override-snapshot.sh \
   	.konflux-release/
-.PHONY: generate-catalog
+.PHONY: generate-override-snapshot
 
 # Generates all files that are templated with release metadata.
 release-files: install-tools
