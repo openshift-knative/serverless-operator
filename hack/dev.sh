@@ -15,6 +15,7 @@ source "$(dirname "${BASH_SOURCE[0]}")/lib/__sources__.bash"
 set -Eeuo pipefail
 
 debugging.setup
-
-create_namespaces "${SYSTEM_NAMESPACES[@]}"
+if [[ ${INSTALL_WITH_ARGO_CD:-} != "true" ]]; then
+  create_namespaces "${SYSTEM_NAMESPACES[@]}"
+fi
 ensure_catalogsource_installed
