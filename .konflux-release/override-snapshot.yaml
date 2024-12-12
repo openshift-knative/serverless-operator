@@ -51,7 +51,7 @@ spec:
           revision: "52c61d80da7601f896a6516dad16a87989db18dd"
           dockerfileUrl: "openshift/ci-operator/knative-images/post-install/Dockerfile"
     - name: "kn-ekb-receiver-115"
-      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-ekb-receiver@sha256:8bbeb7f506b64780af4967996c795337947a32d4e7e97fb1a72e916b49263a8b"
+      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-ekb-receiver@sha256:9abfcbcd5a8bd81dbe1e03899f7003f51986e7d1cb6a1ade6f99f17fb296c215"
       source:
         git:
           url: "https://github.com/openshift-knative/eventing-kafka-broker"
