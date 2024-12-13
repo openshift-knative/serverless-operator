@@ -51,7 +51,7 @@ func TestMakeRoute(t *testing.T) {
 		},
 		{
 			name: "valid, default timeout",
-			ingress: ingress(withRules(
+			ingress: ingress(withArgoCDMetadata, withRules(
 				rule(withHosts([]string{localDomain, externalDomain}))),
 			),
 			want: []*routev1.Route{{
@@ -542,4 +542,19 @@ func withHTTPSBackendService() ruleOption {
 			}},
 		}}
 	}
+}
+
+func withArgoCDMetadata(ing *networkingv1alpha1.Ingress) {
+	annos := ing.GetAnnotations()
+	if annos == nil {
+		annos = map[string]string{}
+	}
+	labels := ing.GetLabels()
+	if labels == nil {
+		labels = map[string]string{}
+	}
+	annos[ArgoCDPrefix+"/key"] = "value"
+	labels[KubernetesApplicationLabelKey] = "true"
+	ing.SetAnnotations(annos)
+	ing.SetLabels(labels)
 }
