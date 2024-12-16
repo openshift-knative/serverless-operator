@@ -288,7 +288,7 @@ generate-catalog:
 	./hack/generate/catalog.sh
 .PHONY: generate-catalog
 
-generate-override-snapshot: install-tool-cosign install-tool-opm
+generate-override-snapshot: install-tools
 	./hack/generate/override-snapshot.sh \
   	.konflux-release/
 .PHONY: generate-override-snapshot
