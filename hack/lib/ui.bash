@@ -82,8 +82,8 @@ function debugging.finish {
   set +x
   exec 19>&-
 
-  if [[ -n "${SHARED_DIR:-}" ]]; then
-    cp -v "${ARTIFACTS}"/debuglog-*.log "${ARTIFACTS}"/stdout-*.log "${ARTIFACTS}"/stderr-*.log "${SHARED_DIR}" || true
+  if [ -n "${SHARED_DIR:-}" ] && [ -n "${JOB_NAME_SAFE:-}" ]; then
+    tar -czvf "${SHARED_DIR}/${JOB_NAME_SAFE}-testlog.tar.gz" "${ARTIFACTS}"/debuglog-*.log "${ARTIFACTS}"/stdout-*.log "${ARTIFACTS}"/stderr-*.log || true
   fi
 }
 
