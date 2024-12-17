@@ -54,9 +54,11 @@ function stacktrace {
 }
 
 function debugging.setup {
-  local debuglog debugdir
-  debugdir="${ARTIFACTS:-/tmp}"
-  debuglog="${debugdir}/debuglog-$(basename "$0").log"
+  local debuglog logdir stdoutlog stderrlog
+  logdir="${ARTIFACTS:-/tmp}"
+  debuglog="${logdir}/debuglog-$(basename "$0").log"
+  stdoutlog="${logdir}/stdout-$(basename "$0").log"
+  stderrlog="${logdir}/stderr-$(basename "$0").log"
   logger.debug "Debug log (set -x) is written to: ${debuglog}"
   # ref: https://serverfault.com/a/579078
   # Use FD 19 to capture the debug stream caused by "set -x":
@@ -68,6 +70,10 @@ function debugging.setup {
 
   # Register finish of debugging at exit
   trap debugging.finish EXIT
+
+  # Send stdout and stderr also to log files.
+  # shellcheck disable=SC2093
+  exec 1> >(tee "${stdoutlog}" >&1) 2> >(tee "${stderrlog}" >&2)
   set -x
 }
 
@@ -75,6 +81,10 @@ function debugging.finish {
   # Close the output:
   set +x
   exec 19>&-
+
+  if [ -n "${SHARED_DIR:-}" ] && [ -n "${JOB_NAME_SAFE:-}" ]; then
+    tar -czvf "${SHARED_DIR}/${JOB_NAME_SAFE}-testlog.tar.gz" "${ARTIFACTS}"/debuglog-*.log "${ARTIFACTS}"/stdout-*.log "${ARTIFACTS}"/stderr-*.log || true
+  fi
 }
 
 function logger.debug {
