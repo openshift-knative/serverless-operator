@@ -379,6 +379,9 @@ generated-files-release-next: release-files
 	(cd olm-catalog/serverless-operator && USE_RELEASE_NEXT=true ./hack/update-manifests.sh)
 	./hack/update-deps.sh
 
+verify-override-snapshot-revisions: install-tools
+	./hack/verify-revisions-override-snapshot.sh .konflux-release/
+
 # Runs the lints Github Actions do too.
 lint:
 	woke
