@@ -410,4 +410,7 @@ install-tool-cosign:
 install-tool-opm:
 	GOFLAGS='' go install github.com/operator-framework/operator-registry/cmd/opm@v1.47.0
 
-install-tools: install-tool-sobranch install-tool-skopeo install-tool-generate install-tool-sorhel install-tool-cosign install-tool-opm
+install-tool-oras:
+	GOFLAGS='' go install oras.land/oras/cmd/oras@v1.2.0
+
+install-tools: install-tool-sobranch install-tool-skopeo install-tool-generate install-tool-sorhel install-tool-cosign install-tool-opm install-tool-oras
