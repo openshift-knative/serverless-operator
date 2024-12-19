@@ -254,7 +254,7 @@ spec:
           revision: "b0caa628f0de7ecefd1900d6d65c3fe23af5c4d0"
           dockerfileUrl: "must-gather/Dockerfile"
     - name: "serverless-openshift-kn-operator-135"
-      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/serverless-openshift-kn-operator@sha256:6ee283b00bd79af79b76dfef77fd158866d346c65426ebd5987502e67d9a2469"
+      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/serverless-openshift-kn-operator@sha256:25135b4a7c76239cf9c663ff41b288f814fae9ba5bff41eb3f6967cb6b19eb45"
       source:
         git:
           url: "https://github.com/openshift-knative/serverless-operator"
