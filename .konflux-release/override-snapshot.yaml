@@ -226,7 +226,7 @@ spec:
           revision: "4c54c790d2249693aff53f4bf76680d437bd7ef3"
           dockerfileUrl: "openshift/ci-operator/knative-images/webhook/Dockerfile"
     - name: "net-kourier-kourier-115"
-      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/net-kourier-kourier@sha256:7187e69910638840bf7fa80a519c31e257cd284cf83eb21c9448327b024e8f7a"
+      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/net-kourier-kourier@sha256:56aed79b38e548189b323ed6f3dd1485897562ed9314c80fb972c23e6dfaca0f"
       source:
         git:
           url: "https://github.com/openshift-knative/net-kourier"
