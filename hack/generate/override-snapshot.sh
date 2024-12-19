@@ -90,6 +90,42 @@ EOF
   rm -rf "${tmp_catalog_dir}"
 }
 
+# verify that the revisions (git commit) for components from the same repo match
+function verify_component_snapshot {
+  local snapshot_file repo revision component repo_revision failed
+  snapshot_file="${1}/override-snapshot.yaml"
+  failed="false"
+  declare -A repo_revision=()
+
+  while IFS= read -r json; do
+    repo="$(echo "$json" | jq -r .source.git.url)"
+    repo=${repo%".git"} # remove optional .git suffix from repo name
+    revision="$(echo "$json" | jq -r .source.git.revision)"
+    component="$(echo "$json" | jq -r .name)"
+
+    if [[ ! -v repo_revision[$repo]  ]]; then
+      # no revision for repo so far --> add it to map
+      repo_revision[$repo]=$revision
+    else
+      if [[ "${repo_revision[$repo]}" != "$revision" ]]; then
+        # revisions don't match
+        if [[ $component =~ "serverless-bundle" ]]; then
+          #ignore serverless bundle
+          continue
+        fi
+
+        echo "Revision for ${component} didn't match. Expected revision ${repo_revision[$repo]} for repo ${repo}, but got ${revision}"
+        failed="true"
+      fi
+    fi
+
+  done <<< "$(yq read --tojson "${snapshot_file}" "spec.components[*]")"
+
+  if [[ "$failed" == "true" ]]; then
+    exit 1
+  fi
+}
+
 function create_fbc_snapshots {
   local rootdir snapshot_dir so_version
   rootdir="$(dirname "$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")")"
@@ -122,4 +158,5 @@ EOF
 
 target_dir="${1:?Provide a target directory for the override snapshots as arg[1]}"
 create_component_snapshot "${target_dir}"
+verify_component_snapshot "${target_dir}"
 create_fbc_snapshots "${target_dir}"
