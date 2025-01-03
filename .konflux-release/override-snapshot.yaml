@@ -205,7 +205,7 @@ spec:
           revision: "8ff5aedc7738e20e239ee6e629c40d5edb2e465c"
           dockerfileUrl: "openshift/ci-operator/knative-images/migrate/Dockerfile"
     - name: "kn-serving-webhook-115"
-      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-serving-webhook@sha256:5a11bc4b52714d431438c5e6a19b4882aab4ce9b1c59db8889bbcbe236c75228"
+      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-serving-webhook@sha256:e27868eaf7bec537f4771b0370a372546006a41bc7207a36c4cef62ee19b323a"
       source:
         git:
           url: "https://github.com/openshift-knative/serving"
