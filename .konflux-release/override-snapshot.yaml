@@ -177,7 +177,7 @@ spec:
           revision: "8ff5aedc7738e20e239ee6e629c40d5edb2e465c"
           dockerfileUrl: "openshift/ci-operator/knative-images/autoscaler-hpa/Dockerfile"
     - name: "kn-serving-autoscaler-115"
-      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-serving-autoscaler@sha256:884273d719fb22a44a832f939b3881e5f28623a02937caedd17f2f5f1c526774"
+      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-serving-autoscaler@sha256:9141584e945179fbc1fcb8d1150ee2a1bc4eda4fb6304d881e1ffaea8231dcac"
       source:
         git:
           url: "https://github.com/openshift-knative/serving"
