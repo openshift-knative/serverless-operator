@@ -184,7 +184,7 @@ spec:
           revision: "8ff5aedc7738e20e239ee6e629c40d5edb2e465c"
           dockerfileUrl: "openshift/ci-operator/knative-images/autoscaler/Dockerfile"
     - name: "kn-serving-controller-115"
-      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-serving-controller@sha256:2c4f5c0ed528baee4beecffdf1b0e077ac2de826e244605e89c025ee601b5494"
+      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-serving-controller@sha256:be6c680610ac203e9fb91235231a4c3bb997f5bea979d460602b28420256b905"
       source:
         git:
           url: "https://github.com/openshift-knative/serving"
