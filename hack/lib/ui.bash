@@ -53,6 +53,17 @@ function stacktrace {
   fi
 }
 
+function check_events_node_not_ready {
+  local current_node_not_ready_event
+  current_node_not_ready_event=$(oc get events -n default --no-headers --field-selector reason=NodeNotReady --sort-by='.metadata.creationTimestamp' -o custom-columns=TIME:.metadata.creationTimestamp | tail -n 1)
+  if [ "${current_node_not_ready_event:-}" = "" ]; then
+    return 0
+  fi
+  if [ "${INITIAL_NODE_NOT_READY_EVENT:-}" = "" ] || [ "$(date +%s -d "$current_node_not_ready_event")" -gt "$(date +%s -d "${INITIAL_NODE_NOT_READY_EVENT:-}")" ]; then
+    logger.error "Events with reason NodeNotReady present. Check gathered events."
+  fi
+}
+
 function debugging.setup {
   local debuglog logdir stdoutlog stderrlog
   logdir="${ARTIFACTS:-/tmp}"
@@ -67,6 +78,7 @@ function debugging.setup {
   export BASH_XTRACEFD=19
 
   error_handlers.register stacktrace
+  error_handlers.register check_events_node_not_ready
 
   # Register finish of debugging at exit
   trap debugging.finish EXIT

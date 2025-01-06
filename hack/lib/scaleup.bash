@@ -44,6 +44,9 @@ function scale_up_workers {
 
   logger.info "Waiting until worker nodes scale up to ${SCALE_UP} replicas"
   timeout 900 "[[ \$(oc get machineconfigpool worker -o jsonpath='{.status.readyMachineCount}') != ${SCALE_UP} ]]"
+
+  INITIAL_NODE_NOT_READY_EVENT=$(oc get events -n default --no-headers --field-selector reason=NodeNotReady --sort-by='.metadata.creationTimestamp' -o custom-columns=TIME:.metadata.creationTimestamp | tail -n 1)
+  export INITIAL_NODE_NOT_READY_EVENT
 }
 
 function cluster_scalable {
