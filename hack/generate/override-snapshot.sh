@@ -94,6 +94,7 @@ function verify_component_snapshot {
   local snapshot_file repo revision component repo_revision failed
   snapshot_file="${1}/override-snapshot.yaml"
   declare -A repo_revision=()
+  failed="false"
 
   while IFS= read -r json; do
     repo="$(echo "$json" | jq -r .source.git.url)"
