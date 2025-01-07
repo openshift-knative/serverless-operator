@@ -154,51 +154,7 @@ EOF
   done <<< "$(yq read "${rootdir}/olm-catalog/serverless-operator/project.yaml" 'requirements.ocpVersion.list[*]')"
 }
 
-function print_cves_for_image {
-  # based on https://github.com/enterprise-contract/ec-cli/blob/main/hack/view-clair-reports.sh
-  # migrated to parse mostly with JQ and thus being more flexible with the YQ version
-
-  IMAGE="${1}"
-  REPO="$(echo "$IMAGE" | cut -d '@' -f 1)"
-
-  CLAIR_REPORT_SHAS=$(
-    cosign download attestation $IMAGE | jq -r '.payload|@base64d|fromjson|.predicate.buildConfig.tasks[]|select(.name=="clair-scan").results[]|select(.name=="REPORTS").value|fromjson|.[]'
-  )
-
-  # For multi-arch the same report maybe associated with each of the per-arch
-  # images. Use sort uniq to avoid displaying it multiple times, but still
-  # support the possibility of different reports
-  ALL_BLOBS=""
-
-  for sha in $CLAIR_REPORT_SHAS; do
-    blob=$(skopeo inspect --raw docker://$REPO@$sha | jq -r '.layers[].digest')
-    ALL_BLOBS=$( (echo $ALL_BLOBS; echo $blob) | sort | uniq )
-  done
-
-  for b in $ALL_BLOBS; do
-    output=$(oras blob fetch "$REPO@$b" --output - | jq '.vulnerabilities[] | select((.normalized_severity=="High") or (.normalized_severity=="Critical")) | pick(.name, .description, .issued, .normalized_severity, .package_name, .fixed_in_version)' | jq -s .)
-    cve_counter=$(echo "$output" | jq ". | length")
-
-    if [ "$cve_counter" -gt "0" ]; then
-      echo "Found $cve_counter CVEs of High/Critical in $REPO@$b:"
-      echo "$output" | yq r -P -
-      echo
-    fi
-  done
-}
-
-function print_cves {
-  snapshot_dir="${1}"
-
-  echo "CVEs in override-snapshot images:"
-
-  for img in $(yq read "$snapshot_dir"/override-snapshot.yaml "spec.components[*].containerImage"); do
-    print_cves_for_image "$img"
-  done
-}
-
 target_dir="${1:?Provide a target directory for the override snapshots as arg[1]}"
 create_component_snapshot "${target_dir}"
 verify_component_snapshot "${target_dir}"
 create_fbc_snapshots "${target_dir}"
-print_cves "${target_dir}"
