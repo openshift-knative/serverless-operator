@@ -142,7 +142,7 @@ spec:
           revision: "a0f8128cc31182004ce6cb0cedadf0ad6e06632a"
           dockerfileUrl: "openshift/ci-operator/knative-images/mtping/Dockerfile"
     - name: "kn-eventing-webhook-115"
-      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-eventing-webhook@sha256:40b712a6df7e60392717359506144c5d8d0cfe4f653d710b4ba1261b972af97c"
+      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-eventing-webhook@sha256:d58ce8c1fbd2d840c1611e5f37833f6dd3622105496b97c57723e3d53da5eaaf"
       source:
         git:
           url: "https://github.com/openshift-knative/eventing"
