@@ -114,7 +114,7 @@ spec:
           revision: "757c9e4c002539f5e5bb3b2ba4bb77318313862d"
           dockerfileUrl: "openshift/ci-operator/knative-images/controller/Dockerfile"
     - name: "kn-eventing-jobsink-115"
-      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-eventing-jobsink@sha256:dbcb5fc981cabf182649dd880cfc6bf6d48d92095a91c1688de8f9521b68b49d"
+      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-eventing-jobsink@sha256:1174439d55a8a6527fbd78b75092d1500797891050305b8da2aa977c12919c73"
       source:
         git:
           url: "https://github.com/openshift-knative/eventing"
