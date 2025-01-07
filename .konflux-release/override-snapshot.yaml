@@ -121,7 +121,7 @@ spec:
           revision: "a0f8128cc31182004ce6cb0cedadf0ad6e06632a"
           dockerfileUrl: "openshift/ci-operator/knative-images/jobsink/Dockerfile"
     - name: "kn-eventing-migrate-115"
-      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-eventing-migrate@sha256:be7f0f5bda5b64eb943b5a04d918edb1db498280a95f04ee70bd43c839d9e7f6"
+      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-eventing-migrate@sha256:a37b0d89ca2c83f60b5810cc45200240e37a6ae23d617a45206d94b83e77e42f"
       source:
         git:
           url: "https://github.com/openshift-knative/eventing"
