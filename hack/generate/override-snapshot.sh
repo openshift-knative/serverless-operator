@@ -89,7 +89,7 @@ EOF
 
   rm -rf "${tmp_catalog_dir}"
 }
-
+# verify that the revisions (git commit) for components from the same repo match
 function verify_component_snapshot {
   local snapshot_file repo revision component repo_revision failed
   snapshot_file="${1}/override-snapshot.yaml"
