@@ -233,7 +233,7 @@ spec:
           revision: "055d08b7e1109c3c8d491af4a7f8e66a195eeb22"
           dockerfileUrl: "openshift/ci-operator/knative-images/kourier/Dockerfile"
     - name: "serverless-ingress-135"
-      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/serverless-ingress@sha256:09230caca22943fd089b7ba982b95d210c58f8a26ca80fc0e7ae9c821e91b191"
+      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/serverless-ingress@sha256:10c8c4b5a0e5ac76fa1cc7e2ab5df6ae1ef137f8597d79380ebae33723005e3f"
       source:
         git:
           url: "https://github.com/openshift-knative/serverless-operator"

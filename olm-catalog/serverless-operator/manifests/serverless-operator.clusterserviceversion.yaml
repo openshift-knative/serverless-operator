@@ -1177,7 +1177,7 @@ spec:
                 serviceAccountName: knative-openshift-ingress
                 containers:
                   - name: knative-openshift-ingress
-                    image: registry.redhat.io/openshift-serverless-1/serverless-ingress-rhel8@sha256:d7ca81059af51bb748be7db5cc88bec5613fb78490446c6bbf03910001fefe0b
+                    image: registry.redhat.io/openshift-serverless-1/serverless-ingress-rhel8@sha256:10c8c4b5a0e5ac76fa1cc7e2ab5df6ae1ef137f8597d79380ebae33723005e3f
                     imagePullPolicy: Always
                     ports:
                       - containerPort: 9090
@@ -1332,7 +1332,7 @@ spec:
     - name: "knative-openshift"
       image: "registry.redhat.io/openshift-serverless-1/serverless-kn-operator-rhel8@sha256:0f523b44ab5392337a97800298b43b49dfc5f537e22a58db89482b5162654f1b"
     - name: "knative-openshift-ingress"
-      image: "registry.redhat.io/openshift-serverless-1/serverless-ingress-rhel8@sha256:d7ca81059af51bb748be7db5cc88bec5613fb78490446c6bbf03910001fefe0b"
+      image: "registry.redhat.io/openshift-serverless-1/serverless-ingress-rhel8@sha256:10c8c4b5a0e5ac76fa1cc7e2ab5df6ae1ef137f8597d79380ebae33723005e3f"
     - name: "IMAGE_queue-proxy"
       image: "registry.redhat.io/openshift-serverless-1/kn-serving-queue-rhel8@sha256:78f069465af59be326dc95213bd58b52f5a3968e226cfd0699e7618eba404f10"
     - name: "IMAGE_activator"
