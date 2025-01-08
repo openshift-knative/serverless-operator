@@ -830,7 +830,7 @@ spec:
                 serviceAccountName: knative-operator
                 containers:
                   - name: knative-operator
-                    image: registry.redhat.io/openshift-serverless-1/serverless-openshift-kn-rhel8-operator@sha256:5ded1d25837e7305ab55b3670475cc233fa716c06ab85b6b8aa03b0da2ac6593
+                    image: registry.redhat.io/openshift-serverless-1/serverless-openshift-kn-rhel8-operator@sha256:cc80b8758648c8c1b833cc1d61c5336c3083890f8e59908cb2113d9aff67eda3
                     readinessProbe:
                       periodSeconds: 1
                       httpGet:
@@ -1328,7 +1328,7 @@ spec:
         - knativeeventings.operator.knative.dev
   relatedImages:
     - name: "knative-operator"
-      image: "registry.redhat.io/openshift-serverless-1/serverless-openshift-kn-rhel8-operator@sha256:5ded1d25837e7305ab55b3670475cc233fa716c06ab85b6b8aa03b0da2ac6593"
+      image: "registry.redhat.io/openshift-serverless-1/serverless-openshift-kn-rhel8-operator@sha256:cc80b8758648c8c1b833cc1d61c5336c3083890f8e59908cb2113d9aff67eda3"
     - name: "knative-openshift"
       image: "registry.redhat.io/openshift-serverless-1/serverless-kn-operator-rhel8@sha256:0f523b44ab5392337a97800298b43b49dfc5f537e22a58db89482b5162654f1b"
     - name: "knative-openshift-ingress"

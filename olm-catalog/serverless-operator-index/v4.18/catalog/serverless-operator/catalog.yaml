@@ -8409,7 +8409,7 @@ relatedImages:
   name: knative-openshift
 - image: registry.redhat.io/openshift-serverless-1/serverless-must-gather-rhel8@sha256:a962d4831cf2bf623e2e7b0a1586f5e33dfe61849e458dc1adccdad441e076cb
   name: IMAGE_MUST_GATHER
-- image: registry.redhat.io/openshift-serverless-1/serverless-openshift-kn-rhel8-operator@sha256:6b2ec0102249d29f919232a454f10e65f9a9793115789b07a01ecaa001e94648
+- image: registry.redhat.io/openshift-serverless-1/serverless-openshift-kn-rhel8-operator@sha256:cc80b8758648c8c1b833cc1d61c5336c3083890f8e59908cb2113d9aff67eda3
   name: knative-operator
 - image: registry.redhat.io/openshift-service-mesh/proxyv2-rhel8@sha256:b30d60cd458133430d4c92bf84911e03cecd02f60e88a58d1c6c003543cf833a
   name: IMAGE_kourier-gateway
