@@ -8379,7 +8379,7 @@ relatedImages:
   name: IMAGE_pingsource-mt-adapter__dispatcher
 - image: registry.redhat.io/openshift-serverless-1/kn-eventing-webhook-rhel8@sha256:d58ce8c1fbd2d840c1611e5f37833f6dd3622105496b97c57723e3d53da5eaaf
   name: IMAGE_eventing-webhook__eventing-webhook
-- image: registry.redhat.io/openshift-serverless-1/kn-plugin-event-sender-rhel8@sha256:1e8822f7faec7f1c346b0d530291e26941c4900426865bc56263c777687d6bc2
+- image: registry.redhat.io/openshift-serverless-1/kn-plugin-event-sender-rhel8@sha256:a10e340c29a4e91e1726bacee685dce43dc1ca151c0ef634b04b0a2358ad862c
   name: IMAGE_KN_PLUGIN_EVENT_SENDER
 - image: registry.redhat.io/openshift-serverless-1/kn-plugin-func-func-util-rhel8@sha256:01e0ab5c8203ef0ca39b4e9df8fd1a8c2769ef84fce7fecefc8e8858315e71ca
   name: IMAGE_KN_PLUGIN_FUNC_UTIL
