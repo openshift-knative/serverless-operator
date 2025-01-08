@@ -8405,7 +8405,7 @@ relatedImages:
   name: IMAGE_net-kourier-controller__controller
 - image: registry.redhat.io/openshift-serverless-1/serverless-ingress-rhel8@sha256:593828b6f03c75aa7a36ea475d807b36156affe9c6adeb91ec2d1c1797aaca6b
   name: knative-openshift-ingress
-- image: registry.redhat.io/openshift-serverless-1/serverless-kn-operator-rhel8@sha256:f87dda158f4408e74d60571264aba216d087c3ed1646284372b57cb41c231c86
+- image: registry.redhat.io/openshift-serverless-1/serverless-kn-operator-rhel8@sha256:ca4bb45393bbee594a4efa0360aa7d64d14ceca4fd792d81ba83b907c663edea
   name: knative-openshift
 - image: registry.redhat.io/openshift-serverless-1/serverless-must-gather-rhel8@sha256:a962d4831cf2bf623e2e7b0a1586f5e33dfe61849e458dc1adccdad441e076cb
   name: IMAGE_MUST_GATHER
