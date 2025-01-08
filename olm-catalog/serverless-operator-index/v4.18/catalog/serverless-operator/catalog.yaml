@@ -8331,7 +8331,7 @@ relatedImages:
   name: IMAGE_eventmesh-backend__controller
 - image: registry.redhat.io/openshift-serverless-1/kn-client-cli-artifacts-rhel8@sha256:f58a7e576618c5e554663d3fde5cbfcf2f2f9570e7e81302a9c971eccd6d7f0a
   name: IMAGE_KN_CLIENT_CLI_ARTIFACTS
-- image: registry.redhat.io/openshift-serverless-1/kn-client-kn-rhel8@sha256:2418c1abf7b47c539cc5c4b3cd3f45f75b6ccc41c1ab2205c1e90bebb02d603d
+- image: registry.redhat.io/openshift-serverless-1/kn-client-kn-rhel8@sha256:9f9b42efbcfddde9ceb491a9a09028c1d9d859f177fb4393f5554f9c78466c01
   name: IMAGE_KN_CLIENT
 - image: registry.redhat.io/openshift-serverless-1/kn-ekb-dispatcher-rhel8@sha256:b8b0cf3a674bc92a2f9f5a84d4915ac37cfb4a4ae5709912c10c0479e738a883
   name: KAFKA_IMAGE_kafka-channel-dispatcher__kafka-channel-dispatcher
