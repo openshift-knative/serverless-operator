@@ -8359,7 +8359,7 @@ relatedImages:
   name: IMAGE_DISPATCHER_IMAGE
 - image: registry.redhat.io/openshift-serverless-1/kn-eventing-channel-dispatcher-rhel8@sha256:be65282e67689466a0c532c2047cb6b2e1f89b957dd073af154236eb7f05f6ed
   name: IMAGE_imc-dispatcher__dispatcher
-- image: registry.redhat.io/openshift-serverless-1/kn-eventing-controller-rhel8@sha256:89e491d195110555b15c7d81cb27a25975bb136a99dcf9578906adfcc131d4c0
+- image: registry.redhat.io/openshift-serverless-1/kn-eventing-controller-rhel8@sha256:1b4856760983e14f50028ab3d361bb6cd0120f0be6c76b586f2b42f5507c3f63
   name: IMAGE_eventing-controller__eventing-controller
 - image: registry.redhat.io/openshift-serverless-1/kn-eventing-filter-rhel8@sha256:d890cb05e15daa45eb823a1a07e2189401c7e994f0d8889d4fad959eb4231316
   name: IMAGE_mt-broker-filter__filter
