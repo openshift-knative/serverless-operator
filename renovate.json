@@ -1,7 +1,15 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "ignorePaths": [
-    ".konflux-release/",
-    "test/images-rekt.yaml"
-  ]
+  "pre-commit": {
+    "ignorePaths": [
+      "vendor/**"
+    ]
+  },
+  "custom.regex": {
+    "ignorePaths": [
+      ".konflux-release/**",
+      "test/images-rekt.yaml",
+      "vendor/**"
+    ]
+  }
 }
