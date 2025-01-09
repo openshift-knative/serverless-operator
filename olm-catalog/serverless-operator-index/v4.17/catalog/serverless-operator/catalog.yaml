@@ -8369,9 +8369,9 @@ relatedImages:
   name: IMAGE_eventing-istio-controller__eventing-istio-controller
 - image: registry.redhat.io/openshift-serverless-1/kn-eventing-jobsink-rhel8@sha256:1174439d55a8a6527fbd78b75092d1500797891050305b8da2aa977c12919c73
   name: IMAGE_job-sink__job-sink
-- image: registry.redhat.io/openshift-serverless-1/kn-eventing-migrate-rhel8@sha256:a37b0d89ca2c83f60b5810cc45200240e37a6ae23d617a45206d94b83e77e42f
+- image: registry.redhat.io/openshift-serverless-1/kn-eventing-migrate-rhel8@sha256:e408db39c541a46ebf7ff1162fe6f81f6df1fe4eeed4461165d4cb1979c63d27
   name: IMAGE_storage-version-migration-eventing-__migrate
-- image: registry.redhat.io/openshift-serverless-1/kn-eventing-migrate-rhel8@sha256:a37b0d89ca2c83f60b5810cc45200240e37a6ae23d617a45206d94b83e77e42f
+- image: registry.redhat.io/openshift-serverless-1/kn-eventing-migrate-rhel8@sha256:e408db39c541a46ebf7ff1162fe6f81f6df1fe4eeed4461165d4cb1979c63d27
   name: KAFKA_IMAGE_knative-kafka-storage-version-migrator__migrate
 - image: registry.redhat.io/openshift-serverless-1/kn-eventing-mtchannel-broker-rhel8@sha256:cf5dff4e56dbc5acdca5c0e5a6d77af3183133074498e59a98d405e655d07bbe
   name: IMAGE_mt-broker-controller__mt-broker-controller
