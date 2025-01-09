@@ -65,7 +65,7 @@ spec:
           revision: "6c81e1e5560f93b9cf1983ca1376aad47230abe5"
           dockerfileUrl: "openshift/ci-operator/knative-images/webhook-kafka/Dockerfile"
     - name: "kn-eventing-apiserver-receive-adapter-115"
-      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-eventing-apiserver-receive-adapter@sha256:9f9dde19256650f3e3de0701dbdd747b792bd16ee876f5b1fed593bf0fbd6a62"
+      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-eventing-apiserver-receive-adapter@sha256:ec3c038d2baf7ff915a2c5ee90c41fb065a9310ccee473f0a39d55de632293e3"
       source:
         git:
           url: "https://github.com/openshift-knative/eventing"
