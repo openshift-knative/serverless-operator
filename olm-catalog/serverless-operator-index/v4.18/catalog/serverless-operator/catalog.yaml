@@ -8401,7 +8401,7 @@ relatedImages:
   name: IMAGE_net-istio-controller__controller
 - image: registry.redhat.io/openshift-serverless-1/net-istio-webhook-rhel8@sha256:29c096f1dc4d2d21fa1e44eec3f68fd13b31c525bb499e0c94fbe2749cbacbb8
   name: IMAGE_net-istio-webhook__webhook
-- image: registry.redhat.io/openshift-serverless-1/net-kourier-kourier-rhel8@sha256:7a49ebfb5308220f694a80fe1caeee78097d6fd11a35013a8af2ca278517011d
+- image: registry.redhat.io/openshift-serverless-1/net-kourier-kourier-rhel8@sha256:e5f1111791ffff7978fe175f3e3af61a431c08d8eea4457363c66d66596364d8
   name: IMAGE_net-kourier-controller__controller
 - image: registry.redhat.io/openshift-serverless-1/serverless-ingress-rhel8@sha256:593828b6f03c75aa7a36ea475d807b36156affe9c6adeb91ec2d1c1797aaca6b
   name: knative-openshift-ingress
