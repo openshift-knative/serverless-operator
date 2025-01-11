@@ -8383,7 +8383,7 @@ relatedImages:
   name: IMAGE_KN_PLUGIN_EVENT_SENDER
 - image: registry.redhat.io/openshift-serverless-1/kn-plugin-func-func-util-rhel8@sha256:01e0ab5c8203ef0ca39b4e9df8fd1a8c2769ef84fce7fecefc8e8858315e71ca
   name: IMAGE_KN_PLUGIN_FUNC_UTIL
-- image: registry.redhat.io/openshift-serverless-1/kn-serving-activator-rhel8@sha256:75ec32b2dd4196c45b75e138c8d379abc39983c61d5802097c5a0580e983b28e
+- image: registry.redhat.io/openshift-serverless-1/kn-serving-activator-rhel8@sha256:3892eadbaa6aba6d79d6fe2a88662c851650f7c7be81797b2fc91d0593a763d1
   name: IMAGE_activator
 - image: registry.redhat.io/openshift-serverless-1/kn-serving-autoscaler-hpa-rhel8@sha256:e5a9952dd14a6b875f7e0f4b69dc135c5ead95d1683b31b44942187ad0e2932c
   name: IMAGE_autoscaler-hpa
