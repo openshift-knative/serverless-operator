@@ -8375,7 +8375,7 @@ relatedImages:
   name: KAFKA_IMAGE_knative-kafka-storage-version-migrator__migrate
 - image: registry.redhat.io/openshift-serverless-1/kn-eventing-mtchannel-broker-rhel8@sha256:cf5dff4e56dbc5acdca5c0e5a6d77af3183133074498e59a98d405e655d07bbe
   name: IMAGE_mt-broker-controller__mt-broker-controller
-- image: registry.redhat.io/openshift-serverless-1/kn-eventing-mtping-rhel8@sha256:c1128150f14de1f535105a604c6a1c4784d6fc99c04af3bd3b76a951ac71005d
+- image: registry.redhat.io/openshift-serverless-1/kn-eventing-mtping-rhel8@sha256:c5a5b6bc4fdb861133fd106f324cc4a904c6c6a32cabc6203efc578d8f46bbf4
   name: IMAGE_pingsource-mt-adapter__dispatcher
 - image: registry.redhat.io/openshift-serverless-1/kn-eventing-webhook-rhel8@sha256:d58ce8c1fbd2d840c1611e5f37833f6dd3622105496b97c57723e3d53da5eaaf
   name: IMAGE_eventing-webhook__eventing-webhook
