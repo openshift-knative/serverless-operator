@@ -706,7 +706,7 @@ relatedImages:
   name: IMAGE_kourier-control
 - image: registry.redhat.io/openshift-serverless-1/kourier-control-rhel8@sha256:430744d0e8d108f1cdacc41d8c020d4b3869cae1158abb361bfa893077cbef85
   name: IMAGE_net-kourier-controller__controller
-- image: registry.redhat.io/openshift-serverless-1/net-istio-controller-rhel8@sha256:ff83481b41f502ae6c7e629ed0aae8692fc7efc180034890650d93784dea0a0a
+- image: registry.redhat.io/openshift-serverless-1/net-istio-controller-rhel8@sha256:ec77d44271ba3d86af6cbbeb70f20a720d30d1b75e93ac5e1024790448edf1dd
   name: IMAGE_net-istio-controller__controller
 - image: registry.redhat.io/openshift-serverless-1/net-istio-webhook-rhel8@sha256:f24348abc22959bd0e378121181098ebd8ee27d22498c4fc3a4ff5f6f93424c1
   name: IMAGE_net-istio-webhook__webhook
@@ -1036,7 +1036,7 @@ relatedImages:
   name: IMAGE_kourier-control
 - image: registry.redhat.io/openshift-serverless-1/kourier-control-rhel8@sha256:0bfbfdcf1cf7f0d00f1bd45496b301eb47f8d4c9ee71df9fd5e26c98d71913b7
   name: IMAGE_net-kourier-controller__controller
-- image: registry.redhat.io/openshift-serverless-1/net-istio-controller-rhel8@sha256:3200aa708b9f2424e208b5f4761a8500ce381887c313f9ead1381232e1d608c8
+- image: registry.redhat.io/openshift-serverless-1/net-istio-controller-rhel8@sha256:ec77d44271ba3d86af6cbbeb70f20a720d30d1b75e93ac5e1024790448edf1dd
   name: IMAGE_net-istio-controller__controller
 - image: registry.redhat.io/openshift-serverless-1/net-istio-webhook-rhel8@sha256:6e0a1b6060b2f054e24749f9cd527e434d15bf8486f8787ded87acafc68b0ad5
   name: IMAGE_net-istio-webhook__webhook
@@ -1368,7 +1368,7 @@ relatedImages:
   name: IMAGE_net-kourier-controller__controller
 - image: registry.redhat.io/openshift-serverless-1/kourier-control-rhel8@sha256:af0441be17265705e52829a44e6f0bdde7c6ccce8fde331a2328ed0926fb5da7
   name: IMAGE_kourier-control
-- image: registry.redhat.io/openshift-serverless-1/net-istio-controller-rhel8@sha256:87fb543636775c8ff059e6388806ca36b4c6e4f2c08ae2d45593ded6b700dfa1
+- image: registry.redhat.io/openshift-serverless-1/net-istio-controller-rhel8@sha256:ec77d44271ba3d86af6cbbeb70f20a720d30d1b75e93ac5e1024790448edf1dd
   name: IMAGE_net-istio-controller__controller
 - image: registry.redhat.io/openshift-serverless-1/net-istio-webhook-rhel8@sha256:d9d17b7ef4143069b299db8eef5cad9d85370da041461a39341beafc6552940d
   name: IMAGE_net-istio-webhook__webhook
@@ -1696,7 +1696,7 @@ relatedImages:
   name: IMAGE_kourier-control
 - image: registry.redhat.io/openshift-serverless-1/kourier-control-rhel8@sha256:dcc9a1a064b51fa7741db9511d57a122c11c0c8056d0c86ce29d5df026164afb
   name: IMAGE_net-kourier-controller__controller
-- image: registry.redhat.io/openshift-serverless-1/net-istio-controller-rhel8@sha256:2c18de609b0ad5fb440102fac85f3080357f3a684fca995a6389d668c51bc05f
+- image: registry.redhat.io/openshift-serverless-1/net-istio-controller-rhel8@sha256:ec77d44271ba3d86af6cbbeb70f20a720d30d1b75e93ac5e1024790448edf1dd
   name: IMAGE_net-istio-controller__controller
 - image: registry.redhat.io/openshift-serverless-1/net-istio-webhook-rhel8@sha256:b8b38dbe130129ea3b2429c9dfc08e945b788984be6724fa1c959e3d7ba9ff7c
   name: IMAGE_net-istio-webhook__webhook
@@ -2023,7 +2023,7 @@ relatedImages:
   name: IMAGE_kourier-control
 - image: registry.redhat.io/openshift-serverless-1/kourier-control-rhel8@sha256:f2d478b9bb9f61d3b2b750e9066d7c19cc443c717dd02332e75d816dc676964e
   name: IMAGE_net-kourier-controller__controller
-- image: registry.redhat.io/openshift-serverless-1/net-istio-controller-rhel8@sha256:c9369227de2cbee0f460bbe3e060a276b5ff8e763d83a282c3d10142e8d0bad3
+- image: registry.redhat.io/openshift-serverless-1/net-istio-controller-rhel8@sha256:ec77d44271ba3d86af6cbbeb70f20a720d30d1b75e93ac5e1024790448edf1dd
   name: IMAGE_net-istio-controller__controller
 - image: registry.redhat.io/openshift-serverless-1/net-istio-webhook-rhel8@sha256:953c79b292a6ea4e4b887e5a58303f6716301a3e93d5443fdf4c86d0e3258acb
   name: IMAGE_net-istio-webhook__webhook
@@ -2357,7 +2357,7 @@ relatedImages:
   name: IMAGE_net-kourier-controller__controller
 - image: registry.redhat.io/openshift-serverless-1/kourier-control-rhel8@sha256:5a38d84de56ac35ac0c3e68902cca47b496bc872065d48f0460aa24f0e968059
   name: IMAGE_kourier-control
-- image: registry.redhat.io/openshift-serverless-1/net-istio-controller-rhel8@sha256:a1f64d821efd9920c53af817182edf64bbe4a0829a163a4ad13bd58689c4ca19
+- image: registry.redhat.io/openshift-serverless-1/net-istio-controller-rhel8@sha256:ec77d44271ba3d86af6cbbeb70f20a720d30d1b75e93ac5e1024790448edf1dd
   name: IMAGE_net-istio-controller__controller
 - image: registry.redhat.io/openshift-serverless-1/net-istio-webhook-rhel8@sha256:55eeaf581d342a8535b09553d4bd0f0db46eacf3034d6269003fb5cbe0a0680c
   name: IMAGE_net-istio-webhook__webhook
@@ -2728,7 +2728,7 @@ relatedImages:
   name: IMAGE_net-kourier-controller__controller
 - image: registry.redhat.io/openshift-serverless-1/kourier-control-rhel8@sha256:b4c680970661373b003e15a5c5f899041a4dface6079395b3c90334027630f92
   name: IMAGE_kourier-control
-- image: registry.redhat.io/openshift-serverless-1/net-istio-controller-rhel8@sha256:6509429d95956bac73bd2531b262136bc121780aa245200f986b3437f061cb93
+- image: registry.redhat.io/openshift-serverless-1/net-istio-controller-rhel8@sha256:ec77d44271ba3d86af6cbbeb70f20a720d30d1b75e93ac5e1024790448edf1dd
   name: IMAGE_net-istio-controller__controller
 - image: registry.redhat.io/openshift-serverless-1/net-istio-webhook-rhel8@sha256:c317e8815afc35c8e8a800bd1c9a127126359b954beddf54a196db66c7f1a8f3
   name: IMAGE_net-istio-webhook__webhook
@@ -3117,7 +3117,7 @@ relatedImages:
   name: IMAGE_net-kourier-controller__controller
 - image: registry.redhat.io/openshift-serverless-1/kourier-control-rhel8@sha256:632f3a063915b009bcab43fe6a5d0543a719ded272ac177676597b6292e1493f
   name: IMAGE_kourier-control
-- image: registry.redhat.io/openshift-serverless-1/net-istio-controller-rhel8@sha256:c02d1acf24840976b22fcdff1590f276865aac9b86b220d207d464363f776327
+- image: registry.redhat.io/openshift-serverless-1/net-istio-controller-rhel8@sha256:ec77d44271ba3d86af6cbbeb70f20a720d30d1b75e93ac5e1024790448edf1dd
   name: IMAGE_net-istio-controller__controller
 - image: registry.redhat.io/openshift-serverless-1/net-istio-webhook-rhel8@sha256:02f3809347fa5ef54187b1124e5f45bb94e98e75ce972b0bc998cfab6910422c
   name: IMAGE_net-istio-webhook__webhook
@@ -3506,7 +3506,7 @@ relatedImages:
   name: IMAGE_net-kourier-controller__controller
 - image: registry.redhat.io/openshift-serverless-1/kourier-control-rhel8@sha256:439ed5e378e9b23f3fc1294b3d18c4ceeb07d36215456f4a9edcfdac7905da19
   name: IMAGE_kourier-control
-- image: registry.redhat.io/openshift-serverless-1/net-istio-controller-rhel8@sha256:158301e7ab506ccfc3672182857ee798860d423d20619d9ef77d7a9125aa901e
+- image: registry.redhat.io/openshift-serverless-1/net-istio-controller-rhel8@sha256:ec77d44271ba3d86af6cbbeb70f20a720d30d1b75e93ac5e1024790448edf1dd
   name: IMAGE_net-istio-controller__controller
 - image: registry.redhat.io/openshift-serverless-1/net-istio-webhook-rhel8@sha256:5c39ee5d621432b2705d02dbe23b116b6874c989ea0d2211680ce16dd20cf2ce
   name: IMAGE_net-istio-webhook__webhook
@@ -3895,7 +3895,7 @@ relatedImages:
   name: IMAGE_net-kourier-controller__controller
 - image: registry.redhat.io/openshift-serverless-1/kourier-control-rhel8@sha256:c6910cd4596eeb1c45ad622a18a58a1d8d104f427b917cbec07453a6bebe5292
   name: IMAGE_kourier-control
-- image: registry.redhat.io/openshift-serverless-1/net-istio-controller-rhel8@sha256:0e8e9f227b9018c8325f6357f2001b9c12861a56918501ba7d62b381ecd88add
+- image: registry.redhat.io/openshift-serverless-1/net-istio-controller-rhel8@sha256:ec77d44271ba3d86af6cbbeb70f20a720d30d1b75e93ac5e1024790448edf1dd
   name: IMAGE_net-istio-controller__controller
 - image: registry.redhat.io/openshift-serverless-1/net-istio-webhook-rhel8@sha256:0ac571deaaa4e8a210cf7198caafea5ea628dbe8f18fa132c24ba12de80eb1da
   name: IMAGE_net-istio-webhook__webhook
@@ -4229,7 +4229,7 @@ relatedImages:
   name: knative-openshift
 - image: registry.redhat.io/openshift-serverless-1/kourier-control-rhel8@sha256:d7544ab550f10248e936a05a7e08c14138ceffbfcdd246d716162cfb49576f2b
   name: IMAGE_net-kourier-controller__controller
-- image: registry.redhat.io/openshift-serverless-1/net-istio-controller-rhel8@sha256:e1b2ef1088bd13a383e5081785f1774c6d661b8a9ee9018f206f045b220a916c
+- image: registry.redhat.io/openshift-serverless-1/net-istio-controller-rhel8@sha256:ec77d44271ba3d86af6cbbeb70f20a720d30d1b75e93ac5e1024790448edf1dd
   name: IMAGE_net-istio-controller__controller
 - image: registry.redhat.io/openshift-serverless-1/net-istio-webhook-rhel8@sha256:25c1b3a826a52ac32ccb99d7eec5af50aaa239f75f2cd431b55a215642a56018
   name: IMAGE_net-istio-webhook__webhook
@@ -4563,7 +4563,7 @@ relatedImages:
   name: knative-openshift
 - image: registry.redhat.io/openshift-serverless-1/kourier-control-rhel8@sha256:de0634d14962bdb8701a8c29e80b7b70684824462bc5203e5fa7f139839cb73b
   name: IMAGE_net-kourier-controller__controller
-- image: registry.redhat.io/openshift-serverless-1/net-istio-controller-rhel8@sha256:557e73127326be051aa6257e7daeb9721e2af04d2f06cc26cfc7a1073666b989
+- image: registry.redhat.io/openshift-serverless-1/net-istio-controller-rhel8@sha256:ec77d44271ba3d86af6cbbeb70f20a720d30d1b75e93ac5e1024790448edf1dd
   name: IMAGE_net-istio-controller__controller
 - image: registry.redhat.io/openshift-serverless-1/net-istio-webhook-rhel8@sha256:3b7449287adf98f0cf0a1dc74e03b69218be3bcf5538327bc34ef776cc1c69c4
   name: IMAGE_net-istio-webhook__webhook
@@ -4899,7 +4899,7 @@ relatedImages:
   name: knative-openshift
 - image: registry.redhat.io/openshift-serverless-1/kourier-control-rhel8@sha256:6af80c73d02572686404d0277e5d55ccff336fbc16c83469366e980c096cf50f
   name: IMAGE_net-kourier-controller__controller
-- image: registry.redhat.io/openshift-serverless-1/net-istio-controller-rhel8@sha256:384300fa3d5a1deaae9d3a83c344b8aa245f8148a189c667f81d328fd9785530
+- image: registry.redhat.io/openshift-serverless-1/net-istio-controller-rhel8@sha256:ec77d44271ba3d86af6cbbeb70f20a720d30d1b75e93ac5e1024790448edf1dd
   name: IMAGE_net-istio-controller__controller
 - image: registry.redhat.io/openshift-serverless-1/net-istio-webhook-rhel8@sha256:d26586495d610c2ec4822d67207bd3c3ec706ac6df09d9d92c15fb0d10be3f4b
   name: IMAGE_net-istio-webhook__webhook
@@ -5241,7 +5241,7 @@ relatedImages:
   name: knative-openshift
 - image: registry.redhat.io/openshift-serverless-1/kourier-control-rhel8@sha256:e8c756b659f6187790bc1a5115e0f71791bff96630859a905bc5b75d14596e0e
   name: IMAGE_net-kourier-controller__controller
-- image: registry.redhat.io/openshift-serverless-1/net-istio-controller-rhel8@sha256:3508434d5ab6b38c8a7466256f1158ebcd75e8b751afcc5255da8c21566804f0
+- image: registry.redhat.io/openshift-serverless-1/net-istio-controller-rhel8@sha256:ec77d44271ba3d86af6cbbeb70f20a720d30d1b75e93ac5e1024790448edf1dd
   name: IMAGE_net-istio-controller__controller
 - image: registry.redhat.io/openshift-serverless-1/net-istio-webhook-rhel8@sha256:6057a2d18406e00b0b7b1731870f707844e39193d4cce6de50137b77f17d220b
   name: IMAGE_net-istio-webhook__webhook
@@ -5581,7 +5581,7 @@ relatedImages:
   name: knative-openshift
 - image: registry.redhat.io/openshift-serverless-1/kourier-control-rhel8@sha256:d70493c2bd8060414133c356ac1487604adb370207bc9f33080fd17c47f75951
   name: IMAGE_net-kourier-controller__controller
-- image: registry.redhat.io/openshift-serverless-1/net-istio-controller-rhel8@sha256:7f49b246dc8a9a37cb319d74ce558958a641a352298a26ce19b82003d22ff464
+- image: registry.redhat.io/openshift-serverless-1/net-istio-controller-rhel8@sha256:ec77d44271ba3d86af6cbbeb70f20a720d30d1b75e93ac5e1024790448edf1dd
   name: IMAGE_net-istio-controller__controller
 - image: registry.redhat.io/openshift-serverless-1/net-istio-webhook-rhel8@sha256:b95f4530f0fb78a995948c095b8e935ce3a55b5326bc2d790d42cd8773df3b7a
   name: IMAGE_net-istio-webhook__webhook
@@ -5923,7 +5923,7 @@ relatedImages:
   name: knative-openshift
 - image: registry.redhat.io/openshift-serverless-1/kourier-control-rhel8@sha256:1ee675125f7141e91f4ee57ebce082967834bbdabe1a870c221f31aeb8750be4
   name: IMAGE_net-kourier-controller__controller
-- image: registry.redhat.io/openshift-serverless-1/net-istio-controller-rhel8@sha256:0a2989f688b966277652957b312df736ada43fff78fd89b17f60b2137e38f115
+- image: registry.redhat.io/openshift-serverless-1/net-istio-controller-rhel8@sha256:ec77d44271ba3d86af6cbbeb70f20a720d30d1b75e93ac5e1024790448edf1dd
   name: IMAGE_net-istio-controller__controller
 - image: registry.redhat.io/openshift-serverless-1/net-istio-webhook-rhel8@sha256:dbd9c0cac86f79b8d91ab65ae7543854144781d4cb17ef16183931ec9bc234a7
   name: IMAGE_net-istio-webhook__webhook
@@ -6273,7 +6273,7 @@ relatedImages:
   name: knative-openshift
 - image: registry.redhat.io/openshift-serverless-1/kourier-control-rhel8@sha256:cff8c78f5539343b44f20b464bb7848973c94b17b91fde02d0d6c126a4df0a06
   name: IMAGE_net-kourier-controller__controller
-- image: registry.redhat.io/openshift-serverless-1/net-istio-controller-rhel8@sha256:bb93b5d5a33e10b6e836f338199b9ae563501af1a5ce9840967ef00009f2a07b
+- image: registry.redhat.io/openshift-serverless-1/net-istio-controller-rhel8@sha256:ec77d44271ba3d86af6cbbeb70f20a720d30d1b75e93ac5e1024790448edf1dd
   name: IMAGE_net-istio-controller__controller
 - image: registry.redhat.io/openshift-serverless-1/net-istio-webhook-rhel8@sha256:854358e190dff1de84327877fbb9f61fb177a1f46cb2cc0ae79b62af3c252e7f
   name: IMAGE_net-istio-webhook__webhook
@@ -6621,7 +6621,7 @@ relatedImages:
   name: knative-openshift
 - image: registry.redhat.io/openshift-serverless-1/kourier-control-rhel8@sha256:2a30ae808d5c32d812406ff4ac9b472e82b6bb0555e62eee4c2c6a972f8750c2
   name: IMAGE_net-kourier-controller__controller
-- image: registry.redhat.io/openshift-serverless-1/net-istio-controller-rhel8@sha256:25cbdf78b67e7f5a360313ccfbe3b6e2c98873b4e9ddee46c115a623e77c7abb
+- image: registry.redhat.io/openshift-serverless-1/net-istio-controller-rhel8@sha256:ec77d44271ba3d86af6cbbeb70f20a720d30d1b75e93ac5e1024790448edf1dd
   name: IMAGE_net-istio-controller__controller
 - image: registry.redhat.io/openshift-serverless-1/net-istio-webhook-rhel8@sha256:70c26c7ac48d1eaaf1f95ca5c5b8ba8ee6b047a3c9c4a2c2db9c49a506bb2205
   name: IMAGE_net-istio-webhook__webhook
@@ -6972,7 +6972,7 @@ relatedImages:
   name: knative-openshift
 - image: registry.redhat.io/openshift-serverless-1/kourier-control-rhel8@sha256:d9e1f407aa32520a116d51bd5439c534cf61da11355b831d398a238974c77fdd
   name: IMAGE_net-kourier-controller__controller
-- image: registry.redhat.io/openshift-serverless-1/net-istio-controller-rhel8@sha256:88a0da51e7507bdf81acf705f636e77a10f2fbdcbe0c6ffe97c312c8570a63f8
+- image: registry.redhat.io/openshift-serverless-1/net-istio-controller-rhel8@sha256:ec77d44271ba3d86af6cbbeb70f20a720d30d1b75e93ac5e1024790448edf1dd
   name: IMAGE_net-istio-controller__controller
 - image: registry.redhat.io/openshift-serverless-1/net-istio-webhook-rhel8@sha256:2c6e04124bc7c9f44be4c41ec4db60aad64192b40a1b69fdf5b918a5de74bbce
   name: IMAGE_net-istio-webhook__webhook
@@ -7323,7 +7323,7 @@ relatedImages:
   name: knative-openshift
 - image: registry.redhat.io/openshift-serverless-1/kourier-control-rhel8@sha256:9b850afa750a67120f68a49f4834ba7f105563df22cbcbc563317fe1545640d1
   name: IMAGE_net-kourier-controller__controller
-- image: registry.redhat.io/openshift-serverless-1/net-istio-controller-rhel8@sha256:993597ff83a4d62a23f642fadc92f182944b953770716b73b7d19492b5a462c3
+- image: registry.redhat.io/openshift-serverless-1/net-istio-controller-rhel8@sha256:ec77d44271ba3d86af6cbbeb70f20a720d30d1b75e93ac5e1024790448edf1dd
   name: IMAGE_net-istio-controller__controller
 - image: registry.redhat.io/openshift-serverless-1/net-istio-webhook-rhel8@sha256:28c9d05a3ba73b76f293e8f4902b574deb44f77a2bae8cf92473b8a8b10cee92
   name: IMAGE_net-istio-webhook__webhook
@@ -7674,7 +7674,7 @@ relatedImages:
   name: knative-openshift
 - image: registry.redhat.io/openshift-serverless-1/kourier-control-rhel8@sha256:737793adc6f8d570f0af45eed1fa9fa95afba68b6c3c3aa67f38892d9625452f
   name: IMAGE_net-kourier-controller__controller
-- image: registry.redhat.io/openshift-serverless-1/net-istio-controller-rhel8@sha256:062c9c6a15a1feb37ceec917d45901b5eb2368bf0368a151782677a2eea097be
+- image: registry.redhat.io/openshift-serverless-1/net-istio-controller-rhel8@sha256:ec77d44271ba3d86af6cbbeb70f20a720d30d1b75e93ac5e1024790448edf1dd
   name: IMAGE_net-istio-controller__controller
 - image: registry.redhat.io/openshift-serverless-1/net-istio-webhook-rhel8@sha256:d53d0d5bb4fb114fd46a0de22d26ff1eefd9579ad556079e8d65d483b8b94d5a
   name: IMAGE_net-istio-webhook__webhook
@@ -8025,7 +8025,7 @@ relatedImages:
   name: knative-openshift
 - image: registry.redhat.io/openshift-serverless-1/kourier-control-rhel8@sha256:b9d85323e110d8eb6600223c38f9d4cbe89b50d59e03bf1e6b8808f7cef9a3a5
   name: IMAGE_net-kourier-controller__controller
-- image: registry.redhat.io/openshift-serverless-1/net-istio-controller-rhel8@sha256:6d042c614431aa9a9e77cf8ba0064423e903f7c418e367ecc23bc02a24a796c0
+- image: registry.redhat.io/openshift-serverless-1/net-istio-controller-rhel8@sha256:ec77d44271ba3d86af6cbbeb70f20a720d30d1b75e93ac5e1024790448edf1dd
   name: IMAGE_net-istio-controller__controller
 - image: registry.redhat.io/openshift-serverless-1/net-istio-webhook-rhel8@sha256:45bc50a993d04b775a153e985a43d587d5455883fc4c6f31b772408297cf9040
   name: IMAGE_net-istio-webhook__webhook
@@ -8397,7 +8397,7 @@ relatedImages:
   name: IMAGE_storage-version-migration-serving-__migrate
 - image: registry.redhat.io/openshift-serverless-1/kn-serving-webhook-rhel8@sha256:b7f82da4f680026626c8008a5ef549198e73aad9a496a96f092e155578da7a59
   name: IMAGE_webhook__webhook
-- image: registry.redhat.io/openshift-serverless-1/net-istio-controller-rhel8@sha256:8140e795ac89f3b69a205689c6d1dcfb443490623eeedcece80f4cdb73717e17
+- image: registry.redhat.io/openshift-serverless-1/net-istio-controller-rhel8@sha256:ec77d44271ba3d86af6cbbeb70f20a720d30d1b75e93ac5e1024790448edf1dd
   name: IMAGE_net-istio-controller__controller
 - image: registry.redhat.io/openshift-serverless-1/net-istio-webhook-rhel8@sha256:29c096f1dc4d2d21fa1e44eec3f68fd13b31c525bb499e0c94fbe2749cbacbb8
   name: IMAGE_net-istio-webhook__webhook
