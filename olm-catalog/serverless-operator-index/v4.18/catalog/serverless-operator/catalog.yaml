@@ -8385,7 +8385,7 @@ relatedImages:
   name: IMAGE_KN_PLUGIN_FUNC_UTIL
 - image: registry.redhat.io/openshift-serverless-1/kn-serving-activator-rhel8@sha256:75ec32b2dd4196c45b75e138c8d379abc39983c61d5802097c5a0580e983b28e
   name: IMAGE_activator
-- image: registry.redhat.io/openshift-serverless-1/kn-serving-autoscaler-hpa-rhel8@sha256:e5a9952dd14a6b875f7e0f4b69dc135c5ead95d1683b31b44942187ad0e2932c
+- image: registry.redhat.io/openshift-serverless-1/kn-serving-autoscaler-hpa-rhel8@sha256:6b30d3f6d77a6e74d4df5a9d2c1b057cdc7ebbbf810213bc0a97590e741bae1c
   name: IMAGE_autoscaler-hpa
 - image: registry.redhat.io/openshift-serverless-1/kn-serving-autoscaler-rhel8@sha256:abe2cb720b1003b61b12e42713ce41c11151aa4b6bcaf42745e89b6d721da51c
   name: IMAGE_autoscaler
