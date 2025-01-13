@@ -8355,9 +8355,9 @@ relatedImages:
   name: IMAGE_APISERVER_RA_IMAGE
 - image: registry.redhat.io/openshift-serverless-1/kn-eventing-channel-controller-rhel8@sha256:7b719a540e0c0a04b271dd0969ff3be4bfc009dbebb632c3f6bed5e48c2d19b1
   name: IMAGE_imc-controller__controller
-- image: registry.redhat.io/openshift-serverless-1/kn-eventing-channel-dispatcher-rhel8@sha256:be65282e67689466a0c532c2047cb6b2e1f89b957dd073af154236eb7f05f6ed
+- image: registry.redhat.io/openshift-serverless-1/kn-eventing-channel-dispatcher-rhel8@sha256:4d7ecfae62161eff86b02d1285ca9896983727ec318b0d29f0b749c4eba31226
   name: IMAGE_DISPATCHER_IMAGE
-- image: registry.redhat.io/openshift-serverless-1/kn-eventing-channel-dispatcher-rhel8@sha256:be65282e67689466a0c532c2047cb6b2e1f89b957dd073af154236eb7f05f6ed
+- image: registry.redhat.io/openshift-serverless-1/kn-eventing-channel-dispatcher-rhel8@sha256:4d7ecfae62161eff86b02d1285ca9896983727ec318b0d29f0b749c4eba31226
   name: IMAGE_imc-dispatcher__dispatcher
 - image: registry.redhat.io/openshift-serverless-1/kn-eventing-controller-rhel8@sha256:89e491d195110555b15c7d81cb27a25975bb136a99dcf9578906adfcc131d4c0
   name: IMAGE_eventing-controller__eventing-controller
