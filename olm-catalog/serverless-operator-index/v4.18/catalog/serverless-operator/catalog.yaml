@@ -8391,7 +8391,7 @@ relatedImages:
   name: IMAGE_autoscaler
 - image: registry.redhat.io/openshift-serverless-1/kn-serving-controller-rhel8@sha256:6a4ee07376bff2794a224f405abc63e1875f612ad65fca1d3418bd8f991ee2da
   name: IMAGE_controller__controller
-- image: registry.redhat.io/openshift-serverless-1/kn-serving-queue-rhel8@sha256:78f069465af59be326dc95213bd58b52f5a3968e226cfd0699e7618eba404f10
+- image: registry.redhat.io/openshift-serverless-1/kn-serving-queue-rhel8@sha256:bd464d68e283ce6c48ae904010991b491b738ada5a419f044bf71fd48326005b
   name: IMAGE_queue-proxy
 - image: registry.redhat.io/openshift-serverless-1/kn-serving-storage-version-migration-rhel8@sha256:819a27c8b0630330b9df262810dbca6d3b176d4adda101e6fb107070e6fe7a82
   name: IMAGE_storage-version-migration-serving-__migrate
