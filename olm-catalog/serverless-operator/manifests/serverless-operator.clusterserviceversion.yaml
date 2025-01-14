@@ -981,7 +981,7 @@ spec:
                 serviceAccountName: knative-openshift
                 initContainers:
                   - name: cli-artifacts
-                    image: registry.redhat.io/openshift-serverless-1/kn-client-cli-artifacts-rhel8@sha256:b88265739c950447a813ed49754b30b6b9909ff25441b72c1a817a5bf35db10b
+                    image: registry.redhat.io/openshift-serverless-1/kn-client-cli-artifacts-rhel8@sha256:f983be49897be59dba1275f36bdd83f648663ee904e4f242599e9269fc354fd7
                     imagePullPolicy: Always
                     command: ["sh", "-c", "rm -rf /cli-artifacts/* && cp /usr/share/kn/**/* /cli-artifacts && chmod 444 /cli-artifacts/*"]
                     volumeMounts:
@@ -1424,6 +1424,6 @@ spec:
     - name: "IMAGE_MUST_GATHER"
       image: "registry.redhat.io/openshift-serverless-1/serverless-must-gather-rhel8@sha256:515ab8573e4b662982292641120a3818b5e81040371c90233327bfc29c321fb9"
     - name: "IMAGE_KN_CLIENT_CLI_ARTIFACTS"
-      image: "registry.redhat.io/openshift-serverless-1/kn-client-cli-artifacts-rhel8@sha256:b88265739c950447a813ed49754b30b6b9909ff25441b72c1a817a5bf35db10b"
+      image: "registry.redhat.io/openshift-serverless-1/kn-client-cli-artifacts-rhel8@sha256:f983be49897be59dba1275f36bdd83f648663ee904e4f242599e9269fc354fd7"
   replaces: serverless-operator.v1.34.0
   version: 1.35.0

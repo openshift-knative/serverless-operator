@@ -8329,7 +8329,7 @@ relatedImages:
   name: IMAGE_KN_PLUGIN_FUNC_PYTHON_39
 - image: registry.redhat.io/openshift-serverless-1/kn-backstage-plugins-eventmesh-rhel8@sha256:d825f1ac2c90e86ace7fdf331b87ff27b300f80ac9538af06af7eea98d4c9443
   name: IMAGE_eventmesh-backend__controller
-- image: registry.redhat.io/openshift-serverless-1/kn-client-cli-artifacts-rhel8@sha256:4e9aca7494ebffb85887bf31255b12a14065f77869e89b9d5236be3d7e5b23b9
+- image: registry.redhat.io/openshift-serverless-1/kn-client-cli-artifacts-rhel8@sha256:f983be49897be59dba1275f36bdd83f648663ee904e4f242599e9269fc354fd7
   name: IMAGE_KN_CLIENT_CLI_ARTIFACTS
 - image: registry.redhat.io/openshift-serverless-1/kn-client-kn-rhel8@sha256:9f9b42efbcfddde9ceb491a9a09028c1d9d859f177fb4393f5554f9c78466c01
   name: IMAGE_KN_CLIENT
