@@ -9,9 +9,9 @@ spec:
   application: serverless-operator-135-fbc-418
   components:
     - name: "serverless-index-135-fbc-418"
-      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135-fbc-418/serverless-index-135-fbc-418@sha256:e6e720395ac56ba873702cc44747e00ffcd0cc4dc39a85630355d9632be8610d"
+      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135-fbc-418/serverless-index-135-fbc-418@sha256:1f6e6bd36a0b1e6edc715b01a4e2b30719ba88eaddd09b25b111cb0c3d535e82"
       source:
         git:
           url: "https://github.com/openshift-knative/serverless-operator"
-          revision: "a5b967d5f004c47c3e858446a906f1ea61a1bde1"
+          revision: "d1246c91c3fb9f6663d86c51810dc70480d2ad3b"
           dockerfileUrl: "Dockerfile"
