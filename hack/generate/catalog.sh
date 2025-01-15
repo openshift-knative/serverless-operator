@@ -182,4 +182,7 @@ logger.info "Generating catalog"
 generate_catalog
 
 logger.info "Generating ImageContextSourcePolicy"
-create_image_content_source_policy "${INDEX_IMAGE}" "$registry_redhat_io" "$registry_quay" "olm-catalog/serverless-operator-index/image_content_source_policy.yaml"
+
+default_serverless_operator_images
+# shellcheck disable=SC2154
+create_image_content_source_policy "${INDEX_IMAGE}" "$registry_redhat_io" "$registry_quay" "$registry_quay_previous" "olm-catalog/serverless-operator-index/image_content_source_policy.yaml"

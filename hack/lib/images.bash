@@ -8,12 +8,19 @@ ci_registry="${ci_registry_host}/openshift"
 
 export CURRENT_VERSION_IMAGES=${CURRENT_VERSION_IMAGES:-"main"}
 CURRENT_VERSION="$(metadata.get project.version)"
+PREVIOUS_VERSION="$(metadata.get olm.replaces)"
 
-quay_registry_app_version=${CURRENT_VERSION/./} # 1.34.0 -> 134.0
-quay_registry_app_version=${quay_registry_app_version%.*} # 134.0 -> 134
 registry_prefix_quay="quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-"
-registry_quay="${registry_prefix_quay}${quay_registry_app_version}"
-registry_redhat_io="registry.redhat.io/openshift-serverless-1"
+
+quay_registry_app_version=${CURRENT_VERSION/./} # 1.36.0 -> 136.0
+quay_registry_app_version=${quay_registry_app_version%.*} # 136.0 -> 136
+
+quay_registry_app_version_previous=${PREVIOUS_VERSION/./} # 1.35.0 -> 135.0
+quay_registry_app_version_previous=${quay_registry_app_version_previous%.*} # 135.0 -> 135
+
+export registry_quay="${registry_prefix_quay}${quay_registry_app_version}"
+export registry_quay_previous="${registry_prefix_quay}${quay_registry_app_version_previous}"
+export registry_redhat_io="registry.redhat.io/openshift-serverless-1"
 
 export FORCE_USE_QUAY_IMAGES=${FORCE_USE_QUAY_IMAGES:-"false"}
 

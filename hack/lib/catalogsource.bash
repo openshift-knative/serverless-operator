@@ -82,7 +82,8 @@ function install_catalogsource {
     tmpfile=$(mktemp /tmp/icsp.XXXXXX.yaml)
     # Use ImageContentSourcePolicy only with the FBC from Konflux as
     # updating machine config pools takes a while.
-    create_image_content_source_policy "$index_image" "$registry_redhat_io" "$registry_quay" "$tmpfile"
+    # shellcheck disable=SC2154
+    create_image_content_source_policy "$index_image" "$registry_redhat_io" "$registry_quay" "$registry_quay_previous" "$tmpfile"
     [ -n "$OPENSHIFT_CI" ] && cat "$tmpfile"
     if oc apply -f "$tmpfile"; then
       echo "Wait for machineconfigpool update to start"
@@ -122,7 +123,8 @@ function create_image_content_source_policy {
   index="${1:?Pass index image as arg[1]}"
   registry_source="${2:?Pass source registry arg[2]}"
   registry_target="${3:?Pass target registry arg[3]}"
-  output_file="${4:?Pass output file arg[4]}"
+  registry_target_previous="${4:?Pass previous target registry arg[4]}"
+  output_file="${5:?Pass output file arg[5]}"
 
   logger.info "Install ImageContentSourcePolicy"
   cat > "$output_file" <<EOF
@@ -163,18 +165,21 @@ EOF
           target_img=${img%-rhel*}
         fi
 
-        add_repository_digest_mirrors "$output_file" "${registry_source}/${img}" "${registry_target}/${target_img}"
+        local mirror1="${registry_target}/${target_img}"
+        local mirror2="${registry_target_previous}/${target_img}"
+
+        add_repository_digest_mirrors "$output_file" "${registry_source}/${img}" "${mirror1}" "${mirror2}"
       fi
     done <<< "$mirrors"
 }
 
 function add_repository_digest_mirrors {
-  echo "Add mirror image to '${1}' - $2 = $3"
+  echo "Add mirror image to '${1}' - $2 = $3, $4"
   cat << EOF | yq write --inplace --script - "$1"
 - command: update
   path: spec.repositoryDigestMirrors[+]
   value:
-    mirrors: [ "${3}" ]
+    mirrors: [ "${3}", "${4}" ]
     source: "${2}"
 EOF
 }
