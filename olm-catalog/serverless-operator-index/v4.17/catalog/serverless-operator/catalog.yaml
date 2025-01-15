@@ -8341,7 +8341,7 @@ relatedImages:
   name: KAFKA_IMAGE_kafka-source-dispatcher__kafka-source-dispatcher
 - image: registry.redhat.io/openshift-serverless-1/kn-ekb-kafka-controller-rhel8@sha256:c35352230d5448117a8ba5e84ee8ecd9e1ae5487e59400d65a29600a897719aa
   name: KAFKA_IMAGE_kafka-controller__controller
-- image: registry.redhat.io/openshift-serverless-1/kn-ekb-post-install-rhel8@sha256:12a38ebaba4ea94eb1e57573d6703da4420f389ba0a88c4aa3c8c196445e5c61
+- image: registry.redhat.io/openshift-serverless-1/kn-ekb-post-install-rhel8@sha256:097e7891a85779880b3e64edb2cb1579f17bc902a17d2aa0c1ef91aeb088f5f1
   name: KAFKA_IMAGE_kafka-controller-post-install__post-install
 - image: registry.redhat.io/openshift-serverless-1/kn-ekb-receiver-rhel8@sha256:13712cef5dad9935d958d5cf3ca6795c942c631295698b27f279030e08789d3f
   name: KAFKA_IMAGE_kafka-channel-receiver__kafka-channel-receiver
