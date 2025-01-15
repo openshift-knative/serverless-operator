@@ -8393,7 +8393,7 @@ relatedImages:
   name: IMAGE_controller__controller
 - image: registry.redhat.io/openshift-serverless-1/kn-serving-queue-rhel8@sha256:bd464d68e283ce6c48ae904010991b491b738ada5a419f044bf71fd48326005b
   name: IMAGE_queue-proxy
-- image: registry.redhat.io/openshift-serverless-1/kn-serving-storage-version-migration-rhel8@sha256:878ac0ea2892169ce78df2fe05fdb04b13a08e1bae1563ca370adf8775d5c449
+- image: registry.redhat.io/openshift-serverless-1/kn-serving-storage-version-migration-rhel8@sha256:de87597265ee5ac26db4458a251d00a5ec1b5cd0bfff4854284070fdadddb7ab
   name: IMAGE_storage-version-migration-serving-__migrate
 - image: registry.redhat.io/openshift-serverless-1/kn-serving-webhook-rhel8@sha256:eb33e874b5a7c051db91cd6a63223aabd987988558ad34b34477bee592ceb3ab
   name: IMAGE_webhook__webhook
