@@ -303,24 +303,8 @@ function latest_registry_redhat_io_image_sha() {
     exit 1
   fi
 
-  digest="${image##*@}" # Get only sha
-
-  image_name=${image_without_tag##*/} # Get image name after last slash
-
-  # Add rhel suffix
-  if [ "${image_name}" == "serverless-openshift-kn-operator" ]; then
-    # serverless-openshift-kn-operator is special, as it has rhel in the middle of the name
-    # see https://redhat-internal.slack.com/archives/CKR568L8G/p1729684088850349
-    image_name="serverless-openshift-kn-rhel$(get_serverless_operator_rhel_version)-operator"
-  elif [ "${image_name}" == "serverless-bundle" ]; then
-    # serverless-bundle is special, as it has no rhelXYZ in the name
-    image_name="serverless-bundle"
-  else
-    # for other images simply add it as a suffix
-    image_name="${image_name}-rhel$(get_serverless_operator_rhel_version)"
-  fi
-
-  echo "${registry_redhat_io}/${image_name}@${digest}"
+  rh_registry_image="$(get_rh_registry_image_ref "$image")"
+  echo "$rh_registry_image"
 }
 
 function latest_konflux_image_sha() {
@@ -362,4 +346,63 @@ function get_app_version_from_tag() {
   app_version=${app_version/release-/}                   # -> 1.34
   app_version=${app_version/./}                          # -> 134
   echo "${app_version}"
+}
+
+# returns the quay image for a given rh registry image ref
+function get_quay_image_ref() {
+  local rh_registry_image_ref
+  rh_registry_image_ref="${1}"
+
+  if  [[ $rh_registry_image_ref =~ $registry_redhat_io ]]; then
+    image=${rh_registry_image_ref##*/} # Get image name after last slash
+    image_sha=${image##*@} # Get SHA of image
+    image_name=${image%@*} # Remove sha
+
+    if [[ "${image_name}" =~ ^serverless-openshift-kn-rhel[0-9]+-operator$ ]]; then
+      # serverless-openshift-kn-operator is special, as it has rhel in the middle of the name
+      # see https://redhat-internal.slack.com/archives/CKR568L8G/p1729684088850349
+      component="serverless-openshift-kn-operator"
+    elif [[ "${image_name}" == "serverless-operator-bundle" ]]; then
+      # serverless-operator-bundle is special, as it is named only serverless-bundle in quay
+      component="serverless-bundle"
+    else
+      # for other images simply remove the -rhelXYZ suffix
+      component=${image_name%-rhel*}
+    fi
+
+    echo "${registry_quay}/${component}@${image_sha}"
+  else
+    echo "Image must be from ${registry_redhat_io}, got ${rh_registry_image_ref}"
+    return 1
+  fi
+}
+
+# returns the RH registry image for a given quay image ref
+function get_rh_registry_image_ref() {
+  local quay_registry_image_ref
+  quay_registry_image_ref="${1}"
+
+  if  [[ $quay_registry_image_ref =~ $registry_quay ]]; then
+    image=${quay_registry_image_ref##*/} # Get image name after last slash
+    image_sha=${image##*@} # Get SHA of image
+    image_name=${image%@*} # Remove sha
+
+    # Add rhel suffix
+    if [ "${image_name}" == "serverless-openshift-kn-operator" ]; then
+      # serverless-openshift-kn-operator is special, as it has rhel in the middle of the name
+      # see https://redhat-internal.slack.com/archives/CKR568L8G/p1729684088850349
+      image_name="serverless-openshift-kn-rhel$(get_serverless_operator_rhel_version)-operator"
+    elif [ "${image_name}" == "serverless-bundle" ]; then
+      # serverless-bundle is special, as it has no rhelXYZ in the name
+      image_name="serverless-bundle"
+    else
+      # for other images simply add it as a suffix
+      image_name="${image_name}-rhel$(get_serverless_operator_rhel_version)"
+    fi
+
+    echo "${registry_redhat_io}/${image_name}@${image_sha}"
+  else
+    echo "Image must be from ${registry_quay}, got ${quay_registry_image_ref}"
+    return 1
+  fi
 }
