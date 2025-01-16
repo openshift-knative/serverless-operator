@@ -24,6 +24,12 @@ export registry_redhat_io="registry.redhat.io/openshift-serverless-1"
 
 export FORCE_USE_QUAY_IMAGES=${FORCE_USE_QUAY_IMAGES:-"false"}
 
+# Add extra flags to skopeo cmd, in case of MacOS add OS/arch overrides
+export SKOPEO_EXTRA_FLAGS="${SKOPE_EXTRA_FLAGS:-}"
+if [[ "$(uname -s)" == "Darwin" ]]; then
+  SKOPEO_EXTRA_FLAGS="${SKOPEO_EXTRA_FLAGS} --override-os linux --override-arch amd64"
+fi
+
 function get_serverless_operator_rhel_version() {
   sorhel --so-version="${CURRENT_VERSION}"
 }
@@ -376,7 +382,8 @@ function image_with_sha {
   image=${1:?"Provide image"}
   return_input_on_empty=${2:-"false"}
 
-  digest=$(skopeo inspect --no-tags=true "docker://${image}" | jq -r '.Digest' || echo "")
+  # shellcheck disable=SC2086
+  digest=$(skopeo inspect --retry-times=5 --no-tags=true ${SKOPEO_EXTRA_FLAGS} "docker://${image}" | jq -r '.Digest' || echo "")
   if [ "${digest}" = "" ]; then
     if [ "${return_input_on_empty}" = "true" ]; then
       echo "${image}"

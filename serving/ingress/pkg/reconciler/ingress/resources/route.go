@@ -24,6 +24,8 @@ const (
 	DisableRouteAnnotation           = socommon.ServingDownstreamDomain + "/disableRoute"
 	EnablePassthroughRouteAnnotation = socommon.ServingDownstreamDomain + "/enablePassthrough"
 	SetRouteTimeoutAnnotation        = socommon.ServingDownstreamDomain + "/setRouteTimeout"
+	ArgoCDPrefix                     = "argocd.argoproj.io"
+	KubernetesApplicationLabelKey    = "app.kubernetes.io/instance"
 
 	HTTPPort  = "http2"
 	HTTPSPort = "https"
@@ -87,6 +89,8 @@ func makeRoute(ci *networkingv1alpha1.Ingress, host string, rule networkingv1alp
 		return nil, nil
 	}
 
+	annotations = cleanArgoCDAnnotations(annotations)
+
 	// Set timeout for OpenShift Route
 	timeout, err := getHAProxyTimeout(ci)
 	if err != nil {
@@ -99,6 +103,8 @@ func makeRoute(ci *networkingv1alpha1.Ingress, host string, rule networkingv1alp
 		OpenShiftIngressLabelKey:          ci.GetName(),
 		OpenShiftIngressNamespaceLabelKey: ci.GetNamespace(),
 	})
+
+	labels = cleanArgoCDLabels(labels)
 
 	name := routeName(string(ci.GetUID()), host)
 	serviceName := ""
@@ -209,4 +215,24 @@ func getHAProxyTimeout(ci *networkingv1alpha1.Ingress) (string, error) {
 		return fmt.Sprintf("%vs", timeout), nil
 	}
 	return DefaultTimeout, nil
+}
+
+func cleanArgoCDAnnotations(annos map[string]string) map[string]string {
+	cleanedAnnos := make(map[string]string)
+	for key, value := range annos {
+		if !strings.HasPrefix(key, ArgoCDPrefix) {
+			cleanedAnnos[key] = value
+		}
+	}
+	return cleanedAnnos
+}
+
+func cleanArgoCDLabels(labels map[string]string) map[string]string {
+	cleanedLabels := make(map[string]string)
+	for key, value := range labels {
+		if !strings.HasPrefix(key, ArgoCDPrefix) && key != KubernetesApplicationLabelKey {
+			cleanedLabels[key] = value
+		}
+	}
+	return cleanedLabels
 }

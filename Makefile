@@ -196,14 +196,14 @@ test-upstream-upgrade-testonly:
 test-upgrade: install-tools
 	TRACING_BACKEND=zipkin ZIPKIN_DEDICATED_NODE=true ./hack/tracing.sh
 	UNINSTALL_STRIMZI=false ./hack/strimzi.sh
-	INSTALL_PREVIOUS_VERSION=true INSTALL_KAFKA=true TRACING_BACKEND=zipkin ENABLE_TRACING=true SCALE_UP=5 ./hack/install.sh
+	INSTALL_PREVIOUS_VERSION=true INSTALL_KAFKA=true TRACING_BACKEND=zipkin ENABLE_TRACING=true SCALE_UP=6 ./hack/install.sh
 	TEST_KNATIVE_KAFKA=true TEST_KNATIVE_E2E=false TEST_KNATIVE_UPGRADE=true ./test/upstream-e2e-tests.sh
 
 mesh-upgrade: install-tools
 	UNINSTALL_MESH=false ./hack/mesh.sh
 	TRACING_BACKEND=zipkin ./hack/tracing.sh
 	UNINSTALL_STRIMZI=false ./hack/strimzi.sh
-	MESH=true INSTALL_PREVIOUS_VERSION=true INSTALL_KAFKA=true TRACING_BACKEND=zipkin ENABLE_TRACING=true SCALE_UP=5 ./hack/install.sh
+	MESH=true INSTALL_PREVIOUS_VERSION=true INSTALL_KAFKA=true TRACING_BACKEND=zipkin ENABLE_TRACING=true SCALE_UP=6 ./hack/install.sh
 	MESH=true TEST_KNATIVE_KAFKA=true TEST_KNATIVE_E2E=false TEST_KNATIVE_UPGRADE=true ./test/upstream-e2e-tests.sh
 
 test-upgrade-with-mesh: mesh-upgrade
@@ -288,6 +288,11 @@ generate-catalog:
 	./hack/generate/catalog.sh
 .PHONY: generate-catalog
 
+generate-override-snapshot: install-tools
+	./hack/generate/override-snapshot.sh \
+  	.konflux-release/
+.PHONY: generate-override-snapshot
+
 # Generates all files that are templated with release metadata.
 release-files: install-tools
 	./hack/generate/csv.sh \
@@ -321,6 +326,7 @@ release-files: install-tools
 		test/images-rekt.yaml
 	./hack/generate/mesh-auth-policies.sh \
   	tenant-1,tenant-2,serving-tests,serverless-tests,eventing-e2e0,eventing-e2e1,eventing-e2e2,eventing-e2e3,eventing-e2e4
+	./hack/generate/metadata-webhook.sh
 
 generate-dockerfiles: install-tool-generate
 	GOFLAGS='' go install github.com/openshift-knative/hack/cmd/generate@latest
@@ -387,7 +393,7 @@ install-tool-sobranch:
 	GOFLAGS='' go install github.com/openshift-knative/hack/cmd/sobranch@latest
 
 install-tool-skopeo:
-	GOFLAGS='' go install -tags="exclude_graphdriver_btrfs containers_image_openpgp" github.com/containers/skopeo/cmd/skopeo@v1.16.1
+	GOFLAGS='' go install -tags="exclude_graphdriver_btrfs containers_image_openpgp" github.com/containers/skopeo/cmd/skopeo@v1.17.0
 
 install-tool-generate:
 	GOFLAGS='' go install github.com/openshift-knative/hack/cmd/generate@latest
@@ -395,4 +401,10 @@ install-tool-generate:
 install-tool-sorhel:
 	GOFLAGS='' go install github.com/openshift-knative/hack/cmd/sorhel@latest
 
-install-tools: install-tool-sobranch install-tool-skopeo install-tool-generate install-tool-sorhel
+install-tool-cosign:
+	GOFLAGS='' go install github.com/sigstore/cosign/cmd/cosign@latest
+
+install-tool-opm:
+	GOFLAGS='' go install github.com/operator-framework/operator-registry/cmd/opm@v1.47.0
+
+install-tools: install-tool-sobranch install-tool-skopeo install-tool-generate install-tool-sorhel install-tool-cosign install-tool-opm

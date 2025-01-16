@@ -141,6 +141,9 @@ func (e *extension) Reconcile(ctx context.Context, comp base.KComponent) error {
 		}
 	}
 
+	// Default to `1` as PodDisruptionBudget if not specified.
+	defaultToOneAsPodDisruptionBudget(ks)
+
 	// Apply an Ingress config with Kourier enabled if nothing else is defined.
 	defaultToKourier(ks)
 	common.ConfigureIfUnset(&ks.Spec.CommonSpec, "network", "ingress.class", defaultIngressClass(ks))

@@ -5,6 +5,7 @@ certmanager_resources_dir="$(dirname "${BASH_SOURCE[0]}")/certmanager_resources"
 function install_certmanager {
   ensure_catalog_pods_running
   deploy_certmanager_operator
+  deploy_certificates
 }
 
 function uninstall_certmanager {
@@ -31,6 +32,12 @@ function deploy_certmanager_operator {
   timeout 600 "[[ \$(oc get deploy -n ${deployment_namespace} cert-manager-webhook --no-headers | wc -l) != 1 ]]" || return 1
   oc wait deployments -n ${deployment_namespace} cert-manager-webhook --for condition=available --timeout=600s
   oc wait deployments -n ${deployment_namespace} cert-manager --for condition=available --timeout=600s
+}
+
+function deploy_certificates {
+  logger.info "Installing certificates"
+
+  deployment_namespace="cert-manager"
 
   # serving resources
   oc apply -f "${certmanager_resources_dir}"/serving-selfsigned-issuer.yaml || return $?

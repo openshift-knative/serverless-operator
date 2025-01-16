@@ -15,18 +15,20 @@ import (
 	configv1 "github.com/openshift/api/config/v1"
 	routev1 "github.com/openshift/api/route/v1"
 	corev1 "k8s.io/api/core/v1"
+	policyv1 "k8s.io/api/policy/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/apimachinery/pkg/version"
 	fakediscovery "k8s.io/client-go/discovery/fake"
+	"k8s.io/utils/ptr"
 	"knative.dev/operator/pkg/apis/operator/base"
 	operatorv1beta1 "knative.dev/operator/pkg/apis/operator/v1beta1"
 	operator "knative.dev/operator/pkg/reconciler/common"
 	"knative.dev/pkg/apis"
 	kubeclient "knative.dev/pkg/client/injection/kube/client"
 	kubefake "knative.dev/pkg/client/injection/kube/client/fake"
-	"knative.dev/pkg/ptr"
 )
 
 var (
@@ -81,13 +83,13 @@ func TestReconcile(t *testing.T) {
 			Spec: operatorv1beta1.KnativeServingSpec{
 				CommonSpec: base.CommonSpec{
 					HighAvailability: &base.HighAvailability{
-						Replicas: ptr.Int32(3),
+						Replicas: ptr.To(int32(3)),
 					},
 				},
 			},
 		},
 		expected: ks(func(ks *operatorv1beta1.KnativeServing) {
-			ks.Spec.HighAvailability.Replicas = ptr.Int32(3)
+			ks.Spec.HighAvailability.Replicas = ptr.To(int32(3))
 		}),
 	}, {
 		name: "different certificate settings",
@@ -504,7 +506,20 @@ func ks(mods ...func(*operatorv1beta1.KnativeServing)) *operatorv1beta1.KnativeS
 		Spec: operatorv1beta1.KnativeServingSpec{
 			CommonSpec: base.CommonSpec{
 				HighAvailability: &base.HighAvailability{
-					Replicas: ptr.Int32(2),
+					Replicas: ptr.To(int32(2)),
+				},
+				PodDisruptionBudgetOverride: []base.PodDisruptionBudgetOverride{
+					{
+						Name: "activator-pdb",
+						PodDisruptionBudgetSpec: policyv1.PodDisruptionBudgetSpec{
+							MinAvailable: ptr.To(intstr.IntOrString{IntVal: 1, Type: intstr.Int}),
+						},
+					}, {
+						Name: "webhook-pdb",
+						PodDisruptionBudgetSpec: policyv1.PodDisruptionBudgetSpec{
+							MinAvailable: ptr.To(intstr.IntOrString{IntVal: 1, Type: intstr.Int}),
+						},
+					},
 				},
 				Config: base.ConfigMapData{
 					"deployment": map[string]string{
