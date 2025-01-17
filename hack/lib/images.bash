@@ -383,7 +383,7 @@ function image_with_sha {
   return_input_on_empty=${2:-"false"}
 
   # shellcheck disable=SC2086
-  digest=$(skopeo inspect --retry-times=5 --no-tags=true ${SKOPEO_EXTRA_FLAGS} "docker://${image}" | jq -r '.Digest' || echo "")
+  digest=$(skopeo inspect --retry-times=10 --no-tags=true ${SKOPEO_EXTRA_FLAGS} "docker://${image}" | jq -r '.Digest' || echo "")
   if [ "${digest}" = "" ]; then
     if [ "${return_input_on_empty}" = "true" ]; then
       echo "${image}"

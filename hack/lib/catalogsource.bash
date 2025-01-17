@@ -165,6 +165,8 @@ EOF
           target_img=${img%-rhel*}
         fi
 
+        echo "Processing line: ${line}, image ${img} -> target image: ${target_img}"
+
         local mirror1="${registry_target}/${target_img}"
         local mirror2="${registry_target_previous}/${target_img}"
 
