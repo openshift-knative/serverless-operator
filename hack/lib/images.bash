@@ -417,7 +417,7 @@ function get_rh_registry_image_ref() {
   local quay_registry_image_ref
   quay_registry_image_ref="${1}"
 
-  if  [[ $quay_registry_image_ref =~ $registry_quay ]]; then
+  if  [[ $quay_registry_image_ref =~ $registry_prefix_quay ]]; then
     image=${quay_registry_image_ref##*/} # Get image name after last slash
     image_sha=${image##*@} # Get SHA of image
     image_name=${image%@*} # Remove sha
