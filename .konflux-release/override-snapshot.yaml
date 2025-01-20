@@ -1,7 +1,7 @@
 apiVersion: appstudio.redhat.com/v1alpha1
 kind: Snapshot
 metadata:
-  generateName: serverless-operator-135-override-snapshot-
+  name: serverless-operator-135-override-snapshot-zg96j
   labels:
     test.appstudio.openshift.io/type: override
     application: serverless-operator-135
