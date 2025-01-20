@@ -13,6 +13,7 @@ readonly EXCLUDE_PATTERNS=(
   '*revision: *'
   'url: \"https://github.com/openshift-knative/.*(\.git)?\"' # some repos in the override-snapshot have the .git suffix, some not ¯\_(ツ)_/¯
   'name: serverless-operator-.*-override-snapshot-.*'
+  'generateName: serverless-operator-.*-override-snapshot-.*'
 )
 
 # Function to check if a file should be excluded
