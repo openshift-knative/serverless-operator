@@ -403,7 +403,7 @@ install-tool-sobranch:
 	GOFLAGS='' go install github.com/openshift-knative/hack/cmd/sobranch@latest
 
 install-tool-skopeo:
-	GOFLAGS='' go install -tags="exclude_graphdriver_btrfs containers_image_openpgp" github.com/containers/skopeo/cmd/skopeo@v1.16.1
+	GOFLAGS='' go install -tags="exclude_graphdriver_btrfs containers_image_openpgp" github.com/containers/skopeo/cmd/skopeo@v1.17.0
 
 install-tool-generate:
 	GOFLAGS='' go install github.com/openshift-knative/hack/cmd/generate@latest
