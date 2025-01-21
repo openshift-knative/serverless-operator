@@ -293,6 +293,10 @@ generate-override-snapshot: install-tools
   	.konflux-release/
 .PHONY: generate-override-snapshot
 
+apply-override-snapshot:
+	kubectl apply -f .konflux-release/
+.PHONY: apply-override-snapshot
+
 # Generates all files that are templated with release metadata.
 release-files: install-tools
 	./hack/generate/csv.sh \
