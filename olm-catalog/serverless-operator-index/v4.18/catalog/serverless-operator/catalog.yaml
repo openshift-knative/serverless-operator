@@ -8158,7 +8158,7 @@ properties:
       olm.skipRange: '>=1.34.0 <1.35.0'
       operatorframework.io/suggested-namespace: openshift-serverless
       operators.openshift.io/infrastructure-features: '["disconnected", "proxy-aware"]'
-      operators.openshift.io/must-gather-image: registry.redhat.io/openshift-serverless-1/serverless-must-gather-rhel8@sha256:119fbc185f167f3866dbb5b135efc4ee787728c2e47dd1d2d66b76dc5c43609e
+      operators.openshift.io/must-gather-image: registry.redhat.io/openshift-serverless-1/serverless-must-gather-rhel8@sha256:0448324628706173eb7858f511a9b9063a70b9ebbcb807d1625a9022cc080fb0
       operators.openshift.io/valid-subscription: '["OpenShift Container Platform",
         "OpenShift Platform Plus"]'
       repository: https://github.com/openshift-knative/serverless-operator
@@ -8407,7 +8407,7 @@ relatedImages:
   name: knative-openshift-ingress
 - image: registry.redhat.io/openshift-serverless-1/serverless-kn-operator-rhel8@sha256:78cb34062730b3926a465f0665475f0172a683d7204423ec89d32289f5ee329d
   name: knative-openshift
-- image: registry.redhat.io/openshift-serverless-1/serverless-must-gather-rhel8@sha256:119fbc185f167f3866dbb5b135efc4ee787728c2e47dd1d2d66b76dc5c43609e
+- image: registry.redhat.io/openshift-serverless-1/serverless-must-gather-rhel8@sha256:0448324628706173eb7858f511a9b9063a70b9ebbcb807d1625a9022cc080fb0
   name: IMAGE_MUST_GATHER
 - image: registry.redhat.io/openshift-serverless-1/serverless-openshift-kn-rhel8-operator@sha256:0f763b740cc1b614cf354c40f3dc17050e849b4cbf3a35cdb0537c2897d44c95
   name: knative-operator
