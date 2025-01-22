@@ -151,7 +151,7 @@ EOF
 
 function upgrade_service_mesh_proxy_image() {
   sm_proxy_image=$(yq r olm-catalog/serverless-operator/project.yaml 'dependencies.service_mesh_proxy')
-  sm_proxy_image_stream=$(skopeo inspect --no-tags=true "docker://${sm_proxy_image}" | jq -r '.Labels.version')
+  sm_proxy_image_stream=$(skopeo inspect --retry-times=10 --no-tags=true "docker://${sm_proxy_image}" | jq -r '.Labels.version')
   sm_proxy_image_stream=${sm_proxy_image_stream%.*}
   sm_proxy_image=$(latest_konflux_image_sha "${sm_proxy_image}" "${sm_proxy_image_stream}")
   yq w --inplace olm-catalog/serverless-operator/project.yaml 'dependencies.service_mesh_proxy' "${sm_proxy_image}"
