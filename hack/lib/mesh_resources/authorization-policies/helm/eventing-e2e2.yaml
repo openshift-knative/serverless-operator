@@ -529,6 +529,85 @@ spec:
           values:
           - "eventing-e2e2"
 ---
+# Source: redhat-knative-istio-authz/templates/eventing-allow-to-knative-eventing-receiver.yaml
+---
+# Allow job-sink to receive requests from workloads and resources in eventing-e2e2.
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-eventing-e2e2-to-job-sink
+  namespace: knative-eventing
+spec:
+  action: ALLOW
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: "job-sink"
+  rules:
+    # Allow to receive requests from event sources in eventing-e2e2
+    - from:
+        - source:
+            namespaces:
+            - "eventing-e2e2"
+      to:
+        - operation:
+            paths:
+            - "/eventing-e2e2/*"
+        - operation:
+            hosts:
+            - "*.eventing-e2e2"
+            - "*.eventing-e2e2.svc"
+            - "*.eventing-e2e2.svc.cluster.local"
+    - from:
+        - source:
+            namespaces: [ "knative-eventing" ]
+            principals:
+            - "cluster.local/ns/knative-eventing/sa/pingsource-mt-adapter"
+            
+            - "cluster.local/ns/knative-eventing/sa/imc-dispatcher"
+            
+            - "cluster.local/ns/knative-eventing/sa/mt-broker-filter"
+            
+            - "cluster.local/ns/knative-eventing/sa/knative-kafka-source-data-plane"
+            
+            - "cluster.local/ns/knative-eventing/sa/knative-kafka-broker-data-plane"
+            
+            - "cluster.local/ns/knative-eventing/sa/knative-kafka-channel-data-plane"
+            
+      to:
+        - operation:
+            hosts:
+            - "*.eventing-e2e2"
+            - "*.eventing-e2e2.svc"
+            - "*.eventing-e2e2.svc.cluster.local"
+      when:
+        - key: request.headers[Kn-Namespace]
+          values:
+          - "eventing-e2e2"
+    - from:
+        - source:
+            namespaces: [ "knative-eventing" ]
+            principals:
+            - "cluster.local/ns/knative-eventing/sa/pingsource-mt-adapter"
+            
+            - "cluster.local/ns/knative-eventing/sa/imc-dispatcher"
+            
+            - "cluster.local/ns/knative-eventing/sa/mt-broker-filter"
+            
+            - "cluster.local/ns/knative-eventing/sa/knative-kafka-source-data-plane"
+            
+            - "cluster.local/ns/knative-eventing/sa/knative-kafka-broker-data-plane"
+            
+            - "cluster.local/ns/knative-eventing/sa/knative-kafka-channel-data-plane"
+            
+      to:
+        - operation:
+            paths:
+            - "/eventing-e2e2/*"
+      when:
+        - key: request.headers[Kn-Namespace]
+          values:
+          - "eventing-e2e2"
+---
 # Source: redhat-knative-istio-authz/templates/serving-allow-wait-for-drain.yaml
 # Allow kubernetes to call the PreStopHook to wait for draining on port 8022 in eventing-e2e2
 apiVersion: security.istio.io/v1beta1
