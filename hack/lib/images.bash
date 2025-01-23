@@ -8,12 +8,21 @@ ci_registry="${ci_registry_host}/openshift"
 
 export CURRENT_VERSION_IMAGES=${CURRENT_VERSION_IMAGES:-"main"}
 CURRENT_VERSION="$(metadata.get project.version)"
+PREVIOUS_VERSION="$(metadata.get olm.replaces)"
 
-quay_registry_app_version=${CURRENT_VERSION/./} # 1.34.0 -> 134.0
-quay_registry_app_version=${quay_registry_app_version%.*} # 134.0 -> 134
 registry_prefix_quay="quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-"
-registry_quay="${registry_prefix_quay}${quay_registry_app_version}"
-registry_redhat_io="registry.redhat.io/openshift-serverless-1"
+
+quay_registry_app_version=${CURRENT_VERSION/./} # 1.36.0 -> 136.0
+quay_registry_app_version=${quay_registry_app_version%.*} # 136.0 -> 136
+
+quay_registry_app_version_previous=${PREVIOUS_VERSION/./} # 1.35.0 -> 135.0
+quay_registry_app_version_previous=${quay_registry_app_version_previous%.*} # 135.0 -> 135
+
+export registry_quay="${registry_prefix_quay}${quay_registry_app_version}"
+export registry_quay_previous="${registry_prefix_quay}${quay_registry_app_version_previous}"
+export registry_redhat_io="registry.redhat.io/openshift-serverless-1"
+
+export FORCE_USE_QUAY_IMAGES=${FORCE_USE_QUAY_IMAGES:-"false"}
 
 # Add extra flags to skopeo cmd, in case of MacOS add OS/arch overrides
 export SKOPEO_EXTRA_FLAGS="${SKOPE_EXTRA_FLAGS:-}"
@@ -29,15 +38,27 @@ function default_serverless_operator_images() {
   local ocp_version
   local serverless_registry="${registry_quay}/serverless"
 
-  export SERVERLESS_KNATIVE_OPERATOR=${SERVERLESS_KNATIVE_OPERATOR:-$(latest_registry_redhat_io_image_sha "${serverless_registry}-kn-operator:${CURRENT_VERSION_IMAGES}")}
-  export SERVERLESS_OPENSHIFT_KNATIVE_OPERATOR=${SERVERLESS_OPENSHIFT_KNATIVE_OPERATOR:-$(latest_registry_redhat_io_image_sha "${serverless_registry}-openshift-kn-operator:${CURRENT_VERSION_IMAGES}")}
-  export SERVERLESS_INGRESS=${SERVERLESS_INGRESS:-$(latest_registry_redhat_io_image_sha "${serverless_registry}-ingress:${CURRENT_VERSION_IMAGES}")}
-  export SERVERLESS_MUST_GATHER=${SERVERLESS_MUST_GATHER:-$(latest_registry_redhat_io_image_sha "${serverless_registry}-must-gather:${CURRENT_VERSION_IMAGES}")}
+  # When we bump the metadata for a major version, images are not yet available for SO components on
+  # the Konflux registry, so we use the `:latest` tag temporarily by passing "true" as argument to
+  # various `latest_*` functions.
+  #
+  # Eventually, once images are available, SHAs will be replaced/used.
+
+  export SERVERLESS_KNATIVE_OPERATOR=${SERVERLESS_KNATIVE_OPERATOR:-$(latest_registry_redhat_io_image_sha "${serverless_registry}-kn-operator:${CURRENT_VERSION_IMAGES}" "true")}
+  export SERVERLESS_OPENSHIFT_KNATIVE_OPERATOR=${SERVERLESS_OPENSHIFT_KNATIVE_OPERATOR:-$(latest_registry_redhat_io_image_sha "${serverless_registry}-openshift-kn-operator:${CURRENT_VERSION_IMAGES}" "true")}
+  export SERVERLESS_INGRESS=${SERVERLESS_INGRESS:-$(latest_registry_redhat_io_image_sha "${serverless_registry}-ingress:${CURRENT_VERSION_IMAGES}" "true")}
+  export SERVERLESS_MUST_GATHER=${SERVERLESS_MUST_GATHER:-$(latest_registry_redhat_io_image_sha "${serverless_registry}-must-gather:${CURRENT_VERSION_IMAGES}" "true")}
+
+  # Differentiate between the bundle living on the Konflux quay registry (which is the actually
+  # pullable URL) and the "final" bundle image URL eventually getting on registry.redhat.io.
+  #
+  # The actually pullable URL is used to generate the index images for FBC components and it
+  # has to be (eventually) pullable.
 
   export SERVERLESS_BUNDLE=${SERVERLESS_BUNDLE:-$(get_bundle_for_version "${CURRENT_VERSION}")}
   export DEFAULT_SERVERLESS_BUNDLE=${DEFAULT_SERVERLESS_BUNDLE:-$(get_bundle_for_version "${CURRENT_VERSION}")}
 
-  SERVERLESS_BUNDLE_REDHAT_IO=${SERVERLESS_BUNDLE_REDHAT_IO:-$(latest_registry_redhat_io_image_sha "${serverless_registry}-bundle:${CURRENT_VERSION_IMAGES}")}
+  SERVERLESS_BUNDLE_REDHAT_IO=${SERVERLESS_BUNDLE_REDHAT_IO:-$(latest_registry_redhat_io_image_sha "${serverless_registry}-bundle:${CURRENT_VERSION_IMAGES}" "true")}
   # Bundle image is in different locations in quay.io and registry.redhat.io
   export SERVERLESS_BUNDLE_REDHAT_IO=${SERVERLESS_BUNDLE_REDHAT_IO//serverless-bundle/serverless-operator-bundle}
 
@@ -50,23 +71,25 @@ function default_serverless_operator_images() {
   fi
   ocp_version=${ocp_version/./} # 4.17 -> 417
 
-  export INDEX_IMAGE=${INDEX_IMAGE:-$(latest_konflux_image_sha "${registry_quay}-fbc-${ocp_version}/serverless-index-${quay_registry_app_version}-fbc-${ocp_version}:${CURRENT_VERSION_IMAGES}")}
+  export INDEX_IMAGE=${INDEX_IMAGE:-$(latest_konflux_image_sha "${registry_quay}-fbc-${ocp_version}/serverless-index-${quay_registry_app_version}-fbc-${ocp_version}:${CURRENT_VERSION_IMAGES}" "latest" "true")}
 }
 
 # Bundle image is specific as we need to pull older versions for including in the catalog.
 function get_bundle_for_version() {
-  local version app_version bundle
+  local version app_version
   version=${1:?"Provide version for Bundle image"}
 
   app_version=${version/./} # 1.34.0 -> 134.0
   app_version=${app_version%.*} # 134.0 -> 134
 
-  bundle="${registry_prefix_quay}${app_version}/serverless-bundle"
-
-  image=$(image_with_sha "${bundle}:latest")
-  # As a backup, try also CI registry. This it temporary until the previous version gets to Konflux.
+  image=$(image_with_sha "${registry_prefix_quay}${app_version}/serverless-bundle:latest")
+  # As a backup, try also CI registry.
+  local ci_bundle="registry.ci.openshift.org/knative/serverless-bundle"
   if [[ "${image}" == "" ]]; then
-    image=$(image_with_sha "registry.ci.openshift.org/knative/serverless-bundle:release-${version}")
+    image=$(image_with_sha "${ci_bundle}:release-${version}" || echo "")
+  fi
+  if [[ "${image}" == "" ]]; then
+    image=$(image_with_sha "${ci_bundle}:knative-main")
   fi
 
   if [[ "${image}" == "" ]]; then
@@ -293,14 +316,20 @@ function default_knative_backstage_plugins_images() {
 
 function latest_registry_redhat_io_image_sha() {
   input=${1:?"Provide image"}
+  return_input_on_empty=${2:-"false"}
 
   image_without_tag=${input%:*} # Remove tag, if any
   image_without_tag=${image_without_tag%@*} # Remove sha, if any
 
-  image=$(image_with_sha "${image_without_tag}:latest")
+  image=$(image_with_sha "${image_without_tag}:latest" "${return_input_on_empty}")
 
   if [ "${image}" = "" ]; then
     exit 1
+  fi
+
+  if [ "${FORCE_USE_QUAY_IMAGES}" = "true" ]; then
+    echo "${image}"
+    return
   fi
 
   rh_registry_image="$(get_rh_registry_image_ref "$image")"
@@ -310,11 +339,12 @@ function latest_registry_redhat_io_image_sha() {
 function latest_konflux_image_sha() {
   input=${1:?"Provide image"}
   tag=${2:-"latest"}
+  return_input_on_empty=${3:-"false"}
 
   image_without_tag=${input%:*} # Remove tag, if any
   image_without_tag=${image_without_tag%@*} # Remove sha, if any
 
-  image=$(image_with_sha "${image_without_tag}:${tag}")
+  image=$(image_with_sha "${image_without_tag}:${tag}" "${return_input_on_empty}")
 
   if [ "${image}" = "" ]; then
     exit 1
@@ -325,11 +355,16 @@ function latest_konflux_image_sha() {
 
 function image_with_sha {
   image=${1:?"Provide image"}
+  return_input_on_empty=${2:-"false"}
 
   # shellcheck disable=SC2086
-  digest=$(skopeo inspect --no-tags=true ${SKOPEO_EXTRA_FLAGS} "docker://${image}" | jq -r '.Digest')
+  digest=$(skopeo inspect --retry-times=10 --no-tags=true ${SKOPEO_EXTRA_FLAGS} "docker://${image}" | jq -r '.Digest' || echo "")
   if [ "${digest}" = "" ]; then
+    if [ "${return_input_on_empty}" = "true" ]; then
+      echo "${image}"
+    fi
     echo ""
+    return
   fi
 
   image_without_tag=${image%:*} # Remove tag, if any
@@ -382,7 +417,7 @@ function get_rh_registry_image_ref() {
   local quay_registry_image_ref
   quay_registry_image_ref="${1}"
 
-  if  [[ $quay_registry_image_ref =~ $registry_quay ]]; then
+  if  [[ $quay_registry_image_ref =~ $registry_prefix_quay ]]; then
     image=${quay_registry_image_ref##*/} # Get image name after last slash
     image_sha=${image##*@} # Get SHA of image
     image_name=${image%@*} # Remove sha

@@ -27,6 +27,7 @@ function install_catalogsource {
   # unless overridden by FORCE_KONFLUX_INDEX.
   if { [ -n "$OPENSHIFT_CI" ] || [ -n "$DOCKER_REPO_OVERRIDE" ]; } && [ -z "${FORCE_KONFLUX_INDEX:-}" ]; then
     index_image=image-registry.openshift-image-registry.svc:5000/$OLM_NAMESPACE/serverless-index:latest
+    bundle_image=image-registry.openshift-image-registry.svc:5000/$OLM_NAMESPACE/serverless-bundle:latest
     rootdir="$(dirname "$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")")"
 
     csv="${rootdir}/olm-catalog/serverless-operator/manifests/serverless-operator.clusterserviceversion.yaml"
@@ -42,13 +43,10 @@ function install_catalogsource {
     fi
 
     # Generate CSV from template to properly substitute operator images from env variables.
-    "${rootdir}/hack/generate/csv.sh" templates/csv.yaml "$csv"
-
-    # Replace registry.redhat.io references with Konflux quay.io for test purposes as
+    #
+    # Pass "true" to replace registry.redhat.io references with Konflux quay.io for test purposes as
     # images in the former location are not published yet.
-    sed -ri "s#(.*)${registry_redhat_io}/(.*@sha[0-9]+:[a-z0-9]+.*)#\1${registry_quay}/\2#" "$csv"
-    # Remove rhel suffix.
-    sed -ri "s#(.*${registry_quay}/.*)-rhel[[:digit:]]+(.*)#\1\2#" "$csv"
+    "${rootdir}/hack/generate/csv.sh" templates/csv.yaml "$csv" "true"
 
     cat "$csv"
 
@@ -73,13 +71,8 @@ function install_catalogsource {
     cp "${index_dorkerfile_path}" "${rootdir}/_output/bkp.Dockerfile"
 
     # Replace bundle reference with previously built bundle
-    bundle="${DEFAULT_SERVERLESS_BUNDLE%:*}" # Remove the tag from the match
-    bundle="${DEFAULT_SERVERLESS_BUNDLE%@*}" # Remove the sha from the match
-    if ! grep "${bundle}" "${rootdir}/${index_dorkerfile_path}"; then
-      logger.error "Bundle ${bundle} not found in Dockerfile."
-      return 1
-    fi
-    sed -ri "s#(.*)(${bundle})(:[a-z0-9]*)?(@sha[0-9]+:[a-z0-9]+)?(.*)#\1image-registry.openshift-image-registry.svc:5000/${OLM_NAMESPACE}/serverless-bundle:latest\5#" "${rootdir}/${index_dorkerfile_path}"
+    export SERVERLESS_BUNDLE="${bundle_image}"
+	  "${rootdir}/hack/generate/dockerfile.sh" "${rootdir}/templates/index.Dockerfile" "${index_dorkerfile_path}"
 
     build_image "serverless-index" "${rootdir}" "${index_dorkerfile_path}"
 
@@ -89,7 +82,8 @@ function install_catalogsource {
     tmpfile=$(mktemp /tmp/icsp.XXXXXX.yaml)
     # Use ImageContentSourcePolicy only with the FBC from Konflux as
     # updating machine config pools takes a while.
-    create_image_content_source_policy "$index_image" "$registry_redhat_io" "$registry_quay" "$tmpfile"
+    # shellcheck disable=SC2154
+    create_image_content_source_policy "$index_image" "$registry_redhat_io" "$registry_quay" "$registry_quay_previous" "$tmpfile"
     [ -n "$OPENSHIFT_CI" ] && cat "$tmpfile"
     if oc apply -f "$tmpfile"; then
       echo "Wait for machineconfigpool update to start"
@@ -129,7 +123,8 @@ function create_image_content_source_policy {
   index="${1:?Pass index image as arg[1]}"
   registry_source="${2:?Pass source registry arg[2]}"
   registry_target="${3:?Pass target registry arg[3]}"
-  output_file="${4:?Pass output file arg[4]}"
+  registry_target_previous="${4:?Pass previous target registry arg[4]}"
+  output_file="${5:?Pass output file arg[5]}"
 
   logger.info "Install ImageContentSourcePolicy"
   cat > "$output_file" <<EOF
@@ -170,18 +165,23 @@ EOF
           target_img=${img%-rhel*}
         fi
 
-        add_repository_digest_mirrors "$output_file" "${registry_source}/${img}" "${registry_target}/${target_img}"
+        echo "Processing line: ${line}, image ${img} -> target image: ${target_img}"
+
+        local mirror1="${registry_target}/${target_img}"
+        local mirror2="${registry_target_previous}/${target_img}"
+
+        add_repository_digest_mirrors "$output_file" "${registry_source}/${img}" "${mirror1}" "${mirror2}"
       fi
     done <<< "$mirrors"
 }
 
 function add_repository_digest_mirrors {
-  echo "Add mirror image to '${1}' - $2 = $3"
+  echo "Add mirror image to '${1}' - $2 = $3, $4"
   cat << EOF | yq write --inplace --script - "$1"
 - command: update
   path: spec.repositoryDigestMirrors[+]
   value:
-    mirrors: [ "${3}" ]
+    mirrors: [ "${3}", "${4}" ]
     source: "${2}"
 EOF
 }

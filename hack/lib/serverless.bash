@@ -1,5 +1,10 @@
 #!/usr/bin/env bash
 
+function ensure_content_source_policy {
+    rootdir="$(dirname "$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")")"
+    oc apply -f "$rootdir/olm-catalog/serverless-operator-index/image_content_source_policy.yaml"
+}
+
 function ensure_serverless_installed {
   logger.info 'Check if Serverless is installed'
   if oc get knativeserving.operator.knative.dev knative-serving -n "${SERVING_NAMESPACE}" >/dev/null 2>&1 && \

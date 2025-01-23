@@ -24,8 +24,6 @@ func ServerlessDowngradeOperations(ctx *test.Context, glob environment.GlobalEnv
 			if err := installation.DowngradeServerless(ctx); err != nil {
 				c.T.Error("Serverless downgrade failed:", err)
 			}
-			installation.CleanupChannelv2ConsumerGroups(c, glob)
-			installation.CleanupChannelv2Deployments(c, glob)
 		}),
 	}
 }

@@ -31,7 +31,7 @@ spec:
       serviceAccountName: controller
       containers:
         - name: webhook
-          image: quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/serverless-metadata-webhook:latest
+          image: quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/serverless-metadata-webhook:latest
           resources:
             requests:
               cpu: 20m
