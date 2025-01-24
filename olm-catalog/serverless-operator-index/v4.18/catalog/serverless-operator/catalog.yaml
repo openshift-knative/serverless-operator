@@ -8353,7 +8353,7 @@ relatedImages:
   name: KAFKA_IMAGE_kafka-webhook-eventing__kafka-webhook-eventing
 - image: registry.redhat.io/openshift-serverless-1/kn-eventing-apiserver-receive-adapter-rhel8@sha256:ec3c038d2baf7ff915a2c5ee90c41fb065a9310ccee473f0a39d55de632293e3
   name: IMAGE_APISERVER_RA_IMAGE
-- image: registry.redhat.io/openshift-serverless-1/kn-eventing-channel-controller-rhel8@sha256:2c2912c0ba2499b0ba193fcc33360145696f6cfe9bf576afc1eac1180f50b08d
+- image: registry.redhat.io/openshift-serverless-1/kn-eventing-channel-controller-rhel8@sha256:771cdb4d189a443db33966ee2bdb8c00eebda308d28df58ee2cac5741b05fdbf
   name: IMAGE_imc-controller__controller
 - image: registry.redhat.io/openshift-serverless-1/kn-eventing-channel-dispatcher-rhel8@sha256:4d7ecfae62161eff86b02d1285ca9896983727ec318b0d29f0b749c4eba31226
   name: IMAGE_DISPATCHER_IMAGE
