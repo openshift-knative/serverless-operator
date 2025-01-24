@@ -18,9 +18,9 @@ arches:
         size: 420156
         checksum: "sha256:7aef9de61fbf590995b07d92f99a3f3478d6c0543d7a6e1ebb6f4b1c02334283"
       - repoid: ubi-8-baseos-rpms
-        url: "https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi8/8/x86_64/baseos/os/Packages/t/tzdata-2024a-1.el8.noarch.rpm"
-        size: 486452
-        checksum: "sha256:a82ef1ce1668f326097a682dc125733ffc47b00fd5deb8076c98e87a331a23b7"
+        url: "https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi8/8/x86_64/baseos/os/Packages/t/tzdata-2024b-4.el8.noarch.rpm"
+        size: 486864
+        checksum: "sha256:b629ec4b416d8127314c8aecce5ada2c0c102f5dbdeb48f9a3739cbcdf2ee500"
   - arch: aarch64
     packages:
       - repoid: ubi-8-appstream-rpms
@@ -36,9 +36,9 @@ arches:
         size: 410088
         checksum: "sha256:d700d21063ae2b609031a3a8772012aff012899062e952ca43370c495f7e40ff"
       - repoid: ubi-8-baseos-rpms
-        url: "https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi8/8/aarch64/baseos/os/Packages/t/tzdata-2024a-1.el8.noarch.rpm"
-        size: 486452
-        checksum: "sha256:a82ef1ce1668f326097a682dc125733ffc47b00fd5deb8076c98e87a331a23b7"
+        url: "https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi8/8/aarch64/baseos/os/Packages/t/tzdata-2024b-4.el8.noarch.rpm"
+        size: 486864
+        checksum: "sha256:b629ec4b416d8127314c8aecce5ada2c0c102f5dbdeb48f9a3739cbcdf2ee500"
   - arch: s390x
     packages:
       - repoid: ubi-8-appstream-rpms
@@ -54,9 +54,9 @@ arches:
         size: 413364
         checksum: "sha256:8819079e4ea1236eab315348584007918798776c6ea23dae5725544148316cfb"
       - repoid: ubi-8-baseos-rpms
-        url: "https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi8/8/s390x/baseos/os/Packages/t/tzdata-2024a-1.el8.noarch.rpm"
-        size: 486452
-        checksum: "sha256:a82ef1ce1668f326097a682dc125733ffc47b00fd5deb8076c98e87a331a23b7"
+        url: "https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi8/8/s390x/baseos/os/Packages/t/tzdata-2024b-4.el8.noarch.rpm"
+        size: 486864
+        checksum: "sha256:b629ec4b416d8127314c8aecce5ada2c0c102f5dbdeb48f9a3739cbcdf2ee500"
   - arch: ppc64le
     packages:
       - repoid: ubi-8-appstream-rpms
@@ -72,6 +72,6 @@ arches:
         size: 442696
         checksum: "sha256:698ca98abf03ab4dcc3d4d1795f4a392d33a2e84f0b1b1f4b9856b38e8ef0b77"
       - repoid: ubi-8-baseos-rpms
-        url: "https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi8/8/ppc64le/baseos/os/Packages/t/tzdata-2024a-1.el8.noarch.rpm"
-        size: 486452
-        checksum: "sha256:a82ef1ce1668f326097a682dc125733ffc47b00fd5deb8076c98e87a331a23b7"
+        url: "https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi8/8/ppc64le/baseos/os/Packages/t/tzdata-2024b-4.el8.noarch.rpm"
+        size: 486864
+        checksum: "sha256:b629ec4b416d8127314c8aecce5ada2c0c102f5dbdeb48f9a3739cbcdf2ee500"
