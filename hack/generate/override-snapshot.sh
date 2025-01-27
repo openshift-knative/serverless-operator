@@ -30,13 +30,14 @@ EOF
 }
 
 function create_component_snapshot {
-  local snapshot_file so_version so_semversion serving_version tmp_catalog_dir max_ocp_version latest_index_image
+  local snapshot_file so_branch so_version so_semversion serving_tag serving_version_dotted serving_version tmp_catalog_dir max_ocp_version latest_index_image
   snapshot_file="${1}/override-snapshot.yaml"
 
-  serving_version="$(metadata.get dependencies.serving)"
-  serving_version="${serving_version/knative-v/}" # -> 1.15
-  serving_version="${serving_version/./}"
-  so_version="$(get_app_version_from_tag "$(metadata.get dependencies.serving)")"
+  serving_tag="$(metadata.get dependencies.serving)"
+  serving_version_dotted="${serving_tag/knative-v/}" # -> 1.15
+  serving_version="${serving_version_dotted/./}"
+  so_branch="$(sobranch --upstream-version "${serving_version_dotted}")"
+  so_version="$(get_app_version_from_tag "${serving_tag}")"
   so_semversion="$(metadata.get project.version)"
 
   cat > "${snapshot_file}" <<EOF
@@ -47,6 +48,7 @@ metadata:
   labels:
     test.appstudio.openshift.io/type: override
     application: serverless-operator-${so_version}
+    branch: ${so_branch}
 spec:
   application: serverless-operator-${so_version}
 EOF
@@ -93,11 +95,13 @@ EOF
 }
 
 function create_fbc_snapshots {
-  local rootdir snapshot_dir so_version
+  local rootdir snapshot_dir so_version so_branch serving_tag
   rootdir="$(dirname "$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")")"
   snapshot_dir="${1}"
 
-  so_version=$(get_app_version_from_tag "$(metadata.get dependencies.serving)")
+  serving_tag="$(metadata.get dependencies.serving)"
+  so_branch="$(sobranch --upstream-version "${serving_tag/knative-v/}")"
+  so_version=$(get_app_version_from_tag "${serving_tag}")
 
   while IFS= read -r ocp_version; do
     ocp_version=${ocp_version/./}
@@ -111,6 +115,7 @@ metadata:
   labels:
     test.appstudio.openshift.io/type: override
     application: serverless-operator-${so_version}-fbc-${ocp_version}
+    branch: ${so_branch}
 spec:
   application: serverless-operator-${so_version}-fbc-${ocp_version}
 EOF
