@@ -100,6 +100,17 @@ func WithJob(job batchv1.Job) manifest.CfgFn {
 	}
 }
 
+func WithPodIstioAnnotations() func(*batchv1.Job) {
+	return func(job *batchv1.Job) {
+		podIstioAnnotations := map[string]string{
+			"sidecar.istio.io/inject":                "true",
+			"sidecar.istio.io/rewriteAppHTTPProbers": "true",
+			"proxy.istio.io/config":                  `{ "holdApplicationUntilProxyStarts": true }`,
+		}
+		job.Spec.Template.Annotations = podIstioAnnotations
+	}
+}
+
 func WithForwarderJob(sink string, options ...func(*batchv1.Job)) manifest.CfgFn {
 	return func(cfg map[string]interface{}) {
 		j := batchv1.Job{
