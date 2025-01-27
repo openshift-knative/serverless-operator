@@ -293,6 +293,10 @@ generate-override-snapshot: install-tools
   	.konflux-release/
 .PHONY: generate-override-snapshot
 
+apply-override-snapshot:
+	kubectl apply -f .konflux-release/
+.PHONY: apply-override-snapshot
+
 # Generates all files that are templated with release metadata.
 release-files: install-tools
 	./hack/generate/csv.sh \
@@ -356,16 +360,13 @@ generate-dockerfiles: install-tool-generate
 # Generates all files that can be generated, includes release files, code generation
 # and updates vendoring.
 # Use CURRENT_VERSION_IMAGES="<branch>" if you need to override the defaulting to main
-generated-files: update-tekton-pipelines install-tools generate-dockerfiles release-files
+generated-files: install-tools generate-dockerfiles release-files
 	./hack/update-deps.sh
 	./hack/update-codegen.sh
 	(cd knative-operator && ./hack/update-manifests.sh)
 	(cd openshift-knative-operator && ./hack/update-manifests.sh)
 	(cd olm-catalog/serverless-operator && ./hack/update-manifests.sh)
 	./hack/update-deps.sh
-
-update-tekton-pipelines:
-	./hack/generate/update-pipelines.sh
 
 generated-files-release-next: release-files
 	# Re-generate CSV with release-next images
@@ -402,7 +403,7 @@ install-tool-sobranch:
 	GOFLAGS='' go install github.com/openshift-knative/hack/cmd/sobranch@latest
 
 install-tool-skopeo:
-	GOFLAGS='' go install -tags="exclude_graphdriver_btrfs containers_image_openpgp" github.com/containers/skopeo/cmd/skopeo@v1.16.1
+	GOFLAGS='' go install -tags="exclude_graphdriver_btrfs containers_image_openpgp" github.com/containers/skopeo/cmd/skopeo@v1.17.0
 
 install-tool-generate:
 	GOFLAGS='' go install github.com/openshift-knative/hack/cmd/generate@latest

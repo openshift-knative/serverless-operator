@@ -43,7 +43,7 @@ function create_component_snapshot {
 apiVersion: appstudio.redhat.com/v1alpha1
 kind: Snapshot
 metadata:
-  generateName: serverless-operator-${so_version}-override-snapshot-
+  name: serverless-operator-${so_version}-override-snapshot
   labels:
     test.appstudio.openshift.io/type: override
     application: serverless-operator-${so_version}
@@ -87,6 +87,8 @@ EOF
   # ^ we take the images from the catalogs relatedImages section for the given SO version. We could also extract the bundle image from the catalog (jq -r '. | select(.name == "serverless-operator.v'${so_semversion}'") | .image')
   # and extract the CSV from there and use the CSVs relatedImages section.
 
+  append_hash_to_snapshot_name "${snapshot_file}"
+
   rm -rf "${tmp_catalog_dir}"
 }
 
@@ -105,7 +107,7 @@ function create_fbc_snapshots {
 apiVersion: appstudio.redhat.com/v1alpha1
 kind: Snapshot
 metadata:
-  generateName: serverless-operator-${so_version}-fbc-${ocp_version}-override-snapshot-
+  name: serverless-operator-${so_version}-fbc-${ocp_version}-override-snapshot
   labels:
     test.appstudio.openshift.io/type: override
     application: serverless-operator-${so_version}-fbc-${ocp_version}
@@ -114,10 +116,20 @@ spec:
 EOF
 
   index_image="${registry_quay}-fbc-${ocp_version}/serverless-index-${so_version}-fbc-${ocp_version}"
-  index_image_digest="$(skopeo inspect --no-tags docker://"${index_image}:latest" | jq -r .Digest)"
+  index_image_digest="$(skopeo inspect --retry-times=10 --no-tags docker://"${index_image}:latest" | jq -r .Digest)"
   add_component "${snapshot_file}" "serverless-index-${so_version}-fbc-${ocp_version}" "${index_image}@${index_image_digest}"
 
+  append_hash_to_snapshot_name "${snapshot_file}"
+
   done <<< "$(yq read "${rootdir}/olm-catalog/serverless-operator/project.yaml" 'requirements.ocpVersion.list[*]')"
+}
+
+function append_hash_to_snapshot_name {
+  file=${1}
+  sha_sum="$(sha256sum "$file" | head -c 8)" # get first 8 chars of sha
+  new_name="$(yq read "$file" metadata.name)-$sha_sum"
+
+  yq write --inplace "$file" metadata.name "$new_name"
 }
 
 target_dir="${1:?Provide a target directory for the override snapshots as arg[1]}"

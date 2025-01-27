@@ -529,6 +529,85 @@ spec:
           values:
           - "serving-tests"
 ---
+# Source: redhat-knative-istio-authz/templates/eventing-allow-to-knative-eventing-receiver.yaml
+---
+# Allow job-sink to receive requests from workloads and resources in serving-tests.
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-serving-tests-to-job-sink
+  namespace: knative-eventing
+spec:
+  action: ALLOW
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: "job-sink"
+  rules:
+    # Allow to receive requests from event sources in serving-tests
+    - from:
+        - source:
+            namespaces:
+            - "serving-tests"
+      to:
+        - operation:
+            paths:
+            - "/serving-tests/*"
+        - operation:
+            hosts:
+            - "*.serving-tests"
+            - "*.serving-tests.svc"
+            - "*.serving-tests.svc.cluster.local"
+    - from:
+        - source:
+            namespaces: [ "knative-eventing" ]
+            principals:
+            - "cluster.local/ns/knative-eventing/sa/pingsource-mt-adapter"
+            
+            - "cluster.local/ns/knative-eventing/sa/imc-dispatcher"
+            
+            - "cluster.local/ns/knative-eventing/sa/mt-broker-filter"
+            
+            - "cluster.local/ns/knative-eventing/sa/knative-kafka-source-data-plane"
+            
+            - "cluster.local/ns/knative-eventing/sa/knative-kafka-broker-data-plane"
+            
+            - "cluster.local/ns/knative-eventing/sa/knative-kafka-channel-data-plane"
+            
+      to:
+        - operation:
+            hosts:
+            - "*.serving-tests"
+            - "*.serving-tests.svc"
+            - "*.serving-tests.svc.cluster.local"
+      when:
+        - key: request.headers[Kn-Namespace]
+          values:
+          - "serving-tests"
+    - from:
+        - source:
+            namespaces: [ "knative-eventing" ]
+            principals:
+            - "cluster.local/ns/knative-eventing/sa/pingsource-mt-adapter"
+            
+            - "cluster.local/ns/knative-eventing/sa/imc-dispatcher"
+            
+            - "cluster.local/ns/knative-eventing/sa/mt-broker-filter"
+            
+            - "cluster.local/ns/knative-eventing/sa/knative-kafka-source-data-plane"
+            
+            - "cluster.local/ns/knative-eventing/sa/knative-kafka-broker-data-plane"
+            
+            - "cluster.local/ns/knative-eventing/sa/knative-kafka-channel-data-plane"
+            
+      to:
+        - operation:
+            paths:
+            - "/serving-tests/*"
+      when:
+        - key: request.headers[Kn-Namespace]
+          values:
+          - "serving-tests"
+---
 # Source: redhat-knative-istio-authz/templates/serving-allow-wait-for-drain.yaml
 # Allow kubernetes to call the PreStopHook to wait for draining on port 8022 in serving-tests
 apiVersion: security.istio.io/v1beta1

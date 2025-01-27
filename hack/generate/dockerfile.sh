@@ -56,13 +56,6 @@ if [[ "$template" =~ index.Dockerfile ]]; then
     sed --in-place "/opm render/a registry.ci.openshift.org/knative/release-${current_version}:serverless-bundle \\\\" "$target"
   done
 
-  # Hacks. Should gradually go away with next versions.
-  # Workaround for https://issues.redhat.com/browse/SRVCOM-3207
-  # Use a manually built image for 1.32.0.
-  # TODO: Remove this when 1.32.0 is not included in index. This is a problem only for 1.32.0.
-  sed --in-place "s|registry.ci.openshift.org/knative/release-1.32.0:serverless-bundle|quay.io/openshift-knative/serverless-bundle:release-1.32.0|" "$target"
-  # Replace the old format for 1.31.0 and older.
-  sed --in-place "s|registry.ci.openshift.org/knative/release-1.31.0:serverless-bundle|registry.ci.openshift.org/knative/openshift-serverless-v1.31.0:serverless-bundle|" "$target"
 elif [[ "$template" =~ catalog.Dockerfile ]]; then
   while IFS=$'\n' read -r ocp_version; do
     values[OCP_VERSION]="${ocp_version}"

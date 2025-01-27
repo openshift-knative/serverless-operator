@@ -151,7 +151,7 @@ EOF
 
 function upgrade_service_mesh_proxy_image() {
   sm_proxy_image=$(yq r olm-catalog/serverless-operator/project.yaml 'dependencies.service_mesh_proxy')
-  sm_proxy_image_stream=$(skopeo inspect --no-tags=true "docker://${sm_proxy_image}" | jq -r '.Labels.version')
+  sm_proxy_image_stream=$(skopeo inspect --retry-times=10 --no-tags=true "docker://${sm_proxy_image}" | jq -r '.Labels.version')
   sm_proxy_image_stream=${sm_proxy_image_stream%.*}
   sm_proxy_image=$(latest_konflux_image_sha "${sm_proxy_image}" "${sm_proxy_image_stream}")
   yq w --inplace olm-catalog/serverless-operator/project.yaml 'dependencies.service_mesh_proxy' "${sm_proxy_image}"
@@ -182,4 +182,7 @@ logger.info "Generating catalog"
 generate_catalog
 
 logger.info "Generating ImageContextSourcePolicy"
-create_image_content_source_policy "${INDEX_IMAGE}" "$registry_redhat_io" "$registry_quay" "olm-catalog/serverless-operator-index/image_content_source_policy.yaml"
+
+default_serverless_operator_images
+# shellcheck disable=SC2154
+create_image_content_source_policy "${INDEX_IMAGE}" "$registry_redhat_io" "$registry_quay" "$registry_quay_previous" "olm-catalog/serverless-operator-index/image_content_source_policy.yaml"
