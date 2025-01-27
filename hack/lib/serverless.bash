@@ -270,6 +270,12 @@ spec:
       sidecar.istio.io/logLevel: "debug"
       sidecar.istio.io/rewriteAppHTTPProbers: "true"
     name: imc-dispatcher
+  - labels:
+      sidecar.istio.io/inject: "true"
+    annotations:
+      sidecar.istio.io/logLevel: "debug"
+      sidecar.istio.io/rewriteAppHTTPProbers: "true"
+    name: job-sink
 EOF
 
   yq merge --inplace --arrays append "$custom_resource" "$istio_patch"
