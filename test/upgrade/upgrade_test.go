@@ -42,15 +42,16 @@ import (
 	pkgupgrade "knative.dev/pkg/test/upgrade"
 	servingupgrade "knative.dev/serving/test/upgrade"
 
-	"github.com/openshift-knative/serverless-operator/test"
-	kafkafeatures "github.com/openshift-knative/serverless-operator/test/extensione2erekt/features"
-	"github.com/openshift-knative/serverless-operator/test/upgrade"
-	"github.com/openshift-knative/serverless-operator/test/upgrade/installation"
 	"knative.dev/eventing-kafka-broker/test/rekt/features"
 	"knative.dev/reconciler-test/pkg/environment"
 	"knative.dev/reconciler-test/pkg/k8s"
 	"knative.dev/reconciler-test/pkg/knative"
 	"knative.dev/reconciler-test/pkg/manifest"
+
+	"github.com/openshift-knative/serverless-operator/test"
+	kafkafeatures "github.com/openshift-knative/serverless-operator/test/extensione2erekt/features"
+	"github.com/openshift-knative/serverless-operator/test/upgrade"
+	"github.com/openshift-knative/serverless-operator/test/upgrade/installation"
 )
 
 // This service is supposed to be in a failure state during upgrades,
@@ -75,7 +76,7 @@ func TestServerlessUpgradePrePost(t *testing.T) {
 		},
 		Installations: pkgupgrade.Installations{
 			UpgradeWith:   upgrade.ServerlessUpgradeOperations(ctx),
-			DowngradeWith: upgrade.ServerlessDowngradeOperations(ctx, global),
+			DowngradeWith: upgrade.ServerlessDowngradeOperations(ctx),
 		},
 	}
 	suite.Execute(pkgupgrade.Configuration{T: t})
@@ -97,7 +98,7 @@ func TestServerlessUpgradeContinual(t *testing.T) {
 		},
 		Installations: pkgupgrade.Installations{
 			UpgradeWith:   upgrade.ServerlessUpgradeOperations(ctx),
-			DowngradeWith: upgrade.ServerlessDowngradeOperations(ctx, global),
+			DowngradeWith: upgrade.ServerlessDowngradeOperations(ctx),
 		},
 	}
 	suite.Execute(pkgupgrade.Configuration{T: t})
