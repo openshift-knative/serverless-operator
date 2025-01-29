@@ -538,7 +538,7 @@ go.uber.org/zap/internal/stacktrace
 go.uber.org/zap/internal/ztest
 go.uber.org/zap/zapcore
 go.uber.org/zap/zaptest
-# golang.org/x/crypto v0.28.0
+# golang.org/x/crypto v0.32.0
 ## explicit; go 1.20
 golang.org/x/crypto/md4
 golang.org/x/crypto/pbkdf2
@@ -550,7 +550,7 @@ golang.org/x/exp/maps
 golang.org/x/mod/internal/lazyregexp
 golang.org/x/mod/module
 golang.org/x/mod/semver
-# golang.org/x/net v0.30.0
+# golang.org/x/net v0.34.0
 ## explicit; go 1.18
 golang.org/x/net/http/httpguts
 golang.org/x/net/http2
@@ -565,20 +565,20 @@ golang.org/x/net/trace
 ## explicit; go 1.18
 golang.org/x/oauth2
 golang.org/x/oauth2/internal
-# golang.org/x/sync v0.9.0
+# golang.org/x/sync v0.10.0
 ## explicit; go 1.18
 golang.org/x/sync/errgroup
 golang.org/x/sync/semaphore
 golang.org/x/sync/singleflight
-# golang.org/x/sys v0.26.0
+# golang.org/x/sys v0.29.0
 ## explicit; go 1.18
 golang.org/x/sys/plan9
 golang.org/x/sys/unix
 golang.org/x/sys/windows
-# golang.org/x/term v0.25.0
+# golang.org/x/term v0.28.0
 ## explicit; go 1.18
 golang.org/x/term
-# golang.org/x/text v0.19.0
+# golang.org/x/text v0.21.0
 ## explicit; go 1.18
 golang.org/x/text/secure/bidirule
 golang.org/x/text/transform
@@ -1284,7 +1284,7 @@ k8s.io/utils/trace
 ## explicit; go 1.22
 knative.dev/caching/pkg/apis/caching
 knative.dev/caching/pkg/apis/caching/v1alpha1
-# knative.dev/eventing v0.43.0 => github.com/openshift-knative/eventing v0.99.1-0.20241105091617-e308b30f12d3
+# knative.dev/eventing v0.44.0 => github.com/openshift-knative/eventing v0.99.1-0.20250128093204-0c1358afb757
 ## explicit; go 1.22
 knative.dev/eventing/pkg/apis
 knative.dev/eventing/pkg/apis/config
@@ -1756,7 +1756,7 @@ sigs.k8s.io/structured-merge-diff/v4/value
 ## explicit; go 1.12
 sigs.k8s.io/yaml
 sigs.k8s.io/yaml/goyaml.v2
-# knative.dev/eventing => github.com/openshift-knative/eventing v0.99.1-0.20241105091617-e308b30f12d3
+# knative.dev/eventing => github.com/openshift-knative/eventing v0.99.1-0.20250128093204-0c1358afb757
 # knative.dev/eventing-kafka-broker => github.com/openshift-knative/eventing-kafka-broker v0.25.1-0.20240917152412-5dd3c57c9356
 # knative.dev/hack => knative.dev/hack v0.0.0-20240814135050-f9643117f6a1
 # knative.dev/networking => knative.dev/networking v0.0.0-20240716111826-bab7f2a3e556
