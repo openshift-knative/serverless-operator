@@ -34,16 +34,16 @@ install-serving-with-mesh: install-tools
 install-eventing: install-tools
 	INSTALL_SERVING="false" ./hack/install.sh
 
-install-kafka: install-tools
+install-kafka: install-tools install-certmanager
 	SCALE_UP=4 INSTALL_SERVING="false" INSTALL_KAFKA="true" ./hack/install.sh
 
-install-kafka-with-mesh: install-tools
+install-kafka-with-mesh: install-tools install-certmanager
 	UNINSTALL_MESH="false" ./hack/mesh.sh
 	TRACING_BACKEND=zipkin TRACING_NAMESPACE=knative-eventing ./hack/tracing.sh
 	UNINSTALL_STRIMZI="false" ./hack/strimzi.sh
 	MESH=true SCALE_UP=5 INSTALL_SERVING=false INSTALL_EVENTING=true INSTALL_KAFKA=true TRACING_BACKEND=zipkin TRACING_NAMESPACE=knative-eventing ENABLE_TRACING=true ./hack/install.sh
 
-install-kafka-with-keda: install-tools
+install-kafka-with-keda: install-tools install-certmanager
 	UNINSTALL_KEDA="false" ./hack/keda.sh
 	SCALE_UP=4 INSTALL_SERVING="false" INSTALL_KAFKA="true" ENABLE_KEDA="true" ./hack/install.sh
 
@@ -68,7 +68,7 @@ uninstall-certmanager:
 install-previous: install-tools
 	INSTALL_PREVIOUS_VERSION="true" ./hack/install.sh
 
-install-previous-with-kafka: install-tools
+install-previous-with-kafka: install-tools install-certmanager
 	INSTALL_PREVIOUS_VERSION="true" INSTALL_KAFKA="true" ./hack/install.sh
 
 install-mesh:
@@ -116,14 +116,14 @@ test-e2e: install-tools
 test-e2e-with-kafka-testonly:
 	TEST_KNATIVE_KAFKA=true ./test/e2e-tests.sh
 
-operator-e2e: install-tools
+operator-e2e: install-tools install-certmanager
 	UNINSTALL_STRIMZI="false" ./hack/strimzi.sh
 	./hack/tracing.sh
 	SCALE_UP=4 INSTALL_KAFKA="true" ENABLE_TRACING=true ./hack/install.sh
 	TEST_KNATIVE_KAFKA=true ./test/e2e-tests.sh
 	DELETE_CRD_ON_TEARDOWN="false" ./hack/teardown.sh
 
-operator-e2e-no-tracing: install-tools
+operator-e2e-no-tracing: install-tools install-certmanager
 	UNINSTALL_STRIMZI="false" ./hack/strimzi.sh
 	SCALE_UP=4 INSTALL_KAFKA="true" ./hack/install.sh
 	TEST_KNATIVE_KAFKA=true ./test/e2e-tests.sh
@@ -181,7 +181,7 @@ upstream-e2e: install-tools
 
 test-upstream-e2e-no-upgrade: upstream-e2e
 
-upstream-e2e-kafka: install-tools
+upstream-e2e-kafka: install-tools install-certmanager
 	UNINSTALL_STRIMZI="false" ./hack/strimzi.sh
 	TRACING_BACKEND=zipkin ./hack/tracing.sh
 	SCALE_UP=6 INSTALL_KAFKA="true" TRACING_BACKEND=zipkin ENABLE_TRACING=true ./hack/install.sh

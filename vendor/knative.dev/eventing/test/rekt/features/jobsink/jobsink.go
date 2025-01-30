@@ -59,7 +59,11 @@ func Success() *feature.Feature {
 			Scheme: "http",
 			Host:   network.GetServiceHostname(sink, environment.FromContext(ctx).Namespace()),
 		}
-		jobsink.Install(jobSink, jobsink.WithForwarderJob(sinkURL.String()))(ctx, t)
+		var opts []func(*batchv1.Job)
+		if ic := environment.GetIstioConfig(ctx); ic.Enabled {
+			opts = append(opts, jobsink.WithIstioConfig())
+		}
+		jobsink.Install(jobSink, jobsink.WithForwarderJob(sinkURL.String(), opts...))(ctx, t)
 	})
 
 	f.Setup("jobsink is addressable", jobsink.IsAddressable(jobSink))

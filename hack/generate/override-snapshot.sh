@@ -30,31 +30,35 @@ EOF
 }
 
 function create_component_snapshot {
-  local snapshot_file so_version so_semversion serving_version tmp_catalog_dir max_ocp_version latest_index_image
+  local snapshot_file so_short_version so_version so_semversion serving_tag serving_version_dotted serving_version tmp_catalog_dir max_ocp_version latest_index_image
   snapshot_file="${1}/override-snapshot.yaml"
 
-  serving_version="$(metadata.get dependencies.serving)"
-  serving_version="${serving_version/knative-v/}" # -> 1.15
-  serving_version="${serving_version/./}"
-  so_version="$(get_app_version_from_tag "$(metadata.get dependencies.serving)")"
+  serving_tag="$(metadata.get dependencies.serving)"
+  serving_version_dotted="${serving_tag/knative-v/}" # -> 1.15
+  serving_version="${serving_version_dotted/./}"
+  so_branch="$(sobranch --upstream-version "${serving_version_dotted}")"
+  so_version="$(get_app_version_from_tag "${serving_tag}")"
   so_semversion="$(metadata.get project.version)"
+  so_short_version=${so_semversion/./} # 1.36.0 -> 136.0
+  so_short_version=${so_short_version%.*} # 136.0 -> 136
 
   cat > "${snapshot_file}" <<EOF
 apiVersion: appstudio.redhat.com/v1alpha1
 kind: Snapshot
 metadata:
-  name: serverless-operator-${so_version}-override-snapshot
+  name: serverless-operator-${so_short_version}-override-snapshot
   labels:
     test.appstudio.openshift.io/type: override
-    application: serverless-operator-${so_version}
+    application: serverless-operator-${so_short_version}
+    branch: ${so_branch}
 spec:
-  application: serverless-operator-${so_version}
+  application: serverless-operator-${so_short_version}
 EOF
 
   tmp_catalog_dir=$(mktemp -d)
   max_ocp_version="$(metadata.get requirements.ocpVersion.max)"
   max_ocp_version=${max_ocp_version/./}
-  latest_index_image="${registry_quay}-fbc-${max_ocp_version}/serverless-index-${so_version}-fbc-${max_ocp_version}:latest"
+  latest_index_image="${registry_quay}-fbc-${max_ocp_version}/serverless-index-${so_short_version}-fbc-${max_ocp_version}:latest"
 
   # get catalog from latest index, so we can get the referenced images from there
   opm migrate "${latest_index_image}" "${tmp_catalog_dir}" -o json
@@ -73,10 +77,10 @@ EOF
       if [[ $image == "serverless-operator-bundle" ]]; then
         # bundle component is named in konflux serverless-bundle-<version>
 
-        component_name="serverless-bundle-${so_version}"
+        component_name="serverless-bundle-${so_short_version}"
         component_image_ref="${registry_quay}/serverless-bundle@${image_sha}"
       elif [[ $image =~ serverless ]]; then
-        component_name="${image}-${so_version}"
+        component_name="${image}-${so_short_version}"
       else
         component_name="${image}-${serving_version}"
       fi
@@ -93,11 +97,15 @@ EOF
 }
 
 function create_fbc_snapshots {
-  local rootdir snapshot_dir so_version
+  local rootdir snapshot_dir so_short_version so_branch serving_tag
   rootdir="$(dirname "$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")")"
   snapshot_dir="${1}"
 
-  so_version=$(get_app_version_from_tag "$(metadata.get dependencies.serving)")
+  serving_tag="$(metadata.get dependencies.serving)"
+  so_branch="$(sobranch --upstream-version "${serving_tag/knative-v/}")"
+  so_short_version="$(metadata.get project.version)"
+  so_short_version=${so_short_version/./} # 1.36.0 -> 136.0
+  so_short_version=${so_short_version%.*} # 136.0 -> 136
 
   while IFS= read -r ocp_version; do
     ocp_version=${ocp_version/./}
@@ -107,17 +115,18 @@ function create_fbc_snapshots {
 apiVersion: appstudio.redhat.com/v1alpha1
 kind: Snapshot
 metadata:
-  name: serverless-operator-${so_version}-fbc-${ocp_version}-override-snapshot
+  name: serverless-operator-${so_short_version}-fbc-${ocp_version}-override-snapshot
   labels:
     test.appstudio.openshift.io/type: override
-    application: serverless-operator-${so_version}-fbc-${ocp_version}
+    application: serverless-operator-${so_short_version}-fbc-${ocp_version}
+    branch: ${so_branch}
 spec:
-  application: serverless-operator-${so_version}-fbc-${ocp_version}
+  application: serverless-operator-${so_short_version}-fbc-${ocp_version}
 EOF
 
-  index_image="${registry_quay}-fbc-${ocp_version}/serverless-index-${so_version}-fbc-${ocp_version}"
+  index_image="${registry_quay}-fbc-${ocp_version}/serverless-index-${so_short_version}-fbc-${ocp_version}"
   index_image_digest="$(skopeo inspect --retry-times=10 --no-tags docker://"${index_image}:latest" | jq -r .Digest)"
-  add_component "${snapshot_file}" "serverless-index-${so_version}-fbc-${ocp_version}" "${index_image}@${index_image_digest}"
+  add_component "${snapshot_file}" "serverless-index-${so_short_version}-fbc-${ocp_version}" "${index_image}@${index_image_digest}"
 
   append_hash_to_snapshot_name "${snapshot_file}"
 

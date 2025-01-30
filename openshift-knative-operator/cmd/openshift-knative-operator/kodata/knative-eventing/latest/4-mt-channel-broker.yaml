@@ -17,7 +17,7 @@ kind: ClusterRole
 metadata:
   name: knative-eventing-mt-channel-broker-controller
   labels:
-    app.kubernetes.io/version: v1.15
+    app.kubernetes.io/version: v1.16
     app.kubernetes.io/name: knative-eventing
 rules:
   # Configs resources and status we care about.
@@ -64,7 +64,7 @@ kind: ClusterRole
 metadata:
   name: knative-eventing-mt-broker-filter
   labels:
-    app.kubernetes.io/version: v1.15
+    app.kubernetes.io/version: v1.16
     app.kubernetes.io/name: knative-eventing
 rules:
   - apiGroups:
@@ -75,6 +75,15 @@ rules:
       - triggers
       - triggers/status
       - eventpolicies
+    verbs:
+      - get
+      - list
+      - watch
+  # get subscription of trigger for AuthZ
+  - apiGroups:
+      - messaging.knative.dev
+    resources:
+      - subscriptions
     verbs:
       - get
       - list
@@ -151,7 +160,7 @@ metadata:
   name: mt-broker-filter
   namespace: knative-eventing
   labels:
-    app.kubernetes.io/version: v1.15
+    app.kubernetes.io/version: v1.16
     app.kubernetes.io/name: knative-eventing
 ---
 # Copyright 2020 The Knative Authors
@@ -172,7 +181,7 @@ kind: ClusterRole
 metadata:
   name: knative-eventing-mt-broker-ingress
   labels:
-    app.kubernetes.io/version: v1.15
+    app.kubernetes.io/version: v1.16
     app.kubernetes.io/name: knative-eventing
 rules:
   - apiGroups:
@@ -257,7 +266,7 @@ metadata:
   name: mt-broker-ingress-oidc
   namespace: knative-eventing
   labels:
-    app.kubernetes.io/version: v1.15
+    app.kubernetes.io/version: v1.16
     app.kubernetes.io/name: knative-eventing
 ---
 # Copyright 2020 The Knative Authors
@@ -279,7 +288,7 @@ metadata:
   name: mt-broker-ingress
   namespace: knative-eventing
   labels:
-    app.kubernetes.io/version: v1.15
+    app.kubernetes.io/version: v1.16
     app.kubernetes.io/name: knative-eventing
 ---
 # Copyright 2020 The Knative Authors
@@ -301,7 +310,7 @@ kind: ClusterRoleBinding
 metadata:
   name: eventing-mt-channel-broker-controller
   labels:
-    app.kubernetes.io/version: v1.15
+    app.kubernetes.io/version: v1.16
     app.kubernetes.io/name: knative-eventing
 subjects:
   - kind: ServiceAccount
@@ -331,7 +340,7 @@ kind: ClusterRoleBinding
 metadata:
   name: knative-eventing-mt-broker-filter
   labels:
-    app.kubernetes.io/version: v1.15
+    app.kubernetes.io/version: v1.16
     app.kubernetes.io/name: knative-eventing
 subjects:
   - kind: ServiceAccount
@@ -389,7 +398,7 @@ kind: ClusterRoleBinding
 metadata:
   name: knative-eventing-mt-broker-ingress
   labels:
-    app.kubernetes.io/version: v1.15
+    app.kubernetes.io/version: v1.16
     app.kubernetes.io/name: knative-eventing
 subjects:
   - kind: ServiceAccount
@@ -448,7 +457,7 @@ metadata:
   namespace: knative-eventing
   labels:
     app.kubernetes.io/component: broker-filter
-    app.kubernetes.io/version: v1.15
+    app.kubernetes.io/version: v1.16
     app.kubernetes.io/name: knative-eventing
     bindings.knative.dev/exclude: "true"
 spec:
@@ -460,7 +469,7 @@ spec:
       labels:
         eventing.knative.dev/brokerRole: filter
         app.kubernetes.io/component: broker-filter
-        app.kubernetes.io/version: v1.15
+        app.kubernetes.io/version: v1.16
         app.kubernetes.io/name: knative-eventing
     spec:
       serviceAccountName: mt-broker-filter
@@ -546,7 +555,7 @@ metadata:
   labels:
     eventing.knative.dev/brokerRole: filter
     app.kubernetes.io/component: broker-filter
-    app.kubernetes.io/version: v1.15
+    app.kubernetes.io/version: v1.16
     app.kubernetes.io/name: knative-eventing
   name: broker-filter
   namespace: knative-eventing
@@ -588,7 +597,7 @@ metadata:
   namespace: knative-eventing
   labels:
     app.kubernetes.io/component: broker-ingress
-    app.kubernetes.io/version: v1.15
+    app.kubernetes.io/version: v1.16
     app.kubernetes.io/name: knative-eventing
     bindings.knative.dev/exclude: "true"
 spec:
@@ -600,7 +609,7 @@ spec:
       labels:
         eventing.knative.dev/brokerRole: ingress
         app.kubernetes.io/component: broker-ingress
-        app.kubernetes.io/version: v1.15
+        app.kubernetes.io/version: v1.16
         app.kubernetes.io/name: knative-eventing
     spec:
       serviceAccountName: mt-broker-ingress
@@ -686,7 +695,7 @@ metadata:
   labels:
     eventing.knative.dev/brokerRole: ingress
     app.kubernetes.io/component: broker-ingress
-    app.kubernetes.io/version: v1.15
+    app.kubernetes.io/version: v1.16
     app.kubernetes.io/name: knative-eventing
   name: broker-ingress
   namespace: knative-eventing
@@ -728,7 +737,7 @@ metadata:
   namespace: knative-eventing
   labels:
     app.kubernetes.io/component: mt-broker-controller
-    app.kubernetes.io/version: v1.15
+    app.kubernetes.io/version: v1.16
     app.kubernetes.io/name: knative-eventing
     bindings.knative.dev/exclude: "true"
 spec:
@@ -740,7 +749,7 @@ spec:
       labels:
         app: mt-broker-controller
         app.kubernetes.io/component: broker-controller
-        app.kubernetes.io/version: v1.15
+        app.kubernetes.io/version: v1.16
         app.kubernetes.io/name: knative-eventing
     spec:
       # To avoid node becoming SPOF, spread our replicas to different nodes.
@@ -817,7 +826,7 @@ metadata:
   namespace: knative-eventing
   labels:
     app.kubernetes.io/component: broker-ingress
-    app.kubernetes.io/version: v1.15
+    app.kubernetes.io/version: v1.16
     app.kubernetes.io/name: knative-eventing
 spec:
   scaleTargetRef:
@@ -841,7 +850,7 @@ metadata:
   namespace: knative-eventing
   labels:
     app.kubernetes.io/component: broker-filter
-    app.kubernetes.io/version: v1.15
+    app.kubernetes.io/version: v1.16
     app.kubernetes.io/name: knative-eventing
 spec:
   scaleTargetRef:
