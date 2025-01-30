@@ -21,7 +21,7 @@ spec:
       value: serving/ingress/Dockerfile
     - name: build-args
       value:
-        - VERSION=1.35.0
+        - VERSION=1.36.0
         - CLI_ARTIFACTS=registry.redhat.io/openshift4/ose-cli-artifacts:v4.14
         - GO_BUILDER=brew.registry.redhat.io/rh-osbs/openshift-golang-builder:rhel_8_golang_1.22
         - GO_RUNTIME=registry.access.redhat.com/ubi8/ubi-minimal
@@ -38,7 +38,7 @@ spec:
     - name: additional-tags
       value:
         - $(context.pipelineRun.uid)-{{revision}}
-        - 1.35.0
+        - 1.36.0
         - latest
     - name: prefetch-input
       value: '[{"type":"rpm"}]'
