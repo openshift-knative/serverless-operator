@@ -375,11 +375,16 @@ function image_with_sha {
 
 function get_app_version_from_tag() {
   local tag app_version
-  tag=${1:?"Provide tag for Serving images"}
+  tag=${1:?"Provide tag for images"}
 
-  app_version=$(sobranch --upstream-version "${tag/knative-v/}") # -> release-1.34
-  app_version=${app_version/release-/}                   # -> 1.34
-  app_version=${app_version/./}                          # -> 134
+  if [[ "$tag" == "knative-nightly" ]]; then
+    app_version=$quay_registry_app_version
+  else
+    app_version=$(sobranch --upstream-version "${tag/knative-v/}") # -> release-1.34
+    app_version=${app_version/release-/}                   # -> 1.34
+    app_version=${app_version/./}                          # -> 134
+  fi
+
   echo "${app_version}"
 }
 
