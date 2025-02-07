@@ -6506,6 +6506,8 @@ spec:
             - containerPort: 9090
               name: metrics
               protocol: TCP
+            - name: probes
+              containerPort: 8080
           resources:
             requests:
               cpu: 125m
@@ -6520,6 +6522,23 @@ spec:
             capabilities:
               drop:
               - ALL
+
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: probes
+              scheme: HTTP
+            initialDelaySeconds: 20
+            periodSeconds: 10
+            timeoutSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /readiness
+              port: probes
+              scheme: HTTP
+            initialDelaySeconds: 20
+            periodSeconds: 10
+            timeoutSeconds: 5
 
       serviceAccountName: pingsource-mt-adapter
 ---

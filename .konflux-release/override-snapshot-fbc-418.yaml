@@ -1,18 +1,18 @@
 apiVersion: appstudio.redhat.com/v1alpha1
 kind: Snapshot
 metadata:
-  name: serverless-operator-135-fbc-418-override-snapshot-811b3ed8
+  name: serverless-operator-136-fbc-418-override-snapshot-8d236c55
   labels:
     test.appstudio.openshift.io/type: override
-    application: serverless-operator-135-fbc-418
-    branch: release-1.35
+    application: serverless-operator-136-fbc-418
+    branch: release-1.36
 spec:
-  application: serverless-operator-135-fbc-418
+  application: serverless-operator-136-fbc-418
   components:
-    - name: "serverless-index-135-fbc-418"
-      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135-fbc-418/serverless-index-135-fbc-418@sha256:ff097bacdfc302a234b3fde60d82d222cabeb00d249a301c990c431f592ed1b0"
+    - name: "serverless-index-136-fbc-418"
+      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136-fbc-418/serverless-index-136-fbc-418@sha256:f4de59ed8fccf8a49311976b4d26f6f648e58108f1a9bbd4b0c39d4279d6af45"
       source:
         git:
           url: "https://github.com/openshift-knative/serverless-operator"
-          revision: "1600c9cc088b326e4d8d9b0c51c34b08274be6b6"
+          revision: "809d133b664b90b2ac567ba3b582f4b5128f7a66"
           dockerfileUrl: "Dockerfile"
