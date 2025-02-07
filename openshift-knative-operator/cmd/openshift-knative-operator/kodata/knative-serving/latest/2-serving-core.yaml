@@ -9533,7 +9533,6 @@ webhooks:
     operations:
     - CREATE
     - UPDATE
-    - DELETE
     scope: "*"
     resources:
     - metrics
