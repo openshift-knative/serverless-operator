@@ -15,12 +15,12 @@ set -o pipefail
 cd "${ROOT_DIR}"
 
 # This controls the knative release version we track.
-KN_VERSION="release-1.15"
-EVENTING_VERSION="release-v1.15"
-EVENTING_KAFKA_BROKER_VERSION="release-v1.15"
-SERVING_VERSION="release-v1.15"
+KN_VERSION="release-1.16"
+EVENTING_VERSION="release-v1.16"
+EVENTING_KAFKA_BROKER_VERSION="release-v1.16"
+SERVING_VERSION="release-v1.16"
 GO_VERSION="$(metadata.get requirements.golang)"
-OCP_VERSION="$(metadata.get requirements.ocpVersion.list[-1])"
+OCP_VERSION="4.17"
 
 # The list of dependencies that we track at HEAD and periodically
 # float forward in this repository.
