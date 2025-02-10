@@ -101,19 +101,19 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 			}
 			return nil
 		})
-		if err = c.Watch(source.Kind(mgr.GetCache(), &configv1.ClusterOperator{}), handler.EnqueueRequestsFromMapFunc(enqueueRequests), common.SkipPredicate{}); err != nil {
+		if err = c.Watch(source.Kind(mgr.GetCache(), client.Object(&configv1.ClusterOperator{}), handler.EnqueueRequestsFromMapFunc(enqueueRequests), common.SkipPredicate{})); err != nil {
 			return err
 		}
 	}
 
 	// Watch for changes to primary resource KnativeEventing
 	requiredNs := os.Getenv(requiredNsEnvName)
-	return c.Watch(source.Kind(mgr.GetCache(), &operatorv1beta1.KnativeEventing{}), &handler.EnqueueRequestForObject{}, predicate.NewPredicateFuncs(func(obj client.Object) bool {
+	return c.Watch(source.Kind(mgr.GetCache(), client.Object(&operatorv1beta1.KnativeEventing{}), &handler.EnqueueRequestForObject{}, predicate.NewPredicateFuncs(func(obj client.Object) bool {
 		if requiredNs == "" {
 			return true
 		}
 		return obj.GetNamespace() == requiredNs
-	}))
+	})))
 }
 
 // blank assignment to verify that ReconcileKnativeEventing implements reconcile.Reconciler
