@@ -1,13 +1,130 @@
 version: 2
 updates:
-  - package-ecosystem: "github-actions"
-    directory: "/"
-    schedule:
-      interval: "weekly"
-  - package-ecosystem: "gomod"
-    directory: "/"
-    schedule:
-      interval: "weekly"
-    ignore:
-      - dependency-name: "k8s.io/*"
-      - dependency-name: "knative.dev/*"
+    - package-ecosystem: gomod
+      directories:
+        - /
+      schedule:
+        interval: weekly
+      ignore:
+        - dependency-name: knative.dev/*
+        - dependency-name: k8s.io/*
+          update-types:
+            - version-update:semver-major
+            - version-update:semver-minor
+        - dependency-name: github.com/openshift/*
+          update-types:
+            - version-update:semver-major
+            - version-update:semver-minor
+        - dependency-name: sigs.k8s.io/controller-runtime
+          update-types:
+            - version-update:semver-major
+            - version-update:semver-minor
+      groups:
+        major:
+            update-types:
+                - major
+            patterns:
+                - '*'
+            applies-to: version-updates
+            exclude-patterns:
+                - knative.dev/*
+                - istio.io/*
+                - k8s.io/*
+                - github.com/openshift/*
+                - sigs.k8s.io/controller-runtime*
+        minor:
+            update-types:
+                - minor
+            patterns:
+                - '*'
+            applies-to: version-updates
+            exclude-patterns:
+                - knative.dev/*
+                - k8s.io/*
+                - github.com/openshift/*
+                - sigs.k8s.io/controller-runtime*
+                - istio.io/*
+        patch:
+            update-types:
+                - patch
+            patterns:
+                - '*'
+            applies-to: version-updates
+            exclude-patterns:
+                - istio.io/*
+        security:
+            update-types:
+                - patch
+                - minor
+                - major
+            patterns:
+                - '*'
+            applies-to: security-updates
+      target-branch: main
+      commit-message:
+        prefix: '[main][gomod]'
+      open-pull-requests-limit: 10
+    - package-ecosystem: gomod
+      directories:
+        - /
+      schedule:
+        interval: weekly
+      ignore:
+        - dependency-name: knative.dev/*
+        - dependency-name: k8s.io/*
+          update-types:
+            - version-update:semver-major
+            - version-update:semver-minor
+        - dependency-name: github.com/openshift/*
+          update-types:
+            - version-update:semver-major
+            - version-update:semver-minor
+        - dependency-name: sigs.k8s.io/controller-runtime
+          update-types:
+            - version-update:semver-major
+            - version-update:semver-minor
+      groups:
+        major:
+            update-types:
+                - major
+            patterns:
+                - '*'
+            applies-to: version-updates
+            exclude-patterns:
+                - knative.dev/*
+                - istio.io/*
+                - k8s.io/*
+                - github.com/openshift/*
+                - sigs.k8s.io/controller-runtime*
+        minor:
+            update-types:
+                - minor
+            patterns:
+                - '*'
+            applies-to: version-updates
+            exclude-patterns:
+                - knative.dev/*
+                - k8s.io/*
+                - github.com/openshift/*
+                - sigs.k8s.io/controller-runtime*
+                - istio.io/*
+        patch:
+            update-types:
+                - patch
+            patterns:
+                - '*'
+            applies-to: version-updates
+            exclude-patterns:
+                - istio.io/*
+        security:
+            update-types:
+                - patch
+                - minor
+                - major
+            patterns:
+                - '*'
+            applies-to: security-updates
+      target-branch: release-1.35
+      commit-message:
+        prefix: '[release-1.35][gomod]'
+      open-pull-requests-limit: 10
