@@ -191,19 +191,11 @@ replace (
 )
 
 replace (
-	// Kubernetes components
-	// TODO: we should update to Kubernetes 1.30 in the S-O release 1.36
-	// https://issues.redhat.com/browse/SRVCOM-3384
 	k8s.io/api => k8s.io/api v0.30.9
 	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.30.9
 	k8s.io/apimachinery => k8s.io/apimachinery v0.30.9
 	k8s.io/client-go => k8s.io/client-go v0.30.9
 	k8s.io/code-generator => k8s.io/code-generator v0.30.9
 	k8s.io/component-base => k8s.io/component-base v0.30.9
-	// This replacement can be removed once we bump to k8s.io@v1.30.x, as from release 1.30+
-	// https://github.com/kubernetes/code-generator/blob/release-1.30/go.mod, code-generator will use
-	// the new v2 version of kube-openapi.
-	//k8s.io/kube-openapi => k8s.io/kube-openapi v0.0.0-20231010175941-2dd684a91f00
-	//k8s.io/utils => k8s.io/utils v0.0.0-20240310230437-4693a0247e57
-	sigs.k8s.io/controller-runtime => sigs.k8s.io/controller-runtime v0.18.4
+	sigs.k8s.io/controller-runtime => sigs.k8s.io/controller-runtime v0.18.7
 )
