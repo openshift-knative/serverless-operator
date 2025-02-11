@@ -21,7 +21,7 @@ type Key struct{}
 
 func withInformer(ctx context.Context) (context.Context, controller.Informer) {
 	f := factory.Get(ctx)
-	inf := f.Config().V1().DNSs()
+	inf := f.Config().V1().DNSes()
 	return context.WithValue(ctx, Key{}, inf), inf.Informer()
 }
 

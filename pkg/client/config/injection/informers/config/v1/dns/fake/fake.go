@@ -19,6 +19,6 @@ func init() {
 
 func withInformer(ctx context.Context) (context.Context, controller.Informer) {
 	f := fake.Get(ctx)
-	inf := f.Config().V1().DNSs()
+	inf := f.Config().V1().DNSes()
 	return context.WithValue(ctx, dns.Key{}, inf), inf.Informer()
 }

@@ -32,3 +32,6 @@ OUTPUT_PKG="github.com/openshift-knative/serverless-operator/pkg/client/config/i
   github.com/openshift/client-go/config github.com/openshift/api \
   "config:v1" \
   --go-header-file "${REPO_ROOT}/hack/boilerplate/boilerplate.go.txt"
+
+echo "Fix DNS plural form"
+find pkg/client/config/injection/informers/config/v1/dns -name "*.go" -exec sed -i 's/DNSs()/DNSes()/g' {} \;
