@@ -935,11 +935,11 @@ spec:
                       - name: "IMAGE_KUBE_RBAC_PROXY"
                         value: "registry.redhat.io/openshift4/ose-kube-rbac-proxy-rhel9@sha256:6136488d256d1f805162f462a68a0a50eef1dc5ba9b57daf49d1a7db274b0d22"
                       - name: "IMAGE_KN_PLUGIN_EVENT_SENDER"
-                        value: "registry.redhat.io/openshift-serverless-1/kn-plugin-event-sender-rhel8@sha256:77c39a75229f6435db793a5b2d9f4249fe7c7ab8acca04069372668c1bf94798"
+                        value: "registry.redhat.io/openshift-serverless-1/kn-plugin-event-sender-rhel8@sha256:f98ec06a9dc8d3194bbb5420c2b79eee9050ebde71e45eabdec27755ff8b451a"
                       - name: "IMAGE_KN_CLIENT"
-                        value: "registry.redhat.io/openshift-serverless-1/kn-client-kn-rhel8@sha256:f88acccc30b6a7f0321827ca95adc2f8e3e953194ebb8487648abea9c6008da8"
+                        value: "registry.redhat.io/openshift-serverless-1/kn-client-kn-rhel8@sha256:c1eafce44d81390158e64d24b6b066e1063802d262bd783c202bf535b97d318e"
                       - name: "IMAGE_KN_PLUGIN_FUNC_UTIL"
-                        value: "registry.redhat.io/openshift-serverless-1/kn-plugin-func-func-util-rhel8@sha256:edb7e9d04d424dbe7e15d059fd4217298036ca299e7a358f6edb21bb404aeb6c"
+                        value: "registry.redhat.io/openshift-serverless-1/kn-plugin-func-func-util-rhel8@sha256:f107932594e0fc1304c34e9ec765cafb562cf00cba488c80d40d3d7092e47271"
                       - name: "IMAGE_KN_PLUGIN_FUNC_TEKTON_S2I"
                         value: "registry.redhat.io/source-to-image/source-to-image-rhel8@sha256:6a6025914296a62fdf2092c3a40011bd9b966a6806b094d51eec5e1bd5026ef4"
                       - name: "IMAGE_KN_PLUGIN_FUNC_TEKTON_BUILDAH"
@@ -981,7 +981,7 @@ spec:
                 serviceAccountName: knative-openshift
                 initContainers:
                   - name: cli-artifacts
-                    image: registry.redhat.io/openshift-serverless-1/kn-client-cli-artifacts-rhel8@sha256:409243052873c14752799af71f024dee7547b90ee93f654f37ade74de5db1ef3
+                    image: registry.redhat.io/openshift-serverless-1/kn-client-cli-artifacts-rhel8@sha256:4df002ce55f295f8abaf586cdf3c6136f9591ccbff71734ab579a844a8b11aa0
                     imagePullPolicy: Always
                     command: ["sh", "-c", "rm -rf /cli-artifacts/* && cp /usr/share/kn/**/* /cli-artifacts && chmod 444 /cli-artifacts/*"]
                     volumeMounts:
@@ -1109,11 +1109,11 @@ spec:
                       - name: "IMAGE_KUBE_RBAC_PROXY"
                         value: "registry.redhat.io/openshift4/ose-kube-rbac-proxy-rhel9@sha256:6136488d256d1f805162f462a68a0a50eef1dc5ba9b57daf49d1a7db274b0d22"
                       - name: "IMAGE_KN_PLUGIN_EVENT_SENDER"
-                        value: "registry.redhat.io/openshift-serverless-1/kn-plugin-event-sender-rhel8@sha256:77c39a75229f6435db793a5b2d9f4249fe7c7ab8acca04069372668c1bf94798"
+                        value: "registry.redhat.io/openshift-serverless-1/kn-plugin-event-sender-rhel8@sha256:f98ec06a9dc8d3194bbb5420c2b79eee9050ebde71e45eabdec27755ff8b451a"
                       - name: "IMAGE_KN_CLIENT"
-                        value: "registry.redhat.io/openshift-serverless-1/kn-client-kn-rhel8@sha256:f88acccc30b6a7f0321827ca95adc2f8e3e953194ebb8487648abea9c6008da8"
+                        value: "registry.redhat.io/openshift-serverless-1/kn-client-kn-rhel8@sha256:c1eafce44d81390158e64d24b6b066e1063802d262bd783c202bf535b97d318e"
                       - name: "IMAGE_KN_PLUGIN_FUNC_UTIL"
-                        value: "registry.redhat.io/openshift-serverless-1/kn-plugin-func-func-util-rhel8@sha256:edb7e9d04d424dbe7e15d059fd4217298036ca299e7a358f6edb21bb404aeb6c"
+                        value: "registry.redhat.io/openshift-serverless-1/kn-plugin-func-func-util-rhel8@sha256:f107932594e0fc1304c34e9ec765cafb562cf00cba488c80d40d3d7092e47271"
                       - name: "IMAGE_KN_PLUGIN_FUNC_TEKTON_S2I"
                         value: "registry.redhat.io/source-to-image/source-to-image-rhel8@sha256:6a6025914296a62fdf2092c3a40011bd9b966a6806b094d51eec5e1bd5026ef4"
                       - name: "IMAGE_KN_PLUGIN_FUNC_TEKTON_BUILDAH"
@@ -1386,11 +1386,11 @@ spec:
     - name: "IMAGE_KUBE_RBAC_PROXY"
       image: "registry.redhat.io/openshift4/ose-kube-rbac-proxy-rhel9@sha256:6136488d256d1f805162f462a68a0a50eef1dc5ba9b57daf49d1a7db274b0d22"
     - name: "IMAGE_KN_PLUGIN_EVENT_SENDER"
-      image: "registry.redhat.io/openshift-serverless-1/kn-plugin-event-sender-rhel8@sha256:77c39a75229f6435db793a5b2d9f4249fe7c7ab8acca04069372668c1bf94798"
+      image: "registry.redhat.io/openshift-serverless-1/kn-plugin-event-sender-rhel8@sha256:f98ec06a9dc8d3194bbb5420c2b79eee9050ebde71e45eabdec27755ff8b451a"
     - name: "IMAGE_KN_CLIENT"
-      image: "registry.redhat.io/openshift-serverless-1/kn-client-kn-rhel8@sha256:f88acccc30b6a7f0321827ca95adc2f8e3e953194ebb8487648abea9c6008da8"
+      image: "registry.redhat.io/openshift-serverless-1/kn-client-kn-rhel8@sha256:c1eafce44d81390158e64d24b6b066e1063802d262bd783c202bf535b97d318e"
     - name: "IMAGE_KN_PLUGIN_FUNC_UTIL"
-      image: "registry.redhat.io/openshift-serverless-1/kn-plugin-func-func-util-rhel8@sha256:edb7e9d04d424dbe7e15d059fd4217298036ca299e7a358f6edb21bb404aeb6c"
+      image: "registry.redhat.io/openshift-serverless-1/kn-plugin-func-func-util-rhel8@sha256:f107932594e0fc1304c34e9ec765cafb562cf00cba488c80d40d3d7092e47271"
     - name: "IMAGE_KN_PLUGIN_FUNC_TEKTON_S2I"
       image: "registry.redhat.io/source-to-image/source-to-image-rhel8@sha256:6a6025914296a62fdf2092c3a40011bd9b966a6806b094d51eec5e1bd5026ef4"
     - name: "IMAGE_KN_PLUGIN_FUNC_TEKTON_BUILDAH"
@@ -1424,6 +1424,6 @@ spec:
     - name: "IMAGE_MUST_GATHER"
       image: "registry.redhat.io/openshift-serverless-1/serverless-must-gather-rhel8@sha256:b9dc105e9f4c0cfadf103f542053768a4b5babc3166013fae110ea63291367b7"
     - name: "IMAGE_KN_CLIENT_CLI_ARTIFACTS"
-      image: "registry.redhat.io/openshift-serverless-1/kn-client-cli-artifacts-rhel8@sha256:409243052873c14752799af71f024dee7547b90ee93f654f37ade74de5db1ef3"
+      image: "registry.redhat.io/openshift-serverless-1/kn-client-cli-artifacts-rhel8@sha256:4df002ce55f295f8abaf586cdf3c6136f9591ccbff71734ab579a844a8b11aa0"
   replaces: serverless-operator.v1.35.0
   version: 1.36.0
