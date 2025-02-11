@@ -19,11 +19,9 @@ package installation
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/kubernetes"
 	internalsclient "knative.dev/eventing-kafka-broker/control-plane/pkg/client/internals/kafka/injection/client"
 	kubeclient "knative.dev/pkg/client/injection/kube/client"
@@ -41,7 +39,7 @@ func CleanupChannelv2ConsumerGroups(c pkgupgrade.Context, glob environment.Globa
 
 	err := deleteConsumerGroups(ctx, client, "KafkaChannel")
 	if err != nil {
-		c.T.Fatal("failed to downgrade from channelv2", err.Error())
+		c.T.Fatal("failed to downgrade from channelv2 consumergroup", err.Error())
 	}
 }
 
@@ -51,37 +49,17 @@ func CleanupChannelv2Deployments(c pkgupgrade.Context, glob environment.GlobalEn
 
 	err := deleteStatefulSet(ctx, client, "kafka-channel-dispatcher", test.EventingNamespace)
 	if err != nil {
-		c.T.Fatal("failed to downgrade from channelv2", err.Error())
+		c.T.Fatal("failed to downgrade from channelv2 statefulset", err.Error())
 	}
 }
 
 func deleteStatefulSet(ctx context.Context, client kubernetes.Interface, name string, namespace string) error {
-	err := waitDeploymentExists(ctx, client, name, namespace)
-	if err != nil {
-		return err
-	}
-
-	err = client.AppsV1().StatefulSets(namespace).Delete(ctx, name, metav1.DeleteOptions{})
+	err := client.AppsV1().StatefulSets(namespace).Delete(ctx, name, metav1.DeleteOptions{})
 	if err != nil && !errors.IsNotFound(err) {
 		return fmt.Errorf("failed to delete statefulset %s/%s: %w", namespace, name, err)
 	}
 
 	return nil
-}
-
-func waitDeploymentExists(ctx context.Context, client kubernetes.Interface, name string, namespace string) error {
-	return wait.PollUntilContextTimeout(ctx, time.Second*10, time.Minute*3, true, func(ctx context.Context) (bool, error) {
-		_, err := client.AppsV1().Deployments(namespace).Get(ctx, name, metav1.GetOptions{})
-		if errors.IsNotFound(err) {
-			return false, nil
-		}
-
-		if err != nil {
-			return false, fmt.Errorf("failed to get deployment: %w", err)
-		}
-
-		return true, nil
-	})
 }
 
 func deleteConsumerGroups(ctx context.Context, client kubernetes.Interface, kind string) error {
