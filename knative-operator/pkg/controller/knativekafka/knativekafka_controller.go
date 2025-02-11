@@ -168,7 +168,7 @@ func add(mgr manager.Manager, r *ReconcileKnativeKafka) error {
 
 	// watch KnativeEventing instances as KnativeKafka instances are dependent on them
 	err = c.Watch(source.Kind(mgr.GetCache(), client.Object(&operatorv1beta1.KnativeEventing{}), filteredGlobalResync(context.Background(), mgr.GetLogger(), r,
-		func(obj client.Object) bool {
+		func(_ client.Object) bool {
 			return true
 		})))
 	if err != nil {
