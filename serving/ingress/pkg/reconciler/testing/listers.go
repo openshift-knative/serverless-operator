@@ -1,9 +1,9 @@
 package testing
 
 import (
-	fakerouteclientset "github.com/openshift-knative/serverless-operator/pkg/client/clientset/versioned/fake"
-	routev1listers "github.com/openshift-knative/serverless-operator/pkg/client/listers/route/v1"
 	routev1 "github.com/openshift/api/route/v1"
+	fakerouteclientset "github.com/openshift/client-go/route/clientset/versioned/fake"
+	routev1listers "github.com/openshift/client-go/route/listers/route/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/tools/cache"
 	networking "knative.dev/networking/pkg/apis/networking/v1alpha1"

@@ -12,8 +12,8 @@ import (
 	"knative.dev/pkg/logging"
 	"knative.dev/pkg/reconciler"
 
-	routeclient "github.com/openshift-knative/serverless-operator/pkg/client/injection/client"
-	routeinformer "github.com/openshift-knative/serverless-operator/pkg/client/injection/informers/route/v1/route"
+	routeclient "github.com/openshift-knative/serverless-operator/pkg/client/route/injection/client"
+	routeinformer "github.com/openshift-knative/serverless-operator/pkg/client/route/injection/informers/route/v1/route"
 	"github.com/openshift-knative/serverless-operator/serving/ingress/pkg/reconciler/ingress/resources"
 )
 
