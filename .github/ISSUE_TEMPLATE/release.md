@@ -63,3 +63,15 @@ You can check their aggregated status using the
 - [ ] Run `make generated-files`
 - [ ] Send a PR with the changes
 - [ ] Pray that it works 😸  Otherwise try bump in steps and/or find a dependency version mix (with `go mod replace`) that works
+
+### Update support end dates
+
+1. Go to [Red Hat OpenShift Serverless product pages](https://access.redhat.com/product-life-cycles?product=Red%20Hat%20OpenShift%20Serverless)
+2. Update [hack unsupported.yaml file](https://github.com/openshift-knative/hack/blob/2d5e9be6985e0b424ed0a92cd4c3502e0fe321f7/pkg/discover/unsupported.yaml#L1-L2)
+   with all versions and dates that have a fixed **Maintenance support ends**.
+   ```yaml
+   - date: "2025-05-22"
+     version: "1.34"
+   ```
+3. Once the date arrives, `hack` will open a PR to remove midstream CI configurations
+   (so that it removes periodic CI job runs, Konflux configuration generator will skip those branches, etc.)
