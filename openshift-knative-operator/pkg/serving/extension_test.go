@@ -3,8 +3,6 @@ package serving
 import (
 	"context"
 	"fmt"
-	routeinjection "github.com/openshift-knative/serverless-operator/pkg/client/route/injection/client"
-	routefake "github.com/openshift-knative/serverless-operator/pkg/client/route/injection/client/fake"
 	"os"
 	"strconv"
 	"testing"
@@ -12,7 +10,6 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/openshift-knative/serverless-operator/openshift-knative-operator/pkg/common"
 	"github.com/openshift-knative/serverless-operator/openshift-knative-operator/pkg/monitoring"
-	//ocpfake "github.com/openshift-knative/serverless-operator/pkg/client/config/injection/client/fake"
 	configv1 "github.com/openshift/api/config/v1"
 	routev1 "github.com/openshift/api/route/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -33,6 +30,8 @@ import (
 
 	configinjection "github.com/openshift-knative/serverless-operator/pkg/client/config/injection/client"
 	configfake "github.com/openshift-knative/serverless-operator/pkg/client/config/injection/client/fake"
+	routeinjection "github.com/openshift-knative/serverless-operator/pkg/client/route/injection/client"
+	routefake "github.com/openshift-knative/serverless-operator/pkg/client/route/injection/client/fake"
 )
 
 var (
