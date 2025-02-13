@@ -11,8 +11,6 @@ import (
 	mf "github.com/manifestival/manifestival"
 	"github.com/openshift-knative/serverless-operator/openshift-knative-operator/pkg/common"
 	"github.com/openshift-knative/serverless-operator/openshift-knative-operator/pkg/monitoring"
-	"github.com/openshift-knative/serverless-operator/pkg/client/clientset/versioned"
-	ocpclient "github.com/openshift-knative/serverless-operator/pkg/client/injection/client"
 	socommon "github.com/openshift-knative/serverless-operator/pkg/common"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -31,6 +29,12 @@ import (
 	"knative.dev/pkg/controller"
 	"knative.dev/pkg/ptr"
 	"knative.dev/pkg/reconciler"
+
+	configinjection "github.com/openshift-knative/serverless-operator/pkg/client/config/injection/client"
+	routeinjection "github.com/openshift-knative/serverless-operator/pkg/client/route/injection/client"
+
+	configclient "github.com/openshift/client-go/config/clientset/versioned"
+	routeclient "github.com/openshift/client-go/route/clientset/versioned"
 )
 
 const (
@@ -56,14 +60,16 @@ func NewExtension(ctx context.Context, impl *controller.Impl) operator.Extension
 	})
 
 	return &extension{
-		ocpclient:  ocpclient.Get(ctx),
-		kubeclient: kubeclient.Get(ctx),
+		routeClient:  routeinjection.Get(ctx),
+		configClient: configinjection.Get(ctx),
+		kubeclient:   kubeclient.Get(ctx),
 	}
 }
 
 type extension struct {
-	ocpclient  versioned.Interface
-	kubeclient kubernetes.Interface
+	routeClient  routeclient.Interface
+	configClient configclient.Interface
+	kubeclient   kubernetes.Interface
 }
 
 func (e *extension) Manifests(ks base.KComponent) ([]mf.Manifest, error) {
@@ -121,7 +127,7 @@ func (e *extension) Reconcile(ctx context.Context, comp base.KComponent) error {
 		common.ConfigureIfConfigmapUnset(&ks.Spec.CommonSpec, "domain", domain, "")
 	}
 
-	// Attempt to locate kibana route which is available if openshift-logging has been configured
+	// Attempt to locate kibana routeinjection which is available if openshift-logging has been configured
 	if loggingHost := e.fetchLoggingHost(ctx); loggingHost != "" {
 		common.Configure(&ks.Spec.CommonSpec, monitoring.ObservabilityCMName, "logging.revision-url-template",
 			fmt.Sprintf(loggingURLTemplate, loggingHost))
@@ -197,7 +203,7 @@ func (e *extension) Finalize(_ context.Context, comp base.KComponent) error {
 
 // fetchClusterHost fetches the cluster's hostname from the cluster's ingress config.
 func (e *extension) fetchClusterHost(ctx context.Context) (string, error) {
-	ingress, err := e.ocpclient.ConfigV1().Ingresses().Get(ctx, "cluster", metav1.GetOptions{})
+	ingress, err := e.configClient.ConfigV1().Ingresses().Get(ctx, "cluster", metav1.GetOptions{})
 	if err != nil {
 		return "", fmt.Errorf("failed to fetch cluster config: %w", err)
 	}
@@ -207,7 +213,7 @@ func (e *extension) fetchClusterHost(ctx context.Context) (string, error) {
 // fetchLoggingHost fetches the hostname of the Kibana installed by Openshift Logging,
 // if present.
 func (e *extension) fetchLoggingHost(ctx context.Context) string {
-	route, err := e.ocpclient.RouteV1().Routes("openshift-logging").Get(ctx, "kibana", metav1.GetOptions{})
+	route, err := e.routeClient.RouteV1().Routes("openshift-logging").Get(ctx, "kibana", metav1.GetOptions{})
 	if err != nil || len(route.Status.Ingress) == 0 {
 		return ""
 	}

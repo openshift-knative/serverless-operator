@@ -14,7 +14,6 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/utils/ptr"
 	"knative.dev/operator/pkg/apis/operator/base"
@@ -25,7 +24,6 @@ import (
 
 	"github.com/openshift-knative/serverless-operator/openshift-knative-operator/pkg/common"
 	"github.com/openshift-knative/serverless-operator/openshift-knative-operator/pkg/monitoring"
-	ocpfake "github.com/openshift-knative/serverless-operator/pkg/client/injection/client/fake"
 )
 
 const requiredNs = "knative-eventing"
@@ -386,14 +384,12 @@ func TestMonitoring(t *testing.T) {
 
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
-			objs := []runtime.Object{&eventingNamespace}
 			ke := c.in.DeepCopy()
 			if ke.Namespace == "" {
 				ke.Namespace = requiredNs
 			}
 			c.expected.Namespace = ke.Namespace
-			ctx, _ := ocpfake.With(context.Background(), objs...)
-			ctx, kube := kubefake.With(ctx, &eventingNamespace)
+			ctx, kube := kubefake.With(context.Background(), &eventingNamespace)
 			ctx, _ = dynamicfake.With(ctx, scheme.Scheme)
 			ext := NewExtension(ctx, nil)
 			shouldEnableMonitoring, err := c.setupMonitoringToggle()

@@ -15,11 +15,11 @@ import (
 // Validator validates KnativeServing CR's
 type Validator struct {
 	client  client.Client
-	decoder *admission.Decoder
+	decoder admission.Decoder
 }
 
 // NewValidator creates a new Validator instance to validate KnativeServing CRs.
-func NewValidator(client client.Client, decoder *admission.Decoder) *Validator {
+func NewValidator(client client.Client, decoder admission.Decoder) *Validator {
 	return &Validator{
 		client:  client,
 		decoder: decoder,

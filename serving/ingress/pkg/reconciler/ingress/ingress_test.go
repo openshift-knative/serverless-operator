@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	fakerouteclient "github.com/openshift-knative/serverless-operator/pkg/client/injection/client/fake"
+	fakerouteclient "github.com/openshift-knative/serverless-operator/pkg/client/route/injection/client/fake"
 	routev1 "github.com/openshift/api/route/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"

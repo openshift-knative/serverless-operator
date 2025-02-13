@@ -116,7 +116,7 @@ var (
 		},
 	}
 
-	decoder *admission.Decoder
+	decoder admission.Decoder
 )
 
 func init() {

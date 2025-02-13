@@ -10,8 +10,6 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/openshift-knative/serverless-operator/openshift-knative-operator/pkg/common"
 	"github.com/openshift-knative/serverless-operator/openshift-knative-operator/pkg/monitoring"
-	ocpclient "github.com/openshift-knative/serverless-operator/pkg/client/injection/client"
-	ocpfake "github.com/openshift-knative/serverless-operator/pkg/client/injection/client/fake"
 	configv1 "github.com/openshift/api/config/v1"
 	routev1 "github.com/openshift/api/route/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -29,12 +27,20 @@ import (
 	"knative.dev/pkg/apis"
 	kubeclient "knative.dev/pkg/client/injection/kube/client"
 	kubefake "knative.dev/pkg/client/injection/kube/client/fake"
+
+	configinjection "github.com/openshift-knative/serverless-operator/pkg/client/config/injection/client"
+	configfake "github.com/openshift-knative/serverless-operator/pkg/client/config/injection/client/fake"
+	routeinjection "github.com/openshift-knative/serverless-operator/pkg/client/route/injection/client"
+	routefake "github.com/openshift-knative/serverless-operator/pkg/client/route/injection/client/fake"
 )
 
 var (
 	defaultIngress = &configv1.Ingress{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: "cluster",
+		},
+		TypeMeta: metav1.TypeMeta{
+			Kind: "Ingress",
 		},
 		Spec: configv1.IngressSpec{
 			Domain: "routing.example.com",
@@ -61,6 +67,9 @@ func TestReconcile(t *testing.T) {
 	defaultIngress := &configv1.Ingress{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: "cluster",
+		},
+		TypeMeta: metav1.TypeMeta{
+			Kind: "Ingress",
 		},
 		Spec: configv1.IngressSpec{
 			Domain: "routing.example.com",
@@ -114,6 +123,9 @@ func TestReconcile(t *testing.T) {
 				ObjectMeta: metav1.ObjectMeta{
 					Namespace: "openshift-logging",
 					Name:      "kibana",
+				},
+				TypeMeta: metav1.TypeMeta{
+					Kind: "Route",
 				},
 				Status: routev1.RouteStatus{
 					Ingress: []routev1.RouteIngress{{
@@ -324,7 +336,18 @@ func TestReconcile(t *testing.T) {
 				objs = []runtime.Object{defaultIngress}
 			}
 			ks := c.in.DeepCopy()
-			ctx, _ := ocpfake.With(context.Background(), objs...)
+			routeObjs := []runtime.Object{}
+			configObjs := []runtime.Object{}
+			for _, obj := range objs {
+				if obj.GetObjectKind().GroupVersionKind().Kind == "Route" {
+					routeObjs = append(routeObjs, obj)
+				}
+				if obj.GetObjectKind().GroupVersionKind().Kind == "Ingress" {
+					configObjs = append(configObjs, obj)
+				}
+			}
+			ctx, _ := routefake.With(context.Background(), routeObjs...)
+			ctx, _ = configfake.With(ctx, configObjs...)
 			ctx, _ = kubefake.With(ctx, &servingNamespace)
 			ext := newFakeExtension(ctx, t)
 			ext.Reconcile(context.Background(), ks)
@@ -351,8 +374,9 @@ func newFakeExtension(ctx context.Context, t *testing.T) operator.Extension {
 	}
 
 	return &extension{
-		ocpclient:  ocpclient.Get(ctx),
-		kubeclient: kclient,
+		routeClient:  routeinjection.Get(ctx),
+		configClient: configinjection.Get(ctx),
+		kubeclient:   kclient,
 	}
 }
 
@@ -466,11 +490,11 @@ func TestMonitoring(t *testing.T) {
 
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
-			objs := []runtime.Object{defaultIngress, &servingNamespace}
 			ks := c.in.DeepCopy()
 			ks.Namespace = servingNamespace.Name
 			c.expected.Namespace = ks.Namespace
-			ctx, _ := ocpfake.With(context.Background(), objs...)
+			ctx, _ := routefake.With(context.Background(), []runtime.Object{}...)
+			ctx, _ = configfake.With(ctx, defaultIngress)
 			ctx, kube := kubefake.With(ctx, &servingNamespace)
 			ext := newFakeExtension(ctx, t)
 			shouldEnableMonitoring, err := c.setupMonitoringToggle()

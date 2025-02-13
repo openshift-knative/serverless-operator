@@ -13,10 +13,10 @@ import (
 	"knative.dev/pkg/logging"
 	"knative.dev/pkg/reconciler"
 
-	routev1client "github.com/openshift-knative/serverless-operator/pkg/client/clientset/versioned/typed/route/v1"
-	routev1lister "github.com/openshift-knative/serverless-operator/pkg/client/listers/route/v1"
 	"github.com/openshift-knative/serverless-operator/serving/ingress/pkg/reconciler/ingress/resources"
 	routev1 "github.com/openshift/api/route/v1"
+	routev1client "github.com/openshift/client-go/route/clientset/versioned/typed/route/v1"
+	routev1lister "github.com/openshift/client-go/route/listers/route/v1"
 )
 
 // Reconciler implements controller.Reconciler for Ingress resources.

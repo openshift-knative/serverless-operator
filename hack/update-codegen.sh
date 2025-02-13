@@ -16,14 +16,24 @@ source "${REPO_ROOT}"/vendor/knative.dev/hack/codegen-library.sh
 
 KNATIVE_CODEGEN_PKG=${KNATIVE_CODEGEN_PKG:-"${REPO_ROOT}/vendor/knative.dev/pkg"}
 
-# Generate our own client for Openshift (otherwise injection won't work)
-"${CODEGEN_PKG}/generate-groups.sh" "client,informer,lister" \
-  github.com/openshift-knative/serverless-operator/pkg/client github.com/openshift/api \
-  "route:v1 config:v1" \
+# Due to the inherent structure of openshift/client-go packages, that every resource group has its own top-level dir,
+# we have to generate Knative injections per group.
+
+# Knative Injection (for Openshift) v1.Route
+OUTPUT_PKG="github.com/openshift-knative/serverless-operator/pkg/client/route/injection" \
+"${KNATIVE_CODEGEN_PKG}/hack/generate-knative.sh" "injection" \
+  github.com/openshift/client-go/route github.com/openshift/api \
+  "route:v1" \
   --go-header-file "${REPO_ROOT}/hack/boilerplate/boilerplate.go.txt"
 
-# Knative Injection (for Openshift)
+# Knative Injection (for Openshift) v1.Config
+OUTPUT_PKG="github.com/openshift-knative/serverless-operator/pkg/client/config/injection" \
 "${KNATIVE_CODEGEN_PKG}/hack/generate-knative.sh" "injection" \
-  github.com/openshift-knative/serverless-operator/pkg/client github.com/openshift/api \
-  "route:v1 config:v1" \
+  github.com/openshift/client-go/config github.com/openshift/api \
+  "config:v1" \
   --go-header-file "${REPO_ROOT}/hack/boilerplate/boilerplate.go.txt"
+
+# In future release 1.18, Knative codegen will have a new option `--plural-exceptions`. Until than we have to live with this sed.
+# https://github.com/knative/pkg/pull/3146 
+echo "Fix DNS plural form"
+find pkg/client/config/injection/informers/config/v1/dns -name "*.go" -exec sed -i 's/DNSs()/DNSes()/g' {} \;

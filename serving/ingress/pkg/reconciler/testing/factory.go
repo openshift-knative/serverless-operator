@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	fakerouteclient "github.com/openshift-knative/serverless-operator/pkg/client/injection/client/fake"
+	fakerouteclient "github.com/openshift-knative/serverless-operator/pkg/client/route/injection/client/fake"
 	fakenetworkingclient "knative.dev/networking/pkg/client/injection/client/fake"
 	"knative.dev/pkg/reconciler"
 
