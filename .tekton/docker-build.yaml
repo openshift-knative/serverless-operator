@@ -468,9 +468,9 @@ spec:
     taskRef:
       params:
       - name: name
-        value: sast-shell-check-oci-ta
+        value: sast-unicode-check-oci-ta
       - name: bundle
-        value: quay.io/konflux-ci/tekton-catalog/task-sast-shell-check-oci-ta:0.1@sha256:9b0138a597445f3887697da69c9b8b91368f0b72b98e9304fa209b43523bd6fb
+        value: quay.io/konflux-ci/tekton-catalog/task-sast-unicode-check-oci-ta:0.1@sha256:3a128580c41abdac5bd76d0d1e066f2f3473278ba9fab90639878a27ced7a0e6
       - name: kind
         value: task
       resolver: bundles
