@@ -8483,7 +8483,7 @@ relatedImages:
   name: IMAGE_KN_PLUGIN_FUNC_TEKTON_S2I
 schema: olm.bundle
 ---
-image: registry.redhat.io/openshift-serverless-1/serverless-operator-bundle@sha256:28d4fd68f9542352debeeca1a090965bd67452e198aa4734874716675d8b6831
+image: registry.redhat.io/openshift-serverless-1/serverless-operator-bundle@sha256:69199bc084a852e42e4677c7c3c679bf1e9cc71d8af167f2fb8b758c5a0b8bec
 name: serverless-operator.v1.36.0
 package: serverless-operator
 properties:
@@ -8576,7 +8576,7 @@ properties:
       olm.skipRange: '>=1.35.0 <1.36.0'
       operatorframework.io/suggested-namespace: openshift-serverless
       operators.openshift.io/infrastructure-features: '["disconnected", "proxy-aware"]'
-      operators.openshift.io/must-gather-image: registry.redhat.io/openshift-serverless-1/serverless-must-gather-rhel8@sha256:f14f1de5b1b17ee1721f4eb48bc268b53cd6f669adaa6c7dd6438d0a01f22b6f
+      operators.openshift.io/must-gather-image: registry.redhat.io/openshift-serverless-1/serverless-must-gather-rhel8@sha256:b9dc105e9f4c0cfadf103f542053768a4b5babc3166013fae110ea63291367b7
       operators.openshift.io/valid-subscription: '["OpenShift Container Platform",
         "OpenShift Platform Plus"]'
       repository: https://github.com/openshift-knative/serverless-operator
@@ -8737,7 +8737,7 @@ properties:
     provider:
       name: Red Hat
 relatedImages:
-- image: registry.redhat.io/openshift-serverless-1/serverless-operator-bundle@sha256:28d4fd68f9542352debeeca1a090965bd67452e198aa4734874716675d8b6831
+- image: registry.redhat.io/openshift-serverless-1/serverless-operator-bundle@sha256:69199bc084a852e42e4677c7c3c679bf1e9cc71d8af167f2fb8b758c5a0b8bec
   name: ""
 - image: registry.access.redhat.com/ubi8/nodejs-20-minimal@sha256:a2a7e399aaf09a48c28f40820da16709b62aee6f2bc703116b9345fab5830861
   name: IMAGE_KN_PLUGIN_FUNC_NODEJS_20_MINIMAL
@@ -8745,11 +8745,11 @@ relatedImages:
   name: IMAGE_KN_PLUGIN_FUNC_OPENJDK_21
 - image: registry.access.redhat.com/ubi8/python-39@sha256:27e795fd6b1b77de70d1dc73a65e4c790650748a9cfda138fdbd194b3d6eea3d
   name: IMAGE_KN_PLUGIN_FUNC_PYTHON_39
-- image: registry.redhat.io/openshift-serverless-1/kn-backstage-plugins-eventmesh-rhel8@sha256:d80acda23c3a4dc7a233c54e608de86badc895650851da9a393e447a40cb99ba
+- image: registry.redhat.io/openshift-serverless-1/kn-backstage-plugins-eventmesh-rhel8@sha256:bc0d315256a8ac4b7781c023f3a163efeab8f7a4c2f4fd50f67c149912117620
   name: IMAGE_eventmesh-backend__controller
-- image: registry.redhat.io/openshift-serverless-1/kn-client-cli-artifacts-rhel8@sha256:409243052873c14752799af71f024dee7547b90ee93f654f37ade74de5db1ef3
+- image: registry.redhat.io/openshift-serverless-1/kn-client-cli-artifacts-rhel8@sha256:4df002ce55f295f8abaf586cdf3c6136f9591ccbff71734ab579a844a8b11aa0
   name: IMAGE_KN_CLIENT_CLI_ARTIFACTS
-- image: registry.redhat.io/openshift-serverless-1/kn-client-kn-rhel8@sha256:f88acccc30b6a7f0321827ca95adc2f8e3e953194ebb8487648abea9c6008da8
+- image: registry.redhat.io/openshift-serverless-1/kn-client-kn-rhel8@sha256:c1eafce44d81390158e64d24b6b066e1063802d262bd783c202bf535b97d318e
   name: IMAGE_KN_CLIENT
 - image: registry.redhat.io/openshift-serverless-1/kn-ekb-dispatcher-rhel8@sha256:8ef0395f00e223be929d5b38ec06a6b7ae693b499c7b354b56fd4134c4116ef2
   name: KAFKA_IMAGE_kafka-channel-dispatcher__kafka-channel-dispatcher
@@ -8757,81 +8757,81 @@ relatedImages:
   name: KAFKA_IMAGE_kafka-broker-dispatcher__kafka-broker-dispatcher
 - image: registry.redhat.io/openshift-serverless-1/kn-ekb-dispatcher-rhel8@sha256:8ef0395f00e223be929d5b38ec06a6b7ae693b499c7b354b56fd4134c4116ef2
   name: KAFKA_IMAGE_kafka-source-dispatcher__kafka-source-dispatcher
-- image: registry.redhat.io/openshift-serverless-1/kn-ekb-kafka-controller-rhel8@sha256:869877188f8dcf5211dd82032c77e9a83eb648e559f546ffe18038aa16e09f47
+- image: registry.redhat.io/openshift-serverless-1/kn-ekb-kafka-controller-rhel8@sha256:dcf54255f146ae3af9329ad8bf5830b3ca87a7972149185c6b54da670b773d73
   name: KAFKA_IMAGE_kafka-controller__controller
-- image: registry.redhat.io/openshift-serverless-1/kn-ekb-post-install-rhel8@sha256:f1d1fed4cd951fb0afc3729af69959991ffb3234ca810eb5dd5e936e657d25bc
+- image: registry.redhat.io/openshift-serverless-1/kn-ekb-post-install-rhel8@sha256:a0bf3e8d4d137d6b7ec81d7af8e726b0e33fc13726b213549fe14c89cb2cc048
   name: KAFKA_IMAGE_kafka-controller-post-install__post-install
-- image: registry.redhat.io/openshift-serverless-1/kn-ekb-receiver-rhel8@sha256:9b0abca6d6419190f7d5e2db839ef447c342767ab835368dbe32a28f8508a64b
+- image: registry.redhat.io/openshift-serverless-1/kn-ekb-receiver-rhel8@sha256:dbfbd4b6073bf420877b13b8cf84fd38c7527405d9f6fba24edecf12ef17101c
   name: KAFKA_IMAGE_kafka-channel-receiver__kafka-channel-receiver
-- image: registry.redhat.io/openshift-serverless-1/kn-ekb-receiver-rhel8@sha256:9b0abca6d6419190f7d5e2db839ef447c342767ab835368dbe32a28f8508a64b
+- image: registry.redhat.io/openshift-serverless-1/kn-ekb-receiver-rhel8@sha256:dbfbd4b6073bf420877b13b8cf84fd38c7527405d9f6fba24edecf12ef17101c
   name: KAFKA_IMAGE_kafka-broker-receiver__kafka-broker-receiver
-- image: registry.redhat.io/openshift-serverless-1/kn-ekb-receiver-rhel8@sha256:9b0abca6d6419190f7d5e2db839ef447c342767ab835368dbe32a28f8508a64b
+- image: registry.redhat.io/openshift-serverless-1/kn-ekb-receiver-rhel8@sha256:dbfbd4b6073bf420877b13b8cf84fd38c7527405d9f6fba24edecf12ef17101c
   name: KAFKA_IMAGE_kafka-sink-receiver__kafka-sink-receiver
-- image: registry.redhat.io/openshift-serverless-1/kn-ekb-webhook-kafka-rhel8@sha256:be13cc9d50139c996e23f83c0d61ffa73e375601bff832ca04fa149efa50933c
+- image: registry.redhat.io/openshift-serverless-1/kn-ekb-webhook-kafka-rhel8@sha256:82fecbd8d6badaabc453d12622df51aa6461956da0e8006dd00d6227a7de8f57
   name: KAFKA_IMAGE_kafka-webhook-eventing__kafka-webhook-eventing
-- image: registry.redhat.io/openshift-serverless-1/kn-eventing-apiserver-receive-adapter-rhel8@sha256:4943caf62e1d8a34f5e09fffa677f749576be770d7ba44033d8f10150df4a06d
+- image: registry.redhat.io/openshift-serverless-1/kn-eventing-apiserver-receive-adapter-rhel8@sha256:4a11d92182f88be4ecbf185814e4fa0580ad75cbeb00741dc1593fbe39e9016f
   name: IMAGE_APISERVER_RA_IMAGE
-- image: registry.redhat.io/openshift-serverless-1/kn-eventing-channel-controller-rhel8@sha256:32afc61f423c0dfd3126b2967135450a4eac5de4e755fb576fb157367264322e
+- image: registry.redhat.io/openshift-serverless-1/kn-eventing-channel-controller-rhel8@sha256:fa306e1d222ed16888c472f79229c64817b0767fcbb3a0b12b5dbcf77fdc55ef
   name: IMAGE_imc-controller__controller
-- image: registry.redhat.io/openshift-serverless-1/kn-eventing-channel-dispatcher-rhel8@sha256:78795dc17e3ed87c1e26efad10add3891285cc78e691272d103a9559410a14e0
+- image: registry.redhat.io/openshift-serverless-1/kn-eventing-channel-dispatcher-rhel8@sha256:6f1c487e77282da042eaaa3a8b53ced434e0ed0b9ece1fc2b729ffeae075e474
   name: IMAGE_DISPATCHER_IMAGE
-- image: registry.redhat.io/openshift-serverless-1/kn-eventing-channel-dispatcher-rhel8@sha256:78795dc17e3ed87c1e26efad10add3891285cc78e691272d103a9559410a14e0
+- image: registry.redhat.io/openshift-serverless-1/kn-eventing-channel-dispatcher-rhel8@sha256:6f1c487e77282da042eaaa3a8b53ced434e0ed0b9ece1fc2b729ffeae075e474
   name: IMAGE_imc-dispatcher__dispatcher
-- image: registry.redhat.io/openshift-serverless-1/kn-eventing-controller-rhel8@sha256:6af9914cbdbd09e0aba13af9a6e4ae584a6438ee8eb413ada62332187aabf2a4
+- image: registry.redhat.io/openshift-serverless-1/kn-eventing-controller-rhel8@sha256:d46a6d7e53183a69f754950ee224bb26d78038bc1219256bbed5a74c41e8b654
   name: IMAGE_eventing-controller__eventing-controller
-- image: registry.redhat.io/openshift-serverless-1/kn-eventing-filter-rhel8@sha256:a5f47290f8ee540896860b473063c1a2fc9e3e10a6aaf56dcc7a8382ef0b36bd
+- image: registry.redhat.io/openshift-serverless-1/kn-eventing-filter-rhel8@sha256:a86fff1a78fd7f00f5f27271ffe9cbf1390cb8f36ecb595ff7d31e875687f4f1
   name: IMAGE_mt-broker-filter__filter
-- image: registry.redhat.io/openshift-serverless-1/kn-eventing-ingress-rhel8@sha256:94156330c2fcd1473bcdc9ba9fb97a7bbb9cbdec2480b0b08c1a05471d87eab0
+- image: registry.redhat.io/openshift-serverless-1/kn-eventing-ingress-rhel8@sha256:1d069a599d4fa70404219e82a07f8d6af228c1326094c1381aba2d921be3d6de
   name: IMAGE_mt-broker-ingress__ingress
-- image: registry.redhat.io/openshift-serverless-1/kn-eventing-istio-controller-rhel8@sha256:840b80cb3fde80f444f3dbef1c7901a7b3591f92881662ec5fe2b5960cf3dd9e
+- image: registry.redhat.io/openshift-serverless-1/kn-eventing-istio-controller-rhel8@sha256:5454f63ebf6f15ecae760f6e588e9a4abe2bf82ab8810319d0abf25aa56f0d9a
   name: IMAGE_eventing-istio-controller__eventing-istio-controller
-- image: registry.redhat.io/openshift-serverless-1/kn-eventing-jobsink-rhel8@sha256:16b9e3ae47dd735c72fe3417502a4c176da39160bb531e7dd59b65258815e97e
+- image: registry.redhat.io/openshift-serverless-1/kn-eventing-jobsink-rhel8@sha256:35d3314bdb62bcaafc675c1dfb5402c276a3abf70a19f19b6397f54472560bc4
   name: IMAGE_job-sink__job-sink
-- image: registry.redhat.io/openshift-serverless-1/kn-eventing-migrate-rhel8@sha256:8bc8f3ec6f5b24538d14d4ffbbdb37a8b81b81e148c18f6e2c4d1cb6e8cc8887
+- image: registry.redhat.io/openshift-serverless-1/kn-eventing-migrate-rhel8@sha256:08e1afe1b67a8696e4513c5df31560cf402e775c34c6bd23ef8617e8086db5b8
   name: IMAGE_storage-version-migration-eventing-__migrate
-- image: registry.redhat.io/openshift-serverless-1/kn-eventing-migrate-rhel8@sha256:8bc8f3ec6f5b24538d14d4ffbbdb37a8b81b81e148c18f6e2c4d1cb6e8cc8887
+- image: registry.redhat.io/openshift-serverless-1/kn-eventing-migrate-rhel8@sha256:08e1afe1b67a8696e4513c5df31560cf402e775c34c6bd23ef8617e8086db5b8
   name: KAFKA_IMAGE_knative-kafka-storage-version-migrator__migrate
-- image: registry.redhat.io/openshift-serverless-1/kn-eventing-mtchannel-broker-rhel8@sha256:fb41c4007e8123295105ee4e0bc81a922a887bdcd167a7576e0e51cfc021c0c9
+- image: registry.redhat.io/openshift-serverless-1/kn-eventing-mtchannel-broker-rhel8@sha256:fa8901cc5d1b8ea75d615df4b0aa51f88f6c3e33d9d90f3ec03a672e9b00aa13
   name: IMAGE_mt-broker-controller__mt-broker-controller
-- image: registry.redhat.io/openshift-serverless-1/kn-eventing-mtping-rhel8@sha256:5fb2aca7e88b438eaeaf431721f564b5b986d0c7f03391dd1c1a2a6190930aef
+- image: registry.redhat.io/openshift-serverless-1/kn-eventing-mtping-rhel8@sha256:86f421ee7b44471fa27faa2ccf0bfb70347206c211fb6d7156dd6bb33ef57d3e
   name: IMAGE_pingsource-mt-adapter__dispatcher
-- image: registry.redhat.io/openshift-serverless-1/kn-eventing-webhook-rhel8@sha256:d5a2ce6c499c6c99aed95517a4f0c9f24244ab23815c69f20d5ffbd0bcb2bda2
+- image: registry.redhat.io/openshift-serverless-1/kn-eventing-webhook-rhel8@sha256:4b9b0001ba52000a6e067615455798619ac7bd62e244e73899fc9f25a657cc71
   name: IMAGE_eventing-webhook__eventing-webhook
-- image: registry.redhat.io/openshift-serverless-1/kn-plugin-event-sender-rhel8@sha256:08f0b4151edd6d777e2944c6364612a5599e5a775e5150a76676a45f753c2e23
+- image: registry.redhat.io/openshift-serverless-1/kn-plugin-event-sender-rhel8@sha256:f98ec06a9dc8d3194bbb5420c2b79eee9050ebde71e45eabdec27755ff8b451a
   name: IMAGE_KN_PLUGIN_EVENT_SENDER
-- image: registry.redhat.io/openshift-serverless-1/kn-plugin-func-func-util-rhel8@sha256:edb7e9d04d424dbe7e15d059fd4217298036ca299e7a358f6edb21bb404aeb6c
+- image: registry.redhat.io/openshift-serverless-1/kn-plugin-func-func-util-rhel8@sha256:f107932594e0fc1304c34e9ec765cafb562cf00cba488c80d40d3d7092e47271
   name: IMAGE_KN_PLUGIN_FUNC_UTIL
-- image: registry.redhat.io/openshift-serverless-1/kn-serving-activator-rhel8@sha256:9e2e298a5434ea916e82f68936202bd12bda27d2bee3a3f0a11a02b6787117c4
+- image: registry.redhat.io/openshift-serverless-1/kn-serving-activator-rhel8@sha256:d08487f55d1ec17e0c4923d71d136b46521c2493314fdac4f4ecbd034a9d6019
   name: IMAGE_activator
-- image: registry.redhat.io/openshift-serverless-1/kn-serving-autoscaler-hpa-rhel8@sha256:ef320288307b7fdda9782280c53959948acb8e18a8a29cb01d8e1f4adf884d8b
+- image: registry.redhat.io/openshift-serverless-1/kn-serving-autoscaler-hpa-rhel8@sha256:d699cae9e158ea4f067cdeb11884134c23c718b5d70bfc3138e805828a2774f8
   name: IMAGE_autoscaler-hpa
 - image: registry.redhat.io/openshift-serverless-1/kn-serving-autoscaler-rhel8@sha256:5936b158375993e1f4fbfe9f52e4a79b692aedcd4b269462bfef1f45d9d7240e
   name: IMAGE_autoscaler
-- image: registry.redhat.io/openshift-serverless-1/kn-serving-controller-rhel8@sha256:1c0118fc87f69197e7212d2619613ac20e25691b3b4b2b2e076e37a6dcb57818
+- image: registry.redhat.io/openshift-serverless-1/kn-serving-controller-rhel8@sha256:dceaa34d0007d2ab8aebf7e9fac64c5114133b33b8b1f80b5d2ced9bbbcc4532
   name: IMAGE_controller__controller
-- image: registry.redhat.io/openshift-serverless-1/kn-serving-queue-rhel8@sha256:373a2c541c8b3a02444d751cd6a42a12833d28ca24f72ca88b5cc5aedbfad1b3
+- image: registry.redhat.io/openshift-serverless-1/kn-serving-queue-rhel8@sha256:f896d4fed5ca32ba7e0683cc7b494cd3a2226c8eabe711674555c7724eaad023
   name: IMAGE_queue-proxy
-- image: registry.redhat.io/openshift-serverless-1/kn-serving-storage-version-migration-rhel8@sha256:f4269c8167f92302add8db72593d93e7be0400f5d201cbf4bed8bcf25b789a19
+- image: registry.redhat.io/openshift-serverless-1/kn-serving-storage-version-migration-rhel8@sha256:d474e256d32af4d7df1f465c47f0d109bf08da78c2a5e31ce228657e32d16ca0
   name: IMAGE_storage-version-migration-serving-__migrate
-- image: registry.redhat.io/openshift-serverless-1/kn-serving-webhook-rhel8@sha256:97c885febbd1f80ce4071ac389cc69a21427cdac807d22da3f71a57c2a6c20f2
+- image: registry.redhat.io/openshift-serverless-1/kn-serving-webhook-rhel8@sha256:846a61b083ec5f546559212d4496cbf06ca03d0fbd07e01da97f45960dc890c5
   name: IMAGE_webhook__webhook
-- image: registry.redhat.io/openshift-serverless-1/net-istio-controller-rhel8@sha256:3306e636bc1c2127164d97adcaff7fe28f1cc279754aba6b66292df06993ca94
+- image: registry.redhat.io/openshift-serverless-1/net-istio-controller-rhel8@sha256:8ef96c0bec87a66368e964e860935e0d68f7ae7fb6748fab8f24c66e8bc68a57
   name: IMAGE_net-istio-controller__controller
-- image: registry.redhat.io/openshift-serverless-1/net-istio-webhook-rhel8@sha256:e38f681da2bcae327a455d9fb01c1aa2f26930774d19932c77a6c4a30ee36dfd
+- image: registry.redhat.io/openshift-serverless-1/net-istio-webhook-rhel8@sha256:84c3640d9236739553299ec36ff1cb2247366b2544ec6797c583482d56ade21d
   name: IMAGE_net-istio-webhook__webhook
-- image: registry.redhat.io/openshift-serverless-1/net-kourier-kourier-rhel8@sha256:3afedc53de25d69dca01be9b42caf2f310a2029708c0059e46bb740434dea562
+- image: registry.redhat.io/openshift-serverless-1/net-kourier-kourier-rhel8@sha256:66f3191c2b48a64674d23fe030070e670dee164cfe1b7f06c6ee9a53c291a611
   name: IMAGE_net-kourier-controller__controller
-- image: registry.redhat.io/openshift-serverless-1/serverless-ingress-rhel8@sha256:d726779db200186a9edaf4db9655cbdfb88edaf300bc61e6186fe0876efc49bf
+- image: registry.redhat.io/openshift-serverless-1/serverless-ingress-rhel8@sha256:c7d1bd2880d9fc2cfecc4b3df5e54a612d2a36c94068d87a9eea8c2976ca23e0
   name: knative-openshift-ingress
-- image: registry.redhat.io/openshift-serverless-1/serverless-kn-operator-rhel8@sha256:c61aee0963cb3575b92d6609af99d6e44c0f3b9e99748c6cb87e0e658f308ff1
+- image: registry.redhat.io/openshift-serverless-1/serverless-kn-operator-rhel8@sha256:afadfc13909c0527f9b2bc0cad539e4d93cc51f19825e380a4b29bfa98cc2905
   name: knative-openshift
-- image: registry.redhat.io/openshift-serverless-1/serverless-must-gather-rhel8@sha256:f14f1de5b1b17ee1721f4eb48bc268b53cd6f669adaa6c7dd6438d0a01f22b6f
+- image: registry.redhat.io/openshift-serverless-1/serverless-must-gather-rhel8@sha256:b9dc105e9f4c0cfadf103f542053768a4b5babc3166013fae110ea63291367b7
   name: IMAGE_MUST_GATHER
-- image: registry.redhat.io/openshift-serverless-1/serverless-openshift-kn-rhel8-operator@sha256:60a02e99475103c4dc4d133dd43c880b3f65f1c1097462d83b841576df3c9063
+- image: registry.redhat.io/openshift-serverless-1/serverless-openshift-kn-rhel8-operator@sha256:447378f1c87ab8faf75807a88c71fa0caa608112b107be1a1e07f5f1a92674ce
   name: knative-operator
-- image: registry.redhat.io/openshift-service-mesh/proxyv2-rhel8@sha256:61a705509328e56d50a1eb9a7f5eb90512f69cc1040ef34c0adb86dd6b05429f
+- image: registry.redhat.io/openshift-service-mesh/proxyv2-rhel8@sha256:a8c1de7e6c7244626e623c4f41faf139825062696a113d30abd669e47b8418c4
   name: IMAGE_kourier-gateway
-- image: registry.redhat.io/openshift4/ose-kube-rbac-proxy-rhel9@sha256:3fa22124916523b958c67af8ad652e73a2c3d68bb5579da1cba1ade537f3b7ae
+- image: registry.redhat.io/openshift4/ose-kube-rbac-proxy-rhel9@sha256:6136488d256d1f805162f462a68a0a50eef1dc5ba9b57daf49d1a7db274b0d22
   name: IMAGE_KUBE_RBAC_PROXY
 - image: registry.redhat.io/rhel8/buildah@sha256:3d505d9c0f5d4cd5a4ec03b8d038656c6cdbdf5191e00ce6388f7e0e4d2f1b74
   name: IMAGE_KN_PLUGIN_FUNC_TEKTON_BUILDAH

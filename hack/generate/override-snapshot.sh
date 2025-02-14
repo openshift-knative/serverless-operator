@@ -10,6 +10,8 @@ function add_component {
   component=${2}
   image_ref=${3}
 
+  echo "Adding ${component} (${image_ref})"
+
   parameters="$(cosign download attestation "${image_ref}" | jq -r '.payload' | base64 -d | jq -c '.predicate.invocation.parameters')"
   git_repo="$(echo "${parameters}" | jq -r '."git-url"')"
   revision="$(echo "${parameters}" | jq -r ".revision")"
