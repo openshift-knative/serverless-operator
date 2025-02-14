@@ -2,14 +2,9 @@
 
 function run_testselect {
   if [[ -n "${ARTIFACT_DIR:-}" && -n "${CLONEREFS_OPTIONS:-}" ]]; then
-    local clonedir rootdir hack_tmp_dir
+    local clonedir rootdir
 
-    hack_tmp_dir=$(mktemp -d)
-    git clone --branch main https://github.com/openshift-knative/hack "$hack_tmp_dir"
-    pushd "$hack_tmp_dir" || return $?
-    go install github.com/openshift-knative/hack/cmd/testselect
-    popd || return $?
-    rm -rf "$hack_tmp_dir"
+    GOFLAGS="" go install github.com/openshift-knative/hack/cmd/testselect
 
     clonedir=$(mktemp -d)
 
