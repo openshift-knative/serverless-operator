@@ -1,8 +1,8 @@
 diff --git a/olm-catalog/serverless-operator/manifests/operator_v1beta1_knativeserving_crd.yaml b/olm-catalog/serverless-operator/manifests/operator_v1beta1_knativeserving_crd.yaml
-index d75b043d0..7c90e1a57 100644
+index ff7f02f33..cb69a3aa7 100644
 --- a/olm-catalog/serverless-operator/manifests/operator_v1beta1_knativeserving_crd.yaml
 +++ b/olm-catalog/serverless-operator/manifests/operator_v1beta1_knativeserving_crd.yaml
-@@ -46,17 +46,8 @@ spec:
+@@ -45,17 +45,8 @@ spec:
              type: object
            spec:
              description: Spec defines the desired state of KnativeServing
@@ -21,7 +21,7 @@ index d75b043d0..7c90e1a57 100644
                config:
                  additionalProperties:
                    additionalProperties:
-@@ -2220,67 +2211,13 @@ spec:
+@@ -2234,79 +2225,13 @@ spec:
                        x-kubernetes-int-or-string: true
                ingress:
                  description: The ingress configuration for Knative Serving
@@ -74,6 +74,13 @@ index d75b043d0..7c90e1a57 100644
 -                                      type: string
 -                                  type: object
 -                                tls:
+-                                  nullable: true
+-                                  oneOf:
+-                                  - required:
+-                                    - mode
+-                                    - credentialName
+-                                  - required:
+-                                    - httpsRedirect
 -                                  properties:
 -                                    mode:
 -                                      description: TLS mode can be SIMPLE, MUTUAL, ISTIO_MUTUAL.
@@ -83,6 +90,11 @@ index d75b043d0..7c90e1a57 100644
 -                                      description: TLS certificate name.
 -                                      format: string
 -                                      type: string
+-                                    httpsRedirect:
+-                                      description: If set to true, the load balancer will send a 301 redirect
+-                                        to HTTPS for all HTTP requests. Should be used only for HTTP listener,
+-                                        is mutually exclusive with all other TLS options.
+-                                      type: boolean
 -                                  type: object
 -                              type: object
 -                            type: array
@@ -90,7 +102,7 @@ index d75b043d0..7c90e1a57 100644
                        knative-local-gateway:
                          description: A means to override the knative-local-gateway
                          properties:
-@@ -2358,46 +2295,6 @@ spec:
+@@ -2396,46 +2321,6 @@ spec:
                          type: boolean
                      type: object
                  type: object
