@@ -14,7 +14,7 @@ function run_testselect {
 
     # The testselect clones a repository. Make sure it's cloned into a temp dir.
     pushd "$clonedir" || return $?
-    go run github.com/openshift-knative/hack/cmd/testselect@latest --testsuites="${rootdir}/test/testsuites.yaml" --clonerefs="${ARTIFACT_DIR}/clonerefs.json" --output="${ARTIFACT_DIR}/tests.txt"
+    GOFLAGS="" go run github.com/openshift-knative/hack/cmd/testselect@latest --testsuites="${rootdir}/test/testsuites.yaml" --clonerefs="${ARTIFACT_DIR}/clonerefs.json" --output="${ARTIFACT_DIR}/tests.txt"
     popd || return $?
 
     logger.info 'Tests to be run:'
