@@ -883,7 +883,7 @@ spec:
                       - name: KUBERNETES_MIN_VERSION
                         value: "v1.0.0"
                       - name: "IMAGE_queue-proxy"
-                        value: "registry.redhat.io/openshift-serverless-1/kn-serving-queue-rhel8@sha256:aa16b9cb5c140751d7a1319a0b1bb0f4a65f6030b670d1bdd156208f2a5cdd99"
+                        value: "registry.redhat.io/openshift-serverless-1/kn-serving-queue-rhel8@sha256:54a8c664084c4d53243b221da6a1b91c14ba562c174ed56174940a852fda1f0e"
                       - name: "IMAGE_activator"
                         value: "registry.redhat.io/openshift-serverless-1/kn-serving-activator-rhel8@sha256:70a370aefc5921665b65245c295dfbe9ec9a02c2b4d8e93e72b78ace8730abfb"
                       - name: "IMAGE_autoscaler"
@@ -1057,7 +1057,7 @@ spec:
                       - name: KUBERNETES_MIN_VERSION
                         value: "v1.0.0"
                       - name: "IMAGE_queue-proxy"
-                        value: "registry.redhat.io/openshift-serverless-1/kn-serving-queue-rhel8@sha256:aa16b9cb5c140751d7a1319a0b1bb0f4a65f6030b670d1bdd156208f2a5cdd99"
+                        value: "registry.redhat.io/openshift-serverless-1/kn-serving-queue-rhel8@sha256:54a8c664084c4d53243b221da6a1b91c14ba562c174ed56174940a852fda1f0e"
                       - name: "IMAGE_activator"
                         value: "registry.redhat.io/openshift-serverless-1/kn-serving-activator-rhel8@sha256:70a370aefc5921665b65245c295dfbe9ec9a02c2b4d8e93e72b78ace8730abfb"
                       - name: "IMAGE_autoscaler"
@@ -1334,7 +1334,7 @@ spec:
     - name: "knative-openshift-ingress"
       image: "registry.redhat.io/openshift-serverless-1/serverless-ingress-rhel8@sha256:d32ecaac44904c7e541baaaf20bc30ffe65fa4c73845351fe8610dc7059b4f24"
     - name: "IMAGE_queue-proxy"
-      image: "registry.redhat.io/openshift-serverless-1/kn-serving-queue-rhel8@sha256:aa16b9cb5c140751d7a1319a0b1bb0f4a65f6030b670d1bdd156208f2a5cdd99"
+      image: "registry.redhat.io/openshift-serverless-1/kn-serving-queue-rhel8@sha256:54a8c664084c4d53243b221da6a1b91c14ba562c174ed56174940a852fda1f0e"
     - name: "IMAGE_activator"
       image: "registry.redhat.io/openshift-serverless-1/kn-serving-activator-rhel8@sha256:70a370aefc5921665b65245c295dfbe9ec9a02c2b4d8e93e72b78ace8730abfb"
     - name: "IMAGE_autoscaler"
