@@ -8391,7 +8391,7 @@ relatedImages:
   name: IMAGE_activator
 - image: registry.redhat.io/openshift-serverless-1/kn-serving-autoscaler-hpa-rhel8@sha256:6b30d3f6d77a6e74d4df5a9d2c1b057cdc7ebbbf810213bc0a97590e741bae1c
   name: IMAGE_autoscaler-hpa
-- image: registry.redhat.io/openshift-serverless-1/kn-serving-autoscaler-rhel8@sha256:00777fa53883f25061ebe171b0d47025d27acd39582a619565e9167288321952
+- image: registry.redhat.io/openshift-serverless-1/kn-serving-autoscaler-rhel8@sha256:0fe475b4661f811d20eebf7b3586df0f0e2409c0aefa6ba3dedc888ef8d8cbd5
   name: IMAGE_autoscaler
 - image: registry.redhat.io/openshift-serverless-1/kn-serving-controller-rhel8@sha256:41a21fdc683183422ebb29707d81eca96d7ca119d01f369b9defbaea94c09939
   name: IMAGE_controller__controller
@@ -8749,7 +8749,7 @@ relatedImages:
   name: IMAGE_activator
 - image: registry.redhat.io/openshift-serverless-1/kn-serving-autoscaler-hpa-rhel8@sha256:6b30d3f6d77a6e74d4df5a9d2c1b057cdc7ebbbf810213bc0a97590e741bae1c
   name: IMAGE_autoscaler-hpa
-- image: registry.redhat.io/openshift-serverless-1/kn-serving-autoscaler-rhel8@sha256:00777fa53883f25061ebe171b0d47025d27acd39582a619565e9167288321952
+- image: registry.redhat.io/openshift-serverless-1/kn-serving-autoscaler-rhel8@sha256:0fe475b4661f811d20eebf7b3586df0f0e2409c0aefa6ba3dedc888ef8d8cbd5
   name: IMAGE_autoscaler
 - image: registry.redhat.io/openshift-serverless-1/kn-serving-controller-rhel8@sha256:41a21fdc683183422ebb29707d81eca96d7ca119d01f369b9defbaea94c09939
   name: IMAGE_controller__controller
