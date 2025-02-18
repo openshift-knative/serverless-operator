@@ -32,3 +32,6 @@ git apply "$root/olm-catalog/serverless-operator/hack/003-eventing-drop-unsuppor
 
 # Drop unsupported sources field from the Eventing CRD.
 git apply "$root/olm-catalog/serverless-operator/hack/004-eventing-drop-unsupported-sources.patch"
+
+# Drop unsupported labels and annotations override on existing namespace
+git apply "$root/olm-catalog/serverless-operator/hack/005-drop-namespace-override.patch"
