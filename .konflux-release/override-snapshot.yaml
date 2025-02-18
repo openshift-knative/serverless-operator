@@ -220,7 +220,7 @@ spec:
           revision: "01be808a8a6b4c47424f2021e87e372871f3f532"
           dockerfileUrl: "openshift/ci-operator/knative-images/controller/Dockerfile"
     - name: "net-istio-webhook-116"
-      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/net-istio-webhook@sha256:84c3640d9236739553299ec36ff1cb2247366b2544ec6797c583482d56ade21d"
+      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/net-istio-webhook@sha256:c16c2b84af0d7bf9f4e8f4afe1752a5ad1b064832449028d03ca2d87aa6e7631"
       source:
         git:
           url: "https://github.com/openshift-knative/net-istio"
