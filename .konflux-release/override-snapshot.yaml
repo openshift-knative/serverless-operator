@@ -157,7 +157,7 @@ spec:
           revision: "ed2c04941b63c7db351e6af6b6894abb0be9f145"
           dockerfileUrl: "openshift/ci-operator/images/kn-event-sender/Dockerfile"
     - name: "kn-plugin-func-func-util-116"
-      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/kn-plugin-func-func-util@sha256:f107932594e0fc1304c34e9ec765cafb562cf00cba488c80d40d3d7092e47271"
+      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/kn-plugin-func-func-util@sha256:c7e42063c5d305ae493b55f60aa22956625fbfbb72b6261962bf872ebd4aae7a"
       source:
         git:
           url: "https://github.com/openshift-knative/kn-plugin-func"
