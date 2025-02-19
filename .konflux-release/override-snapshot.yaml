@@ -58,7 +58,7 @@ spec:
           revision: "94e3b0ed47b4fd3be0f6a49eee47e0012f0314c4"
           dockerfileUrl: "openshift/ci-operator/static-images/receiver/hermetic/Dockerfile"
     - name: "kn-ekb-webhook-kafka-115"
-      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-ekb-webhook-kafka@sha256:cafb9dcc4059b3bc740180cd8fb171bdad44b4d72365708d31f86327a29b9ec5"
+      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-ekb-webhook-kafka@sha256:73250a9650cbf5750359d056f36836643d2700f186bd5de5a67639ab5d71c29f"
       source:
         git:
           url: "https://github.com/openshift-knative/eventing-kafka-broker"
