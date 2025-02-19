@@ -8343,7 +8343,7 @@ relatedImages:
   name: KAFKA_IMAGE_kafka-channel-dispatcher__kafka-channel-dispatcher
 - image: registry.redhat.io/openshift-serverless-1/kn-ekb-dispatcher-rhel8@sha256:9cab1c37aae66e949a5d65614258394f566f2066dd20b5de5a8ebc3a4dd17e4c
   name: KAFKA_IMAGE_kafka-broker-dispatcher__kafka-broker-dispatcher
-- image: registry.redhat.io/openshift-serverless-1/kn-ekb-kafka-controller-rhel8@sha256:e7dbf060ee40b252f884283d80fe63655ded5229e821f7af9e940582e969fc01
+- image: registry.redhat.io/openshift-serverless-1/kn-ekb-kafka-controller-rhel8@sha256:e8b1af4377ddea312e0da5b94b56a3706f0f5f047fe83f678d7755e8d352bdc1
   name: KAFKA_IMAGE_kafka-controller__controller
 - image: registry.redhat.io/openshift-serverless-1/kn-ekb-post-install-rhel8@sha256:097e7891a85779880b3e64edb2cb1579f17bc902a17d2aa0c1ef91aeb088f5f1
   name: KAFKA_IMAGE_kafka-controller-post-install__post-install
@@ -8701,7 +8701,7 @@ relatedImages:
   name: KAFKA_IMAGE_kafka-broker-dispatcher__kafka-broker-dispatcher
 - image: registry.redhat.io/openshift-serverless-1/kn-ekb-dispatcher-rhel8@sha256:26a85b4c4120534bd41544e07e89c2ab40dc57a003d1dec9d54a366324a04687
   name: KAFKA_IMAGE_kafka-source-dispatcher__kafka-source-dispatcher
-- image: registry.redhat.io/openshift-serverless-1/kn-ekb-kafka-controller-rhel8@sha256:ac1e78680492da13486a72348dd3a0b1e9d5e2ea0483e7e97db6a3ffab332362
+- image: registry.redhat.io/openshift-serverless-1/kn-ekb-kafka-controller-rhel8@sha256:e8b1af4377ddea312e0da5b94b56a3706f0f5f047fe83f678d7755e8d352bdc1
   name: KAFKA_IMAGE_kafka-controller__controller
 - image: registry.redhat.io/openshift-serverless-1/kn-ekb-post-install-rhel8@sha256:c82c35023ac1a212b61d87d4bb9dcf755b077a55a1e7262d06a95de00a2f6be9
   name: KAFKA_IMAGE_kafka-controller-post-install__post-install
