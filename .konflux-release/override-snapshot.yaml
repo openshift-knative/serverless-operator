@@ -87,7 +87,7 @@ spec:
           revision: "e230f1925719cc452ace0ff8f7e4eb8fc8c83087"
           dockerfileUrl: "openshift/ci-operator/knative-images/channel_dispatcher/Dockerfile"
     - name: "kn-eventing-controller-116"
-      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/kn-eventing-controller@sha256:d46a6d7e53183a69f754950ee224bb26d78038bc1219256bbed5a74c41e8b654"
+      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/kn-eventing-controller@sha256:4c480bc1eada13bf1312510ac96e0302685dc60e5cbc7c206bc72014173599f8"
       source:
         git:
           url: "https://github.com/openshift-knative/eventing"
