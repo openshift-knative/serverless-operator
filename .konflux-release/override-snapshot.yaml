@@ -150,7 +150,7 @@ spec:
           revision: "e230f1925719cc452ace0ff8f7e4eb8fc8c83087"
           dockerfileUrl: "openshift/ci-operator/knative-images/webhook/Dockerfile"
     - name: "kn-plugin-event-sender-116"
-      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/kn-plugin-event-sender@sha256:f98ec06a9dc8d3194bbb5420c2b79eee9050ebde71e45eabdec27755ff8b451a"
+      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/kn-plugin-event-sender@sha256:decef924b82b184f9e68afd7e0e25c9133850b04006dc7e491cecdb2656562bb"
       source:
         git:
           url: "https://github.com/openshift-knative/kn-plugin-event"
