@@ -181,7 +181,7 @@ replace (
 	knative.dev/networking => knative.dev/networking v0.0.0-20240716111826-bab7f2a3e556
 	knative.dev/pkg => knative.dev/pkg v0.0.0-20240716082220-4355f0c73608
 	knative.dev/reconciler-test => knative.dev/reconciler-test v0.0.0-20240716134925-00d94f40c470
-	knative.dev/serving => github.com/openshift-knative/serving v0.10.1-0.20240906121033-618992fcbd27
+	knative.dev/serving => github.com/openshift-knative/serving bef3ddfe23a4
 )
 
 replace (
