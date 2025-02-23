@@ -322,8 +322,8 @@ github.com/munnerz/goautoneg
 # github.com/opencontainers/go-digest v1.0.0
 ## explicit; go 1.13
 github.com/opencontainers/go-digest
-# github.com/openshift/api v3.9.0+incompatible => github.com/openshift/api v0.0.0-20240912201240-0a8800162826
-## explicit; go 1.22.0
+# github.com/openshift/api v3.9.0+incompatible => github.com/openshift/api v0.0.0-20250220103441-744790f2cff7
+## explicit; go 1.23.0
 github.com/openshift/api/config/v1
 github.com/openshift/api/config/v1alpha1
 github.com/openshift/api/console/v1
@@ -775,7 +775,7 @@ istio.io/client-go/pkg/apis/security/v1
 istio.io/client-go/pkg/apis/security/v1beta1
 istio.io/client-go/pkg/apis/telemetry/v1alpha1
 istio.io/client-go/pkg/clientset/versioned/scheme
-# k8s.io/api v0.31.0 => k8s.io/api v0.30.9
+# k8s.io/api v0.32.1 => k8s.io/api v0.30.9
 ## explicit; go 1.22.0
 k8s.io/api/admission/v1
 k8s.io/api/admission/v1beta1
@@ -851,7 +851,7 @@ k8s.io/apiextensions-apiserver/pkg/client/informers/externalversions/apiextensio
 k8s.io/apiextensions-apiserver/pkg/client/informers/externalversions/internalinterfaces
 k8s.io/apiextensions-apiserver/pkg/client/listers/apiextensions/v1
 k8s.io/apiextensions-apiserver/pkg/client/listers/apiextensions/v1beta1
-# k8s.io/apimachinery v0.31.0 => k8s.io/apimachinery v0.30.9
+# k8s.io/apimachinery v0.32.1 => k8s.io/apimachinery v0.30.9
 ## explicit; go 1.22.0
 k8s.io/apimachinery/pkg/api/apitesting/fuzzer
 k8s.io/apimachinery/pkg/api/equality
@@ -1268,7 +1268,7 @@ k8s.io/gengo/generator
 k8s.io/gengo/namer
 k8s.io/gengo/parser
 k8s.io/gengo/types
-# k8s.io/gengo/v2 v2.0.0-20240228010128-51d4e06bde70
+# k8s.io/gengo/v2 v2.0.0-20240826214909-a7b603a56eb7
 ## explicit; go 1.20
 k8s.io/gengo/v2
 k8s.io/gengo/v2/generator
@@ -1284,7 +1284,7 @@ k8s.io/klog/v2/internal/dbg
 k8s.io/klog/v2/internal/serialize
 k8s.io/klog/v2/internal/severity
 k8s.io/klog/v2/internal/sloghandler
-# k8s.io/kube-openapi v0.0.0-20240808142205-8e686545bdb8
+# k8s.io/kube-openapi v0.0.0-20241105132330-32ad38e42d3f
 ## explicit; go 1.20
 k8s.io/kube-openapi/cmd/openapi-gen
 k8s.io/kube-openapi/cmd/openapi-gen/args
@@ -1300,7 +1300,7 @@ k8s.io/kube-openapi/pkg/spec3
 k8s.io/kube-openapi/pkg/util/proto
 k8s.io/kube-openapi/pkg/util/sets
 k8s.io/kube-openapi/pkg/validation/spec
-# k8s.io/utils v0.0.0-20240711033017-18e509b52bc8
+# k8s.io/utils v0.0.0-20241104100929-3ea5e8cea738
 ## explicit; go 1.18
 k8s.io/utils/buffer
 k8s.io/utils/clock
@@ -1780,11 +1780,11 @@ sigs.k8s.io/controller-runtime/pkg/source
 sigs.k8s.io/controller-runtime/pkg/webhook
 sigs.k8s.io/controller-runtime/pkg/webhook/admission
 sigs.k8s.io/controller-runtime/pkg/webhook/internal/metrics
-# sigs.k8s.io/json v0.0.0-20221116044647-bc3834ca7abd
-## explicit; go 1.18
+# sigs.k8s.io/json v0.0.0-20241010143419-9aa6b5e7a4b3
+## explicit; go 1.21
 sigs.k8s.io/json
 sigs.k8s.io/json/internal/golang/encoding/json
-# sigs.k8s.io/structured-merge-diff/v4 v4.4.1
+# sigs.k8s.io/structured-merge-diff/v4 v4.4.2
 ## explicit; go 1.13
 sigs.k8s.io/structured-merge-diff/v4/fieldpath
 sigs.k8s.io/structured-merge-diff/v4/merge
@@ -1802,7 +1802,7 @@ sigs.k8s.io/yaml/goyaml.v2
 # knative.dev/pkg => knative.dev/pkg v0.0.0-20241021183759-9b9d535af5ad
 # knative.dev/reconciler-test => knative.dev/reconciler-test v0.0.0-20241015093232-09111f0f1364
 # knative.dev/serving => github.com/openshift-knative/serving v0.10.1-0.20250207125854-cf4e630711c9
-# github.com/openshift/api => github.com/openshift/api v0.0.0-20240912201240-0a8800162826
+# github.com/openshift/api => github.com/openshift/api v0.0.0-20250220103441-744790f2cff7
 # github.com/openshift/client-go => github.com/openshift/client-go v0.0.0-20240528061634-b054aa794d87
 # k8s.io/api => k8s.io/api v0.30.9
 # k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.30.9

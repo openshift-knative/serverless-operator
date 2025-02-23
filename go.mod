@@ -1,8 +1,8 @@
 module github.com/openshift-knative/serverless-operator
 
-go 1.22.0
+go 1.23.0
 
-toolchain go1.22.7
+toolchain go1.23.6
 
 require (
 	github.com/blang/semver/v4 v4.0.0
@@ -24,8 +24,8 @@ require (
 	go.uber.org/zap v1.27.0
 	golang.org/x/sync v0.10.0
 	google.golang.org/grpc v1.67.1
-	k8s.io/api v0.31.0
-	k8s.io/apimachinery v0.31.0
+	k8s.io/api v0.32.1
+	k8s.io/apimachinery v0.32.1
 	k8s.io/client-go v0.31.0
 	knative.dev/eventing v0.44.0
 	knative.dev/eventing-kafka-broker v0.37.0
@@ -57,7 +57,7 @@ require (
 	golang.org/x/exp v0.0.0-20240808152545-0cdaa3abc0fa // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20240903143218-8af14fe29dc1 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20240903143218-8af14fe29dc1 // indirect
-	k8s.io/gengo/v2 v2.0.0-20240228010128-51d4e06bde70 // indirect
+	k8s.io/gengo/v2 v2.0.0-20240826214909-a7b603a56eb7 // indirect
 )
 
 require (
@@ -159,11 +159,11 @@ require (
 	k8s.io/code-generator v0.30.9 // indirect
 	k8s.io/gengo v0.0.0-20240404160639-a0386bf69313 // indirect
 	k8s.io/klog/v2 v2.130.1 // indirect
-	k8s.io/kube-openapi v0.0.0-20240808142205-8e686545bdb8 // indirect
-	k8s.io/utils v0.0.0-20240711033017-18e509b52bc8
+	k8s.io/kube-openapi v0.0.0-20241105132330-32ad38e42d3f // indirect
+	k8s.io/utils v0.0.0-20241104100929-3ea5e8cea738
 	knative.dev/caching v0.0.0-20241022012359-41bbaf964d16 // indirect
-	sigs.k8s.io/json v0.0.0-20221116044647-bc3834ca7abd // indirect
-	sigs.k8s.io/structured-merge-diff/v4 v4.4.1 // indirect
+	sigs.k8s.io/json v0.0.0-20241010143419-9aa6b5e7a4b3 // indirect
+	sigs.k8s.io/structured-merge-diff/v4 v4.4.2 // indirect
 )
 
 require (
@@ -186,7 +186,7 @@ replace (
 
 replace (
 	// OpenShift components
-	github.com/openshift/api => github.com/openshift/api v0.0.0-20240912201240-0a8800162826
+	github.com/openshift/api => github.com/openshift/api v0.0.0-20250220103441-744790f2cff7
 	github.com/openshift/client-go => github.com/openshift/client-go v0.0.0-20240528061634-b054aa794d87
 )
 
