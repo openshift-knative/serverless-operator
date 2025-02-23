@@ -12,7 +12,7 @@ require (
 	github.com/manifestival/controller-runtime-client v0.4.0
 	github.com/manifestival/manifestival v0.7.2
 	github.com/openshift/api v3.9.0+incompatible
-	github.com/openshift/client-go v0.0.0-20240510131258-f646d5f29250
+	github.com/openshift/client-go f7ec47e2d87a
 	github.com/operator-framework/api v0.27.0
 	github.com/operator-framework/operator-lifecycle-manager v0.28.0
 	github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring v0.76.2
@@ -187,7 +187,7 @@ replace (
 replace (
 	// OpenShift components
 	github.com/openshift/api => github.com/openshift/api v0.0.0-20240912201240-0a8800162826
-	github.com/openshift/client-go => github.com/openshift/client-go v0.0.0-20240528061634-b054aa794d87
+	github.com/openshift/client-go => github.com/openshift/client-go f7ec47e2d87a
 )
 
 replace (
