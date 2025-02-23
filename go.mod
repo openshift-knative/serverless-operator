@@ -186,7 +186,7 @@ replace (
 
 replace (
 	// OpenShift components
-	github.com/openshift/api => github.com/openshift/api v0.0.0-20240830023148-b7d0481c9094
+	github.com/openshift/api => github.com/openshift/api 744790f2cff7
 	github.com/openshift/client-go => github.com/openshift/client-go v0.0.0-20240510131258-f646d5f29250
 )
 
