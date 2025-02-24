@@ -1,8 +1,10 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "enabledManagers": ["tekton"],
   "ignorePaths": [
-    "vendor/**",
     ".konflux-release/**",
-    "test/images-rekt.yaml"
+    "third_party/**",
+    "vendor/**",
+    "**/images-rekt.yaml"
   ]
 }
