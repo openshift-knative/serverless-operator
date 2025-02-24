@@ -87,13 +87,14 @@ func (r *Reconciler) FinalizeKind(ctx context.Context, original *v1beta1.Knative
 		logger.Error("Unable to fetch installed manifest; no cluster-scoped resources will be finalized", err)
 		return nil
 	}
+
+	if manifest == nil {
+		return nil
+	}
 	// we need this to apply the correct namespace to the resources otherwise it defaults to knative-serving
 	*manifest, err = manifest.Transform(overrideKourierNamespace(original))
 	if err != nil {
 		logger.Error("Unable to apply kourier namespace transform", err)
-		return nil
-	}
-	if manifest == nil {
 		return nil
 	}
 
