@@ -14,13 +14,13 @@ arches:
         size: 858812
         checksum: "sha256:6b0dc7341d743c89fa038292a7e04761ebb6cc98208ebc26dee9f01e2c1a9529"
       - repoid: ubi-8-baseos-rpms
-        url: "https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi8/8/x86_64/baseos/os/Packages/r/rsync-3.1.3-19.el8_7.1.x86_64.rpm"
-        size: 420156
-        checksum: "sha256:7aef9de61fbf590995b07d92f99a3f3478d6c0543d7a6e1ebb6f4b1c02334283"
+        url: "https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi8/8/x86_64/baseos/os/Packages/r/rsync-3.1.3-20.el8_10.x86_64.rpm"
+        size: 420268
+        checksum: "sha256:724036dda8f8d1df70f19e56bff6d5a19b5b5c48f7ebcb266c7ec82e65a876d2"
       - repoid: ubi-8-baseos-rpms
-        url: "https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi8/8/x86_64/baseos/os/Packages/t/tzdata-2024b-4.el8.noarch.rpm"
-        size: 486864
-        checksum: "sha256:b629ec4b416d8127314c8aecce5ada2c0c102f5dbdeb48f9a3739cbcdf2ee500"
+        url: "https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi8/8/x86_64/baseos/os/Packages/t/tzdata-2025a-1.el8.noarch.rpm"
+        size: 487380
+        checksum: "sha256:4fe61db2e8f416867f661457894570b9aa8b0829d90ec92e32d208b83ed6ee13"
   - arch: aarch64
     packages:
       - repoid: ubi-8-appstream-rpms
@@ -32,13 +32,13 @@ arches:
         size: 849892
         checksum: "sha256:3ba95ecab30f49ecf168ee37e6bc332b626bde62ef7bf61801613f93e2126d8e"
       - repoid: ubi-8-baseos-rpms
-        url: "https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi8/8/aarch64/baseos/os/Packages/r/rsync-3.1.3-19.el8_7.1.aarch64.rpm"
-        size: 410088
-        checksum: "sha256:d700d21063ae2b609031a3a8772012aff012899062e952ca43370c495f7e40ff"
+        url: "https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi8/8/aarch64/baseos/os/Packages/r/rsync-3.1.3-20.el8_10.aarch64.rpm"
+        size: 410256
+        checksum: "sha256:e9ad118d3ae20863d1a67c8215b24b3e08471b94ae7fcb3ff4f7a5d085a63f0f"
       - repoid: ubi-8-baseos-rpms
-        url: "https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi8/8/aarch64/baseos/os/Packages/t/tzdata-2024b-4.el8.noarch.rpm"
-        size: 486864
-        checksum: "sha256:b629ec4b416d8127314c8aecce5ada2c0c102f5dbdeb48f9a3739cbcdf2ee500"
+        url: "https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi8/8/aarch64/baseos/os/Packages/t/tzdata-2025a-1.el8.noarch.rpm"
+        size: 487380
+        checksum: "sha256:4fe61db2e8f416867f661457894570b9aa8b0829d90ec92e32d208b83ed6ee13"
   - arch: s390x
     packages:
       - repoid: ubi-8-appstream-rpms
@@ -50,13 +50,13 @@ arches:
         size: 853548
         checksum: "sha256:1efadfc1d2113503b8b0e95939c4cb98a7e0095fb383dec2ac4bf652822a8d87"
       - repoid: ubi-8-baseos-rpms
-        url: "https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi8/8/s390x/baseos/os/Packages/r/rsync-3.1.3-19.el8_7.1.s390x.rpm"
-        size: 413364
-        checksum: "sha256:8819079e4ea1236eab315348584007918798776c6ea23dae5725544148316cfb"
+        url: "https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi8/8/s390x/baseos/os/Packages/r/rsync-3.1.3-20.el8_10.s390x.rpm"
+        size: 413552
+        checksum: "sha256:a94953d2cbc29deb89fba7d9b91eb1d0e25db541af5129dedc723f29290c5883"
       - repoid: ubi-8-baseos-rpms
-        url: "https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi8/8/s390x/baseos/os/Packages/t/tzdata-2024b-4.el8.noarch.rpm"
-        size: 486864
-        checksum: "sha256:b629ec4b416d8127314c8aecce5ada2c0c102f5dbdeb48f9a3739cbcdf2ee500"
+        url: "https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi8/8/s390x/baseos/os/Packages/t/tzdata-2025a-1.el8.noarch.rpm"
+        size: 487380
+        checksum: "sha256:4fe61db2e8f416867f661457894570b9aa8b0829d90ec92e32d208b83ed6ee13"
   - arch: ppc64le
     packages:
       - repoid: ubi-8-appstream-rpms
@@ -68,10 +68,10 @@ arches:
         size: 878620
         checksum: "sha256:c34619440c83b785306420d9ae4a21ccbafe09815e5631510cccb6433f435a47"
       - repoid: ubi-8-baseos-rpms
-        url: "https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi8/8/ppc64le/baseos/os/Packages/r/rsync-3.1.3-19.el8_7.1.ppc64le.rpm"
-        size: 442696
-        checksum: "sha256:698ca98abf03ab4dcc3d4d1795f4a392d33a2e84f0b1b1f4b9856b38e8ef0b77"
+        url: "https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi8/8/ppc64le/baseos/os/Packages/r/rsync-3.1.3-20.el8_10.ppc64le.rpm"
+        size: 442812
+        checksum: "sha256:1429409eee3a0ebca5a83925f0faebcc7f224702f028402199f3aef740af3af6"
       - repoid: ubi-8-baseos-rpms
-        url: "https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi8/8/ppc64le/baseos/os/Packages/t/tzdata-2024b-4.el8.noarch.rpm"
-        size: 486864
-        checksum: "sha256:b629ec4b416d8127314c8aecce5ada2c0c102f5dbdeb48f9a3739cbcdf2ee500"
+        url: "https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi8/8/ppc64le/baseos/os/Packages/t/tzdata-2025a-1.el8.noarch.rpm"
+        size: 487380
+        checksum: "sha256:4fe61db2e8f416867f661457894570b9aa8b0829d90ec92e32d208b83ed6ee13"
