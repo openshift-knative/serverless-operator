@@ -24,7 +24,7 @@ spec:
           revision: "d7538e8bbfb6b17279dce1d4c1fe9beb3925cd8e"
           dockerfileUrl: "openshift/ci-operator/knative-images/cli-artifacts/Dockerfile"
     - name: "kn-client-kn-116"
-      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/kn-client-kn@sha256:a4fce6b96bfd5d560a43f261afdbf2d02d4256a2cc11ea652513af41bb9b6445"
+      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/kn-client-kn@sha256:cf4b9a3527442ab27cce1caac9c2884a752928b0592c2e400b7e6d356de09926"
       source:
         git:
           url: "https://github.com/openshift-knative/client"
