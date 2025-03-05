@@ -80,10 +80,11 @@ function install_catalogsource {
     mv "${rootdir}/_output/bkp.Dockerfile" "${rootdir}/${index_dorkerfile_path}"
   else
     tmpfile=$(mktemp /tmp/icsp.XXXXXX.yaml)
+    idms_tmpfile=$(mktemp /tmp/idms.XXXXXX.yaml)
     # Use ImageContentSourcePolicy only with the FBC from Konflux as
     # updating machine config pools takes a while.
     # shellcheck disable=SC2154
-    create_image_content_source_policy "$index_image" "$registry_redhat_io" "$registry_quay" "$registry_quay_previous" "$tmpfile"
+    create_image_content_source_policy "$index_image" "$registry_redhat_io" "$registry_quay" "$registry_quay_previous" "$tmpfile" "$idms_tmpfile"
     [ -n "$OPENSHIFT_CI" ] && cat "$tmpfile"
     if oc apply -f "$tmpfile"; then
       echo "Wait for machineconfigpool update to start"
@@ -125,6 +126,7 @@ function create_image_content_source_policy {
   registry_target="${3:?Pass target registry arg[3]}"
   registry_target_previous="${4:?Pass previous target registry arg[4]}"
   output_file="${5:?Pass output file arg[5]}"
+  digest_mirror_output_file="${6:?Pass digest_mirror_output_file arg[6]}"
 
   logger.info "Install ImageContentSourcePolicy"
   cat > "$output_file" <<EOF
@@ -136,6 +138,15 @@ metadata:
   name: serverless-image-content-source-policy
 spec:
   repositoryDigestMirrors:
+EOF
+
+  cat > "$digest_mirror_output_file" <<EOF
+apiVersion: operator.openshift.io/v1alpha1
+kind: ImageDigestMirrorSet
+metadata:
+  name: mirror-set
+spec:
+  imageDigestMirrors:
 EOF
 
     rm -rf iib-manifests
@@ -171,6 +182,7 @@ EOF
         local mirror2="${registry_target_previous}/${target_img}"
 
         add_repository_digest_mirrors "$output_file" "${registry_source}/${img}" "${mirror1}" "${mirror2}"
+        add_repository_digest_mirrors "$digest_mirror_output_file" "${registry_source}/${img}" "${mirror1}" "${mirror2}"
       fi
     done <<< "$mirrors"
 }
