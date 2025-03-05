@@ -1,5 +1,5 @@
 diff --git a/vendor/knative.dev/operator/pkg/reconciler/common/install.go b/vendor/knative.dev/operator/pkg/reconciler/common/install.go
-index 4b3b3adaf..192571de8 100644
+index 4b3b3adaf..e0985beb8 100644
 --- a/vendor/knative.dev/operator/pkg/reconciler/common/install.go
 +++ b/vendor/knative.dev/operator/pkg/reconciler/common/install.go
 @@ -20,12 +20,21 @@ import (
@@ -47,7 +47,7 @@ index 4b3b3adaf..192571de8 100644
  	if err := manifest.Filter(webhook).Apply(); err != nil {
  		status.MarkInstallFailed(err.Error())
  		return fmt.Errorf("failed to apply webhooks: %w", err)
-@@ -83,3 +101,59 @@ func Uninstall(manifest *mf.Manifest) error {
+@@ -83,3 +101,58 @@ func Uninstall(manifest *mf.Manifest) error {
  	}
  	return nil
  }
@@ -106,4 +106,3 @@ index 4b3b3adaf..192571de8 100644
 +		return strings.HasSuffix(u.GetName(), suffix)
 +	}
 +}
-+

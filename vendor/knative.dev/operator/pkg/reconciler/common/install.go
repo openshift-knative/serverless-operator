@@ -156,4 +156,3 @@ func byNameSuffix(suffix string) mf.Predicate {
 		return strings.HasSuffix(u.GetName(), suffix)
 	}
 }
-
