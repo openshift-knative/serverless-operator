@@ -509,6 +509,7 @@ spec:
                 - secrets
                 - serviceaccounts
                 - services
+                - endpoints
               verbs:
                 - create
                 - delete
