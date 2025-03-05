@@ -145,7 +145,7 @@ spec:
     Knative Functions bring greater efficiency, more scalability and faster development to facilitate rapid go-to-market.
 
     Other features include:
-    - Build strategies including Source-to-Image (S2I) and Buildpacks
+    - Buildpacks
     - Multiple runtimes, including Node.js, Quarkus and Go
     - Local developer experience through the kn CLI
     - Project templates
@@ -940,8 +940,6 @@ spec:
                         value: "registry.redhat.io/openshift-serverless-1/kn-client-kn-rhel8@sha256:a4fce6b96bfd5d560a43f261afdbf2d02d4256a2cc11ea652513af41bb9b6445"
                       - name: "IMAGE_KN_PLUGIN_FUNC_UTIL"
                         value: "registry.redhat.io/openshift-serverless-1/kn-plugin-func-func-util-rhel8@sha256:6aa2ba3fd2bc759fa67392afbc68cb1c4c656d20c3f14e2640271b915e7ef74d"
-                      - name: "IMAGE_KN_PLUGIN_FUNC_TEKTON_S2I"
-                        value: "registry.redhat.io/source-to-image/source-to-image-rhel8@sha256:6a6025914296a62fdf2092c3a40011bd9b966a6806b094d51eec5e1bd5026ef4"
                       - name: "IMAGE_KN_PLUGIN_FUNC_TEKTON_BUILDAH"
                         value: "registry.redhat.io/rhel8/buildah@sha256:3d505d9c0f5d4cd5a4ec03b8d038656c6cdbdf5191e00ce6388f7e0e4d2f1b74"
                       - name: "IMAGE_KN_PLUGIN_FUNC_NODEJS_20_MINIMAL"
@@ -1114,8 +1112,6 @@ spec:
                         value: "registry.redhat.io/openshift-serverless-1/kn-client-kn-rhel8@sha256:a4fce6b96bfd5d560a43f261afdbf2d02d4256a2cc11ea652513af41bb9b6445"
                       - name: "IMAGE_KN_PLUGIN_FUNC_UTIL"
                         value: "registry.redhat.io/openshift-serverless-1/kn-plugin-func-func-util-rhel8@sha256:6aa2ba3fd2bc759fa67392afbc68cb1c4c656d20c3f14e2640271b915e7ef74d"
-                      - name: "IMAGE_KN_PLUGIN_FUNC_TEKTON_S2I"
-                        value: "registry.redhat.io/source-to-image/source-to-image-rhel8@sha256:6a6025914296a62fdf2092c3a40011bd9b966a6806b094d51eec5e1bd5026ef4"
                       - name: "IMAGE_KN_PLUGIN_FUNC_TEKTON_BUILDAH"
                         value: "registry.redhat.io/rhel8/buildah@sha256:3d505d9c0f5d4cd5a4ec03b8d038656c6cdbdf5191e00ce6388f7e0e4d2f1b74"
                       - name: "IMAGE_KN_PLUGIN_FUNC_NODEJS_20_MINIMAL"
@@ -1391,8 +1387,6 @@ spec:
       image: "registry.redhat.io/openshift-serverless-1/kn-client-kn-rhel8@sha256:a4fce6b96bfd5d560a43f261afdbf2d02d4256a2cc11ea652513af41bb9b6445"
     - name: "IMAGE_KN_PLUGIN_FUNC_UTIL"
       image: "registry.redhat.io/openshift-serverless-1/kn-plugin-func-func-util-rhel8@sha256:6aa2ba3fd2bc759fa67392afbc68cb1c4c656d20c3f14e2640271b915e7ef74d"
-    - name: "IMAGE_KN_PLUGIN_FUNC_TEKTON_S2I"
-      image: "registry.redhat.io/source-to-image/source-to-image-rhel8@sha256:6a6025914296a62fdf2092c3a40011bd9b966a6806b094d51eec5e1bd5026ef4"
     - name: "IMAGE_KN_PLUGIN_FUNC_TEKTON_BUILDAH"
       image: "registry.redhat.io/rhel8/buildah@sha256:3d505d9c0f5d4cd5a4ec03b8d038656c6cdbdf5191e00ce6388f7e0e4d2f1b74"
     - name: "IMAGE_KN_PLUGIN_FUNC_NODEJS_20_MINIMAL"
