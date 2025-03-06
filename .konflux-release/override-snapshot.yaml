@@ -129,7 +129,7 @@ spec:
           revision: "1e770ef657b0c73e4e0956c69e0ecedda7256d7c"
           dockerfileUrl: "openshift/ci-operator/knative-images/migrate/Dockerfile"
     - name: "kn-eventing-mtchannel-broker-116"
-      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/kn-eventing-mtchannel-broker@sha256:8f80ea9b9ef0eb8bddaa68ac74d3ae0aabd309012cc45beae0e75a4ae979b178"
+      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/kn-eventing-mtchannel-broker@sha256:63dcf61f32b43e9d54749f0653cbacfeeff67288a211e8bf5884ad0691c620b5"
       source:
         git:
           url: "https://github.com/openshift-knative/eventing"
