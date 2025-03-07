@@ -95,6 +95,7 @@ jobs:
         if: github.event_name == 'workflow_dispatch' || github.event_name == 'schedule' || ( github.event_name == 'push' && !contains(github.ref_name, 'dependabot/') )
         uses: peter-evans/create-pull-request@v7
         with:
+          token: ${{ secrets.SERVERLESS_QE_ROBOT }}
           path: ./src/github.com/${{ github.repository }}
           branch: auto/update-generated-files-${{ github.ref_name }}
           title: "[${{ github.ref_name }}] Run make generated-files"
