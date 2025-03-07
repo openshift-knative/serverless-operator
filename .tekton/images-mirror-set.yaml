@@ -4,7 +4,6 @@ metadata:
   name: mirror-set
 spec:
   imageDigestMirrors:
-  repositoryDigestMirrors:
     - mirrors: ["quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/client-kn"]
       source: "registry.redhat.io/openshift-serverless-1/client-kn-rhel8"
     - mirrors: ["quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/eventing-apiserver-receive-adapter"]
