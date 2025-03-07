@@ -8393,7 +8393,7 @@ relatedImages:
   name: IMAGE_autoscaler-hpa
 - image: registry.redhat.io/openshift-serverless-1/kn-serving-autoscaler-rhel8@sha256:00777fa53883f25061ebe171b0d47025d27acd39582a619565e9167288321952
   name: IMAGE_autoscaler
-- image: registry.redhat.io/openshift-serverless-1/kn-serving-controller-rhel8@sha256:41a21fdc683183422ebb29707d81eca96d7ca119d01f369b9defbaea94c09939
+- image: registry.redhat.io/openshift-serverless-1/kn-serving-controller-rhel8@sha256:2d832ec904102b7e80cc6cc2f3732a6ee8b79f8d094f79345fff6cfe4be16eba
   name: IMAGE_controller__controller
 - image: registry.redhat.io/openshift-serverless-1/kn-serving-queue-rhel8@sha256:bd464d68e283ce6c48ae904010991b491b738ada5a419f044bf71fd48326005b
   name: IMAGE_queue-proxy
@@ -8751,7 +8751,7 @@ relatedImages:
   name: IMAGE_autoscaler-hpa
 - image: registry.redhat.io/openshift-serverless-1/kn-serving-autoscaler-rhel8@sha256:a3281f559ce240e7af81aa2d472ec0beaea6d558766968127dc8ace64e032a43
   name: IMAGE_autoscaler
-- image: registry.redhat.io/openshift-serverless-1/kn-serving-controller-rhel8@sha256:457402f0f060c7cb7fe3f7fb14b181c8d55004ca30c1e19731acdbd352edcdd8
+- image: registry.redhat.io/openshift-serverless-1/kn-serving-controller-rhel8@sha256:2d832ec904102b7e80cc6cc2f3732a6ee8b79f8d094f79345fff6cfe4be16eba
   name: IMAGE_controller__controller
 - image: registry.redhat.io/openshift-serverless-1/kn-serving-queue-rhel8@sha256:aa16b9cb5c140751d7a1319a0b1bb0f4a65f6030b670d1bdd156208f2a5cdd99
   name: IMAGE_queue-proxy
