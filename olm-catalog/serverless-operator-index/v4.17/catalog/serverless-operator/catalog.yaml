@@ -8381,7 +8381,7 @@ relatedImages:
   name: IMAGE_mt-broker-controller__mt-broker-controller
 - image: registry.redhat.io/openshift-serverless-1/kn-eventing-mtping-rhel8@sha256:c5a5b6bc4fdb861133fd106f324cc4a904c6c6a32cabc6203efc578d8f46bbf4
   name: IMAGE_pingsource-mt-adapter__dispatcher
-- image: registry.redhat.io/openshift-serverless-1/kn-eventing-webhook-rhel8@sha256:efe2d60e777918df9271f5512e4722f8cf667fe1a59ee937e093224f66bc8cbf
+- image: registry.redhat.io/openshift-serverless-1/kn-eventing-webhook-rhel8@sha256:d33ba5c7a77163e5074cc7e3b8bfa9e388c7e198eebcc309f48dba0678963035
   name: IMAGE_eventing-webhook__eventing-webhook
 - image: registry.redhat.io/openshift-serverless-1/kn-plugin-event-sender-rhel8@sha256:08f0b4151edd6d777e2944c6364612a5599e5a775e5150a76676a45f753c2e23
   name: IMAGE_KN_PLUGIN_EVENT_SENDER
@@ -8739,7 +8739,7 @@ relatedImages:
   name: IMAGE_mt-broker-controller__mt-broker-controller
 - image: registry.redhat.io/openshift-serverless-1/kn-eventing-mtping-rhel8@sha256:eb22a407040ec3354a07a549a0df862aa62c5eeb9c9de95ca93a8a7e4f640ca3
   name: IMAGE_pingsource-mt-adapter__dispatcher
-- image: registry.redhat.io/openshift-serverless-1/kn-eventing-webhook-rhel8@sha256:4de7e0b2946b79395af3b042a1b89b3bfc9c236efb593e8acfcd21120841392c
+- image: registry.redhat.io/openshift-serverless-1/kn-eventing-webhook-rhel8@sha256:d33ba5c7a77163e5074cc7e3b8bfa9e388c7e198eebcc309f48dba0678963035
   name: IMAGE_eventing-webhook__eventing-webhook
 - image: registry.redhat.io/openshift-serverless-1/kn-plugin-event-sender-rhel8@sha256:0d703ce10eea8a9ef7432bb331a9ded3e39617994f47cfcb686d73a204042f9b
   name: IMAGE_KN_PLUGIN_EVENT_SENDER
