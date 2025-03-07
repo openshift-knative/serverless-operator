@@ -191,7 +191,7 @@ spec:
           revision: "e273006127447ceb369f13867d1fefc94dbd7a15"
           dockerfileUrl: "openshift/ci-operator/knative-images/controller/Dockerfile"
     - name: "kn-serving-queue-115"
-      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-serving-queue@sha256:bd464d68e283ce6c48ae904010991b491b738ada5a419f044bf71fd48326005b"
+      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-serving-queue@sha256:0e9d4d15baad959cb5d1cfe1db19fc2ac16f307442103443892f266492f47631"
       source:
         git:
           url: "https://github.com/openshift-knative/serving"
