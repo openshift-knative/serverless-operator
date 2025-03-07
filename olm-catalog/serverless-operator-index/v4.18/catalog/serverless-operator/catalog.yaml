@@ -8399,7 +8399,7 @@ relatedImages:
   name: IMAGE_queue-proxy
 - image: registry.redhat.io/openshift-serverless-1/kn-serving-storage-version-migration-rhel8@sha256:de87597265ee5ac26db4458a251d00a5ec1b5cd0bfff4854284070fdadddb7ab
   name: IMAGE_storage-version-migration-serving-__migrate
-- image: registry.redhat.io/openshift-serverless-1/kn-serving-webhook-rhel8@sha256:eb33e874b5a7c051db91cd6a63223aabd987988558ad34b34477bee592ceb3ab
+- image: registry.redhat.io/openshift-serverless-1/kn-serving-webhook-rhel8@sha256:2e93e229e69c505742defaba338791062156bc0be5e1b88a958ce8ab1870e4b8
   name: IMAGE_webhook__webhook
 - image: registry.redhat.io/openshift-serverless-1/net-istio-controller-rhel8@sha256:ec77d44271ba3d86af6cbbeb70f20a720d30d1b75e93ac5e1024790448edf1dd
   name: IMAGE_net-istio-controller__controller
@@ -8757,7 +8757,7 @@ relatedImages:
   name: IMAGE_queue-proxy
 - image: registry.redhat.io/openshift-serverless-1/kn-serving-storage-version-migration-rhel8@sha256:a479117f6d6ef5234d7eeaa28c58fc7aa4da453eeb3f94a7b72c44bcdecd8e12
   name: IMAGE_storage-version-migration-serving-__migrate
-- image: registry.redhat.io/openshift-serverless-1/kn-serving-webhook-rhel8@sha256:02755a1c535a2281ea27731abf8a6d14a27b88a6a232efd24b0cde36d360106a
+- image: registry.redhat.io/openshift-serverless-1/kn-serving-webhook-rhel8@sha256:2e93e229e69c505742defaba338791062156bc0be5e1b88a958ce8ab1870e4b8
   name: IMAGE_webhook__webhook
 - image: registry.redhat.io/openshift-serverless-1/net-istio-controller-rhel8@sha256:49198b53ba79d0efce61df31449b5fa31e6c32ba57edb5adc4bbe4c0531092fb
   name: IMAGE_net-istio-controller__controller
