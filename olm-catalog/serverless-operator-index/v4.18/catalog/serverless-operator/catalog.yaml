@@ -8385,7 +8385,7 @@ relatedImages:
   name: IMAGE_eventing-webhook__eventing-webhook
 - image: registry.redhat.io/openshift-serverless-1/kn-plugin-event-sender-rhel8@sha256:08f0b4151edd6d777e2944c6364612a5599e5a775e5150a76676a45f753c2e23
   name: IMAGE_KN_PLUGIN_EVENT_SENDER
-- image: registry.redhat.io/openshift-serverless-1/kn-plugin-func-func-util-rhel8@sha256:01e0ab5c8203ef0ca39b4e9df8fd1a8c2769ef84fce7fecefc8e8858315e71ca
+- image: registry.redhat.io/openshift-serverless-1/kn-plugin-func-func-util-rhel8@sha256:229e948cdf2870d45d60932443fe1e77ff70eb4a83d7b2257d8456c5cf90fbbb
   name: IMAGE_KN_PLUGIN_FUNC_UTIL
 - image: registry.redhat.io/openshift-serverless-1/kn-serving-activator-rhel8@sha256:3892eadbaa6aba6d79d6fe2a88662c851650f7c7be81797b2fc91d0593a763d1
   name: IMAGE_activator
@@ -8743,7 +8743,7 @@ relatedImages:
   name: IMAGE_eventing-webhook__eventing-webhook
 - image: registry.redhat.io/openshift-serverless-1/kn-plugin-event-sender-rhel8@sha256:0d703ce10eea8a9ef7432bb331a9ded3e39617994f47cfcb686d73a204042f9b
   name: IMAGE_KN_PLUGIN_EVENT_SENDER
-- image: registry.redhat.io/openshift-serverless-1/kn-plugin-func-func-util-rhel8@sha256:edb7e9d04d424dbe7e15d059fd4217298036ca299e7a358f6edb21bb404aeb6c
+- image: registry.redhat.io/openshift-serverless-1/kn-plugin-func-func-util-rhel8@sha256:229e948cdf2870d45d60932443fe1e77ff70eb4a83d7b2257d8456c5cf90fbbb
   name: IMAGE_KN_PLUGIN_FUNC_UTIL
 - image: registry.redhat.io/openshift-serverless-1/kn-serving-activator-rhel8@sha256:70a370aefc5921665b65245c295dfbe9ec9a02c2b4d8e93e72b78ace8730abfb
   name: IMAGE_activator
