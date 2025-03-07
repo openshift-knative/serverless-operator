@@ -125,11 +125,11 @@ function create_image_content_source_policy {
   registry_source="${2:?Pass source registry arg[2]}"
   registry_target="${3:?Pass target registry arg[3]}"
   registry_target_previous="${4:?Pass previous target registry arg[4]}"
-  output_file="${5:?Pass output file arg[5]}"
-  digest_mirror_output_file="${6:?Pass digest_mirror_output_file arg[6]}"
+  image_content_source_policy_output_file="${5:?Pass output file arg[5]}"
+  image_digest_mirror_output_file="${6:?Pass image_digest_mirror_output_file arg[6]}"
 
   logger.info "Install ImageContentSourcePolicy"
-  cat > "$output_file" <<EOF
+  cat > "$image_content_source_policy_output_file" <<EOF
 apiVersion: operator.openshift.io/v1alpha1
 kind: ImageContentSourcePolicy
 metadata:
@@ -140,7 +140,7 @@ spec:
   repositoryDigestMirrors:
 EOF
 
-  cat > "$digest_mirror_output_file" <<EOF
+  cat > "$image_digest_mirror_output_file" <<EOF
 apiVersion: operator.openshift.io/v1alpha1
 kind: ImageDigestMirrorSet
 metadata:
@@ -181,8 +181,8 @@ EOF
         local mirror1="${registry_target}/${target_img}"
         local mirror2="${registry_target_previous}/${target_img}"
 
-        add_repository_digest_mirrors "$output_file" "${registry_source}/${img}" "${mirror1}" "${mirror2}"
-        add_repository_digest_mirrors "$digest_mirror_output_file" "${registry_source}/${img}" "${mirror1}" "${mirror2}"
+        add_repository_digest_mirrors "$image_content_source_policy_output_file" "${registry_source}/${img}" "${mirror1}" "${mirror2}"
+        add_image_digest_mirrors "$image_digest_mirror_output_file" "${registry_source}/${img}" "${mirror1}" "${mirror2}"
       fi
     done <<< "$mirrors"
 }
@@ -192,6 +192,17 @@ function add_repository_digest_mirrors {
   cat << EOF | yq write --inplace --script - "$1"
 - command: update
   path: spec.repositoryDigestMirrors[+]
+  value:
+    mirrors: [ "${3}", "${4}" ]
+    source: "${2}"
+EOF
+}
+
+function add_image_digest_mirrors {
+  echo "Add mirror image to '${1}' - $2 = $3, $4"
+  cat << EOF | yq write --inplace --script - "$1"
+- command: update
+  path: spec.imageDigestMirrors[+]
   value:
     mirrors: [ "${3}", "${4}" ]
     source: "${2}"
