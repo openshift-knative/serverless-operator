@@ -199,7 +199,7 @@ spec:
           revision: "ec918b01f69ab9a978b4cb1149a6cd7d217fb947"
           dockerfileUrl: "openshift/ci-operator/knative-images/queue/Dockerfile"
     - name: "kn-serving-storage-version-migration-116"
-      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/kn-serving-storage-version-migration@sha256:1987c4d8b2e67aaf5879f0af867ef157d870657f8a1120c812ed7b372f8877b0"
+      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/kn-serving-storage-version-migration@sha256:110620806bbae4aa037e54b27465fb1dc5505c76d332596f79fea316da96ac3d"
       source:
         git:
           url: "https://github.com/openshift-knative/serving"
