@@ -8369,7 +8369,7 @@ relatedImages:
   name: IMAGE_mt-broker-filter__filter
 - image: registry.redhat.io/openshift-serverless-1/kn-eventing-ingress-rhel8@sha256:7e6049da45969fa3f766d2a542960b170097b2087cad15f5bba7345d8cdc0dad
   name: IMAGE_mt-broker-ingress__ingress
-- image: registry.redhat.io/openshift-serverless-1/kn-eventing-istio-controller-rhel8@sha256:d14fd8abf4e8640dbde210f567dd36866fe5f0f814a768a181edcb56a8e7f35b
+- image: registry.redhat.io/openshift-serverless-1/kn-eventing-istio-controller-rhel8@sha256:9d7821c29f6fa2982fb755e3a3ab6063a95cd60a42cb0ce2caf1f5fa8fccd836
   name: IMAGE_eventing-istio-controller__eventing-istio-controller
 - image: registry.redhat.io/openshift-serverless-1/kn-eventing-jobsink-rhel8@sha256:8ecea4b6af28fe8c7f8bfcc433c007555deb8b7def7c326867b04833c524565d
   name: IMAGE_job-sink__job-sink
@@ -8727,7 +8727,7 @@ relatedImages:
   name: IMAGE_mt-broker-filter__filter
 - image: registry.redhat.io/openshift-serverless-1/kn-eventing-ingress-rhel8@sha256:c87496b36c4db182707d49a7d1ced7c99264786c68e54ccb2fad26748d3add33
   name: IMAGE_mt-broker-ingress__ingress
-- image: registry.redhat.io/openshift-serverless-1/kn-eventing-istio-controller-rhel8@sha256:e27c9ea1d710d1ffe4f764358600da307d04038df243e6a0bb6b290a63f5fd45
+- image: registry.redhat.io/openshift-serverless-1/kn-eventing-istio-controller-rhel8@sha256:9d7821c29f6fa2982fb755e3a3ab6063a95cd60a42cb0ce2caf1f5fa8fccd836
   name: IMAGE_eventing-istio-controller__eventing-istio-controller
 - image: registry.redhat.io/openshift-serverless-1/kn-eventing-jobsink-rhel8@sha256:607982a66480abf49a086cab7df104c3cc58c8e405bd02799e916c43fc4c56cb
   name: IMAGE_job-sink__job-sink
