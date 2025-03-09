@@ -8331,7 +8331,7 @@ relatedImages:
   name: IMAGE_KN_PLUGIN_FUNC_OPENJDK_21
 - image: registry.access.redhat.com/ubi8/python-39@sha256:27e795fd6b1b77de70d1dc73a65e4c790650748a9cfda138fdbd194b3d6eea3d
   name: IMAGE_KN_PLUGIN_FUNC_PYTHON_39
-- image: registry.redhat.io/openshift-serverless-1/kn-backstage-plugins-eventmesh-rhel8@sha256:77665d8683230256122e60c3ec0496e80543675f39944c70415266ee5cffd080
+- image: registry.redhat.io/openshift-serverless-1/kn-backstage-plugins-eventmesh-rhel8@sha256:d6eca90eee332b843ceebc1a1b54757f9d696fcc69db5914138c12caf523298a
   name: IMAGE_eventmesh-backend__controller
 - image: registry.redhat.io/openshift-serverless-1/kn-client-cli-artifacts-rhel8@sha256:f983be49897be59dba1275f36bdd83f648663ee904e4f242599e9269fc354fd7
   name: IMAGE_KN_CLIENT_CLI_ARTIFACTS
@@ -8689,7 +8689,7 @@ relatedImages:
   name: IMAGE_KN_PLUGIN_FUNC_OPENJDK_21
 - image: registry.access.redhat.com/ubi8/python-39@sha256:27e795fd6b1b77de70d1dc73a65e4c790650748a9cfda138fdbd194b3d6eea3d
   name: IMAGE_KN_PLUGIN_FUNC_PYTHON_39
-- image: registry.redhat.io/openshift-serverless-1/kn-backstage-plugins-eventmesh-rhel8@sha256:77665d8683230256122e60c3ec0496e80543675f39944c70415266ee5cffd080
+- image: registry.redhat.io/openshift-serverless-1/kn-backstage-plugins-eventmesh-rhel8@sha256:d6eca90eee332b843ceebc1a1b54757f9d696fcc69db5914138c12caf523298a
   name: IMAGE_eventmesh-backend__controller
 - image: registry.redhat.io/openshift-serverless-1/kn-client-cli-artifacts-rhel8@sha256:2d4674de6d1f5dc52099bbe7c1aab3b20da88d98c15f0d0709f520d974f82479
   name: IMAGE_KN_CLIENT_CLI_ARTIFACTS
