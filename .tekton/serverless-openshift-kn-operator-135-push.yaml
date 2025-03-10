@@ -43,6 +43,15 @@ spec:
       value: '[{"type":"rpm"}]'
     - name: prefetch-input-dev-package-managers
       value: 'true'
+  taskRunSpecs:
+    - pipelineTaskName: sast-shell-check
+      stepSpecs:
+        - name: sast-shell-check
+          computeResources:
+            requests:
+              memory: 4Gi
+            limits:
+              memory: 4Gi
   pipelineRef:
     name: docker-build
   taskRunTemplate: {}
