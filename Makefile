@@ -383,6 +383,9 @@ generated-files-release-next: release-files
 	(cd olm-catalog/serverless-operator && USE_RELEASE_NEXT=true ./hack/update-manifests.sh)
 	./hack/update-deps.sh
 
+verify-csv-revisions: install-tools
+	./hack/verify-csv-revisions.sh
+
 # Runs the lints Github Actions do too.
 lint:
 	woke
