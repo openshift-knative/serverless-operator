@@ -1,0 +1,30 @@
+name: CSV revision check
+
+on:
+  pull_request:
+    paths:
+      - 'olm-catalog/serverless-operator/manifests/serverless-operator.clusterserviceversion.yaml'
+    branches:
+      - 'main'
+      - 'release-*'
+
+jobs:
+  csv-revision-check:
+    name: CSV component revision alignment check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Setup Golang
+        uses: openshift-knative/hack/actions/setup-go@main
+
+      - name: Check out code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install yq
+        run: |
+          go install github.com/mikefarah/yq/v3@latest
+
+      - name: Revision check
+        run: make verify-csv-revisions
