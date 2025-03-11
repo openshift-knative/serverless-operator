@@ -24,6 +24,7 @@ if [[ ${USE_RELEASE_NEXT:-} == "true" ]]; then
   knative_eventing_images_release
   knative_eventing_istio_images_release
   knative_eventing_kafka_broker_images_release
+  knative_eventing_integrations_images_release
   knative_backstage_plugins_images_release
   knative_serving_images_release
   knative_kn_plugin_func_images_release
@@ -33,6 +34,7 @@ else
   default_knative_eventing_images
   default_knative_eventing_istio_images
   default_knative_eventing_kafka_broker_images
+  default_knative_eventing_integrations_images
   default_knative_backstage_plugins_images
   default_knative_serving_images
   default_knative_kn_plugin_func_images
@@ -107,11 +109,20 @@ image "mt-broker-ingress__ingress"                                              
 image "imc-controller__controller"                                               "${KNATIVE_EVENTING_CHANNEL_CONTROLLER}"
 image "imc-dispatcher__dispatcher"                                               "${KNATIVE_EVENTING_CHANNEL_DISPATCHER}"
 image "pingsource-mt-adapter__dispatcher"                                        "${KNATIVE_EVENTING_MTPING}"
+image "job-sink__job-sink"                                                       "${KNATIVE_EVENTING_JOBSINK}"
+
+# The first param need to match the env variable name expected by the controllers, the second param is defined in `images.bash`.
 image "APISERVER_RA_IMAGE"                                                       "${KNATIVE_EVENTING_APISERVER_RECEIVE_ADAPTER}"
 image "DISPATCHER_IMAGE"                                                         "${KNATIVE_EVENTING_CHANNEL_DISPATCHER}"
-if [ "${KNATIVE_EVENTING_JOBSINK}" != "" ]; then
-  image "job-sink__job-sink"                                                       "${KNATIVE_EVENTING_JOBSINK}"
-fi
+image "EVENT_TRANSFORM_JSONATA_IMAGE"                                            "${KNATIVE_EVENTING_INTEGRATIONS_TRANSFORM_JSONATA}"
+image "INTEGRATION_SOURCE_TIMER_IMAGE"                                           "${KNATIVE_EVENTING_INTEGRATIONS_TIMER_SOURCE}"
+image "INTEGRATION_SOURCE_AWS_S3_IMAGE"                                          "${KNATIVE_EVENTING_INTEGRATIONS_AWS_S3_SOURCE}"
+image "INTEGRATION_SOURCE_AWS_SQS_IMAGE"                                         "${KNATIVE_EVENTING_INTEGRATIONS_AWS_SQS_SOURCE}"
+image "INTEGRATION_SOURCE_AWS_DDB_STREAMS_IMAGE"                                 "${KNATIVE_EVENTING_INTEGRATIONS_AWS_DDB_STREAMS_SOURCE}"
+image "INTEGRATION_SINK_LOG_IMAGE"                                               "${KNATIVE_EVENTING_INTEGRATIONS_LOG_SINK}"
+image "INTEGRATION_SINK_AWS_S3_IMAGE"                                            "${KNATIVE_EVENTING_INTEGRATIONS_AWS_S3_SINK}"
+image "INTEGRATION_SINK_AWS_SQS_IMAGE"                                           "${KNATIVE_EVENTING_INTEGRATIONS_AWS_SQS_SINK}"
+image "INTEGRATION_SINK_AWS_SNS_IMAGE"                                           "${KNATIVE_EVENTING_INTEGRATIONS_AWS_SNS_SINK}"
 
 image "eventmesh-backend__controller" "${KNATIVE_BACKSTAGE_PLUGINS_EVENTMESH}"
 

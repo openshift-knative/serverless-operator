@@ -217,6 +217,35 @@ function knative_eventing_kafka_broker_images() {
   export KNATIVE_EVENTING_KAFKA_BROKER_TEST_KAFKA_CONSUMER=${KNATIVE_EVENTING_KAFKA_BROKER_TEST_KAFKA_CONSUMER:-$(latest_konflux_image_sha "${eventing_kafka_broker}-test-kafka-consumer")}
 }
 
+function knative_eventing_integrations_images_release() {
+  knative_eventing_integrations_images "${USE_IMAGE_RELEASE_TAG}"
+}
+
+function default_knative_eventing_integrations_images() {
+  knative_eventing_integrations_images "$(metadata.get dependencies.eventing_integrations)"
+}
+
+function knative_eventing_integrations_images() {
+  local eventing_kafka_broker tag app_version
+  tag=${1:?"Provide tag for Eventing Integrations images"}
+
+  app_version=$(get_app_version_from_tag "${tag}")
+  eventing_integrations="${registry_prefix_quay}${app_version}/kn-eventing-integrations"
+
+  # EventTransform
+  export KNATIVE_EVENTING_INTEGRATIONS_TRANSFORM_JSONATA=${KNATIVE_EVENTING_INTEGRATIONS_TRANSFORM_JSONATA:-$(latest_registry_redhat_io_image_sha "${eventing_integrations}-transform-jsonata:${tag}")}
+  # IntegrationSource
+  export KNATIVE_EVENTING_INTEGRATIONS_TIMER_SOURCE=${KNATIVE_EVENTING_INTEGRATIONS_TIMER_SOURCE:-$(latest_registry_redhat_io_image_sha "${eventing_integrations}-timer-source:${tag}")}
+  export KNATIVE_EVENTING_INTEGRATIONS_AWS_S3_SOURCE=${KNATIVE_EVENTING_INTEGRATIONS_AWS_S3_SOURCE:-$(latest_registry_redhat_io_image_sha "${eventing_integrations}-aws-s3-source:${tag}")}
+  export KNATIVE_EVENTING_INTEGRATIONS_AWS_SQS_SOURCE=${KNATIVE_EVENTING_INTEGRATIONS_AWS_SQS_SOURCE:-$(latest_registry_redhat_io_image_sha "${eventing_integrations}-aws-sqs-source:${tag}")}
+  export KNATIVE_EVENTING_INTEGRATIONS_AWS_DDB_STREAMS_SOURCE=${KNATIVE_EVENTING_INTEGRATIONS_AWS_DDB_STREAMS_SOURCE:-$(latest_registry_redhat_io_image_sha "${eventing_integrations}-aws-ddb-streams-source:${tag}")}
+  # IntegrationSink
+  export KNATIVE_EVENTING_INTEGRATIONS_LOG_SINK=${KNATIVE_EVENTING_INTEGRATIONS_LOG_SINK:-$(latest_registry_redhat_io_image_sha "${eventing_integrations}-log-sink:${tag}")}
+  export KNATIVE_EVENTING_INTEGRATIONS_AWS_S3_SINK=${KNATIVE_EVENTING_INTEGRATIONS_AWS_S3_SINK:-$(latest_registry_redhat_io_image_sha "${eventing_integrations}-aws-s3-sink:${tag}")}
+  export KNATIVE_EVENTING_INTEGRATIONS_AWS_SQS_SINK=${KNATIVE_EVENTING_INTEGRATIONS_AWS_SQS_SINK:-$(latest_registry_redhat_io_image_sha "${eventing_integrations}-aws-sqs-sink:${tag}")}
+  export KNATIVE_EVENTING_INTEGRATIONS_AWS_SNS_SINK=${KNATIVE_EVENTING_INTEGRATIONS_AWS_SNS_SINK:-$(latest_registry_redhat_io_image_sha "${eventing_integrations}-aws-sns-sink:${tag}")}
+}
+
 function knative_kn_plugin_func_images_release() {
   knative_kn_plugin_func_images "${USE_IMAGE_RELEASE_TAG}"
 }
