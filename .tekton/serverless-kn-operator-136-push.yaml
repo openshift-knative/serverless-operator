@@ -26,6 +26,8 @@ spec:
         - GO_RUNTIME=registry.access.redhat.com/ubi8/ubi-minimal
         - JAVA_BUILDER=registry.access.redhat.com/ubi8/openjdk-21
         - JAVA_RUNTIME=registry.access.redhat.com/ubi8/openjdk-21-runtime
+        - NODE_BUILDER=registry.access.redhat.com/ubi8/nodejs-20
+        - NODE_RUNTIME=registry.access.redhat.com/ubi8/nodejs-20
     - name: git-url
       value: '{{source_url}}'
     - name: hermetic
@@ -43,6 +45,15 @@ spec:
       value: '[{"type":"rpm"}]'
     - name: prefetch-input-dev-package-managers
       value: 'true'
+  taskRunSpecs:
+    - pipelineTaskName: sast-shell-check
+      stepSpecs:
+        - name: sast-shell-check
+          computeResources:
+            requests:
+              memory: 4Gi
+            limits:
+              memory: 4Gi
   pipelineRef:
     name: docker-build
   taskRunTemplate: {}
