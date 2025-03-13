@@ -1526,7 +1526,7 @@ knative.dev/eventing-kafka-broker/third_party/pkg/client/clientset/versioned
 knative.dev/eventing-kafka-broker/third_party/pkg/client/clientset/versioned/scheme
 knative.dev/eventing-kafka-broker/third_party/pkg/client/clientset/versioned/typed/keda/v1alpha1
 knative.dev/eventing-kafka-broker/third_party/pkg/client/injection/client
-# knative.dev/hack v0.0.0-20250117112405-6cb0feb3ac46 => knative.dev/hack v0.0.0-20250117112405-6cb0feb3ac46
+# knative.dev/hack v0.0.0-20250220110655-b5e4ff820460 => knative.dev/hack v0.0.0-20250117112405-6cb0feb3ac46
 ## explicit; go 1.21
 knative.dev/hack
 # knative.dev/networking v0.0.0-20241022012959-60e29ff520dc => knative.dev/networking v0.0.0-20241022012959-60e29ff520dc
@@ -1558,7 +1558,7 @@ knative.dev/networking/pkg/http/proxy
 knative.dev/networking/pkg/http/stats
 knative.dev/networking/pkg/ingress
 knative.dev/networking/pkg/k8s
-# knative.dev/operator v0.43.1
+# knative.dev/operator v0.43.3-0.20250312021337-6b0f076ba7ae
 ## explicit; go 1.22.0
 knative.dev/operator/pkg/apis/operator
 knative.dev/operator/pkg/apis/operator/base
@@ -1682,7 +1682,7 @@ knative.dev/pkg/webhook/json
 knative.dev/pkg/webhook/resourcesemantics
 knative.dev/pkg/webhook/resourcesemantics/conversion
 knative.dev/pkg/webhook/resourcesemantics/defaulting
-# knative.dev/reconciler-test v0.0.0-20241015093232-09111f0f1364 => knative.dev/reconciler-test v0.0.0-20241015093232-09111f0f1364
+# knative.dev/reconciler-test v0.0.0-20250217113355-f4bd4f5199d4 => knative.dev/reconciler-test v0.0.0-20241015093232-09111f0f1364
 ## explicit; go 1.22.0
 knative.dev/reconciler-test/pkg/environment
 knative.dev/reconciler-test/pkg/eventshub
@@ -1707,7 +1707,7 @@ knative.dev/reconciler-test/pkg/resources/serviceaccount
 knative.dev/reconciler-test/pkg/state
 knative.dev/reconciler-test/resources/certificate
 knative.dev/reconciler-test/resources/svc
-# knative.dev/serving v0.43.1 => github.com/openshift-knative/serving v0.10.1-0.20250207125854-cf4e630711c9
+# knative.dev/serving v0.43.2 => github.com/openshift-knative/serving v0.10.1-0.20250207125854-cf4e630711c9
 ## explicit; go 1.22.0
 knative.dev/serving/pkg/apis/autoscaling
 knative.dev/serving/pkg/apis/autoscaling/v1alpha1
