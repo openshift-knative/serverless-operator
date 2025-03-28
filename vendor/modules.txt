@@ -1492,7 +1492,7 @@ knative.dev/eventing-kafka-broker/third_party/pkg/client/clientset/versioned
 knative.dev/eventing-kafka-broker/third_party/pkg/client/clientset/versioned/scheme
 knative.dev/eventing-kafka-broker/third_party/pkg/client/clientset/versioned/typed/keda/v1alpha1
 knative.dev/eventing-kafka-broker/third_party/pkg/client/injection/client
-# knative.dev/hack v0.0.0-20240814130635-06f7aff93954 => knative.dev/hack v0.0.0-20240814135050-f9643117f6a1
+# knative.dev/hack v0.0.0-20250117112405-6cb0feb3ac46 => knative.dev/hack v0.0.0-20240814135050-f9643117f6a1
 ## explicit; go 1.18
 knative.dev/hack
 # knative.dev/networking v0.0.0-20240716111826-bab7f2a3e556 => knative.dev/networking v0.0.0-20240716111826-bab7f2a3e556
@@ -1524,7 +1524,7 @@ knative.dev/networking/pkg/http/proxy
 knative.dev/networking/pkg/http/stats
 knative.dev/networking/pkg/ingress
 knative.dev/networking/pkg/k8s
-# knative.dev/operator v0.42.5
+# knative.dev/operator v0.42.11-0.20250319103414-9c594ced1a3a
 ## explicit; go 1.22
 knative.dev/operator/pkg/apis/operator
 knative.dev/operator/pkg/apis/operator/base
@@ -1667,7 +1667,7 @@ knative.dev/reconciler-test/pkg/resources/serviceaccount
 knative.dev/reconciler-test/pkg/state
 knative.dev/reconciler-test/resources/certificate
 knative.dev/reconciler-test/resources/svc
-# knative.dev/serving v0.42.1 => github.com/openshift-knative/serving v0.10.1-0.20240906121033-618992fcbd27
+# knative.dev/serving v0.42.2 => github.com/openshift-knative/serving v0.10.1-0.20240906121033-618992fcbd27
 ## explicit; go 1.22
 knative.dev/serving/pkg/apis/autoscaling
 knative.dev/serving/pkg/apis/autoscaling/v1alpha1
