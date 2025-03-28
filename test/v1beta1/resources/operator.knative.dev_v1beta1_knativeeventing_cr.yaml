@@ -6,7 +6,7 @@ spec:
   config:
     config-features:
       new-apiserversource-filters: "enabled"
-      eventtype-auto-create: "enabled"
+      eventtype-auto-create: "disabled"
     logging:
       loglevel.controller: "debug"
       loglevel.eventing-webhook: "debug"
