@@ -73,7 +73,7 @@ spec:
           revision: "e2191addb9ac46bb534859a188f9f20a18bce0e8"
           dockerfileUrl: "openshift/ci-operator/knative-images/apiserver_receive_adapter/Dockerfile"
     - name: "kn-eventing-channel-controller-116"
-      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/kn-eventing-channel-controller@sha256:4fe76223e6a0e1ded0ead5c7581d1ab399cecdb0d1dd212725389474b793b8bc"
+      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/kn-eventing-channel-controller@sha256:c61b2a25f3b82732964071ec24d03524d0b4b4680ed2e966a4ee88a985886977"
       source:
         git:
           url: "https://github.com/openshift-knative/eventing"
