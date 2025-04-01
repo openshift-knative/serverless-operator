@@ -94,4 +94,4 @@ index f0d4c777d..f622a4bce 100644
 +		r.handleBackstageResources,
  		manifests.Install,
  		common.CheckDeployments,
- 		common.InstallWebhookConfigs,
+ 		common.DeleteObsoleteResources(ctx, ke, r.installed),
