@@ -336,7 +336,6 @@ generate-dockerfiles: install-tool-generate
 	GOFLAGS='' go install github.com/openshift-knative/hack/cmd/generate@latest
 	$(shell go env GOPATH)/bin/generate \
 		--generators dockerfile \
-		--dockerfile-image-builder-fmt "registry.ci.openshift.org/openshift/release:rhel-8-release-golang-1.22-openshift-4.17"  \
 		--includes knative-operator \
 		--includes openshift-knative-operator \
 		--includes serving/ingress \
