@@ -18,30 +18,14 @@ package common
 
 import (
 	"context"
-	"errors"
 
 	mf "github.com/manifestival/manifestival"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
-	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/client-go/kubernetes/scheme"
-
 	"knative.dev/operator/pkg/apis/operator/base"
 )
-
-type deploymentsNotReadyError struct{}
-
-var _ error = deploymentsNotReadyError{}
-
-// Error implements the Error() interface of error.
-func (err deploymentsNotReadyError) Error() string {
-	return "deployments not ready"
-}
-
-// IsDeploymentsNotReadyError returns true if the given error is a deploymentsNotReadyError.
-func IsDeploymentsNotReadyError(err error) bool {
-	return errors.Is(err, deploymentsNotReadyError{})
-}
 
 // CheckDeployments checks all deployments in the given manifest and updates the given
 // status with the status of the deployments.
@@ -52,7 +36,7 @@ func CheckDeployments(ctx context.Context, manifest *mf.Manifest, instance base.
 		resource, err := manifest.Client.Get(&u)
 		if err != nil {
 			status.MarkDeploymentsNotReady([]string{"all"})
-			if apierrors.IsNotFound(err) {
+			if errors.IsNotFound(err) {
 				return nil
 			}
 			return err
@@ -68,7 +52,7 @@ func CheckDeployments(ctx context.Context, manifest *mf.Manifest, instance base.
 
 	if len(nonReadyDeployments) > 0 {
 		status.MarkDeploymentsNotReady(nonReadyDeployments)
-		return deploymentsNotReadyError{}
+		return nil
 	}
 
 	status.MarkDeploymentsAvailable()
