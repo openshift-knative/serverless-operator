@@ -3,10 +3,16 @@ kind: ClusterServiceVersion
 metadata:
   annotations:
     operatorframework.io/suggested-namespace: "openshift-serverless"
-    operators.openshift.io/infrastructure-features: '["disconnected", "proxy-aware"]'
     operators.openshift.io/valid-subscription: '["OpenShift Container Platform", "OpenShift Platform Plus"]'
     features.operators.openshift.io/disconnected: "true"
-    features.operators.openshift.io/fips-compliant: "false"
+    # Designed for FIPS.
+    #
+    # Specify whether an Operator accepts the FIPS-140 configuration of the
+    # underlying platform and works on nodes that are booted into FIPS mode.
+    # In this mode, the Operator and any workloads it manages (operands)
+    # are solely calling the Red Hat Enterprise Linux (RHEL) cryptographic
+    # library submitted for FIPS-140 validation.
+    features.operators.openshift.io/fips-compliant: "true"
     features.operators.openshift.io/proxy-aware: "true"
     features.operators.openshift.io/tls-profiles: "false"
     features.operators.openshift.io/token-auth-aws: "false"
