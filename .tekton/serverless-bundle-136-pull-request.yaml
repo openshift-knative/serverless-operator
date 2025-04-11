@@ -56,7 +56,7 @@ spec:
             limits:
               memory: 4Gi
   pipelineRef:
-    name: docker-build
+    name: bundle-build
   taskRunTemplate: {}
   workspaces:
     - name: git-auth
