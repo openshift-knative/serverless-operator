@@ -19,7 +19,7 @@ requirements:
     # is ignored as it is overridden by fake version via KUBERNETES_MIN_VERSION.
     # This value is used for CSV's min version validation.
     minVersion: 1.25.0
-  golang: '1.22'
+  golang: '1.23'
   nodejs: 20.x
   ocpVersion:
     list:
@@ -62,7 +62,7 @@ dependencies:
   # backstage-plugins midstream branch or commit
   backstage_plugins_artifacts_branch: release-v1.16
   cli: knative-v1.16
-  kube_rbac_proxy: registry.redhat.io/openshift4/ose-kube-rbac-proxy-rhel9@sha256:777353be80c0d22834cb1abb5162b48fdacbd488e10d69d99ccc4573e63ef07b
+  kube_rbac_proxy: registry.redhat.io/openshift4/ose-kube-rbac-proxy-rhel9@sha256:56e7a0158a713c70765ead847732db4e5f8439aacf31e9a4a22672b583028064
   func:
     promotion_tag: knative-v1.16
     tekton_buildah: registry.redhat.io/rhel8/buildah@sha256:3d505d9c0f5d4cd5a4ec03b8d038656c6cdbdf5191e00ce6388f7e0e4d2f1b74

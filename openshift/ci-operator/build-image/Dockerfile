@@ -1,5 +1,8 @@
 # Dockerfile to bootstrap build and test in openshift-ci
-FROM registry.ci.openshift.org/openshift/release:rhel-8-release-golang-1.22-openshift-4.17
+FROM registry.ci.openshift.org/openshift/release:rhel-8-release-golang-1.23-openshift-4.19
+
+# make art yum/dnf wrapper to check in /etc/yum.repos.d/ too
+ENV ART_DNF_WRAPPER_POLICY=append
 
 # Add kubernetes repository
 ADD openshift/ci-operator/build-image/kubernetes.repo /etc/yum.repos.d/

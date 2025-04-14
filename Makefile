@@ -336,7 +336,6 @@ generate-dockerfiles: install-tool-generate
 	GOFLAGS='' go install github.com/openshift-knative/hack/cmd/generate@latest
 	$(shell go env GOPATH)/bin/generate \
 		--generators dockerfile \
-		--dockerfile-image-builder-fmt "registry.ci.openshift.org/openshift/release:rhel-8-release-golang-1.22-openshift-4.17"  \
 		--includes knative-operator \
 		--includes openshift-knative-operator \
 		--includes serving/ingress \
@@ -381,7 +380,10 @@ generated-files-release-next: release-files
 	./hack/update-deps.sh
 
 verify-csv-revisions: install-tools
-	./hack/verify-csv-revisions.sh
+	./hack/verify-csv.sh --revision
+
+verify-csv-no-cves: install-tools
+	./hack/verify-csv.sh --cve
 
 # Runs the lints Github Actions do too.
 lint:
@@ -414,4 +416,7 @@ install-tool-cosign:
 install-tool-opm:
 	GOFLAGS='' go install github.com/operator-framework/operator-registry/cmd/opm@v1.47.0
 
-install-tools: install-tool-sobranch install-tool-skopeo install-tool-generate install-tool-sorhel install-tool-cosign install-tool-opm
+install-tool-oras:
+	GOFLAGS='' go install oras.land/oras/cmd/oras@v1.2.0
+
+install-tools: install-tool-sobranch install-tool-skopeo install-tool-generate install-tool-sorhel install-tool-cosign install-tool-opm install-tool-oras
