@@ -104,6 +104,24 @@ spec:
       source: "registry.redhat.io/openshift-serverless-1/kn-eventing-filter-rhel8"
     - mirrors: ["quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/kn-eventing-ingress", "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-eventing-ingress"]
       source: "registry.redhat.io/openshift-serverless-1/kn-eventing-ingress-rhel8"
+    - mirrors: ["quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/kn-eventing-integrations-aws-ddb-streams-source", "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-eventing-integrations-aws-ddb-streams-source"]
+      source: "registry.redhat.io/openshift-serverless-1/kn-eventing-integrations-aws-ddb-streams-source-rhel8"
+    - mirrors: ["quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/kn-eventing-integrations-aws-s3-sink", "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-eventing-integrations-aws-s3-sink"]
+      source: "registry.redhat.io/openshift-serverless-1/kn-eventing-integrations-aws-s3-sink-rhel8"
+    - mirrors: ["quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/kn-eventing-integrations-aws-s3-source", "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-eventing-integrations-aws-s3-source"]
+      source: "registry.redhat.io/openshift-serverless-1/kn-eventing-integrations-aws-s3-source-rhel8"
+    - mirrors: ["quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/kn-eventing-integrations-aws-sns-sink", "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-eventing-integrations-aws-sns-sink"]
+      source: "registry.redhat.io/openshift-serverless-1/kn-eventing-integrations-aws-sns-sink-rhel8"
+    - mirrors: ["quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/kn-eventing-integrations-aws-sqs-sink", "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-eventing-integrations-aws-sqs-sink"]
+      source: "registry.redhat.io/openshift-serverless-1/kn-eventing-integrations-aws-sqs-sink-rhel8"
+    - mirrors: ["quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/kn-eventing-integrations-aws-sqs-source", "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-eventing-integrations-aws-sqs-source"]
+      source: "registry.redhat.io/openshift-serverless-1/kn-eventing-integrations-aws-sqs-source-rhel8"
+    - mirrors: ["quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/kn-eventing-integrations-log-sink", "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-eventing-integrations-log-sink"]
+      source: "registry.redhat.io/openshift-serverless-1/kn-eventing-integrations-log-sink-rhel8"
+    - mirrors: ["quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/kn-eventing-integrations-timer-source", "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-eventing-integrations-timer-source"]
+      source: "registry.redhat.io/openshift-serverless-1/kn-eventing-integrations-timer-source-rhel8"
+    - mirrors: ["quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/kn-eventing-integrations-transform-jsonata", "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-eventing-integrations-transform-jsonata"]
+      source: "registry.redhat.io/openshift-serverless-1/kn-eventing-integrations-transform-jsonata-rhel8"
     - mirrors: ["quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/kn-eventing-istio-controller", "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-eventing-istio-controller"]
       source: "registry.redhat.io/openshift-serverless-1/kn-eventing-istio-controller-rhel8"
     - mirrors: ["quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/kn-eventing-jobsink", "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/kn-eventing-jobsink"]
