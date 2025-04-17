@@ -143,6 +143,9 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, ke *v1beta1.KnativeEvent
 		r.handleBackstageResources,
 		manifests.Install,
 		common.CheckDeployments,
+		common.InstallWebhookConfigs,
+		manifests.SetManifestPaths,
+		common.MarkStatusSuccess,
 		common.DeleteObsoleteResources(ctx, ke, r.installed),
 	}
 	manifest := r.manifest.Append()
