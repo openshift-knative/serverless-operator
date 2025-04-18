@@ -43,7 +43,7 @@ dependencies:
   net_istio: knative-v1.16
   net_istio_artifacts_branch: release-v1.16
   redhat-knative-istio-authz-chart: 1.36.0
-  service_mesh_proxy: registry.redhat.io/openshift-service-mesh/proxyv2-rhel8@sha256:6f4fa254d923f3260ab0f7d6a0b459554f83b1abfcb575a5ce2c0135fba32427
+  service_mesh_proxy: registry.redhat.io/openshift-service-mesh/proxyv2-rhel8@sha256:8ee57a44b1fc799fd8565eb339955773bd9beedcbf46f68628ee0bd4abf26515
   eventing: knative-v1.16
   # eventing core midstream branch name
   eventing_artifacts_branch: release-v1.16
@@ -62,7 +62,7 @@ dependencies:
   # backstage-plugins midstream branch or commit
   backstage_plugins_artifacts_branch: release-v1.16
   cli: knative-v1.16
-  kube_rbac_proxy: registry.redhat.io/openshift4/ose-kube-rbac-proxy-rhel9@sha256:56e7a0158a713c70765ead847732db4e5f8439aacf31e9a4a22672b583028064
+  kube_rbac_proxy: registry.redhat.io/openshift4/ose-kube-rbac-proxy-rhel9@sha256:145e9784b681ac7defa0a1547c03a6db9a587bf9be2820428eee84f58f8f1f24
   func:
     promotion_tag: knative-v1.16
     tekton_buildah: registry.redhat.io/rhel8/buildah@sha256:3d505d9c0f5d4cd5a4ec03b8d038656c6cdbdf5191e00ce6388f7e0e4d2f1b74
