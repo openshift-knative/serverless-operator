@@ -29,9 +29,9 @@ require (
 	knative.dev/eventing-kafka-broker v0.37.0
 	knative.dev/hack v0.0.0-20250220110655-b5e4ff820460
 	knative.dev/networking v0.0.0-20241022012959-60e29ff520dc
-	knative.dev/operator v0.43.3-0.20250312021337-6b0f076ba7ae
-	knative.dev/pkg v0.0.0-20241021183759-9b9d535af5ad
-	knative.dev/serving v0.43.2
+	knative.dev/operator v0.43.6-0.20250418020004-b3f6dcf3b77b
+	knative.dev/pkg v0.0.0-20250306143800-fff4f701c7af
+	knative.dev/serving v0.43.3
 	sigs.k8s.io/controller-runtime v0.19.0
 	sigs.k8s.io/yaml v1.4.0
 )
@@ -168,7 +168,7 @@ require (
 	github.com/go-logr/logr v1.4.2
 	go.uber.org/atomic v1.11.0 // indirect
 	k8s.io/apiextensions-apiserver v0.31.0
-	knative.dev/reconciler-test v0.0.0-20250217113355-f4bd4f5199d4
+	knative.dev/reconciler-test v0.0.0-20250411085513-cfed924c2716
 )
 
 replace (

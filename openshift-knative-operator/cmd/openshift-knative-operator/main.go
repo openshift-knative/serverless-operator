@@ -11,6 +11,7 @@ import (
 	operatorv1beta1 "knative.dev/operator/pkg/apis/operator/v1beta1"
 	"knative.dev/operator/pkg/reconciler/knativeeventing"
 	"knative.dev/operator/pkg/reconciler/knativeserving"
+	kubefilteredfactory "knative.dev/pkg/client/injection/kube/informers/factory/filtered"
 	"knative.dev/pkg/configmap"
 	"knative.dev/pkg/controller"
 	"knative.dev/pkg/injection/sharedmain"
@@ -35,6 +36,11 @@ func main() {
 		ServerPrivateKeyName:  "tls.key",
 		ServerCertificateName: "tls.crt",
 	})
+
+	ctx = kubefilteredfactory.WithSelectors(ctx,
+		knativeserving.Selector,
+		knativeeventing.Selector,
+	)
 
 	if err := apis.AddToScheme(scheme.Scheme); err != nil {
 		log.Error(err)

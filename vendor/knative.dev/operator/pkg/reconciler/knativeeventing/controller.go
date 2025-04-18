@@ -22,20 +22,30 @@ import (
 	"go.uber.org/zap"
 	"k8s.io/client-go/tools/cache"
 
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	namespaceinformer "knative.dev/pkg/client/injection/kube/informers/core/v1/namespace"
+
 	"knative.dev/operator/pkg/apis/operator/v1beta1"
 	operatorclient "knative.dev/operator/pkg/client/injection/client"
 	knativeEventinginformer "knative.dev/operator/pkg/client/injection/informers/operator/v1beta1/knativeeventing"
 	knereconciler "knative.dev/operator/pkg/client/injection/reconciler/operator/v1beta1/knativeeventing"
 	"knative.dev/operator/pkg/reconciler/common"
 	kubeclient "knative.dev/pkg/client/injection/kube/client"
-	deploymentinformer "knative.dev/pkg/client/injection/kube/informers/apps/v1/deployment"
+	deploymentinformer "knative.dev/pkg/client/injection/kube/informers/apps/v1/deployment/filtered"
+	configmapinformer "knative.dev/pkg/client/injection/kube/informers/core/v1/configmap/filtered"
 	"knative.dev/pkg/configmap"
 	"knative.dev/pkg/controller"
 	"knative.dev/pkg/injection"
 	"knative.dev/pkg/logging"
+)
 
-	namespaceinformer "knative.dev/pkg/client/injection/kube/informers/core/v1/namespace"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+const (
+	// SelectorKey is the key of the selector for the KnativeEventing resources.
+	SelectorKey = "app.kubernetes.io/name"
+	// SelectorValue is the value of the selector for the KnativeEventing resources.
+	SelectorValue = "knative-eventing"
+	// Selector is the selector for the KnativeEventing resources.
+	Selector = SelectorKey + "=" + SelectorValue
 )
 
 // NewController initializes the controller and is called by the generated code
@@ -48,7 +58,8 @@ func NewController(ctx context.Context, cmw configmap.Watcher) *controller.Impl 
 func NewExtendedController(generator common.ExtensionGenerator) injection.ControllerConstructor {
 	return func(ctx context.Context, cmw configmap.Watcher) *controller.Impl {
 		knativeEventingInformer := knativeEventinginformer.Get(ctx)
-		deploymentInformer := deploymentinformer.Get(ctx)
+		deploymentInformer := deploymentinformer.Get(ctx, Selector)
+		configMapInformer := configmapinformer.Get(ctx, Selector)
 		kubeClient := kubeclient.Get(ctx)
 		logger := logging.FromContext(ctx)
 
@@ -71,10 +82,6 @@ func NewExtendedController(generator common.ExtensionGenerator) injection.Contro
 
 		knativeEventingInformer.Informer().AddEventHandler(controller.HandleAll(impl.Enqueue))
 
-		deploymentInformer.Informer().AddEventHandler(cache.FilteringResourceEventHandler{
-			FilterFunc: controller.FilterControllerGVK(v1beta1.SchemeGroupVersion.WithKind("KnativeEventing")),
-			Handler:    controller.HandleAll(impl.EnqueueControllerOf),
-		})
 		namespaceinformer.Get(ctx).Informer().AddEventHandler(cache.FilteringResourceEventHandler{
 			FilterFunc: func(obj interface{}) bool {
 				ns, ok := obj.(metav1.Object)
@@ -90,6 +97,15 @@ func NewExtendedController(generator common.ExtensionGenerator) injection.Contro
 			Handler: controller.HandleAll(func(i interface{}) {
 				impl.GlobalResync(knativeEventingInformer.Informer())
 			}),
+		})
+
+		deploymentInformer.Informer().AddEventHandler(cache.FilteringResourceEventHandler{
+			FilterFunc: controller.FilterControllerGVK(v1beta1.SchemeGroupVersion.WithKind("KnativeEventing")),
+			Handler:    controller.HandleAll(impl.EnqueueControllerOf),
+		})
+		configMapInformer.Informer().AddEventHandler(cache.FilteringResourceEventHandler{
+			FilterFunc: controller.FilterControllerGVK(v1beta1.SchemeGroupVersion.WithKind("KnativeEventing")),
+			Handler:    controller.HandleAll(impl.EnqueueControllerOf),
 		})
 
 		return impl
