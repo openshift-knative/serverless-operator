@@ -143,6 +143,9 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, ke *v1beta1.KnativeEvent
 		r.handleBackstageResources,
 		manifests.Install,
 		common.CheckDeployments,
+		common.InstallWebhookConfigs,
+		manifests.SetManifestPaths,
+		common.MarkStatusSuccess,
 		common.DeleteObsoleteResources(ctx, ke, r.installed),
 	}
 	manifest := r.manifest.Append()
@@ -158,6 +161,8 @@ func (r *Reconciler) transform(ctx context.Context, manifest *mf.Manifest, comp 
 		kec.DefaultBrokerConfigMapTransform(instance, logger),
 		kec.SinkBindingSelectionModeTransform(instance, logger),
 		kec.ReplicasEnvVarsTransform(manifest.Client),
+		// Ensure all resources have the selector applied so that the controller re-queues applied resources when they change.
+		common.InjectLabel(SelectorKey, SelectorValue),
 	}
 	extra = append(extra, r.extension.Transformers(instance)...)
 	return common.Transform(ctx, manifest, instance, extra...)
