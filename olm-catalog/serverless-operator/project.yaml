@@ -4,15 +4,15 @@ project:
   # all components in `dependencies.previous` to the same versions as `dependencies` in the same PR.
   # Otherwise, the upgrade tests will not pass, as we have a different SO version with the same bundle contents.
   # Also make sure to update values under `olm.previous` by copying from `olm.replaces` and `olm.skipRange`.
-  version: 1.36.0
+  version: 1.37.0
 olm:
-  replaces: 1.35.0
-  skipRange: '>=1.35.0 <1.36.0'
+  replaces: 1.36.0
+  skipRange: '>=1.36.0 <1.37.0'
   channels:
     default: stable
     list:
       - stable
-      - stable-1.36
+      - stable-1.37
 requirements:
   kube:
     # The min version validation in `vendor/knative.dev/pkg/version/version.go`
@@ -42,7 +42,7 @@ dependencies:
   net_kourier_artifacts_branch: release-v1.16
   net_istio: knative-v1.16
   net_istio_artifacts_branch: release-v1.16
-  redhat-knative-istio-authz-chart: 1.36.0
+  redhat-knative-istio-authz-chart: 1.37.0
   service_mesh_proxy: registry.redhat.io/openshift-service-mesh/proxyv2-rhel8@sha256:8ee57a44b1fc799fd8565eb339955773bd9beedcbf46f68628ee0bd4abf26515
   eventing: knative-v1.16
   # eventing core midstream branch name
@@ -72,8 +72,8 @@ dependencies:
   operator: 1.16.2
   # Previous versions required for downgrade testing
   previous:
-    serving: knative-v1.15
-    eventing: knative-v1.15
-    eventing_kafka_broker: knative-v1.15
+    serving: knative-v1.16
+    eventing: knative-v1.16
+    eventing_kafka_broker: knative-v1.16
   mustgather:
     image: quay.io/openshift-knative/must-gather
