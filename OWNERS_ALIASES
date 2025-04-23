@@ -10,7 +10,6 @@ aliases:
   - openshift-cherrypick-robot
   - pierDipi
   - ReToCode
-  - rhuss
   - skonto
   - Kaustubh-pande
   serverless-reviewers:
@@ -21,6 +20,5 @@ aliases:
   - mgencur
   - pierDipi
   - ReToCode
-  - rhuss
   - skonto
   - Kaustubh-pande
