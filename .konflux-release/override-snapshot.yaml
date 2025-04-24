@@ -101,7 +101,7 @@ spec:
           revision: "bba27c1626d22ebb73698d2ded9816dacae1d3e1"
           dockerfileUrl: "openshift/ci-operator/knative-images/filter/Dockerfile"
     - name: "kn-eventing-ingress-116"
-      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/kn-eventing-ingress@sha256:872a9e118c3cd5a49e9879a3b70645ed369184a617829819711224e340572a51"
+      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/kn-eventing-ingress@sha256:6b4a11a57facb7eb57e5f0b47482c639f9e3645e883d97bf01a2293ca3dfc36b"
       source:
         git:
           url: "https://github.com/openshift-knative/eventing"
