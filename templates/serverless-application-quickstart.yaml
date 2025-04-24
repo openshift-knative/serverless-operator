@@ -29,14 +29,16 @@ spec:
         2. At the top of the page, in the **Projects** list, select a project to
         create the application in. You can also create a new one.
 
-        3. Click **From Git**.
+        3. Click **Import from Git** on **Git Repository** card.
 
         4. In the **Git Repo URL** field, type
         `https://github.com/sclorg/django-ex.git`.
 
-        5. Under Resources, select **Knative Service**.
+        5. Expand the **Show advanced Git options**, and type `4.2.x` in the **Git reference** field.
 
-        6. At the end of the page, click **Create**.
+        6. Under Deploy section, make sure the **Serverless Deployment** is selected.
+
+        7. At the end of the page, click **Create**.
 
 
         The **Topology** view displays your new Serverless application. The
