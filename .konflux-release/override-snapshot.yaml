@@ -227,7 +227,7 @@ spec:
           revision: "acd6707ce3e957e127dae4b34a040db4cc421c76"
           dockerfileUrl: "openshift/ci-operator/knative-images/func-util/Dockerfile"
     - name: "kn-serving-activator-116"
-      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/kn-serving-activator@sha256:4ceca4673a5befae6e1c4fe65e7ca9a65e125f9f7bd29a74ab02530ef1f18935"
+      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/kn-serving-activator@sha256:d229f5350c4fac3e4bb5b4ccf95b01e3281c2250f9c2f0f48ecb94ee6c707d05"
       source:
         git:
           url: "https://github.com/openshift-knative/serving"
