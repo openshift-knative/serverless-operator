@@ -10,7 +10,7 @@ spec:
   application: serverless-operator-136
   components:
     - name: "kn-backstage-plugins-eventmesh-116"
-      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/kn-backstage-plugins-eventmesh@sha256:5ddea659e101f60f173c5c8c7ae3a89c2a4c3170f5a7c5efbb6374048f6102c7"
+      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/kn-backstage-plugins-eventmesh@sha256:30497a5f50e53b65b26c3486aae33775bb45819be1dff7a90c62fdf52777ca0f"
       source:
         git:
           url: "https://github.com/openshift-knative/backstage-plugins"
