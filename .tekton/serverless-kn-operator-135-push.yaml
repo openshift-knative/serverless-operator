@@ -6,7 +6,8 @@ metadata:
     build.appstudio.redhat.com/commit_sha: '{{revision}}'
     build.appstudio.redhat.com/target_branch: '{{target_branch}}'
     pipelinesascode.tekton.dev/max-keep-runs: "3"
-    pipelinesascode.tekton.dev/on-cel-expression: event == "push" && target_branch == "release-1.35" && files.all.exists(x, !x.matches('^olm-catalog/') && !x.matches('^.konflux-release/'))
+    pipelinesascode.tekton.dev/on-cel-expression: event == "push" && target_branch
+      == "release-1.35" && files.all.exists(x, !x.matches('^olm-catalog/') && !x.matches('^.konflux-release/'))
   creationTimestamp: null
   labels:
     appstudio.openshift.io/application: serverless-operator-135
@@ -16,46 +17,48 @@ metadata:
   namespace: ocp-serverless-tenant
 spec:
   params:
-    - name: dockerfile
-      value: knative-operator/Dockerfile
-    - name: build-args
-      value:
-        - VERSION=1.35.1
-        - CLI_ARTIFACTS=registry.redhat.io/openshift4/ose-cli-artifacts:v4.14
-        - GO_BUILDER=brew.registry.redhat.io/rh-osbs/openshift-golang-builder:rhel_8_golang_1.22
-        - GO_RUNTIME=registry.access.redhat.com/ubi8/ubi-minimal
-        - JAVA_BUILDER=registry.access.redhat.com/ubi8/openjdk-21
-        - JAVA_RUNTIME=registry.access.redhat.com/ubi8/openjdk-21-runtime
-    - name: git-url
-      value: '{{source_url}}'
-    - name: hermetic
-      value: "true"
-    - name: output-image
-      value: quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/serverless-kn-operator:{{revision}}
-    - name: revision
-      value: '{{revision}}'
-    - name: additional-tags
-      value:
-        - $(context.pipelineRun.uid)-{{revision}}
-        - 1.35.1
-        - latest
-    - name: prefetch-input
-      value: '[{"type":"rpm"}]'
-    - name: prefetch-input-dev-package-managers
-      value: 'true'
-  taskRunSpecs:
-    - pipelineTaskName: sast-shell-check
-      stepSpecs:
-        - name: sast-shell-check
-          computeResources:
-            requests:
-              memory: 4Gi
-            limits:
-              memory: 4Gi
+  - name: dockerfile
+    value: knative-operator/Dockerfile
+  - name: build-args
+    value:
+    - VERSION=1.35.1
+    - CLI_ARTIFACTS=registry.redhat.io/openshift4/ose-cli-artifacts:v4.14
+    - GO_BUILDER=brew.registry.redhat.io/rh-osbs/openshift-golang-builder:rhel_8_golang_1.22
+    - GO_RUNTIME=registry.access.redhat.com/ubi8/ubi-minimal
+    - JAVA_BUILDER=registry.access.redhat.com/ubi8/openjdk-21
+    - JAVA_RUNTIME=registry.access.redhat.com/ubi8/openjdk-21-runtime
+  - name: git-url
+    value: '{{source_url}}'
+  - name: hermetic
+    value: "true"
+  - name: output-image
+    value: quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/serverless-kn-operator:{{revision}}
+  - name: revision
+    value: '{{revision}}'
+  - name: additional-tags
+    value:
+    - $(context.pipelineRun.uid)-{{revision}}
+    - 1.35.1
+    - latest
+  - name: prefetch-input
+    value: '[{"type":"rpm"}]'
+  - name: prefetch-input-dev-package-managers
+    value: "true"
   pipelineRef:
     name: docker-build
-  taskRunTemplate: {}
+  taskRunSpecs:
+  - pipelineTaskName: sast-shell-check
+    stepSpecs:
+    - computeResources:
+        limits:
+          memory: 4Gi
+        requests:
+          memory: 4Gi
+      name: sast-shell-check
+  taskRunTemplate:
+    serviceAccountName: build-pipeline-serverless-kn-operator-135
   workspaces:
-    - name: git-auth
-      secret:
-        secretName: '{{ git_auth_secret }}'
+  - name: git-auth
+    secret:
+      secretName: '{{ git_auth_secret }}'
+status: {}
