@@ -6,7 +6,9 @@ metadata:
     build.appstudio.redhat.com/commit_sha: '{{revision}}'
     build.appstudio.redhat.com/target_branch: '{{target_branch}}'
     pipelinesascode.tekton.dev/max-keep-runs: "3"
-    pipelinesascode.tekton.dev/on-cel-expression: event == "push" && target_branch == "release-1.36" && ( files.all.exists(x, x.matches('^olm-catalog/serverless-operator-index/v4.17/')) || files.all.exists(x, x.matches('^.tekton/')) )
+    pipelinesascode.tekton.dev/on-cel-expression: event == "push" && target_branch
+      == "release-1.36" && ( files.all.exists(x, x.matches('^olm-catalog/serverless-operator-index/v4.17/'))
+      || files.all.exists(x, x.matches('^.tekton/')) )
   creationTimestamp: null
   labels:
     appstudio.openshift.io/application: serverless-operator-136-fbc-417
@@ -16,38 +18,40 @@ metadata:
   namespace: ocp-serverless-tenant
 spec:
   params:
-    - name: dockerfile
-      value: Dockerfile
-    - name: path-context
-      value: ./olm-catalog/serverless-operator-index/v4.17
-    - name: build-args
-      value:
-        - VERSION=1.36.0
-        - CLI_ARTIFACTS=registry.redhat.io/openshift4/ose-cli-artifacts:v4.14
-        - GO_BUILDER=brew.registry.redhat.io/rh-osbs/openshift-golang-builder:rhel_8_golang_1.23
-        - GO_RUNTIME=registry.access.redhat.com/ubi8/ubi-minimal
-        - JAVA_BUILDER=registry.access.redhat.com/ubi8/openjdk-21
-        - JAVA_RUNTIME=registry.access.redhat.com/ubi8/openjdk-21-runtime
-        - NODE_BUILDER=registry.access.redhat.com/ubi8/nodejs-20
-        - NODE_RUNTIME=registry.access.redhat.com/ubi8/nodejs-20
-        - OPM_IMAGE=brew.registry.redhat.io/rh-osbs/openshift-ose-operator-registry-rhel9:v4.17
-    - name: git-url
-      value: '{{source_url}}'
-    - name: hermetic
-      value: "true"
-    - name: output-image
-      value: quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136-fbc-417/serverless-index-136-fbc-417:{{revision}}
-    - name: revision
-      value: '{{revision}}'
-    - name: additional-tags
-      value:
-        - $(context.pipelineRun.uid)-{{revision}}
-        - 1.36.0
-        - latest
+  - name: dockerfile
+    value: Dockerfile
+  - name: path-context
+    value: ./olm-catalog/serverless-operator-index/v4.17
+  - name: build-args
+    value:
+    - VERSION=1.36.0
+    - CLI_ARTIFACTS=registry.redhat.io/openshift4/ose-cli-artifacts:v4.14
+    - GO_BUILDER=brew.registry.redhat.io/rh-osbs/openshift-golang-builder:rhel_8_golang_1.23
+    - GO_RUNTIME=registry.access.redhat.com/ubi8/ubi-minimal
+    - JAVA_BUILDER=registry.access.redhat.com/ubi8/openjdk-21
+    - JAVA_RUNTIME=registry.access.redhat.com/ubi8/openjdk-21-runtime
+    - NODE_BUILDER=registry.access.redhat.com/ubi8/nodejs-20
+    - NODE_RUNTIME=registry.access.redhat.com/ubi8/nodejs-20
+    - OPM_IMAGE=brew.registry.redhat.io/rh-osbs/openshift-ose-operator-registry-rhel9:v4.17
+  - name: git-url
+    value: '{{source_url}}'
+  - name: hermetic
+    value: "true"
+  - name: output-image
+    value: quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136-fbc-417/serverless-index-136-fbc-417:{{revision}}
+  - name: revision
+    value: '{{revision}}'
+  - name: additional-tags
+    value:
+    - $(context.pipelineRun.uid)-{{revision}}
+    - 1.36.0
+    - latest
   pipelineRef:
     name: fbc-builder
-  taskRunTemplate: {}
+  taskRunTemplate:
+    serviceAccountName: build-pipeline-serverless-index-136-fbc-417
   workspaces:
-    - name: git-auth
-      secret:
-        secretName: '{{ git_auth_secret }}'
+  - name: git-auth
+    secret:
+      secretName: '{{ git_auth_secret }}'
+status: {}
