@@ -108,7 +108,7 @@ spec:
           revision: "bba27c1626d22ebb73698d2ded9816dacae1d3e1"
           dockerfileUrl: "openshift/ci-operator/knative-images/ingress/Dockerfile"
     - name: "kn-eventing-integrations-aws-ddb-streams-source-116"
-      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/kn-eventing-integrations-aws-ddb-streams-source@sha256:9cb00fb76607acda2b0a1271ccb2308c135756b25c8e03a53aaa443045128418"
+      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/kn-eventing-integrations-aws-ddb-streams-source@sha256:435078058f2dfe24c9ebadce420a248ae9ce4bd91df87f10a9d9a0c809ec9835"
       source:
         git:
           url: "https://github.com/openshift-knative/eventing-integrations"
