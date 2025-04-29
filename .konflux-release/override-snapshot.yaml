@@ -122,7 +122,7 @@ spec:
           revision: "a4cfee5499aac4b7a125252c747b8a979ffeb7fa"
           dockerfileUrl: "openshift/ci-operator/static-images/aws-s3-sink/hermetic/Dockerfile"
     - name: "kn-eventing-integrations-aws-s3-source-116"
-      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/kn-eventing-integrations-aws-s3-source@sha256:f3a9b68e406a756d47bdb87cd0b141c9b6907099ba6a2af2fb482f3a03878aee"
+      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/kn-eventing-integrations-aws-s3-source@sha256:519ce1ae70b2fc7d07daf8ec4a33eff87d645ae2d2f8577d95db18c2fae61de5"
       source:
         git:
           url: "https://github.com/openshift-knative/eventing-integrations"
