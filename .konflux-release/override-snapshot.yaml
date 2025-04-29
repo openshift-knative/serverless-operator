@@ -157,7 +157,7 @@ spec:
           revision: "a4cfee5499aac4b7a125252c747b8a979ffeb7fa"
           dockerfileUrl: "openshift/ci-operator/static-images/log-sink/hermetic/Dockerfile"
     - name: "kn-eventing-integrations-timer-source-116"
-      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/kn-eventing-integrations-timer-source@sha256:69237076512ae700cdc950bedeae82df7a0b7c0c050a7984ff3b54fa1aef3ea1"
+      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/kn-eventing-integrations-timer-source@sha256:fd7fddac34f9b77e332ddbc559a422dce24d428e2b350c741ed17b84424599b3"
       source:
         git:
           url: "https://github.com/openshift-knative/eventing-integrations"
