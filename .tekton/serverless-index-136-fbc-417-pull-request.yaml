@@ -47,7 +47,8 @@ spec:
       value: '{{revision}}'
   pipelineRef:
     name: fbc-builder
-  taskRunTemplate: {}
+  taskRunTemplate:
+    serviceAccountName: build-pipeline-serverless-index-136-fbc-417
   workspaces:
     - name: git-auth
       secret:

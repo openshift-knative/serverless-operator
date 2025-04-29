@@ -56,7 +56,8 @@ spec:
               memory: 4Gi
   pipelineRef:
     name: bundle-build
-  taskRunTemplate: {}
+  taskRunTemplate:
+    serviceAccountName: build-pipeline-serverless-bundle-136
   workspaces:
     - name: git-auth
       secret:
