@@ -150,7 +150,7 @@ spec:
           revision: "a4cfee5499aac4b7a125252c747b8a979ffeb7fa"
           dockerfileUrl: "openshift/ci-operator/static-images/aws-sqs-source/hermetic/Dockerfile"
     - name: "kn-eventing-integrations-log-sink-116"
-      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/kn-eventing-integrations-log-sink@sha256:070d8ba6b89bf2e5744579bab8b17dbcd4e116b0898547cbfcb76972782662a8"
+      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/kn-eventing-integrations-log-sink@sha256:e7f60197a8aef1bfbc43e91403f7dc265aa0a90bbf2e408cb89992439d4e8d7d"
       source:
         git:
           url: "https://github.com/openshift-knative/eventing-integrations"
