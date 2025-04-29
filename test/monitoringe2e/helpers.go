@@ -62,7 +62,7 @@ var (
 	}
 
 	KafkaControllerQueries = []string{
-		"sum(rate(kafka_broker_controller_reconcile_latency_bucket{le=\"100.0\", job=\"kafka-controller-sm-service\", namespace=\"knative-eventing\"}[5m])) / sum(rate(kafka_broker_controller_reconcile_latency_count{job=\"kafka-controller-sm-service\", namespace=\"knative-eventing\"}[5m]))",
+		"sum(rate(kafka_broker_controller_reconcile_latency_bucket{le=~\"100(.0)?\", job=\"kafka-controller-sm-service\", namespace=\"knative-eventing\"}[5m])) / sum(rate(kafka_broker_controller_reconcile_latency_count{job=\"kafka-controller-sm-service\", namespace=\"knative-eventing\"}[5m]))",
 		"sum(kafka_broker_controller_workqueue_depth{job=\"kafka-controller-sm-service\", namespace=\"knative-eventing\"}) by (name)",
 	}
 
