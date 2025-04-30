@@ -9,15 +9,15 @@ metadata:
     pipelinesascode.tekton.dev/on-cel-expression: event == "push" && target_branch == "main" && files.all.exists(x, !x.matches('^olm-catalog/') && !x.matches('^.konflux-release/'))
   creationTimestamp: null
   labels:
-    appstudio.openshift.io/application: serverless-operator-136
-    appstudio.openshift.io/component: serverless-kn-operator-136
+    appstudio.openshift.io/application: serverless-operator-137
+    appstudio.openshift.io/component: serverless-ingress-137
     pipelines.appstudio.openshift.io/type: build
-  name: serverless-kn-operator-136-on-push
+  name: serverless-ingress-137-on-push
   namespace: ocp-serverless-tenant
 spec:
   params:
     - name: dockerfile
-      value: knative-operator/Dockerfile
+      value: serving/ingress/Dockerfile
     - name: build-args
       value:
         - VERSION=1.36.0
@@ -33,7 +33,7 @@ spec:
     - name: hermetic
       value: "true"
     - name: output-image
-      value: quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/serverless-kn-operator:{{revision}}
+      value: quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-137/serverless-ingress:{{revision}}
     - name: revision
       value: '{{revision}}'
     - name: additional-tags
@@ -56,7 +56,8 @@ spec:
               memory: 4Gi
   pipelineRef:
     name: docker-build
-  taskRunTemplate: {}
+  taskRunTemplate:
+    serviceAccountName: build-pipeline-serverless-ingress-137
   workspaces:
     - name: git-auth
       secret:

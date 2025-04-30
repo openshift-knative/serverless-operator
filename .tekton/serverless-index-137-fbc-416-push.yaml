@@ -6,18 +6,20 @@ metadata:
     build.appstudio.redhat.com/commit_sha: '{{revision}}'
     build.appstudio.redhat.com/target_branch: '{{target_branch}}'
     pipelinesascode.tekton.dev/max-keep-runs: "3"
-    pipelinesascode.tekton.dev/on-cel-expression: event == "push" && target_branch == "main" && files.all.exists(x, !x.matches('^olm-catalog/') && !x.matches('^.konflux-release/'))
+    pipelinesascode.tekton.dev/on-cel-expression: event == "push" && target_branch == "main" && ( files.all.exists(x, x.matches('^olm-catalog/serverless-operator-index/v4.16/')) || files.all.exists(x, x.matches('^.tekton/')) )
   creationTimestamp: null
   labels:
-    appstudio.openshift.io/application: serverless-operator-136
-    appstudio.openshift.io/component: serverless-ingress-136
+    appstudio.openshift.io/application: serverless-operator-137-fbc-416
+    appstudio.openshift.io/component: serverless-index-137-fbc-416
     pipelines.appstudio.openshift.io/type: build
-  name: serverless-ingress-136-on-push
+  name: serverless-index-137-fbc-416-on-push
   namespace: ocp-serverless-tenant
 spec:
   params:
     - name: dockerfile
-      value: serving/ingress/Dockerfile
+      value: Dockerfile
+    - name: path-context
+      value: ./olm-catalog/serverless-operator-index/v4.16
     - name: build-args
       value:
         - VERSION=1.36.0
@@ -28,12 +30,13 @@ spec:
         - JAVA_RUNTIME=registry.access.redhat.com/ubi8/openjdk-21-runtime
         - NODE_BUILDER=registry.access.redhat.com/ubi8/nodejs-20
         - NODE_RUNTIME=registry.access.redhat.com/ubi8/nodejs-20
+        - OPM_IMAGE=brew.registry.redhat.io/rh-osbs/openshift-ose-operator-registry-rhel9:v4.16
     - name: git-url
       value: '{{source_url}}'
     - name: hermetic
       value: "true"
     - name: output-image
-      value: quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/serverless-ingress:{{revision}}
+      value: quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-137-fbc-416/serverless-index-137-fbc-416:{{revision}}
     - name: revision
       value: '{{revision}}'
     - name: additional-tags
@@ -41,22 +44,10 @@ spec:
         - $(context.pipelineRun.uid)-{{revision}}
         - 1.36.0
         - latest
-    - name: prefetch-input
-      value: '[{"type":"rpm"}]'
-    - name: prefetch-input-dev-package-managers
-      value: 'true'
-  taskRunSpecs:
-    - pipelineTaskName: sast-shell-check
-      stepSpecs:
-        - name: sast-shell-check
-          computeResources:
-            requests:
-              memory: 4Gi
-            limits:
-              memory: 4Gi
   pipelineRef:
-    name: docker-build
-  taskRunTemplate: {}
+    name: fbc-builder
+  taskRunTemplate:
+    serviceAccountName: build-pipeline-serverless-index-137-fbc-416
   workspaces:
     - name: git-auth
       secret:
