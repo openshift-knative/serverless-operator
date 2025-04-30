@@ -53,8 +53,9 @@ spec:
             limits:
               memory: 4Gi
   pipelineRef:
-    name: docker-build
-  taskRunTemplate: {}
+    name: bundle-build
+  taskRunTemplate:
+    serviceAccountName: build-pipeline-serverless-bundle-135
   workspaces:
     - name: git-auth
       secret:

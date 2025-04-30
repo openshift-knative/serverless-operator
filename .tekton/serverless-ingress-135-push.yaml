@@ -54,7 +54,8 @@ spec:
               memory: 4Gi
   pipelineRef:
     name: docker-build
-  taskRunTemplate: {}
+  taskRunTemplate:
+    serviceAccountName: build-pipeline-serverless-ingress-135
   workspaces:
     - name: git-auth
       secret:
