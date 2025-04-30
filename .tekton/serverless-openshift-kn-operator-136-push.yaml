@@ -56,7 +56,8 @@ spec:
               memory: 4Gi
   pipelineRef:
     name: docker-build
-  taskRunTemplate: {}
+  taskRunTemplate:
+    serviceAccountName: build-pipeline-serverless-openshift-kn-operator-136
   workspaces:
     - name: git-auth
       secret:
