@@ -7,18 +7,18 @@ metadata:
     build.appstudio.redhat.com/pull_request_number: '{{pull_request_number}}'
     build.appstudio.redhat.com/target_branch: '{{target_branch}}'
     pipelinesascode.tekton.dev/max-keep-runs: "3"
-    pipelinesascode.tekton.dev/on-cel-expression: event == "pull_request" && target_branch == "main" && files.all.exists(x, !x.matches('^olm-catalog/') && !x.matches('^.konflux-release/'))
+    pipelinesascode.tekton.dev/on-cel-expression: event == "pull_request" && target_branch == "main" && ( files.all.exists(x, x.matches('^olm-catalog/serverless-operator/')) || files.all.exists(x, x.matches('^.tekton/')) )
   creationTimestamp: null
   labels:
-    appstudio.openshift.io/application: serverless-operator-136
-    appstudio.openshift.io/component: serverless-metadata-webhook-136
+    appstudio.openshift.io/application: serverless-operator-137
+    appstudio.openshift.io/component: serverless-bundle-137
     pipelines.appstudio.openshift.io/type: build
-  name: serverless-metadata-webhook-136-on-pull-request
+  name: serverless-bundle-137-on-pull-request
   namespace: ocp-serverless-tenant
 spec:
   params:
     - name: dockerfile
-      value: serving/metadata-webhook/Dockerfile
+      value: olm-catalog/serverless-operator/Dockerfile
     - name: build-args
       value:
         - VERSION=1.36.0
@@ -36,7 +36,7 @@ spec:
     - name: image-expires-after
       value: 5d
     - name: output-image
-      value: quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/serverless-metadata-webhook:on-pr-{{revision}}
+      value: quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-137/serverless-bundle:on-pr-{{revision}}
     - name: build-platforms
       value:
         - linux/x86_64
@@ -56,8 +56,9 @@ spec:
             limits:
               memory: 4Gi
   pipelineRef:
-    name: docker-build
-  taskRunTemplate: {}
+    name: bundle-build
+  taskRunTemplate:
+    serviceAccountName: build-pipeline-serverless-bundle-137
   workspaces:
     - name: git-auth
       secret:
