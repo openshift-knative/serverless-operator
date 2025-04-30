@@ -86,11 +86,11 @@ spec:
       source: "registry.redhat.io/openshift-serverless-1/net-istio-webhook-rhel8"
     - mirrors: ["quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-137/net-kourier-kourier", "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/net-kourier-kourier"]
       source: "registry.redhat.io/openshift-serverless-1/net-kourier-kourier-rhel8"
-    - mirrors: ["quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-137/serverless-ingress:latest", "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/serverless-ingress:latest"]
-      source: "registry.redhat.io/openshift-serverless-1/serverless-ingress:latest-rhel8"
-    - mirrors: ["quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-137/serverless-kn-operator:latest", "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/serverless-kn-operator:latest"]
-      source: "registry.redhat.io/openshift-serverless-1/serverless-kn-operator:latest-rhel8"
-    - mirrors: ["quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-137/serverless-must-gather:latest", "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/serverless-must-gather:latest"]
-      source: "registry.redhat.io/openshift-serverless-1/serverless-must-gather:latest-rhel8"
-    - mirrors: ["quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-137/serverless-openshift-kn-operator:latest", "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/serverless-openshift-kn-operator:latest"]
-      source: "registry.redhat.io/openshift-serverless-1/serverless-openshift-kn-operator:latest-rhel8"
+    - mirrors: ["quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-137/serverless-ingress", "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/serverless-ingress"]
+      source: "registry.redhat.io/openshift-serverless-1/serverless-ingress-rhel8"
+    - mirrors: ["quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-137/serverless-kn-operator", "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/serverless-kn-operator"]
+      source: "registry.redhat.io/openshift-serverless-1/serverless-kn-operator-rhel8"
+    - mirrors: ["quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-137/serverless-must-gather", "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/serverless-must-gather"]
+      source: "registry.redhat.io/openshift-serverless-1/serverless-must-gather-rhel8"
+    - mirrors: ["quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-137/serverless-openshift-kn-operator", "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/serverless-openshift-kn-operator"]
+      source: "registry.redhat.io/openshift-serverless-1/serverless-openshift-kn-rhel8-operator"
