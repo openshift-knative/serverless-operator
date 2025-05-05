@@ -112,6 +112,18 @@ function add_channel {
       fi
     fi
 
+    # Check if the bundle image for this version is really for the version. Because on branch cuts, the bundle from
+    # the old version and new version are the same (contain same CSV), as the bundle is not updated yet. This would
+    # result for example in a `package "serverless-operator" has duplicate bundle "serverless-operator.v1.36.0"`.
+    # See for example https://github.com/openshift-knative/serverless-operator/pull/3608#issuecomment-2846440232
+    # Therefor we only add the catalog, if the corresponding bundle has the correct version (and is "new")
+    bundle_image_for_version=$(get_bundle_for_version "${version}")
+    version_in_bundle_image=$(skopeo inspect --no-tags docker://"$bundle_image_for_version" | jq -r .Labels.version)
+    if [[ "$version_in_bundle_image" != "$version" ]]; then
+      logger.debug "Bundle image (${bundle_image_for_version}) for version ${version} not updated yet and still contains old version (${version_in_bundle_image}). Thus skipping to add it to the catalog"
+      should_add=0
+    fi
+
     if (( should_add )); then
       cat << EOF | yq write --inplace --script - "$catalog"
       - command: update
