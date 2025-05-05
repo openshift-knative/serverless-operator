@@ -6,8 +6,68 @@ metadata:
   name: serverless-image-content-source-policy
 spec:
   repositoryDigestMirrors:
+    - mirrors: ["quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-137/client-kn", "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/client-kn"]
+      source: "registry.redhat.io/openshift-serverless-1/client-kn-rhel8"
+    - mirrors: ["quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-137/eventing-apiserver-receive-adapter", "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/eventing-apiserver-receive-adapter"]
+      source: "registry.redhat.io/openshift-serverless-1/eventing-apiserver-receive-adapter-rhel8"
+    - mirrors: ["quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-137/eventing-controller", "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/eventing-controller"]
+      source: "registry.redhat.io/openshift-serverless-1/eventing-controller-rhel8"
+    - mirrors: ["quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-137/eventing-in-memory-channel-controller", "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/eventing-in-memory-channel-controller"]
+      source: "registry.redhat.io/openshift-serverless-1/eventing-in-memory-channel-controller-rhel8"
+    - mirrors: ["quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-137/eventing-in-memory-channel-dispatcher", "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/eventing-in-memory-channel-dispatcher"]
+      source: "registry.redhat.io/openshift-serverless-1/eventing-in-memory-channel-dispatcher-rhel8"
+    - mirrors: ["quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-137/eventing-istio-controller", "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/eventing-istio-controller"]
+      source: "registry.redhat.io/openshift-serverless-1/eventing-istio-controller-rhel8"
+    - mirrors: ["quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-137/eventing-kafka-broker-controller", "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/eventing-kafka-broker-controller"]
+      source: "registry.redhat.io/openshift-serverless-1/eventing-kafka-broker-controller-rhel8"
+    - mirrors: ["quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-137/eventing-kafka-broker-dispatcher", "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/eventing-kafka-broker-dispatcher"]
+      source: "registry.redhat.io/openshift-serverless-1/eventing-kafka-broker-dispatcher-rhel8"
+    - mirrors: ["quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-137/eventing-kafka-broker-post-install", "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/eventing-kafka-broker-post-install"]
+      source: "registry.redhat.io/openshift-serverless-1/eventing-kafka-broker-post-install-rhel8"
+    - mirrors: ["quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-137/eventing-kafka-broker-receiver", "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/eventing-kafka-broker-receiver"]
+      source: "registry.redhat.io/openshift-serverless-1/eventing-kafka-broker-receiver-rhel8"
+    - mirrors: ["quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-137/eventing-kafka-broker-webhook", "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/eventing-kafka-broker-webhook"]
+      source: "registry.redhat.io/openshift-serverless-1/eventing-kafka-broker-webhook-rhel8"
+    - mirrors: ["quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-137/eventing-kafka-channel-cleanup", "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/eventing-kafka-channel-cleanup"]
+      source: "registry.redhat.io/openshift-serverless-1/eventing-kafka-channel-cleanup-rhel8"
+    - mirrors: ["quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-137/eventing-kafka-channel-controller", "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/eventing-kafka-channel-controller"]
+      source: "registry.redhat.io/openshift-serverless-1/eventing-kafka-channel-controller-rhel8"
+    - mirrors: ["quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-137/eventing-kafka-channel-dispatcher", "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/eventing-kafka-channel-dispatcher"]
+      source: "registry.redhat.io/openshift-serverless-1/eventing-kafka-channel-dispatcher-rhel8"
+    - mirrors: ["quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-137/eventing-kafka-channel-webhook", "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/eventing-kafka-channel-webhook"]
+      source: "registry.redhat.io/openshift-serverless-1/eventing-kafka-channel-webhook-rhel8"
+    - mirrors: ["quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-137/eventing-kafka-source-controller", "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/eventing-kafka-source-controller"]
+      source: "registry.redhat.io/openshift-serverless-1/eventing-kafka-source-controller-rhel8"
+    - mirrors: ["quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-137/eventing-kafka-source-receive-adapter", "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/eventing-kafka-source-receive-adapter"]
+      source: "registry.redhat.io/openshift-serverless-1/eventing-kafka-source-receive-adapter-rhel8"
+    - mirrors: ["quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-137/eventing-kafka-storage-version-migration", "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/eventing-kafka-storage-version-migration"]
+      source: "registry.redhat.io/openshift-serverless-1/eventing-kafka-storage-version-migration-rhel8"
+    - mirrors: ["quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-137/eventing-mtbroker-filter", "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/eventing-mtbroker-filter"]
+      source: "registry.redhat.io/openshift-serverless-1/eventing-mtbroker-filter-rhel8"
+    - mirrors: ["quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-137/eventing-mtbroker-ingress", "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/eventing-mtbroker-ingress"]
+      source: "registry.redhat.io/openshift-serverless-1/eventing-mtbroker-ingress-rhel8"
+    - mirrors: ["quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-137/eventing-mtchannel-broker", "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/eventing-mtchannel-broker"]
+      source: "registry.redhat.io/openshift-serverless-1/eventing-mtchannel-broker-rhel8"
+    - mirrors: ["quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-137/eventing-mtping", "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/eventing-mtping"]
+      source: "registry.redhat.io/openshift-serverless-1/eventing-mtping-rhel8"
+    - mirrors: ["quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-137/eventing-storage-version-migration", "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/eventing-storage-version-migration"]
+      source: "registry.redhat.io/openshift-serverless-1/eventing-storage-version-migration-rhel8"
+    - mirrors: ["quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-137/eventing-sugar-controller", "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/eventing-sugar-controller"]
+      source: "registry.redhat.io/openshift-serverless-1/eventing-sugar-controller-rhel8"
+    - mirrors: ["quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-137/eventing-webhook", "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/eventing-webhook"]
+      source: "registry.redhat.io/openshift-serverless-1/eventing-webhook-rhel8"
+    - mirrors: ["quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-137/func-socat", "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/func-socat"]
+      source: "registry.redhat.io/openshift-serverless-1/func-socat-rhel8"
+    - mirrors: ["quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-137/func-utils", "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/func-utils"]
+      source: "registry.redhat.io/openshift-serverless-1/func-utils-rhel8"
+    - mirrors: ["quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-137/ingress", "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/ingress"]
+      source: "registry.redhat.io/openshift-serverless-1/ingress-rhel8-operator"
+    - mirrors: ["quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-137/knative", "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/knative"]
+      source: "registry.redhat.io/openshift-serverless-1/knative-rhel8-operator"
     - mirrors: ["quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-137/kn-backstage-plugins-eventmesh", "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/kn-backstage-plugins-eventmesh"]
       source: "registry.redhat.io/openshift-serverless-1/kn-backstage-plugins-eventmesh-rhel8"
+    - mirrors: ["quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-137/kn-cli-artifacts", "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/kn-cli-artifacts"]
+      source: "registry.redhat.io/openshift-serverless-1/kn-cli-artifacts-rhel8"
     - mirrors: ["quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-137/kn-client-cli-artifacts", "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/kn-client-cli-artifacts"]
       source: "registry.redhat.io/openshift-serverless-1/kn-client-cli-artifacts-rhel8"
     - mirrors: ["quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-137/kn-client-kn", "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/kn-client-kn"]
@@ -82,6 +142,8 @@ spec:
       source: "registry.redhat.io/openshift-serverless-1/kn-serving-storage-version-migration-rhel8"
     - mirrors: ["quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-137/kn-serving-webhook", "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/kn-serving-webhook"]
       source: "registry.redhat.io/openshift-serverless-1/kn-serving-webhook-rhel8"
+    - mirrors: ["quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-137/kourier-control", "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/kourier-control"]
+      source: "registry.redhat.io/openshift-serverless-1/kourier-control-rhel8"
     - mirrors: ["quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-137/net-istio-controller", "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/net-istio-controller"]
       source: "registry.redhat.io/openshift-serverless-1/net-istio-controller-rhel8"
     - mirrors: ["quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-137/net-istio-webhook", "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/net-istio-webhook"]
@@ -96,3 +158,41 @@ spec:
       source: "registry.redhat.io/openshift-serverless-1/serverless-must-gather-rhel8"
     - mirrors: ["quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-137/serverless-openshift-kn-operator", "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/serverless-openshift-kn-operator"]
       source: "registry.redhat.io/openshift-serverless-1/serverless-openshift-kn-rhel8-operator"
+    - mirrors: ["quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-137/serverless-bundle", "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/serverless-bundle"]
+      source: "registry.redhat.io/openshift-serverless-1/serverless-operator-bundle"
+    - mirrors: ["quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-137/serverless", "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/serverless"]
+      source: "registry.redhat.io/openshift-serverless-1/serverless-rhel8-operator"
+    - mirrors: ["quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-137/serving-activator", "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/serving-activator"]
+      source: "registry.redhat.io/openshift-serverless-1/serving-activator-rhel8"
+    - mirrors: ["quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-137/serving-autoscaler-hpa", "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/serving-autoscaler-hpa"]
+      source: "registry.redhat.io/openshift-serverless-1/serving-autoscaler-hpa-rhel8"
+    - mirrors: ["quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-137/serving-autoscaler", "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/serving-autoscaler"]
+      source: "registry.redhat.io/openshift-serverless-1/serving-autoscaler-rhel8"
+    - mirrors: ["quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-137/serving-controller", "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/serving-controller"]
+      source: "registry.redhat.io/openshift-serverless-1/serving-controller-rhel8"
+    - mirrors: ["quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-137/serving-domain-mapping", "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/serving-domain-mapping"]
+      source: "registry.redhat.io/openshift-serverless-1/serving-domain-mapping-rhel8"
+    - mirrors: ["quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-137/serving-domain-mapping-webhook", "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/serving-domain-mapping-webhook"]
+      source: "registry.redhat.io/openshift-serverless-1/serving-domain-mapping-webhook-rhel8"
+    - mirrors: ["quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-137/serving-queue", "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/serving-queue"]
+      source: "registry.redhat.io/openshift-serverless-1/serving-queue-rhel8"
+    - mirrors: ["quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-137/serving-storage-version-migration", "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/serving-storage-version-migration"]
+      source: "registry.redhat.io/openshift-serverless-1/serving-storage-version-migration-rhel8"
+    - mirrors: ["quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-137/serving-webhook", "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/serving-webhook"]
+      source: "registry.redhat.io/openshift-serverless-1/serving-webhook-rhel8"
+    - mirrors: ["quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-137/svls-must-gather", "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/svls-must-gather"]
+      source: "registry.redhat.io/openshift-serverless-1/svls-must-gather-rhel8"
+    - mirrors: ["quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-137/backstage-plugins-eventmesh", "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/backstage-plugins-eventmesh"]
+      source: "registry.redhat.io/openshift-serverless-1/backstage-plugins-eventmesh-rhel8"
+    - mirrors: ["quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-137/eventing-istio-controller", "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/eventing-istio-controller"]
+      source: "registry.redhat.io/openshift-serverless-1/eventing-istio-controller-rhel8"
+    - mirrors: ["quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-137/eventing-kafka-broker-controller", "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/eventing-kafka-broker-controller"]
+      source: "registry.redhat.io/openshift-serverless-1/eventing-kafka-broker-controller-rhel8"
+    - mirrors: ["quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-137/eventing-kafka-broker-dispatcher", "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/eventing-kafka-broker-dispatcher"]
+      source: "registry.redhat.io/openshift-serverless-1/eventing-kafka-broker-dispatcher-rhel8"
+    - mirrors: ["quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-137/eventing-kafka-broker-receiver", "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/eventing-kafka-broker-receiver"]
+      source: "registry.redhat.io/openshift-serverless-1/eventing-kafka-broker-receiver-rhel8"
+    - mirrors: ["quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-137/eventing-kafka-broker-webhook", "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/eventing-kafka-broker-webhook"]
+      source: "registry.redhat.io/openshift-serverless-1/eventing-kafka-broker-webhook-rhel8"
+    - mirrors: ["quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-137/knative-client-plugin-event-sender", "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/knative-client-plugin-event-sender"]
+      source: "registry.redhat.io/openshift-serverless-1/knative-client-plugin-event-sender-rhel8"
