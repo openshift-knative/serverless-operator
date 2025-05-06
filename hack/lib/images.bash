@@ -423,8 +423,15 @@ function get_quay_image_ref() {
 
   if  [[ $rh_registry_image_ref =~ $registry_redhat_io ]]; then
     image=${rh_registry_image_ref##*/} # Get image name after last slash
-    image_sha=${image##*@} # Get SHA of image
+    # we need to be able to handle cases, when the image has a sha or has a tag
+    image_suffix=""
+    if [[ "$image" =~ @sha256: ]]; then
+      image_suffix="@${image##*@}"
+    else
+      image_suffix=":${image##*:}"
+    fi
     image_name=${image%@*} # Remove sha
+    image_name=${image_name%:*} # Remove tag
 
     if [[ "${image_name}" =~ ^serverless-openshift-kn-rhel[0-9]+-operator$ ]]; then
       # serverless-openshift-kn-operator is special, as it has rhel in the middle of the name
@@ -438,7 +445,7 @@ function get_quay_image_ref() {
       component=${image_name%-rhel*}
     fi
 
-    echo "${registry_quay}/${component}@${image_sha}"
+    echo "${registry_quay}/${component}${image_suffix}"
   else
     echo "Image must be from ${registry_redhat_io}, got ${rh_registry_image_ref}"
     return 1
@@ -452,8 +459,15 @@ function get_rh_registry_image_ref() {
 
   if  [[ $quay_registry_image_ref =~ $registry_prefix_quay ]]; then
     image=${quay_registry_image_ref##*/} # Get image name after last slash
-    image_sha=${image##*@} # Get SHA of image
+    # we need to be able to handle cases, when the image has a sha or has a tag
+    image_suffix=""
+    if [[ "$image" =~ @sha256: ]]; then
+      image_suffix="@${image##*@}"
+    else
+      image_suffix=":${image##*:}"
+    fi
     image_name=${image%@*} # Remove sha
+    image_name=${image_name%:*} # Remove tag
 
     # Add rhel suffix
     if [ "${image_name}" == "serverless-openshift-kn-operator" ]; then
@@ -468,7 +482,7 @@ function get_rh_registry_image_ref() {
       image_name="${image_name}-rhel$(get_serverless_operator_rhel_version)"
     fi
 
-    echo "${registry_redhat_io}/${image_name}@${image_sha}"
+    echo "${registry_redhat_io}/${image_name}${image_suffix}"
   else
     echo "Image must be from ${registry_quay}, got ${quay_registry_image_ref}"
     return 1

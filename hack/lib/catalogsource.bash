@@ -163,6 +163,7 @@ EOF
       if  [[ $line == $registry_source || $line =~ $registry_source ]]; then
         img=${line##*/} # Get image name after last slash
         img=${img%@*} # Remove sha
+        img=${img%:*} # Remove tag
 
         if [[ "${img}" =~ ^serverless-openshift-kn-rhel[0-9]+-operator$ ]]; then
           # serverless-openshift-kn-operator is special, as it has rhel in the middle of the name
