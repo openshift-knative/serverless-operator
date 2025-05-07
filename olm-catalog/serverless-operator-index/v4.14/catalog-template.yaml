@@ -57,6 +57,9 @@ entries:
       - name: serverless-operator.v1.35.0
         replaces: serverless-operator.v1.34.0
         skipRange: '>=1.34.0 <1.35.0'
+      - name: serverless-operator.v1.37.0
+        replaces: serverless-operator.v1.36.0
+        skipRange: '>=1.36.0 <1.37.0'
       - name: serverless-operator.v1.36.0
         replaces: serverless-operator.v1.35.0
         skipRange: '>=1.35.0 <1.36.0'
@@ -455,6 +458,8 @@ entries:
   - image: registry.redhat.io/openshift-serverless-1/serverless-operator-bundle@sha256:91456907c61952017daf07e376b565472ef86d67a2925f60e189c639ceb68595
     schema: olm.bundle
   - schema: olm.bundle
+    image: quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-137/serverless-bundle@sha256:d6b0b7ab7f7e9c82a08a0417e9636a0a90f1249b7803e4e2a5c216502672a7e8
+  - schema: olm.bundle
     image: quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/serverless-bundle@sha256:c14c5f0be48b343bcc9006356334ddd0780b652a3639d893390f102d7e962e12
   - entries:
       - name: serverless-operator.v1.20.0
@@ -508,6 +513,9 @@ entries:
       - name: serverless-operator.v1.35.0
         replaces: serverless-operator.v1.34.0
         skipRange: '>=1.34.0 <1.35.0'
+      - name: serverless-operator.v1.37.0
+        replaces: serverless-operator.v1.36.0
+        skipRange: '>=1.36.0 <1.37.0'
       - name: serverless-operator.v1.36.0
         replaces: serverless-operator.v1.35.0
         skipRange: '>=1.35.0 <1.36.0'
