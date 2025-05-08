@@ -42,7 +42,6 @@ if [[ "$template" =~ index.Dockerfile ]]; then
   # One is already added in template
   num_csvs=$(( INDEX_IMAGE_NUM_CSVS-1 ))
 
-  # TODO gradually migrate other bundle images to Konflux-based ones as we build more minor versions with Konflux
   # Generate additional entries
   for i in $(seq $num_csvs); do
     current_minor=$(( minor-i ))
@@ -53,7 +52,7 @@ if [[ "$template" =~ index.Dockerfile ]]; then
     fi
     current_version="${major}.${current_minor}.0"
 
-    sed --in-place "/opm render/a registry.ci.openshift.org/knative/release-${current_version}:serverless-bundle \\\\" "$target"
+    sed --in-place "/opm render/a quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-${major}${current_minor}/serverless-bundle:${current_version} \\\\" "$target"
   done
 
 elif [[ "$template" =~ catalog.Dockerfile ]]; then
