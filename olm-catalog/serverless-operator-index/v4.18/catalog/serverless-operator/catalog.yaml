@@ -8353,7 +8353,7 @@ relatedImages:
   name: KAFKA_IMAGE_kafka-broker-receiver__kafka-broker-receiver
 - image: registry.redhat.io/openshift-serverless-1/kn-ekb-receiver-rhel8@sha256:207a1c3d7bf18a56ab8fd69255beeac6581a97576665e8b79f93df74da911285
   name: KAFKA_IMAGE_kafka-sink-receiver__kafka-sink-receiver
-- image: registry.redhat.io/openshift-serverless-1/kn-ekb-webhook-kafka-rhel8@sha256:cafb9dcc4059b3bc740180cd8fb171bdad44b4d72365708d31f86327a29b9ec5
+- image: registry.redhat.io/openshift-serverless-1/kn-ekb-webhook-kafka-rhel8@sha256:5da15cedeec5eb906c53ebcd94a17a83c4baa0f0cd22bc9cb57b9cc51fae8b14
   name: KAFKA_IMAGE_kafka-webhook-eventing__kafka-webhook-eventing
 - image: registry.redhat.io/openshift-serverless-1/kn-eventing-apiserver-receive-adapter-rhel8@sha256:ec3c038d2baf7ff915a2c5ee90c41fb065a9310ccee473f0a39d55de632293e3
   name: IMAGE_APISERVER_RA_IMAGE
@@ -8711,7 +8711,7 @@ relatedImages:
   name: KAFKA_IMAGE_kafka-broker-receiver__kafka-broker-receiver
 - image: registry.redhat.io/openshift-serverless-1/kn-ekb-receiver-rhel8@sha256:e7aa54986c3d388c1bb00828c9ccb294ca0b6c26376c7593ed6bfddda0ef4e5d
   name: KAFKA_IMAGE_kafka-sink-receiver__kafka-sink-receiver
-- image: registry.redhat.io/openshift-serverless-1/kn-ekb-webhook-kafka-rhel8@sha256:dfcd11686f161d44786a205d12f9d628d9e847d40ffdb628ec9aa4a0da0b86f0
+- image: registry.redhat.io/openshift-serverless-1/kn-ekb-webhook-kafka-rhel8@sha256:5da15cedeec5eb906c53ebcd94a17a83c4baa0f0cd22bc9cb57b9cc51fae8b14
   name: KAFKA_IMAGE_kafka-webhook-eventing__kafka-webhook-eventing
 - image: registry.redhat.io/openshift-serverless-1/kn-eventing-apiserver-receive-adapter-rhel8@sha256:9b176477be4c782ce60d81a72bacb566069a499579ce6df5a987a0841f05ad5c
   name: IMAGE_APISERVER_RA_IMAGE
