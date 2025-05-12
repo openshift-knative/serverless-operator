@@ -48,9 +48,9 @@ dependencies:
   # eventing core midstream branch name
   eventing_artifacts_branch: release-v1.17
   # eventing-kafka-broker promotion tag
-  eventing_kafka_broker: knative-v1.16
+  eventing_kafka_broker: knative-v1.17
   # eventing-kafka-broker midstream branch or commit
-  eventing_kafka_broker_artifacts_branch: release-v1.16
+  eventing_kafka_broker_artifacts_branch: release-v1.17
   # eventing-integrations promotion tag
   eventing_integrations: knative-v1.16
   # eventing-istio promotion tag
