@@ -15,6 +15,12 @@ on:
   schedule:
     - cron: "0 6 * * *" # Daily at 06:00.
   workflow_dispatch: # Manual workflow trigger
+    inputs:
+      skip-override-snapshot-gen:
+        type: boolean
+        default: false
+        required: false
+        description: "Skip override-snapshot creation"
 
 jobs:
   generated-files-committed:
@@ -82,7 +88,7 @@ jobs:
         run: make generate-catalog
 
       - name: Regenerate override-snapshot
-        if: github.event_name == 'workflow_dispatch' || github.event_name == 'schedule' || ( github.event_name == 'push' && !contains(github.ref_name, 'dependabot/') )
+        if: ( github.event_name == 'workflow_dispatch' && inputs.skip-override-snapshot-gen == 'false' ) || github.event_name == 'schedule' || ( github.event_name == 'push' && !contains(github.ref_name, 'dependabot/') )
         working-directory: ./src/github.com/${{ github.repository }}
         run: make generate-override-snapshot
 
