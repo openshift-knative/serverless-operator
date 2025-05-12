@@ -44,9 +44,9 @@ dependencies:
   net_istio_artifacts_branch: release-v1.16
   redhat-knative-istio-authz-chart: 1.37.0
   service_mesh_proxy: registry.redhat.io/openshift-service-mesh/proxyv2-rhel8@sha256:8ee57a44b1fc799fd8565eb339955773bd9beedcbf46f68628ee0bd4abf26515
-  eventing: knative-v1.16
+  eventing: knative-v1.17
   # eventing core midstream branch name
-  eventing_artifacts_branch: release-v1.16
+  eventing_artifacts_branch: release-v1.17
   # eventing-kafka-broker promotion tag
   eventing_kafka_broker: knative-v1.16
   # eventing-kafka-broker midstream branch or commit
