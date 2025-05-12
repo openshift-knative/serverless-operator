@@ -8840,7 +8840,7 @@ relatedImages:
   name: IMAGE_KN_PLUGIN_FUNC_TEKTON_BUILDAH
 schema: olm.bundle
 ---
-image: registry.redhat.io/openshift-serverless-1/serverless-operator-bundle@sha256:7070e63a51ec1ddbc9348afd369f5f2766a7e5f77d29bcd3e840854326c5435c
+image: registry.redhat.io/openshift-serverless-1/serverless-operator-bundle@sha256:d3c68bf821868447fa33449075d9125c733a85e646836e2b7160bc3a7524ef2c
 name: serverless-operator.v1.36.0
 package: serverless-operator
 properties:
@@ -8932,7 +8932,7 @@ properties:
       features.operators.openshift.io/token-auth-gcp: "false"
       olm.skipRange: '>=1.35.0 <1.36.0'
       operatorframework.io/suggested-namespace: openshift-serverless
-      operators.openshift.io/must-gather-image: registry.redhat.io/openshift-serverless-1/serverless-must-gather-rhel8@sha256:dd69d6db2c0e37c3d6feeabd899e50b30ed5ca966345f9722c5a932b2cffd948
+      operators.openshift.io/must-gather-image: registry.redhat.io/openshift-serverless-1/serverless-must-gather-rhel8@sha256:872315a134897e5f017bbee178d1266fa536c0ec44245d4e4edcbe0f55e1dbdd
       operators.openshift.io/valid-subscription: '["OpenShift Container Platform",
         "OpenShift Platform Plus"]'
       repository: https://github.com/openshift-knative/serverless-operator
@@ -9093,7 +9093,7 @@ properties:
     provider:
       name: Red Hat
 relatedImages:
-- image: registry.redhat.io/openshift-serverless-1/serverless-operator-bundle@sha256:7070e63a51ec1ddbc9348afd369f5f2766a7e5f77d29bcd3e840854326c5435c
+- image: registry.redhat.io/openshift-serverless-1/serverless-operator-bundle@sha256:d3c68bf821868447fa33449075d9125c733a85e646836e2b7160bc3a7524ef2c
   name: ""
 - image: registry.access.redhat.com/ubi8/nodejs-20-minimal@sha256:a2a7e399aaf09a48c28f40820da16709b62aee6f2bc703116b9345fab5830861
   name: IMAGE_KN_PLUGIN_FUNC_NODEJS_20_MINIMAL
@@ -9195,17 +9195,17 @@ relatedImages:
   name: IMAGE_net-istio-webhook__webhook
 - image: registry.redhat.io/openshift-serverless-1/net-kourier-kourier-rhel8@sha256:18ceb5e88a8c90398a49c3e0fefbfe02cea21bd12dca6e353e0f1b98959b156e
   name: IMAGE_net-kourier-controller__controller
-- image: registry.redhat.io/openshift-serverless-1/serverless-ingress-rhel8@sha256:54a99e924fc6c0316e4df402a39fc3825ed075d88c49eb95c7085f36889c5652
+- image: registry.redhat.io/openshift-serverless-1/serverless-ingress-rhel8@sha256:08b96b9abd5e3a0cc773aa3a0fc1390fb4c82b3d80429a12a791944d1e635125
   name: knative-openshift-ingress
-- image: registry.redhat.io/openshift-serverless-1/serverless-kn-operator-rhel8@sha256:0e6faed1ac5c0ea0f412a0dfb1fcbb41395e6b4d7cc9f9c38847b6cbb4545a97
+- image: registry.redhat.io/openshift-serverless-1/serverless-kn-operator-rhel8@sha256:181f93aa5308766243c188d6495e73030766c06a85540fb5178644aa7d5a9b86
   name: knative-openshift
-- image: registry.redhat.io/openshift-serverless-1/serverless-must-gather-rhel8@sha256:dd69d6db2c0e37c3d6feeabd899e50b30ed5ca966345f9722c5a932b2cffd948
+- image: registry.redhat.io/openshift-serverless-1/serverless-must-gather-rhel8@sha256:872315a134897e5f017bbee178d1266fa536c0ec44245d4e4edcbe0f55e1dbdd
   name: IMAGE_MUST_GATHER
-- image: registry.redhat.io/openshift-serverless-1/serverless-openshift-kn-rhel8-operator@sha256:b68fd047a6e1d0a0a2c7554c65a6fd38f51e652aa9e20da06be2e2e084dc0d28
+- image: registry.redhat.io/openshift-serverless-1/serverless-openshift-kn-rhel8-operator@sha256:41186264d339bb69e479ff35a2a956c5d9589abe3c50405d0c3b0b9d609f0f81
   name: knative-operator
 - image: registry.redhat.io/openshift-service-mesh/proxyv2-rhel8@sha256:8ee57a44b1fc799fd8565eb339955773bd9beedcbf46f68628ee0bd4abf26515
   name: IMAGE_kourier-gateway
-- image: registry.redhat.io/openshift4/ose-kube-rbac-proxy-rhel9@sha256:145e9784b681ac7defa0a1547c03a6db9a587bf9be2820428eee84f58f8f1f24
+- image: registry.redhat.io/openshift4/ose-kube-rbac-proxy-rhel9@sha256:bbf95f039dcc3a1be3c376f668d903493dd3b9edcf52f1789653978d664dc867
   name: IMAGE_KUBE_RBAC_PROXY
 - image: registry.redhat.io/rhel8/buildah@sha256:3d505d9c0f5d4cd5a4ec03b8d038656c6cdbdf5191e00ce6388f7e0e4d2f1b74
   name: IMAGE_KN_PLUGIN_FUNC_TEKTON_BUILDAH
