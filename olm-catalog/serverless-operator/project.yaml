@@ -75,5 +75,3 @@ dependencies:
     serving: knative-v1.16
     eventing: knative-v1.16
     eventing_kafka_broker: knative-v1.16
-  mustgather:
-    image: quay.io/openshift-knative/must-gather
