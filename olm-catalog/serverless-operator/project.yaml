@@ -61,10 +61,10 @@ dependencies:
   backstage_plugins: knative-v1.17
   # backstage-plugins midstream branch or commit
   backstage_plugins_artifacts_branch: release-v1.17
-  cli: knative-v1.16
+  cli: knative-v1.17
   kube_rbac_proxy: registry.redhat.io/openshift4/ose-kube-rbac-proxy-rhel9@sha256:bbf95f039dcc3a1be3c376f668d903493dd3b9edcf52f1789653978d664dc867
   func:
-    promotion_tag: knative-v1.16
+    promotion_tag: knative-v1.17
     tekton_buildah: registry.redhat.io/rhel8/buildah@sha256:3d505d9c0f5d4cd5a4ec03b8d038656c6cdbdf5191e00ce6388f7e0e4d2f1b74
     nodejs_20_minimal: registry.access.redhat.com/ubi8/nodejs-20-minimal@sha256:a2a7e399aaf09a48c28f40820da16709b62aee6f2bc703116b9345fab5830861
     openjdk_21: registry.access.redhat.com/ubi8/openjdk-21@sha256:441897a1f691c7d4b3a67bb3e0fea83e18352214264cb383fd057bbbd5ed863c
@@ -75,5 +75,3 @@ dependencies:
     serving: knative-v1.16
     eventing: knative-v1.16
     eventing_kafka_broker: knative-v1.16
-  mustgather:
-    image: quay.io/openshift-knative/must-gather
