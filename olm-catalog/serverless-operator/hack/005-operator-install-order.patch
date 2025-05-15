@@ -1,0 +1,19 @@
+diff --git a/vendor/knative.dev/operator/pkg/reconciler/common/install.go b/vendor/knative.dev/operator/pkg/reconciler/common/install.go
+index 83170d87c..e5a679c62 100644
+--- a/vendor/knative.dev/operator/pkg/reconciler/common/install.go
++++ b/vendor/knative.dev/operator/pkg/reconciler/common/install.go
+@@ -55,6 +55,14 @@ func Install(ctx context.Context, manifest *mf.Manifest, instance base.KComponen
+ 		status.MarkInstallFailed(err.Error())
+ 		return fmt.Errorf("failed to apply (cluster)rolebindings: %w", err)
+ 	}
++	if err := manifest.Filter(mf.Any(mf.ByKind("ConfigMap"))).Apply(); err != nil {
++		status.MarkInstallFailed(err.Error())
++		return fmt.Errorf("failed to apply configmaps: %w", err)
++	}
++	if err := manifest.Filter(mf.Any(mf.ByKind("Deployment"))).Apply(); err != nil {
++		status.MarkInstallFailed(err.Error())
++		return fmt.Errorf("failed to apply deployments: %w", err)
++	}
+ 	if err := manifest.Filter(mf.Not(mf.Any(role, rolebinding, webhook, webhookDependentResources))).Apply(); err != nil {
+ 		status.MarkInstallFailed(err.Error())
+ 		if ks, ok := instance.(*v1beta1.KnativeServing); ok && strings.Contains(err.Error(), gatewayNotMatch) &&
