@@ -10,6 +10,7 @@ fi
 
 # shellcheck disable=SC1091,SC1090
 source "$(dirname "${BASH_SOURCE[0]}")/../../vendor/knative.dev/hack/e2e-tests.sh"
+source "$(dirname "${BASH_SOURCE[0]}")/images.bash"
 
 export STRIMZI_VERSION=0.45.0
 
@@ -90,15 +91,19 @@ export ENABLE_KEDA="${ENABLE_KEDA:-false}"
 export SAMPLE_RATE="${SAMPLE_RATE:-"1.0"}"
 export ZIPKIN_DEDICATED_NODE="${ZIPKIN_DEDICATED_NODE:-false}"
 export QUAY_REGISTRY=quay.io/openshift-knative
+
+default_knative_serving_images
+default_knative_eventing_images
+
 DEFAULT_IMAGE_TEMPLATE=$(
   cat <<-EOF
 {{- with .Name }}
-{{- if eq . "httpproxy" }}${QUAY_REGISTRY}/serving/{{.}}:${KNATIVE_SERVING_VERSION#knative-}
-{{- else if eq . "autoscale" }}${QUAY_REGISTRY}/serving/{{.}}:${KNATIVE_SERVING_VERSION#knative-}
-{{- else if eq . "recordevents" }}${QUAY_REGISTRY}/eventing/{{.}}:${KNATIVE_EVENTING_VERSION#knative-}
-{{- else if eq . "wathola-forwarder" }}${QUAY_REGISTRY}/eventing/{{.}}:${KNATIVE_EVENTING_VERSION#knative-}
+{{- if eq . "httpproxy" }}${KNATIVE_SERVING_TEST_HTTPPROXY}
+{{- else if eq . "autoscale" }}${KNATIVE_SERVING_TEST_AUTOSCALE}
+{{- else if eq . "recordevents" }}${KNATIVE_EVENTING_TEST_RECORDEVENTS}
+{{- else if eq . "wathola-forwarder" }}${KNATIVE_EVENTING_TEST_WATHOLA_FORWARDER}
 {{- else if eq . "kafka" }}quay.io/strimzi/kafka:latest-kafka-3.4.0
-{{- else }}${QUAY_REGISTRY}/{{.}}:multiarch{{end -}}
+{{- else }}${KNATIVE_SERVING_IMAGE_PREFIX}-test-{{.}}:latest{{end -}}
 {{end -}}
 EOF
 )
