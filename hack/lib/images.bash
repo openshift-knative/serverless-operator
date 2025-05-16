@@ -129,6 +129,7 @@ function knative_serving_images() {
 
   export KNATIVE_SERVING_TEST_HTTPPROXY=${KNATIVE_SERVING_TEST_HTTPPROXY:-$(latest_konflux_image_sha "${serving_test}-httpproxy:${tag}")}
   export KNATIVE_SERVING_TEST_AUTOSCALE=${KNATIVE_SERVING_TEST_AUTOSCALE:-$(latest_konflux_image_sha "${serving_test}-autoscale:${tag}")}
+  export KNATIVE_SERVING_TEST_HELLOWORLD=${KNATIVE_SERVING_TEST_HELLOWORLD:-$(latest_konflux_image_sha "${serving_test}-helloworld:${tag}")}
 }
 
 function knative_eventing_images_release() {

@@ -100,6 +100,7 @@ DEFAULT_IMAGE_TEMPLATE=$(
 {{- with .Name }}
 {{- if eq . "httpproxy" }}${KNATIVE_SERVING_TEST_HTTPPROXY}
 {{- else if eq . "autoscale" }}${KNATIVE_SERVING_TEST_AUTOSCALE}
+{{- else if eq . "helloworld-go" }}${KNATIVE_SERVING_TEST_HELLOWORLD}
 {{- else if eq . "recordevents" }}${KNATIVE_EVENTING_TEST_RECORDEVENTS}
 {{- else if eq . "wathola-forwarder" }}${KNATIVE_EVENTING_TEST_WATHOLA_FORWARDER}
 {{- else if eq . "kafka" }}quay.io/strimzi/kafka:latest-kafka-3.4.0
