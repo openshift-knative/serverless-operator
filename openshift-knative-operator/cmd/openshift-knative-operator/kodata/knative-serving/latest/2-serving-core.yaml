@@ -20,7 +20,7 @@ metadata:
   namespace: knative-serving
   labels:
     serving.knative.dev/controller: "true"
-    app.kubernetes.io/version: "v1.16"
+    app.kubernetes.io/version: "v1.17"
     app.kubernetes.io/name: knative-serving
 rules:
   - apiGroups: [""]
@@ -37,7 +37,7 @@ metadata:
   name: knative-serving-activator-cluster
   labels:
     serving.knative.dev/controller: "true"
-    app.kubernetes.io/version: "v1.16"
+    app.kubernetes.io/version: "v1.17"
     app.kubernetes.io/name: knative-serving
 rules:
   - apiGroups: [""]
@@ -69,7 +69,7 @@ metadata:
   # (which should be identical, but isn't guaranteed to be installed alongside serving).
   name: knative-serving-aggregated-addressable-resolver
   labels:
-    app.kubernetes.io/version: "v1.16"
+    app.kubernetes.io/version: "v1.17"
     app.kubernetes.io/name: knative-serving
 aggregationRule:
   clusterRoleSelectors:
@@ -81,7 +81,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: knative-serving-addressable-resolver
   labels:
-    app.kubernetes.io/version: "v1.16"
+    app.kubernetes.io/version: "v1.17"
     app.kubernetes.io/name: knative-serving
     # Labeled to facilitate aggregated cluster roles that act on Addressables.
     duck.knative.dev/addressable: "true"
@@ -120,7 +120,7 @@ metadata:
   name: knative-serving-namespaced-admin
   labels:
     rbac.authorization.k8s.io/aggregate-to-admin: "true"
-    app.kubernetes.io/version: "v1.16"
+    app.kubernetes.io/version: "v1.17"
     app.kubernetes.io/name: knative-serving
 rules:
   - apiGroups: ["serving.knative.dev"]
@@ -136,7 +136,7 @@ metadata:
   name: knative-serving-namespaced-edit
   labels:
     rbac.authorization.k8s.io/aggregate-to-edit: "true"
-    app.kubernetes.io/version: "v1.16"
+    app.kubernetes.io/version: "v1.17"
     app.kubernetes.io/name: knative-serving
 rules:
   - apiGroups: ["serving.knative.dev"]
@@ -152,7 +152,7 @@ metadata:
   name: knative-serving-namespaced-view
   labels:
     rbac.authorization.k8s.io/aggregate-to-view: "true"
-    app.kubernetes.io/version: "v1.16"
+    app.kubernetes.io/version: "v1.17"
     app.kubernetes.io/name: knative-serving
 rules:
   - apiGroups: ["serving.knative.dev", "networking.internal.knative.dev", "autoscaling.internal.knative.dev", "caching.internal.knative.dev"]
@@ -179,7 +179,7 @@ metadata:
   name: knative-serving-core
   labels:
     serving.knative.dev/controller: "true"
-    app.kubernetes.io/version: "v1.16"
+    app.kubernetes.io/version: "v1.17"
     app.kubernetes.io/name: knative-serving
 rules:
   - apiGroups: [""]
@@ -268,7 +268,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: knative-serving-podspecable-binding
   labels:
-    app.kubernetes.io/version: "v1.16"
+    app.kubernetes.io/version: "v1.17"
     app.kubernetes.io/name: knative-serving
     # Labeled to facilitate aggregated cluster roles that act on PodSpecables.
     duck.knative.dev/podspecable: "true"
@@ -307,7 +307,7 @@ metadata:
   labels:
     app.kubernetes.io/component: controller
     app.kubernetes.io/name: knative-serving
-    app.kubernetes.io/version: "v1.16"
+    app.kubernetes.io/version: "v1.17"
 ---
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
@@ -315,7 +315,7 @@ metadata:
   name: knative-serving-admin
   labels:
     app.kubernetes.io/name: knative-serving
-    app.kubernetes.io/version: "v1.16"
+    app.kubernetes.io/version: "v1.17"
 aggregationRule:
   clusterRoleSelectors:
   - matchLabels:
@@ -328,7 +328,7 @@ metadata:
   labels:
     app.kubernetes.io/component: controller
     app.kubernetes.io/name: knative-serving
-    app.kubernetes.io/version: "v1.16"
+    app.kubernetes.io/version: "v1.17"
 subjects:
   - kind: ServiceAccount
     name: controller
@@ -345,7 +345,7 @@ metadata:
   labels:
     app.kubernetes.io/component: controller
     app.kubernetes.io/name: knative-serving
-    app.kubernetes.io/version: "v1.16"
+    app.kubernetes.io/version: "v1.17"
 subjects:
   - kind: ServiceAccount
     name: controller
@@ -363,7 +363,7 @@ metadata:
   labels:
     app.kubernetes.io/component: activator
     app.kubernetes.io/name: knative-serving
-    app.kubernetes.io/version: "v1.16"
+    app.kubernetes.io/version: "v1.17"
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
@@ -373,7 +373,7 @@ metadata:
   labels:
     app.kubernetes.io/component: activator
     app.kubernetes.io/name: knative-serving
-    app.kubernetes.io/version: "v1.16"
+    app.kubernetes.io/version: "v1.17"
 subjects:
   - kind: ServiceAccount
     name: activator
@@ -390,7 +390,7 @@ metadata:
   labels:
     app.kubernetes.io/component: activator
     app.kubernetes.io/name: knative-serving
-    app.kubernetes.io/version: "v1.16"
+    app.kubernetes.io/version: "v1.17"
 subjects:
   - kind: ServiceAccount
     name: activator
@@ -420,7 +420,7 @@ metadata:
   name: images.caching.internal.knative.dev
   labels:
     app.kubernetes.io/name: knative-serving
-    app.kubernetes.io/version: "v1.16"
+    app.kubernetes.io/version: "v1.17"
     knative.dev/crd-install: "true"
 spec:
   group: caching.internal.knative.dev
@@ -488,9 +488,7 @@ spec:
                           This field is effectively required, but due to backwards compatibility is
                           allowed to be empty. Instances of this type with an empty value here are
                           almost certainly wrong.
-                          TODO: Add other useful fields. apiVersion, kind, uid?
                           More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
-                          TODO: Drop `kubebuilder:default` when controller-gen doesn't need it https://github.com/kubernetes-sigs/kubebuilder/issues/3896.
                         type: string
                         default: ""
                     x-kubernetes-map-type: atomic
@@ -596,7 +594,7 @@ metadata:
   labels:
     app.kubernetes.io/name: knative-serving
     app.kubernetes.io/component: networking
-    app.kubernetes.io/version: "v1.16"
+    app.kubernetes.io/version: "v1.17"
     knative.dev/crd-install: "true"
 spec:
   group: networking.internal.knative.dev
@@ -781,7 +779,7 @@ metadata:
   name: configurations.serving.knative.dev
   labels:
     app.kubernetes.io/name: knative-serving
-    app.kubernetes.io/version: "v1.16"
+    app.kubernetes.io/version: "v1.17"
     knative.dev/crd-install: "true"
     duck.knative.dev/podspecable: "true"
 spec:
@@ -977,9 +975,7 @@ spec:
                                                 This field is effectively required, but due to backwards compatibility is
                                                 allowed to be empty. Instances of this type with an empty value here are
                                                 almost certainly wrong.
-                                                TODO: Add other useful fields. apiVersion, kind, uid?
                                                 More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
-                                                TODO: Drop `kubebuilder:default` when controller-gen doesn't need it https://github.com/kubernetes-sigs/kubebuilder/issues/3896.
                                               type: string
                                               default: ""
                                             optional:
@@ -987,15 +983,17 @@ spec:
                                               type: boolean
                                           x-kubernetes-map-type: atomic
                                         fieldRef:
-                                          description: This is accessible behind a feature flag - kubernetes.podspec-fieldref
+                                          description: |-
+                                            This is accessible behind a feature flag - kubernetes.podspec-fieldref
                                           type: object
-                                          x-kubernetes-preserve-unknown-fields: true
                                           x-kubernetes-map-type: atomic
+                                          x-kubernetes-preserve-unknown-fields: true
                                         resourceFieldRef:
-                                          description: This is accessible behind a feature flag - kubernetes.podspec-fieldref
+                                          description: |-
+                                            This is accessible behind a feature flag - kubernetes.podspec-fieldref
                                           type: object
-                                          x-kubernetes-preserve-unknown-fields: true
                                           x-kubernetes-map-type: atomic
+                                          x-kubernetes-preserve-unknown-fields: true
                                         secretKeyRef:
                                           description: Selects a key of a secret in the pod's namespace
                                           type: object
@@ -1011,9 +1009,7 @@ spec:
                                                 This field is effectively required, but due to backwards compatibility is
                                                 allowed to be empty. Instances of this type with an empty value here are
                                                 almost certainly wrong.
-                                                TODO: Add other useful fields. apiVersion, kind, uid?
                                                 More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
-                                                TODO: Drop `kubebuilder:default` when controller-gen doesn't need it https://github.com/kubernetes-sigs/kubebuilder/issues/3896.
                                               type: string
                                               default: ""
                                             optional:
@@ -1046,9 +1042,7 @@ spec:
                                             This field is effectively required, but due to backwards compatibility is
                                             allowed to be empty. Instances of this type with an empty value here are
                                             almost certainly wrong.
-                                            TODO: Add other useful fields. apiVersion, kind, uid?
                                             More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
-                                            TODO: Drop `kubebuilder:default` when controller-gen doesn't need it https://github.com/kubernetes-sigs/kubebuilder/issues/3896.
                                           type: string
                                           default: ""
                                         optional:
@@ -1068,9 +1062,7 @@ spec:
                                             This field is effectively required, but due to backwards compatibility is
                                             allowed to be empty. Instances of this type with an empty value here are
                                             almost certainly wrong.
-                                            TODO: Add other useful fields. apiVersion, kind, uid?
                                             More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
-                                            TODO: Drop `kubebuilder:default` when controller-gen doesn't need it https://github.com/kubernetes-sigs/kubebuilder/issues/3896.
                                           type: string
                                           default: ""
                                         optional:
@@ -1125,8 +1117,6 @@ spec:
                                   grpc:
                                     description: GRPC specifies an action involving a GRPC port.
                                     type: object
-                                    required:
-                                      - port
                                     properties:
                                       port:
                                         description: Port number of the gRPC service. Number must be in the range 1 to 65535.
@@ -1137,9 +1127,9 @@ spec:
                                           Service is the name of the service to place in the gRPC HealthCheckRequest
                                           (see https://github.com/grpc/grpc/blob/master/doc/health-checking.md).
 
-
                                           If this is not specified, the default behavior is defined by gRPC.
                                         type: string
+                                        default: ""
                                   httpGet:
                                     description: HTTPGet specifies the http request to perform.
                                     type: object
@@ -1192,7 +1182,8 @@ spec:
                                     type: integer
                                     format: int32
                                   periodSeconds:
-                                    description: How often (in seconds) to perform the probe.
+                                    description: |-
+                                      How often (in seconds) to perform the probe.
                                     type: integer
                                     format: int32
                                   successThreshold:
@@ -1243,8 +1234,6 @@ spec:
                                 items:
                                   description: ContainerPort represents a network port in a single container.
                                   type: object
-                                  required:
-                                    - containerPort
                                   properties:
                                     containerPort:
                                       description: |-
@@ -1264,10 +1253,6 @@ spec:
                                         Defaults to "TCP".
                                       type: string
                                       default: TCP
-                                x-kubernetes-list-map-keys:
-                                  - containerPort
-                                  - protocol
-                                x-kubernetes-list-type: map
                               readinessProbe:
                                 description: |-
                                   Periodic probe of container service readiness.
@@ -1300,8 +1285,6 @@ spec:
                                   grpc:
                                     description: GRPC specifies an action involving a GRPC port.
                                     type: object
-                                    required:
-                                      - port
                                     properties:
                                       port:
                                         description: Port number of the gRPC service. Number must be in the range 1 to 65535.
@@ -1312,9 +1295,9 @@ spec:
                                           Service is the name of the service to place in the gRPC HealthCheckRequest
                                           (see https://github.com/grpc/grpc/blob/master/doc/health-checking.md).
 
-
                                           If this is not specified, the default behavior is defined by gRPC.
                                         type: string
+                                        default: ""
                                   httpGet:
                                     description: HTTPGet specifies the http request to perform.
                                     type: object
@@ -1367,7 +1350,8 @@ spec:
                                     type: integer
                                     format: int32
                                   periodSeconds:
-                                    description: How often (in seconds) to perform the probe.
+                                    description: |-
+                                      How often (in seconds) to perform the probe.
                                     type: integer
                                     format: int32
                                   successThreshold:
@@ -1406,33 +1390,6 @@ spec:
                                   More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
                                 type: object
                                 properties:
-                                  claims:
-                                    description: |-
-                                      Claims lists the names of resources, defined in spec.resourceClaims,
-                                      that are used by this container.
-
-
-                                      This is an alpha field and requires enabling the
-                                      DynamicResourceAllocation feature gate.
-
-
-                                      This field is immutable. It can only be set for containers.
-                                    type: array
-                                    items:
-                                      description: ResourceClaim references one entry in PodSpec.ResourceClaims.
-                                      type: object
-                                      required:
-                                        - name
-                                      properties:
-                                        name:
-                                          description: |-
-                                            Name must match the name of one entry in pod.spec.resourceClaims of
-                                            the Pod where this field is used. It makes that resource available
-                                            inside a container.
-                                          type: string
-                                    x-kubernetes-list-map-keys:
-                                      - name
-                                    x-kubernetes-list-type: map
                                   limits:
                                     description: |-
                                       Limits describes the maximum amount of compute resources allowed.
@@ -1495,6 +1452,10 @@ spec:
                                           description: Capability represent POSIX capabilities type
                                           type: string
                                         x-kubernetes-list-type: atomic
+                                  privileged:
+                                    description: |-
+                                      Run container in privileged mode. This can only be set to explicitly to 'false'
+                                    type: boolean
                                   readOnlyRootFilesystem:
                                     description: |-
                                       Whether this container has a read-only root filesystem.
@@ -1550,7 +1511,6 @@ spec:
                                           type indicates which kind of seccomp profile will be applied.
                                           Valid options are:
 
-
                                           Localhost - a profile defined in a file on the node should be used.
                                           RuntimeDefault - the container runtime default profile should be used.
                                           Unconfined - no profile should be applied.
@@ -1590,8 +1550,6 @@ spec:
                                   grpc:
                                     description: GRPC specifies an action involving a GRPC port.
                                     type: object
-                                    required:
-                                      - port
                                     properties:
                                       port:
                                         description: Port number of the gRPC service. Number must be in the range 1 to 65535.
@@ -1602,9 +1560,9 @@ spec:
                                           Service is the name of the service to place in the gRPC HealthCheckRequest
                                           (see https://github.com/grpc/grpc/blob/master/doc/health-checking.md).
 
-
                                           If this is not specified, the default behavior is defined by gRPC.
                                         type: string
+                                        default: ""
                                   httpGet:
                                     description: HTTPGet specifies the http request to perform.
                                     type: object
@@ -1657,7 +1615,8 @@ spec:
                                     type: integer
                                     format: int32
                                   periodSeconds:
-                                    description: How often (in seconds) to perform the probe.
+                                    description: |-
+                                      How often (in seconds) to perform the probe.
                                     type: integer
                                     format: int32
                                   successThreshold:
@@ -1750,34 +1709,39 @@ spec:
                                   Cannot be updated.
                                 type: string
                         dnsConfig:
-                          description: This is accessible behind a feature flag - kubernetes.podspec-dnsconfig
+                          description: |-
+                            This is accessible behind a feature flag - kubernetes.podspec-dnsconfig
                           type: object
                           x-kubernetes-preserve-unknown-fields: true
                         dnsPolicy:
-                          description: This is accessible behind a feature flag - kubernetes.podspec-dnspolicy
+                          description: |-
+                            This is accessible behind a feature flag - kubernetes.podspec-dnspolicy
                           type: string
                         enableServiceLinks:
-                          description: 'EnableServiceLinks indicates whether information about services should be injected into pod''s environment variables, matching the syntax of Docker links. Optional: Knative defaults this to false.'
+                          description: |-
+                            EnableServiceLinks indicates whether information aboutservices should be injected into pod's environment variables, matching the syntax of Docker links. Optional: Knative defaults this to false.
                           type: boolean
                         hostAliases:
-                          description: This is accessible behind a feature flag - kubernetes.podspec-hostaliases
+                          description: |-
+                            This is accessible behind a feature flag - kubernetes.podspec-hostaliases
                           type: array
                           items:
-                            description: This is accessible behind a feature flag - kubernetes.podspec-hostaliases
+                            description: |-
+                              This is accessible behind a feature flag - kubernetes.podspec-hostaliases
                             type: object
                             x-kubernetes-preserve-unknown-fields: true
                         hostIPC:
-                          description: This is accessible behind a feature flag - kubernetes.podspec-hostipc
+                          description: |-
+                            This is accessible behind a feature flag - kubernetes.podspec-hostipc
                           type: boolean
-                          x-kubernetes-preserve-unknown-fields: true
                         hostNetwork:
-                          description: This is accessible behind a feature flag - kubernetes.podspec-hostnetwork
+                          description: |-
+                            This is accessible behind a feature flag - kubernetes.podspec-hostnetwork
                           type: boolean
-                          x-kubernetes-preserve-unknown-fields: true
                         hostPID:
-                          description: This is accessible behind a feature flag - kubernetes.podspec-hostpid
+                          description: |-
+                            This is accessible behind a feature flag - kubernetes.podspec-hostpid
                           type: boolean
-                          x-kubernetes-preserve-unknown-fields: true
                         idleTimeoutSeconds:
                           description: |-
                             IdleTimeoutSeconds is the maximum duration in seconds a request will be allowed
@@ -1803,9 +1767,7 @@ spec:
                                   This field is effectively required, but due to backwards compatibility is
                                   allowed to be empty. Instances of this type with an empty value here are
                                   almost certainly wrong.
-                                  TODO: Add other useful fields. apiVersion, kind, uid?
                                   More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
-                                  TODO: Drop `kubebuilder:default` when controller-gen doesn't need it https://github.com/kubernetes-sigs/kubebuilder/issues/3896.
                                 type: string
                                 default: ""
                             x-kubernetes-map-type: atomic
@@ -1814,33 +1776,23 @@ spec:
                           x-kubernetes-list-type: map
                         initContainers:
                           description: |-
-                            List of initialization containers belonging to the pod.
-                            Init containers are executed in order prior to containers being started. If any
-                            init container fails, the pod is considered to have failed and is handled according
-                            to its restartPolicy. The name for an init container or normal container must be
-                            unique among all containers.
-                            Init containers may not have Lifecycle actions, Readiness probes, Liveness probes, or Startup probes.
-                            The resourceRequirements of an init container are taken into account during scheduling
-                            by finding the highest request/limit for each resource type, and then using the max of
-                            of that value or the sum of the normal containers. Limits are applied to init containers
-                            in a similar fashion.
-                            Init containers cannot currently be added or removed.
-                            Cannot be updated.
-                            More info: https://kubernetes.io/docs/concepts/workloads/pods/init-containers/
+                            This is accessible behind a feature flag - kubernetes.podspec-init-containers
                           type: array
                           items:
                             description: This is accessible behind a feature flag - kubernetes.podspec-init-containers
                             type: object
                             x-kubernetes-preserve-unknown-fields: true
                         nodeSelector:
-                          description: This is accessible behind a feature flag - kubernetes.podspec-nodeselector
+                          description: |-
+                            This is accessible behind a feature flag - kubernetes.podspec-nodeselector
                           type: object
-                          x-kubernetes-preserve-unknown-fields: true
+                          additionalProperties:
+                            type: string
                           x-kubernetes-map-type: atomic
                         priorityClassName:
-                          description: This is accessible behind a feature flag - kubernetes.podspec-priorityclassname
+                          description: |-
+                            This is accessible behind a feature flag - kubernetes.podspec-priorityclassname
                           type: string
-                          x-kubernetes-preserve-unknown-fields: true
                         responseStartTimeoutSeconds:
                           description: |-
                             ResponseStartTimeoutSeconds is the maximum duration in seconds that the request
@@ -1849,15 +1801,16 @@ spec:
                           type: integer
                           format: int64
                         runtimeClassName:
-                          description: This is accessible behind a feature flag - kubernetes.podspec-runtimeclassname
+                          description: |-
+                            This is accessible behind a feature flag - kubernetes.podspec-runtimeclassname
                           type: string
-                          x-kubernetes-preserve-unknown-fields: true
                         schedulerName:
-                          description: This is accessible behind a feature flag - kubernetes.podspec-schedulername
+                          description: |-
+                            This is accessible behind a feature flag - kubernetes.podspec-schedulername
                           type: string
-                          x-kubernetes-preserve-unknown-fields: true
                         securityContext:
-                          description: This is accessible behind a feature flag - kubernetes.podspec-securitycontext
+                          description: |-
+                            This is accessible behind a feature flag - kubernetes.podspec-securitycontext
                           type: object
                           x-kubernetes-preserve-unknown-fields: true
                         serviceAccountName:
@@ -1866,9 +1819,9 @@ spec:
                             More info: https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/
                           type: string
                         shareProcessNamespace:
-                          description: This is accessible behind a feature flag - kubernetes.podspec-shareproccessnamespace
+                          description: |-
+                            This is accessible behind a feature flag - kubernetes.podspec-shareprocessnamespace
                           type: boolean
-                          x-kubernetes-preserve-unknown-fields: true
                         timeoutSeconds:
                           description: |-
                             TimeoutSeconds is the maximum duration in seconds that the request instance
@@ -1880,12 +1833,13 @@ spec:
                           description: This is accessible behind a feature flag - kubernetes.podspec-tolerations
                           type: array
                           items:
-                            description: This is accessible behind a feature flag - kubernetes.podspec-tolerations
+                            description: |-
+                              This is accessible behind a feature flag - kubernetes.podspec-tolerations
                             type: object
                             x-kubernetes-preserve-unknown-fields: true
-                          x-kubernetes-list-type: atomic
                         topologySpreadConstraints:
-                          description: This is accessible behind a feature flag - kubernetes.podspec-topologyspreadconstraints
+                          description: |-
+                            This is accessible behind a feature flag - kubernetes.podspec-topologyspreadconstraints
                           type: array
                           items:
                             description: This is accessible behind a feature flag - kubernetes.podspec-topologyspreadconstraints
@@ -1961,9 +1915,7 @@ spec:
                                       This field is effectively required, but due to backwards compatibility is
                                       allowed to be empty. Instances of this type with an empty value here are
                                       almost certainly wrong.
-                                      TODO: Add other useful fields. apiVersion, kind, uid?
                                       More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
-                                      TODO: Drop `kubebuilder:default` when controller-gen doesn't need it https://github.com/kubernetes-sigs/kubebuilder/issues/3896.
                                     type: string
                                     default: ""
                                   optional:
@@ -1971,7 +1923,13 @@ spec:
                                     type: boolean
                                 x-kubernetes-map-type: atomic
                               emptyDir:
-                                description: This is accessible behind a feature flag - kubernetes.podspec-emptydir
+                                description: |-
+                                  This is accessible behind a feature flag - kubernetes.podspec-volumes-emptydir
+                                type: object
+                                x-kubernetes-preserve-unknown-fields: true
+                              hostPath:
+                                description: |-
+                                  This is accessible behind a feature flag - kubernetes.podspec-volumes-hostpath
                                 type: object
                                 x-kubernetes-preserve-unknown-fields: true
                               name:
@@ -1981,7 +1939,8 @@ spec:
                                   More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
                                 type: string
                               persistentVolumeClaim:
-                                description: This is accessible behind a feature flag - kubernetes.podspec-persistent-volume-claim
+                                description: |-
+                                  This is accessible behind a feature flag - kubernetes.podspec-persistent-volume-claim
                                 type: object
                                 x-kubernetes-preserve-unknown-fields: true
                               projected:
@@ -1999,10 +1958,14 @@ spec:
                                     type: integer
                                     format: int32
                                   sources:
-                                    description: sources is the list of volume projections
+                                    description: |-
+                                      sources is the list of volume projections. Each entry in this list
+                                      handles one source.
                                     type: array
                                     items:
-                                      description: Projection that may be projected along with other supported volume types
+                                      description: |-
+                                        Projection that may be projected along with other supported volume types.
+                                        Exactly one of these fields must be set.
                                       type: object
                                       properties:
                                         configMap:
@@ -2053,9 +2016,7 @@ spec:
                                                 This field is effectively required, but due to backwards compatibility is
                                                 allowed to be empty. Instances of this type with an empty value here are
                                                 almost certainly wrong.
-                                                TODO: Add other useful fields. apiVersion, kind, uid?
                                                 More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
-                                                TODO: Drop `kubebuilder:default` when controller-gen doesn't need it https://github.com/kubernetes-sigs/kubebuilder/issues/3896.
                                               type: string
                                               default: ""
                                             optional:
@@ -2172,9 +2133,7 @@ spec:
                                                 This field is effectively required, but due to backwards compatibility is
                                                 allowed to be empty. Instances of this type with an empty value here are
                                                 almost certainly wrong.
-                                                TODO: Add other useful fields. apiVersion, kind, uid?
                                                 More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
-                                                TODO: Drop `kubebuilder:default` when controller-gen doesn't need it https://github.com/kubernetes-sigs/kubebuilder/issues/3896.
                                               type: string
                                               default: ""
                                             optional:
@@ -2362,7 +2321,7 @@ metadata:
   labels:
     app.kubernetes.io/name: knative-serving
     app.kubernetes.io/component: networking
-    app.kubernetes.io/version: "v1.16"
+    app.kubernetes.io/version: "v1.17"
     knative.dev/crd-install: "true"
 spec:
   group: networking.internal.knative.dev
@@ -2438,7 +2397,7 @@ metadata:
   name: domainmappings.serving.knative.dev
   labels:
     app.kubernetes.io/name: knative-serving
-    app.kubernetes.io/version: "v1.16"
+    app.kubernetes.io/version: "v1.17"
     knative.dev/crd-install: "true"
 spec:
   group: serving.knative.dev
@@ -2492,12 +2451,10 @@ spec:
                   description: |-
                     Ref specifies the target of the Domain Mapping.
 
-
                     The object identified by the Ref must be an Addressable with a URL of the
                     form `{name}.{namespace}.{domain}` where `{domain}` is the cluster domain,
                     and `{name}` and `{namespace}` are the name and namespace of a Kubernetes
                     Service.
-
 
                     This contract is satisfied by Knative types such as Knative Services and
                     Knative Routes, and by Kubernetes Services.
@@ -2651,7 +2608,7 @@ metadata:
   labels:
     app.kubernetes.io/name: knative-serving
     app.kubernetes.io/component: networking
-    app.kubernetes.io/version: "v1.16"
+    app.kubernetes.io/version: "v1.17"
     knative.dev/crd-install: "true"
 spec:
   group: networking.internal.knative.dev
@@ -2667,7 +2624,6 @@ spec:
             Ingress is a collection of rules that allow inbound connections to reach the endpoints defined
             by a backend. An Ingress can be configured to give services externally-reachable URLs, load
             balance traffic, offer name based virtual hosting, etc.
-
 
             This is heavily based on K8s Ingress https://godoc.org/k8s.io/api/networking/v1beta1#Ingress
             which some highlighted modifications.
@@ -2740,7 +2696,6 @@ spec:
                             description: |-
                               A collection of paths that map requests to backends.
 
-
                               If they are multiple matching paths, the first match takes precedence.
                             type: array
                             items:
@@ -2755,7 +2710,6 @@ spec:
                                   description: |-
                                     AppendHeaders allow specifying additional HTTP headers to add
                                     before forwarding a request to the destination service.
-
 
                                     NOTE: This differs from K8s Ingress which doesn't allow header appending.
                                   type: object
@@ -2791,7 +2745,6 @@ spec:
                                   description: |-
                                     RewriteHost rewrites the incoming request's host header.
 
-
                                     This field is currently experimental and not supported by all Ingress
                                     implementations.
                                   type: string
@@ -2813,7 +2766,6 @@ spec:
                                           AppendHeaders allow specifying additional HTTP headers to add
                                           before forwarding a request to the destination service.
 
-
                                           NOTE: This differs from K8s Ingress which doesn't allow header appending.
                                         type: object
                                         additionalProperties:
@@ -2823,7 +2775,6 @@ spec:
                                           Specifies the split percentage, a number between 0 and 100.  If
                                           only one split is specified, we default to 100.
 
-
                                           NOTE: This differs from K8s Ingress to allow percentage split.
                                         type: integer
                                       serviceName:
@@ -2832,7 +2783,6 @@ spec:
                                       serviceNamespace:
                                         description: |-
                                           Specifies the namespace of the referenced service.
-
 
                                           NOTE: This differs from K8s Ingress to allow routing to different namespaces.
                                         type: string
@@ -2958,7 +2908,6 @@ spec:
                             description: |-
                               DomainInternal is set if there is a cluster-local DNS name to access the Ingress.
 
-
                               NOTE: This differs from K8s Ingress, since we also desire to have a cluster-local
                                     DNS name to allow routing in case of not having a mesh.
                             type: string
@@ -2993,7 +2942,6 @@ spec:
                           domainInternal:
                             description: |-
                               DomainInternal is set if there is a cluster-local DNS name to access the Ingress.
-
 
                               NOTE: This differs from K8s Ingress, since we also desire to have a cluster-local
                                     DNS name to allow routing in case of not having a mesh.
@@ -3047,7 +2995,7 @@ metadata:
   name: metrics.autoscaling.internal.knative.dev
   labels:
     app.kubernetes.io/name: knative-serving
-    app.kubernetes.io/version: "v1.16"
+    app.kubernetes.io/version: "v1.17"
     knative.dev/crd-install: "true"
 spec:
   group: autoscaling.internal.knative.dev
@@ -3190,7 +3138,7 @@ metadata:
   name: podautoscalers.autoscaling.internal.knative.dev
   labels:
     app.kubernetes.io/name: knative-serving
-    app.kubernetes.io/version: "v1.16"
+    app.kubernetes.io/version: "v1.17"
     knative.dev/crd-install: "true"
 spec:
   group: autoscaling.internal.knative.dev
@@ -3390,7 +3338,7 @@ metadata:
   name: revisions.serving.knative.dev
   labels:
     app.kubernetes.io/name: knative-serving
-    app.kubernetes.io/version: "v1.16"
+    app.kubernetes.io/version: "v1.17"
     knative.dev/crd-install: "true"
 spec:
   group: serving.knative.dev
@@ -3436,7 +3384,6 @@ spec:
             Revision is an immutable snapshot of code and configuration.  A revision
             references a container image. Revisions are created by updates to a
             Configuration.
-
 
             See also: https://github.com/knative/serving/blob/main/docs/spec/overview.md#revision
           type: object
@@ -3563,9 +3510,7 @@ spec:
                                         This field is effectively required, but due to backwards compatibility is
                                         allowed to be empty. Instances of this type with an empty value here are
                                         almost certainly wrong.
-                                        TODO: Add other useful fields. apiVersion, kind, uid?
                                         More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
-                                        TODO: Drop `kubebuilder:default` when controller-gen doesn't need it https://github.com/kubernetes-sigs/kubebuilder/issues/3896.
                                       type: string
                                       default: ""
                                     optional:
@@ -3573,15 +3518,17 @@ spec:
                                       type: boolean
                                   x-kubernetes-map-type: atomic
                                 fieldRef:
-                                  description: This is accessible behind a feature flag - kubernetes.podspec-fieldref
+                                  description: |-
+                                    This is accessible behind a feature flag - kubernetes.podspec-fieldref
                                   type: object
-                                  x-kubernetes-preserve-unknown-fields: true
                                   x-kubernetes-map-type: atomic
+                                  x-kubernetes-preserve-unknown-fields: true
                                 resourceFieldRef:
-                                  description: This is accessible behind a feature flag - kubernetes.podspec-fieldref
+                                  description: |-
+                                    This is accessible behind a feature flag - kubernetes.podspec-fieldref
                                   type: object
-                                  x-kubernetes-preserve-unknown-fields: true
                                   x-kubernetes-map-type: atomic
+                                  x-kubernetes-preserve-unknown-fields: true
                                 secretKeyRef:
                                   description: Selects a key of a secret in the pod's namespace
                                   type: object
@@ -3597,9 +3544,7 @@ spec:
                                         This field is effectively required, but due to backwards compatibility is
                                         allowed to be empty. Instances of this type with an empty value here are
                                         almost certainly wrong.
-                                        TODO: Add other useful fields. apiVersion, kind, uid?
                                         More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
-                                        TODO: Drop `kubebuilder:default` when controller-gen doesn't need it https://github.com/kubernetes-sigs/kubebuilder/issues/3896.
                                       type: string
                                       default: ""
                                     optional:
@@ -3632,9 +3577,7 @@ spec:
                                     This field is effectively required, but due to backwards compatibility is
                                     allowed to be empty. Instances of this type with an empty value here are
                                     almost certainly wrong.
-                                    TODO: Add other useful fields. apiVersion, kind, uid?
                                     More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
-                                    TODO: Drop `kubebuilder:default` when controller-gen doesn't need it https://github.com/kubernetes-sigs/kubebuilder/issues/3896.
                                   type: string
                                   default: ""
                                 optional:
@@ -3654,9 +3597,7 @@ spec:
                                     This field is effectively required, but due to backwards compatibility is
                                     allowed to be empty. Instances of this type with an empty value here are
                                     almost certainly wrong.
-                                    TODO: Add other useful fields. apiVersion, kind, uid?
                                     More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
-                                    TODO: Drop `kubebuilder:default` when controller-gen doesn't need it https://github.com/kubernetes-sigs/kubebuilder/issues/3896.
                                   type: string
                                   default: ""
                                 optional:
@@ -3711,8 +3652,6 @@ spec:
                           grpc:
                             description: GRPC specifies an action involving a GRPC port.
                             type: object
-                            required:
-                              - port
                             properties:
                               port:
                                 description: Port number of the gRPC service. Number must be in the range 1 to 65535.
@@ -3723,9 +3662,9 @@ spec:
                                   Service is the name of the service to place in the gRPC HealthCheckRequest
                                   (see https://github.com/grpc/grpc/blob/master/doc/health-checking.md).
 
-
                                   If this is not specified, the default behavior is defined by gRPC.
                                 type: string
+                                default: ""
                           httpGet:
                             description: HTTPGet specifies the http request to perform.
                             type: object
@@ -3778,7 +3717,8 @@ spec:
                             type: integer
                             format: int32
                           periodSeconds:
-                            description: How often (in seconds) to perform the probe.
+                            description: |-
+                              How often (in seconds) to perform the probe.
                             type: integer
                             format: int32
                           successThreshold:
@@ -3829,8 +3769,6 @@ spec:
                         items:
                           description: ContainerPort represents a network port in a single container.
                           type: object
-                          required:
-                            - containerPort
                           properties:
                             containerPort:
                               description: |-
@@ -3850,10 +3788,6 @@ spec:
                                 Defaults to "TCP".
                               type: string
                               default: TCP
-                        x-kubernetes-list-map-keys:
-                          - containerPort
-                          - protocol
-                        x-kubernetes-list-type: map
                       readinessProbe:
                         description: |-
                           Periodic probe of container service readiness.
@@ -3886,8 +3820,6 @@ spec:
                           grpc:
                             description: GRPC specifies an action involving a GRPC port.
                             type: object
-                            required:
-                              - port
                             properties:
                               port:
                                 description: Port number of the gRPC service. Number must be in the range 1 to 65535.
@@ -3898,9 +3830,9 @@ spec:
                                   Service is the name of the service to place in the gRPC HealthCheckRequest
                                   (see https://github.com/grpc/grpc/blob/master/doc/health-checking.md).
 
-
                                   If this is not specified, the default behavior is defined by gRPC.
                                 type: string
+                                default: ""
                           httpGet:
                             description: HTTPGet specifies the http request to perform.
                             type: object
@@ -3953,7 +3885,8 @@ spec:
                             type: integer
                             format: int32
                           periodSeconds:
-                            description: How often (in seconds) to perform the probe.
+                            description: |-
+                              How often (in seconds) to perform the probe.
                             type: integer
                             format: int32
                           successThreshold:
@@ -3992,33 +3925,6 @@ spec:
                           More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
                         type: object
                         properties:
-                          claims:
-                            description: |-
-                              Claims lists the names of resources, defined in spec.resourceClaims,
-                              that are used by this container.
-
-
-                              This is an alpha field and requires enabling the
-                              DynamicResourceAllocation feature gate.
-
-
-                              This field is immutable. It can only be set for containers.
-                            type: array
-                            items:
-                              description: ResourceClaim references one entry in PodSpec.ResourceClaims.
-                              type: object
-                              required:
-                                - name
-                              properties:
-                                name:
-                                  description: |-
-                                    Name must match the name of one entry in pod.spec.resourceClaims of
-                                    the Pod where this field is used. It makes that resource available
-                                    inside a container.
-                                  type: string
-                            x-kubernetes-list-map-keys:
-                              - name
-                            x-kubernetes-list-type: map
                           limits:
                             description: |-
                               Limits describes the maximum amount of compute resources allowed.
@@ -4081,6 +3987,10 @@ spec:
                                   description: Capability represent POSIX capabilities type
                                   type: string
                                 x-kubernetes-list-type: atomic
+                          privileged:
+                            description: |-
+                              Run container in privileged mode. This can only be set to explicitly to 'false'
+                            type: boolean
                           readOnlyRootFilesystem:
                             description: |-
                               Whether this container has a read-only root filesystem.
@@ -4136,7 +4046,6 @@ spec:
                                   type indicates which kind of seccomp profile will be applied.
                                   Valid options are:
 
-
                                   Localhost - a profile defined in a file on the node should be used.
                                   RuntimeDefault - the container runtime default profile should be used.
                                   Unconfined - no profile should be applied.
@@ -4176,8 +4085,6 @@ spec:
                           grpc:
                             description: GRPC specifies an action involving a GRPC port.
                             type: object
-                            required:
-                              - port
                             properties:
                               port:
                                 description: Port number of the gRPC service. Number must be in the range 1 to 65535.
@@ -4188,9 +4095,9 @@ spec:
                                   Service is the name of the service to place in the gRPC HealthCheckRequest
                                   (see https://github.com/grpc/grpc/blob/master/doc/health-checking.md).
 
-
                                   If this is not specified, the default behavior is defined by gRPC.
                                 type: string
+                                default: ""
                           httpGet:
                             description: HTTPGet specifies the http request to perform.
                             type: object
@@ -4243,7 +4150,8 @@ spec:
                             type: integer
                             format: int32
                           periodSeconds:
-                            description: How often (in seconds) to perform the probe.
+                            description: |-
+                              How often (in seconds) to perform the probe.
                             type: integer
                             format: int32
                           successThreshold:
@@ -4336,34 +4244,39 @@ spec:
                           Cannot be updated.
                         type: string
                 dnsConfig:
-                  description: This is accessible behind a feature flag - kubernetes.podspec-dnsconfig
+                  description: |-
+                    This is accessible behind a feature flag - kubernetes.podspec-dnsconfig
                   type: object
                   x-kubernetes-preserve-unknown-fields: true
                 dnsPolicy:
-                  description: This is accessible behind a feature flag - kubernetes.podspec-dnspolicy
+                  description: |-
+                    This is accessible behind a feature flag - kubernetes.podspec-dnspolicy
                   type: string
                 enableServiceLinks:
-                  description: 'EnableServiceLinks indicates whether information about services should be injected into pod''s environment variables, matching the syntax of Docker links. Optional: Knative defaults this to false.'
+                  description: |-
+                    EnableServiceLinks indicates whether information aboutservices should be injected into pod's environment variables, matching the syntax of Docker links. Optional: Knative defaults this to false.
                   type: boolean
                 hostAliases:
-                  description: This is accessible behind a feature flag - kubernetes.podspec-hostaliases
+                  description: |-
+                    This is accessible behind a feature flag - kubernetes.podspec-hostaliases
                   type: array
                   items:
-                    description: This is accessible behind a feature flag - kubernetes.podspec-hostaliases
+                    description: |-
+                      This is accessible behind a feature flag - kubernetes.podspec-hostaliases
                     type: object
                     x-kubernetes-preserve-unknown-fields: true
                 hostIPC:
-                  description: This is accessible behind a feature flag - kubernetes.podspec-hostipc
+                  description: |-
+                    This is accessible behind a feature flag - kubernetes.podspec-hostipc
                   type: boolean
-                  x-kubernetes-preserve-unknown-fields: true
                 hostNetwork:
-                  description: This is accessible behind a feature flag - kubernetes.podspec-hostnetwork
+                  description: |-
+                    This is accessible behind a feature flag - kubernetes.podspec-hostnetwork
                   type: boolean
-                  x-kubernetes-preserve-unknown-fields: true
                 hostPID:
-                  description: This is accessible behind a feature flag - kubernetes.podspec-hostpid
+                  description: |-
+                    This is accessible behind a feature flag - kubernetes.podspec-hostpid
                   type: boolean
-                  x-kubernetes-preserve-unknown-fields: true
                 idleTimeoutSeconds:
                   description: |-
                     IdleTimeoutSeconds is the maximum duration in seconds a request will be allowed
@@ -4389,9 +4302,7 @@ spec:
                           This field is effectively required, but due to backwards compatibility is
                           allowed to be empty. Instances of this type with an empty value here are
                           almost certainly wrong.
-                          TODO: Add other useful fields. apiVersion, kind, uid?
                           More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
-                          TODO: Drop `kubebuilder:default` when controller-gen doesn't need it https://github.com/kubernetes-sigs/kubebuilder/issues/3896.
                         type: string
                         default: ""
                     x-kubernetes-map-type: atomic
@@ -4400,33 +4311,23 @@ spec:
                   x-kubernetes-list-type: map
                 initContainers:
                   description: |-
-                    List of initialization containers belonging to the pod.
-                    Init containers are executed in order prior to containers being started. If any
-                    init container fails, the pod is considered to have failed and is handled according
-                    to its restartPolicy. The name for an init container or normal container must be
-                    unique among all containers.
-                    Init containers may not have Lifecycle actions, Readiness probes, Liveness probes, or Startup probes.
-                    The resourceRequirements of an init container are taken into account during scheduling
-                    by finding the highest request/limit for each resource type, and then using the max of
-                    of that value or the sum of the normal containers. Limits are applied to init containers
-                    in a similar fashion.
-                    Init containers cannot currently be added or removed.
-                    Cannot be updated.
-                    More info: https://kubernetes.io/docs/concepts/workloads/pods/init-containers/
+                    This is accessible behind a feature flag - kubernetes.podspec-init-containers
                   type: array
                   items:
                     description: This is accessible behind a feature flag - kubernetes.podspec-init-containers
                     type: object
                     x-kubernetes-preserve-unknown-fields: true
                 nodeSelector:
-                  description: This is accessible behind a feature flag - kubernetes.podspec-nodeselector
+                  description: |-
+                    This is accessible behind a feature flag - kubernetes.podspec-nodeselector
                   type: object
-                  x-kubernetes-preserve-unknown-fields: true
+                  additionalProperties:
+                    type: string
                   x-kubernetes-map-type: atomic
                 priorityClassName:
-                  description: This is accessible behind a feature flag - kubernetes.podspec-priorityclassname
+                  description: |-
+                    This is accessible behind a feature flag - kubernetes.podspec-priorityclassname
                   type: string
-                  x-kubernetes-preserve-unknown-fields: true
                 responseStartTimeoutSeconds:
                   description: |-
                     ResponseStartTimeoutSeconds is the maximum duration in seconds that the request
@@ -4435,15 +4336,16 @@ spec:
                   type: integer
                   format: int64
                 runtimeClassName:
-                  description: This is accessible behind a feature flag - kubernetes.podspec-runtimeclassname
+                  description: |-
+                    This is accessible behind a feature flag - kubernetes.podspec-runtimeclassname
                   type: string
-                  x-kubernetes-preserve-unknown-fields: true
                 schedulerName:
-                  description: This is accessible behind a feature flag - kubernetes.podspec-schedulername
+                  description: |-
+                    This is accessible behind a feature flag - kubernetes.podspec-schedulername
                   type: string
-                  x-kubernetes-preserve-unknown-fields: true
                 securityContext:
-                  description: This is accessible behind a feature flag - kubernetes.podspec-securitycontext
+                  description: |-
+                    This is accessible behind a feature flag - kubernetes.podspec-securitycontext
                   type: object
                   x-kubernetes-preserve-unknown-fields: true
                 serviceAccountName:
@@ -4452,9 +4354,9 @@ spec:
                     More info: https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/
                   type: string
                 shareProcessNamespace:
-                  description: This is accessible behind a feature flag - kubernetes.podspec-shareproccessnamespace
+                  description: |-
+                    This is accessible behind a feature flag - kubernetes.podspec-shareprocessnamespace
                   type: boolean
-                  x-kubernetes-preserve-unknown-fields: true
                 timeoutSeconds:
                   description: |-
                     TimeoutSeconds is the maximum duration in seconds that the request instance
@@ -4466,12 +4368,13 @@ spec:
                   description: This is accessible behind a feature flag - kubernetes.podspec-tolerations
                   type: array
                   items:
-                    description: This is accessible behind a feature flag - kubernetes.podspec-tolerations
+                    description: |-
+                      This is accessible behind a feature flag - kubernetes.podspec-tolerations
                     type: object
                     x-kubernetes-preserve-unknown-fields: true
-                  x-kubernetes-list-type: atomic
                 topologySpreadConstraints:
-                  description: This is accessible behind a feature flag - kubernetes.podspec-topologyspreadconstraints
+                  description: |-
+                    This is accessible behind a feature flag - kubernetes.podspec-topologyspreadconstraints
                   type: array
                   items:
                     description: This is accessible behind a feature flag - kubernetes.podspec-topologyspreadconstraints
@@ -4547,9 +4450,7 @@ spec:
                               This field is effectively required, but due to backwards compatibility is
                               allowed to be empty. Instances of this type with an empty value here are
                               almost certainly wrong.
-                              TODO: Add other useful fields. apiVersion, kind, uid?
                               More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
-                              TODO: Drop `kubebuilder:default` when controller-gen doesn't need it https://github.com/kubernetes-sigs/kubebuilder/issues/3896.
                             type: string
                             default: ""
                           optional:
@@ -4557,7 +4458,13 @@ spec:
                             type: boolean
                         x-kubernetes-map-type: atomic
                       emptyDir:
-                        description: This is accessible behind a feature flag - kubernetes.podspec-emptydir
+                        description: |-
+                          This is accessible behind a feature flag - kubernetes.podspec-volumes-emptydir
+                        type: object
+                        x-kubernetes-preserve-unknown-fields: true
+                      hostPath:
+                        description: |-
+                          This is accessible behind a feature flag - kubernetes.podspec-volumes-hostpath
                         type: object
                         x-kubernetes-preserve-unknown-fields: true
                       name:
@@ -4567,7 +4474,8 @@ spec:
                           More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
                         type: string
                       persistentVolumeClaim:
-                        description: This is accessible behind a feature flag - kubernetes.podspec-persistent-volume-claim
+                        description: |-
+                          This is accessible behind a feature flag - kubernetes.podspec-persistent-volume-claim
                         type: object
                         x-kubernetes-preserve-unknown-fields: true
                       projected:
@@ -4585,10 +4493,14 @@ spec:
                             type: integer
                             format: int32
                           sources:
-                            description: sources is the list of volume projections
+                            description: |-
+                              sources is the list of volume projections. Each entry in this list
+                              handles one source.
                             type: array
                             items:
-                              description: Projection that may be projected along with other supported volume types
+                              description: |-
+                                Projection that may be projected along with other supported volume types.
+                                Exactly one of these fields must be set.
                               type: object
                               properties:
                                 configMap:
@@ -4639,9 +4551,7 @@ spec:
                                         This field is effectively required, but due to backwards compatibility is
                                         allowed to be empty. Instances of this type with an empty value here are
                                         almost certainly wrong.
-                                        TODO: Add other useful fields. apiVersion, kind, uid?
                                         More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
-                                        TODO: Drop `kubebuilder:default` when controller-gen doesn't need it https://github.com/kubernetes-sigs/kubebuilder/issues/3896.
                                       type: string
                                       default: ""
                                     optional:
@@ -4758,9 +4668,7 @@ spec:
                                         This field is effectively required, but due to backwards compatibility is
                                         allowed to be empty. Instances of this type with an empty value here are
                                         almost certainly wrong.
-                                        TODO: Add other useful fields. apiVersion, kind, uid?
                                         More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
-                                        TODO: Drop `kubebuilder:default` when controller-gen doesn't need it https://github.com/kubernetes-sigs/kubebuilder/issues/3896.
                                       type: string
                                       default: ""
                                     optional:
@@ -4986,7 +4894,7 @@ metadata:
   name: routes.serving.knative.dev
   labels:
     app.kubernetes.io/name: knative-serving
-    app.kubernetes.io/version: "v1.16"
+    app.kubernetes.io/version: "v1.17"
     knative.dev/crd-install: "true"
     duck.knative.dev/addressable: "true"
 spec:
@@ -5256,7 +5164,7 @@ metadata:
   labels:
     app.kubernetes.io/name: knative-serving
     app.kubernetes.io/component: networking
-    app.kubernetes.io/version: "v1.16"
+    app.kubernetes.io/version: "v1.17"
     knative.dev/crd-install: "true"
 spec:
   group: networking.internal.knative.dev
@@ -5329,7 +5237,6 @@ spec:
                         the event) or if no container name is specified "spec.containers[2]" (container with
                         index 2 in this pod). This syntax is chosen only to have some well-defined way of
                         referencing a part of an object.
-                        TODO: this design is not final and this field is subject to change in the future.
                       type: string
                     kind:
                       description: |-
@@ -5480,7 +5387,7 @@ metadata:
   name: services.serving.knative.dev
   labels:
     app.kubernetes.io/name: knative-serving
-    app.kubernetes.io/version: "v1.16"
+    app.kubernetes.io/version: "v1.17"
     knative.dev/crd-install: "true"
     duck.knative.dev/addressable: "true"
     duck.knative.dev/podspecable: "true"
@@ -5531,10 +5438,8 @@ spec:
             underlying Routes and Configurations (much as a kubernetes Deployment
             orchestrates ReplicaSets), and its usage is optional but recommended.
 
-
             The Service's controller will track the statuses of its owned Configuration
             and Route, reflecting their statuses and conditions as its own.
-
 
             See also: https://github.com/knative/serving/blob/main/docs/spec/overview.md#service
           type: object
@@ -5696,9 +5601,7 @@ spec:
                                                 This field is effectively required, but due to backwards compatibility is
                                                 allowed to be empty. Instances of this type with an empty value here are
                                                 almost certainly wrong.
-                                                TODO: Add other useful fields. apiVersion, kind, uid?
                                                 More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
-                                                TODO: Drop `kubebuilder:default` when controller-gen doesn't need it https://github.com/kubernetes-sigs/kubebuilder/issues/3896.
                                               type: string
                                               default: ""
                                             optional:
@@ -5706,15 +5609,17 @@ spec:
                                               type: boolean
                                           x-kubernetes-map-type: atomic
                                         fieldRef:
-                                          description: This is accessible behind a feature flag - kubernetes.podspec-fieldref
+                                          description: |-
+                                            This is accessible behind a feature flag - kubernetes.podspec-fieldref
                                           type: object
-                                          x-kubernetes-preserve-unknown-fields: true
                                           x-kubernetes-map-type: atomic
+                                          x-kubernetes-preserve-unknown-fields: true
                                         resourceFieldRef:
-                                          description: This is accessible behind a feature flag - kubernetes.podspec-fieldref
+                                          description: |-
+                                            This is accessible behind a feature flag - kubernetes.podspec-fieldref
                                           type: object
-                                          x-kubernetes-preserve-unknown-fields: true
                                           x-kubernetes-map-type: atomic
+                                          x-kubernetes-preserve-unknown-fields: true
                                         secretKeyRef:
                                           description: Selects a key of a secret in the pod's namespace
                                           type: object
@@ -5730,9 +5635,7 @@ spec:
                                                 This field is effectively required, but due to backwards compatibility is
                                                 allowed to be empty. Instances of this type with an empty value here are
                                                 almost certainly wrong.
-                                                TODO: Add other useful fields. apiVersion, kind, uid?
                                                 More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
-                                                TODO: Drop `kubebuilder:default` when controller-gen doesn't need it https://github.com/kubernetes-sigs/kubebuilder/issues/3896.
                                               type: string
                                               default: ""
                                             optional:
@@ -5765,9 +5668,7 @@ spec:
                                             This field is effectively required, but due to backwards compatibility is
                                             allowed to be empty. Instances of this type with an empty value here are
                                             almost certainly wrong.
-                                            TODO: Add other useful fields. apiVersion, kind, uid?
                                             More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
-                                            TODO: Drop `kubebuilder:default` when controller-gen doesn't need it https://github.com/kubernetes-sigs/kubebuilder/issues/3896.
                                           type: string
                                           default: ""
                                         optional:
@@ -5787,9 +5688,7 @@ spec:
                                             This field is effectively required, but due to backwards compatibility is
                                             allowed to be empty. Instances of this type with an empty value here are
                                             almost certainly wrong.
-                                            TODO: Add other useful fields. apiVersion, kind, uid?
                                             More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
-                                            TODO: Drop `kubebuilder:default` when controller-gen doesn't need it https://github.com/kubernetes-sigs/kubebuilder/issues/3896.
                                           type: string
                                           default: ""
                                         optional:
@@ -5844,8 +5743,6 @@ spec:
                                   grpc:
                                     description: GRPC specifies an action involving a GRPC port.
                                     type: object
-                                    required:
-                                      - port
                                     properties:
                                       port:
                                         description: Port number of the gRPC service. Number must be in the range 1 to 65535.
@@ -5856,9 +5753,9 @@ spec:
                                           Service is the name of the service to place in the gRPC HealthCheckRequest
                                           (see https://github.com/grpc/grpc/blob/master/doc/health-checking.md).
 
-
                                           If this is not specified, the default behavior is defined by gRPC.
                                         type: string
+                                        default: ""
                                   httpGet:
                                     description: HTTPGet specifies the http request to perform.
                                     type: object
@@ -5911,7 +5808,8 @@ spec:
                                     type: integer
                                     format: int32
                                   periodSeconds:
-                                    description: How often (in seconds) to perform the probe.
+                                    description: |-
+                                      How often (in seconds) to perform the probe.
                                     type: integer
                                     format: int32
                                   successThreshold:
@@ -5962,8 +5860,6 @@ spec:
                                 items:
                                   description: ContainerPort represents a network port in a single container.
                                   type: object
-                                  required:
-                                    - containerPort
                                   properties:
                                     containerPort:
                                       description: |-
@@ -5983,10 +5879,6 @@ spec:
                                         Defaults to "TCP".
                                       type: string
                                       default: TCP
-                                x-kubernetes-list-map-keys:
-                                  - containerPort
-                                  - protocol
-                                x-kubernetes-list-type: map
                               readinessProbe:
                                 description: |-
                                   Periodic probe of container service readiness.
@@ -6019,8 +5911,6 @@ spec:
                                   grpc:
                                     description: GRPC specifies an action involving a GRPC port.
                                     type: object
-                                    required:
-                                      - port
                                     properties:
                                       port:
                                         description: Port number of the gRPC service. Number must be in the range 1 to 65535.
@@ -6031,9 +5921,9 @@ spec:
                                           Service is the name of the service to place in the gRPC HealthCheckRequest
                                           (see https://github.com/grpc/grpc/blob/master/doc/health-checking.md).
 
-
                                           If this is not specified, the default behavior is defined by gRPC.
                                         type: string
+                                        default: ""
                                   httpGet:
                                     description: HTTPGet specifies the http request to perform.
                                     type: object
@@ -6086,7 +5976,8 @@ spec:
                                     type: integer
                                     format: int32
                                   periodSeconds:
-                                    description: How often (in seconds) to perform the probe.
+                                    description: |-
+                                      How often (in seconds) to perform the probe.
                                     type: integer
                                     format: int32
                                   successThreshold:
@@ -6125,33 +6016,6 @@ spec:
                                   More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
                                 type: object
                                 properties:
-                                  claims:
-                                    description: |-
-                                      Claims lists the names of resources, defined in spec.resourceClaims,
-                                      that are used by this container.
-
-
-                                      This is an alpha field and requires enabling the
-                                      DynamicResourceAllocation feature gate.
-
-
-                                      This field is immutable. It can only be set for containers.
-                                    type: array
-                                    items:
-                                      description: ResourceClaim references one entry in PodSpec.ResourceClaims.
-                                      type: object
-                                      required:
-                                        - name
-                                      properties:
-                                        name:
-                                          description: |-
-                                            Name must match the name of one entry in pod.spec.resourceClaims of
-                                            the Pod where this field is used. It makes that resource available
-                                            inside a container.
-                                          type: string
-                                    x-kubernetes-list-map-keys:
-                                      - name
-                                    x-kubernetes-list-type: map
                                   limits:
                                     description: |-
                                       Limits describes the maximum amount of compute resources allowed.
@@ -6214,6 +6078,10 @@ spec:
                                           description: Capability represent POSIX capabilities type
                                           type: string
                                         x-kubernetes-list-type: atomic
+                                  privileged:
+                                    description: |-
+                                      Run container in privileged mode. This can only be set to explicitly to 'false'
+                                    type: boolean
                                   readOnlyRootFilesystem:
                                     description: |-
                                       Whether this container has a read-only root filesystem.
@@ -6269,7 +6137,6 @@ spec:
                                           type indicates which kind of seccomp profile will be applied.
                                           Valid options are:
 
-
                                           Localhost - a profile defined in a file on the node should be used.
                                           RuntimeDefault - the container runtime default profile should be used.
                                           Unconfined - no profile should be applied.
@@ -6309,8 +6176,6 @@ spec:
                                   grpc:
                                     description: GRPC specifies an action involving a GRPC port.
                                     type: object
-                                    required:
-                                      - port
                                     properties:
                                       port:
                                         description: Port number of the gRPC service. Number must be in the range 1 to 65535.
@@ -6321,9 +6186,9 @@ spec:
                                           Service is the name of the service to place in the gRPC HealthCheckRequest
                                           (see https://github.com/grpc/grpc/blob/master/doc/health-checking.md).
 
-
                                           If this is not specified, the default behavior is defined by gRPC.
                                         type: string
+                                        default: ""
                                   httpGet:
                                     description: HTTPGet specifies the http request to perform.
                                     type: object
@@ -6376,7 +6241,8 @@ spec:
                                     type: integer
                                     format: int32
                                   periodSeconds:
-                                    description: How often (in seconds) to perform the probe.
+                                    description: |-
+                                      How often (in seconds) to perform the probe.
                                     type: integer
                                     format: int32
                                   successThreshold:
@@ -6469,34 +6335,39 @@ spec:
                                   Cannot be updated.
                                 type: string
                         dnsConfig:
-                          description: This is accessible behind a feature flag - kubernetes.podspec-dnsconfig
+                          description: |-
+                            This is accessible behind a feature flag - kubernetes.podspec-dnsconfig
                           type: object
                           x-kubernetes-preserve-unknown-fields: true
                         dnsPolicy:
-                          description: This is accessible behind a feature flag - kubernetes.podspec-dnspolicy
+                          description: |-
+                            This is accessible behind a feature flag - kubernetes.podspec-dnspolicy
                           type: string
                         enableServiceLinks:
-                          description: 'EnableServiceLinks indicates whether information about services should be injected into pod''s environment variables, matching the syntax of Docker links. Optional: Knative defaults this to false.'
+                          description: |-
+                            EnableServiceLinks indicates whether information aboutservices should be injected into pod's environment variables, matching the syntax of Docker links. Optional: Knative defaults this to false.
                           type: boolean
                         hostAliases:
-                          description: This is accessible behind a feature flag - kubernetes.podspec-hostaliases
+                          description: |-
+                            This is accessible behind a feature flag - kubernetes.podspec-hostaliases
                           type: array
                           items:
-                            description: This is accessible behind a feature flag - kubernetes.podspec-hostaliases
+                            description: |-
+                              This is accessible behind a feature flag - kubernetes.podspec-hostaliases
                             type: object
                             x-kubernetes-preserve-unknown-fields: true
                         hostIPC:
-                          description: This is accessible behind a feature flag - kubernetes.podspec-hostipc
+                          description: |-
+                            This is accessible behind a feature flag - kubernetes.podspec-hostipc
                           type: boolean
-                          x-kubernetes-preserve-unknown-fields: true
                         hostNetwork:
-                          description: This is accessible behind a feature flag - kubernetes.podspec-hostnetwork
+                          description: |-
+                            This is accessible behind a feature flag - kubernetes.podspec-hostnetwork
                           type: boolean
-                          x-kubernetes-preserve-unknown-fields: true
                         hostPID:
-                          description: This is accessible behind a feature flag - kubernetes.podspec-hostpid
+                          description: |-
+                            This is accessible behind a feature flag - kubernetes.podspec-hostpid
                           type: boolean
-                          x-kubernetes-preserve-unknown-fields: true
                         idleTimeoutSeconds:
                           description: |-
                             IdleTimeoutSeconds is the maximum duration in seconds a request will be allowed
@@ -6522,9 +6393,7 @@ spec:
                                   This field is effectively required, but due to backwards compatibility is
                                   allowed to be empty. Instances of this type with an empty value here are
                                   almost certainly wrong.
-                                  TODO: Add other useful fields. apiVersion, kind, uid?
                                   More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
-                                  TODO: Drop `kubebuilder:default` when controller-gen doesn't need it https://github.com/kubernetes-sigs/kubebuilder/issues/3896.
                                 type: string
                                 default: ""
                             x-kubernetes-map-type: atomic
@@ -6533,33 +6402,23 @@ spec:
                           x-kubernetes-list-type: map
                         initContainers:
                           description: |-
-                            List of initialization containers belonging to the pod.
-                            Init containers are executed in order prior to containers being started. If any
-                            init container fails, the pod is considered to have failed and is handled according
-                            to its restartPolicy. The name for an init container or normal container must be
-                            unique among all containers.
-                            Init containers may not have Lifecycle actions, Readiness probes, Liveness probes, or Startup probes.
-                            The resourceRequirements of an init container are taken into account during scheduling
-                            by finding the highest request/limit for each resource type, and then using the max of
-                            of that value or the sum of the normal containers. Limits are applied to init containers
-                            in a similar fashion.
-                            Init containers cannot currently be added or removed.
-                            Cannot be updated.
-                            More info: https://kubernetes.io/docs/concepts/workloads/pods/init-containers/
+                            This is accessible behind a feature flag - kubernetes.podspec-init-containers
                           type: array
                           items:
                             description: This is accessible behind a feature flag - kubernetes.podspec-init-containers
                             type: object
                             x-kubernetes-preserve-unknown-fields: true
                         nodeSelector:
-                          description: This is accessible behind a feature flag - kubernetes.podspec-nodeselector
+                          description: |-
+                            This is accessible behind a feature flag - kubernetes.podspec-nodeselector
                           type: object
-                          x-kubernetes-preserve-unknown-fields: true
+                          additionalProperties:
+                            type: string
                           x-kubernetes-map-type: atomic
                         priorityClassName:
-                          description: This is accessible behind a feature flag - kubernetes.podspec-priorityclassname
+                          description: |-
+                            This is accessible behind a feature flag - kubernetes.podspec-priorityclassname
                           type: string
-                          x-kubernetes-preserve-unknown-fields: true
                         responseStartTimeoutSeconds:
                           description: |-
                             ResponseStartTimeoutSeconds is the maximum duration in seconds that the request
@@ -6568,15 +6427,16 @@ spec:
                           type: integer
                           format: int64
                         runtimeClassName:
-                          description: This is accessible behind a feature flag - kubernetes.podspec-runtimeclassname
+                          description: |-
+                            This is accessible behind a feature flag - kubernetes.podspec-runtimeclassname
                           type: string
-                          x-kubernetes-preserve-unknown-fields: true
                         schedulerName:
-                          description: This is accessible behind a feature flag - kubernetes.podspec-schedulername
+                          description: |-
+                            This is accessible behind a feature flag - kubernetes.podspec-schedulername
                           type: string
-                          x-kubernetes-preserve-unknown-fields: true
                         securityContext:
-                          description: This is accessible behind a feature flag - kubernetes.podspec-securitycontext
+                          description: |-
+                            This is accessible behind a feature flag - kubernetes.podspec-securitycontext
                           type: object
                           x-kubernetes-preserve-unknown-fields: true
                         serviceAccountName:
@@ -6585,9 +6445,9 @@ spec:
                             More info: https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/
                           type: string
                         shareProcessNamespace:
-                          description: This is accessible behind a feature flag - kubernetes.podspec-shareproccessnamespace
+                          description: |-
+                            This is accessible behind a feature flag - kubernetes.podspec-shareprocessnamespace
                           type: boolean
-                          x-kubernetes-preserve-unknown-fields: true
                         timeoutSeconds:
                           description: |-
                             TimeoutSeconds is the maximum duration in seconds that the request instance
@@ -6599,12 +6459,13 @@ spec:
                           description: This is accessible behind a feature flag - kubernetes.podspec-tolerations
                           type: array
                           items:
-                            description: This is accessible behind a feature flag - kubernetes.podspec-tolerations
+                            description: |-
+                              This is accessible behind a feature flag - kubernetes.podspec-tolerations
                             type: object
                             x-kubernetes-preserve-unknown-fields: true
-                          x-kubernetes-list-type: atomic
                         topologySpreadConstraints:
-                          description: This is accessible behind a feature flag - kubernetes.podspec-topologyspreadconstraints
+                          description: |-
+                            This is accessible behind a feature flag - kubernetes.podspec-topologyspreadconstraints
                           type: array
                           items:
                             description: This is accessible behind a feature flag - kubernetes.podspec-topologyspreadconstraints
@@ -6680,9 +6541,7 @@ spec:
                                       This field is effectively required, but due to backwards compatibility is
                                       allowed to be empty. Instances of this type with an empty value here are
                                       almost certainly wrong.
-                                      TODO: Add other useful fields. apiVersion, kind, uid?
                                       More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
-                                      TODO: Drop `kubebuilder:default` when controller-gen doesn't need it https://github.com/kubernetes-sigs/kubebuilder/issues/3896.
                                     type: string
                                     default: ""
                                   optional:
@@ -6690,7 +6549,13 @@ spec:
                                     type: boolean
                                 x-kubernetes-map-type: atomic
                               emptyDir:
-                                description: This is accessible behind a feature flag - kubernetes.podspec-emptydir
+                                description: |-
+                                  This is accessible behind a feature flag - kubernetes.podspec-volumes-emptydir
+                                type: object
+                                x-kubernetes-preserve-unknown-fields: true
+                              hostPath:
+                                description: |-
+                                  This is accessible behind a feature flag - kubernetes.podspec-volumes-hostpath
                                 type: object
                                 x-kubernetes-preserve-unknown-fields: true
                               name:
@@ -6700,7 +6565,8 @@ spec:
                                   More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
                                 type: string
                               persistentVolumeClaim:
-                                description: This is accessible behind a feature flag - kubernetes.podspec-persistent-volume-claim
+                                description: |-
+                                  This is accessible behind a feature flag - kubernetes.podspec-persistent-volume-claim
                                 type: object
                                 x-kubernetes-preserve-unknown-fields: true
                               projected:
@@ -6718,10 +6584,14 @@ spec:
                                     type: integer
                                     format: int32
                                   sources:
-                                    description: sources is the list of volume projections
+                                    description: |-
+                                      sources is the list of volume projections. Each entry in this list
+                                      handles one source.
                                     type: array
                                     items:
-                                      description: Projection that may be projected along with other supported volume types
+                                      description: |-
+                                        Projection that may be projected along with other supported volume types.
+                                        Exactly one of these fields must be set.
                                       type: object
                                       properties:
                                         configMap:
@@ -6772,9 +6642,7 @@ spec:
                                                 This field is effectively required, but due to backwards compatibility is
                                                 allowed to be empty. Instances of this type with an empty value here are
                                                 almost certainly wrong.
-                                                TODO: Add other useful fields. apiVersion, kind, uid?
                                                 More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
-                                                TODO: Drop `kubebuilder:default` when controller-gen doesn't need it https://github.com/kubernetes-sigs/kubebuilder/issues/3896.
                                               type: string
                                               default: ""
                                             optional:
@@ -6891,9 +6759,7 @@ spec:
                                                 This field is effectively required, but due to backwards compatibility is
                                                 allowed to be empty. Instances of this type with an empty value here are
                                                 almost certainly wrong.
-                                                TODO: Add other useful fields. apiVersion, kind, uid?
                                                 More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
-                                                TODO: Drop `kubebuilder:default` when controller-gen doesn't need it https://github.com/kubernetes-sigs/kubebuilder/issues/3896.
                                               type: string
                                               default: ""
                                             optional:
@@ -7212,7 +7078,7 @@ metadata:
   labels:
     app.kubernetes.io/component: queue-proxy
     app.kubernetes.io/name: knative-serving
-    app.kubernetes.io/version: "v1.16"
+    app.kubernetes.io/version: "v1.17"
 spec:
   # This is the Go import path for the binary that is containerized
   # and substituted here.
@@ -7240,7 +7106,7 @@ metadata:
   labels:
     app.kubernetes.io/component: autoscaler
     app.kubernetes.io/name: knative-serving
-    app.kubernetes.io/version: "v1.16"
+    app.kubernetes.io/version: "v1.17"
   annotations:
     knative.dev/example-checksum: "47c2487f"
 data:
@@ -7450,7 +7316,7 @@ metadata:
   labels:
     app.kubernetes.io/name: knative-serving
     app.kubernetes.io/component: controller
-    app.kubernetes.io/version: "v1.16"
+    app.kubernetes.io/version: "v1.17"
     networking.knative.dev/certificate-provider: cert-manager
   annotations:
     knative.dev/example-checksum: "b7a9a602"
@@ -7519,7 +7385,7 @@ metadata:
   labels:
     app.kubernetes.io/name: knative-serving
     app.kubernetes.io/component: controller
-    app.kubernetes.io/version: "v1.16"
+    app.kubernetes.io/version: "v1.17"
   annotations:
     knative.dev/example-checksum: "5b64ff5c"
 data:
@@ -7673,7 +7539,7 @@ metadata:
   labels:
     app.kubernetes.io/name: knative-serving
     app.kubernetes.io/component: controller
-    app.kubernetes.io/version: "v1.16"
+    app.kubernetes.io/version: "v1.17"
   annotations:
     knative.dev/example-checksum: "720ddb97"
 data:
@@ -7799,7 +7665,7 @@ metadata:
   labels:
     app.kubernetes.io/name: knative-serving
     app.kubernetes.io/component: controller
-    app.kubernetes.io/version: "v1.16"
+    app.kubernetes.io/version: "v1.17"
   annotations:
     knative.dev/example-checksum: "26c09de5"
 data:
@@ -7863,9 +7729,9 @@ metadata:
   labels:
     app.kubernetes.io/name: knative-serving
     app.kubernetes.io/component: controller
-    app.kubernetes.io/version: "v1.16"
+    app.kubernetes.io/version: "v1.17"
   annotations:
-    knative.dev/example-checksum: "9ff569ad"
+    knative.dev/example-checksum: "63a13754"
 data:
   _example: |-
     ################################
@@ -8043,6 +7909,14 @@ data:
     # 2. Disabled: disabling EmptyDir volume support
     kubernetes.podspec-volumes-emptydir: "enabled"
 
+    # Controls whether volume support for HostPath is enabled or not.
+    # WARNING: Cannot safely be disabled once enabled.
+    # WARNING: If you can avoid using a hostPath volume, you should.
+    # Please read https://kubernetes.io/docs/concepts/storage/volumes/#hostpath before enabling this feature.
+    # 1. Enabled: enabling HostPath volume support
+    # 2. Disabled: disabling HostPath volume support
+    kubernetes.podspec-volumes-hostpath: "disabled"
+
     # Controls whether init containers support is enabled or not.
     # 1. Enabled: enabling init containers support
     # 2. Disabled: disabling init containers support
@@ -8100,7 +7974,7 @@ metadata:
   labels:
     app.kubernetes.io/name: knative-serving
     app.kubernetes.io/component: controller
-    app.kubernetes.io/version: "v1.16"
+    app.kubernetes.io/version: "v1.17"
   annotations:
     knative.dev/example-checksum: "aa3813a8"
 data:
@@ -8199,7 +8073,7 @@ metadata:
   labels:
     app.kubernetes.io/name: knative-serving
     app.kubernetes.io/component: controller
-    app.kubernetes.io/version: "v1.16"
+    app.kubernetes.io/version: "v1.17"
   annotations:
     knative.dev/example-checksum: "f4b71f57"
 data:
@@ -8258,7 +8132,7 @@ metadata:
   name: config-logging
   namespace: knative-serving
   labels:
-    app.kubernetes.io/version: "v1.16"
+    app.kubernetes.io/version: "v1.17"
     app.kubernetes.io/component: logging
     app.kubernetes.io/name: knative-serving
   annotations:
@@ -8340,7 +8214,7 @@ metadata:
   labels:
     app.kubernetes.io/name: knative-serving
     app.kubernetes.io/component: networking
-    app.kubernetes.io/version: "v1.16"
+    app.kubernetes.io/version: "v1.17"
   annotations:
     knative.dev/example-checksum: "0573e07d"
 data:
@@ -8544,7 +8418,7 @@ metadata:
   labels:
     app.kubernetes.io/name: knative-serving
     app.kubernetes.io/component: observability
-    app.kubernetes.io/version: "v1.16"
+    app.kubernetes.io/version: "v1.17"
   annotations:
     knative.dev/example-checksum: "54abd711"
 data:
@@ -8663,7 +8537,7 @@ metadata:
   labels:
     app.kubernetes.io/name: knative-serving
     app.kubernetes.io/component: tracing
-    app.kubernetes.io/version: "v1.16"
+    app.kubernetes.io/version: "v1.17"
   annotations:
     knative.dev/example-checksum: "26614636"
 data:
@@ -8719,7 +8593,7 @@ metadata:
   labels:
     app.kubernetes.io/component: activator
     app.kubernetes.io/name: knative-serving
-    app.kubernetes.io/version: "v1.16"
+    app.kubernetes.io/version: "v1.17"
 spec:
   minReplicas: 1
   maxReplicas: 20
@@ -8747,7 +8621,7 @@ metadata:
   labels:
     app.kubernetes.io/component: activator
     app.kubernetes.io/name: knative-serving
-    app.kubernetes.io/version: "v1.16"
+    app.kubernetes.io/version: "v1.17"
 spec:
   minAvailable: 80%
   selector:
@@ -8775,7 +8649,7 @@ metadata:
   namespace: knative-serving
   labels:
     app.kubernetes.io/component: activator
-    app.kubernetes.io/version: "v1.16"
+    app.kubernetes.io/version: "v1.17"
     app.kubernetes.io/name: knative-serving
 spec:
   selector:
@@ -8789,7 +8663,7 @@ spec:
         role: activator
         app.kubernetes.io/component: activator
         app.kubernetes.io/name: knative-serving
-        app.kubernetes.io/version: "v1.16"
+        app.kubernetes.io/version: "v1.17"
     spec:
       # To avoid node becoming SPOF, spread our replicas to different nodes.
       affinity:
@@ -8893,7 +8767,7 @@ metadata:
   labels:
     app: activator
     app.kubernetes.io/component: activator
-    app.kubernetes.io/version: "v1.16"
+    app.kubernetes.io/version: "v1.17"
     app.kubernetes.io/name: knative-serving
 spec:
   selector:
@@ -8939,7 +8813,7 @@ metadata:
   labels:
     app.kubernetes.io/component: autoscaler
     app.kubernetes.io/name: knative-serving
-    app.kubernetes.io/version: "v1.16"
+    app.kubernetes.io/version: "v1.17"
 spec:
   replicas: 1
   selector:
@@ -8955,7 +8829,7 @@ spec:
         app: autoscaler
         app.kubernetes.io/component: autoscaler
         app.kubernetes.io/name: knative-serving
-        app.kubernetes.io/version: "v1.16"
+        app.kubernetes.io/version: "v1.17"
     spec:
       # To avoid node becoming SPOF, spread our replicas to different nodes.
       affinity:
@@ -9038,7 +8912,7 @@ metadata:
     app: autoscaler
     app.kubernetes.io/component: autoscaler
     app.kubernetes.io/name: knative-serving
-    app.kubernetes.io/version: "v1.16"
+    app.kubernetes.io/version: "v1.17"
   name: autoscaler
   namespace: knative-serving
 spec:
@@ -9078,7 +8952,7 @@ metadata:
   labels:
     app.kubernetes.io/component: controller
     app.kubernetes.io/name: knative-serving
-    app.kubernetes.io/version: "v1.16"
+    app.kubernetes.io/version: "v1.17"
 spec:
   selector:
     matchLabels:
@@ -9089,7 +8963,7 @@ spec:
         app: controller
         app.kubernetes.io/component: controller
         app.kubernetes.io/name: knative-serving
-        app.kubernetes.io/version: "v1.16"
+        app.kubernetes.io/version: "v1.17"
     spec:
       # To avoid node becoming SPOF, spread our replicas to different nodes.
       affinity:
@@ -9176,7 +9050,7 @@ metadata:
     app: controller
     app.kubernetes.io/component: controller
     app.kubernetes.io/name: knative-serving
-    app.kubernetes.io/version: "v1.16"
+    app.kubernetes.io/version: "v1.17"
   name: controller
   namespace: knative-serving
 spec:
@@ -9213,7 +9087,7 @@ metadata:
   labels:
     app.kubernetes.io/component: webhook
     app.kubernetes.io/name: knative-serving
-    app.kubernetes.io/version: "v1.16"
+    app.kubernetes.io/version: "v1.17"
 spec:
   minReplicas: 1
   maxReplicas: 5
@@ -9239,7 +9113,7 @@ metadata:
   labels:
     app.kubernetes.io/component: webhook
     app.kubernetes.io/name: knative-serving
-    app.kubernetes.io/version: "v1.16"
+    app.kubernetes.io/version: "v1.17"
 spec:
   minAvailable: 80%
   selector:
@@ -9267,7 +9141,7 @@ metadata:
   namespace: knative-serving
   labels:
     app.kubernetes.io/component: webhook
-    app.kubernetes.io/version: "v1.16"
+    app.kubernetes.io/version: "v1.17"
     app.kubernetes.io/name: knative-serving
 spec:
   selector:
@@ -9280,7 +9154,7 @@ spec:
         app: webhook
         role: webhook
         app.kubernetes.io/component: webhook
-        app.kubernetes.io/version: "v1.16"
+        app.kubernetes.io/version: "v1.17"
         app.kubernetes.io/name: knative-serving
     spec:
       # To avoid node becoming SPOF, spread our replicas to different nodes.
@@ -9374,7 +9248,7 @@ metadata:
     app: webhook
     role: webhook
     app.kubernetes.io/component: webhook
-    app.kubernetes.io/version: "v1.16"
+    app.kubernetes.io/version: "v1.17"
     app.kubernetes.io/name: knative-serving
   name: webhook
   namespace: knative-serving
@@ -9415,7 +9289,7 @@ metadata:
   labels:
     app.kubernetes.io/component: webhook
     app.kubernetes.io/name: knative-serving
-    app.kubernetes.io/version: "v1.16"
+    app.kubernetes.io/version: "v1.17"
 webhooks:
 - admissionReviewVersions: ["v1", "v1beta1"]
   clientConfig:
@@ -9456,7 +9330,7 @@ metadata:
   labels:
     app.kubernetes.io/component: webhook
     app.kubernetes.io/name: knative-serving
-    app.kubernetes.io/version: "v1.16"
+    app.kubernetes.io/version: "v1.17"
 webhooks:
 - admissionReviewVersions: ["v1", "v1beta1"]
   clientConfig:
@@ -9512,7 +9386,7 @@ metadata:
   labels:
     app.kubernetes.io/component: webhook
     app.kubernetes.io/name: knative-serving
-    app.kubernetes.io/version: "v1.16"
+    app.kubernetes.io/version: "v1.17"
 webhooks:
 - admissionReviewVersions: ["v1", "v1beta1"]
   clientConfig:
@@ -9569,5 +9443,5 @@ metadata:
   labels:
     app.kubernetes.io/component: webhook
     app.kubernetes.io/name: knative-serving
-    app.kubernetes.io/version: "v1.16"
+    app.kubernetes.io/version: "v1.17"
 # The data is populated at install time.

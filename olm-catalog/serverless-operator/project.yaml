@@ -34,14 +34,14 @@ requirements:
     # OCP stream for kube-rbac-proxy image.
     kube-rbac-proxy: "4.17"
 dependencies:
-  serving: knative-v1.16
+  serving: knative-v1.17
   # serving midstream branch name
-  serving_artifacts_branch: release-v1.16
+  serving_artifacts_branch: release-v1.17
   # versions for networking components
-  kourier: knative-v1.16
-  net_kourier_artifacts_branch: release-v1.16
-  net_istio: knative-v1.16
-  net_istio_artifacts_branch: release-v1.16
+  kourier: knative-v1.17
+  net_kourier_artifacts_branch: release-v1.17
+  net_istio: knative-v1.17
+  net_istio_artifacts_branch: release-v1.17
   redhat-knative-istio-authz-chart: 1.37.0
   service_mesh_proxy: registry.redhat.io/openshift-service-mesh/proxyv2-rhel8@sha256:8ee57a44b1fc799fd8565eb339955773bd9beedcbf46f68628ee0bd4abf26515
   eventing: knative-v1.17
