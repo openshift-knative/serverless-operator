@@ -40,7 +40,7 @@ func TestMultiTenancyWithServiceMesh(t *testing.T) {
 			sourceNamespace:   Tenant1,
 			targetNamespace:   Tenant1,
 			usePrivateService: true,
-			checkResponseFunc: spoof.MatchesBody(helloWorldText),
+			checkResponseFunc: spoof.MatchesBody(servinge2e.HelloworldGoText),
 		},
 		{
 			name: "cross-tenant-directly",
@@ -60,7 +60,7 @@ func TestMultiTenancyWithServiceMesh(t *testing.T) {
 			},
 			sourceNamespace:   Tenant1,
 			targetNamespace:   Tenant1,
-			checkResponseFunc: spoof.MatchesBody(helloWorldText),
+			checkResponseFunc: spoof.MatchesBody(servinge2e.HelloworldGoText),
 		},
 		{
 			name: "cross-tenant-via-activator",
@@ -78,7 +78,7 @@ func TestMultiTenancyWithServiceMesh(t *testing.T) {
 			},
 			sourceNamespace:   Tenant1,
 			targetNamespace:   Tenant1,
-			checkResponseFunc: spoof.MatchesBody(helloWorldText),
+			checkResponseFunc: spoof.MatchesBody(servinge2e.HelloworldGoText),
 			gateway:           LocalGatewayHost,
 		},
 		{
@@ -99,7 +99,7 @@ func TestMultiTenancyWithServiceMesh(t *testing.T) {
 			},
 			sourceNamespace:   Tenant1,
 			targetNamespace:   Tenant1,
-			checkResponseFunc: spoof.MatchesBody(helloWorldText),
+			checkResponseFunc: spoof.MatchesBody(servinge2e.HelloworldGoText),
 			gateway:           LocalGatewayHost,
 		},
 		{

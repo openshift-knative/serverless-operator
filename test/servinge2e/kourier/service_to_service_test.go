@@ -86,7 +86,7 @@ func testServiceToService(t *testing.T, ctx *test.Context, namespace string, tc 
 	}
 
 	// Verify the service is actually accessible from the outside
-	servinge2e.WaitForRouteServingText(t, ctx, serviceURL, servinge2e.HelloworldText)
+	servinge2e.WaitForRouteServingText(t, ctx, serviceURL, servinge2e.HelloworldGoText)
 
 	// Verify the expected istio-proxy is really there
 	podList, err := ctx.Clients.Kube.CoreV1().Pods(namespace).List(context.Background(), metav1.ListOptions{LabelSelector: "serving.knative.dev/service=" + service.Name})

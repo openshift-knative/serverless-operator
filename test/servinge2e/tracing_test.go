@@ -69,7 +69,7 @@ func tracingTest(t *testing.T, activatorInPath bool) {
 	}
 	ksvc := test.WithServiceReadyOrFail(ctx, test.Service(name, testNamespace, pkgTest.ImagePath(test.HelloworldGoImg), nil, annotations))
 
-	WaitForRouteServingText(t, ctx, ksvc.Status.URL.URL(), HelloworldText)
+	WaitForRouteServingText(t, ctx, ksvc.Status.URL.URL(), HelloworldGoText)
 
 	doHelloWorldRequests(ctx, ksvc.Status.URL.URL(), requestCount)
 
@@ -101,7 +101,7 @@ func doHelloWorldRequests(ctx *test.Context, url *url.URL, count int) {
 			ctx.T.Errorf("Error GETing %s: %v", url, err)
 		}
 
-		if strings.TrimSpace(resp) != HelloworldText {
+		if strings.TrimSpace(resp) != HelloworldGoText {
 			ctx.T.Errorf("Unexpected response: %s", resp)
 		}
 	}

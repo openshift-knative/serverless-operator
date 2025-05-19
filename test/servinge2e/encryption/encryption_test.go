@@ -25,7 +25,7 @@ func TestExternalAccessWithEncryptionEnabled(t *testing.T) {
 	ksvc = test.WithServiceReadyOrFail(ctx, ksvc)
 
 	// Check if the service is reachable.
-	servinge2e.WaitForRouteServingText(t, ctx, ksvc.Status.URL.URL(), servinge2e.HelloworldText)
+	servinge2e.WaitForRouteServingText(t, ctx, ksvc.Status.URL.URL(), servinge2e.HelloworldGoText)
 
 	// Verify the OCP route the operator created.
 	routes, err := ctx.Clients.Route.Routes(test.IngressNamespace).List(context.Background(), metav1.ListOptions{
@@ -65,5 +65,5 @@ func TestClusterLocalAccessWithEncryptionEnabled(t *testing.T) {
 	httpProxy := test.WithServiceReadyOrFail(ctx, servinge2e.HTTPProxyService(ksvc.Name+"-proxy", test.Namespace,
 		"", ksvc.Status.URL.Host, string(ca.Data[certificates.CertName]), nil, nil))
 
-	servinge2e.WaitForRouteServingText(t, ctx, httpProxy.Status.URL.URL(), servinge2e.HelloworldText)
+	servinge2e.WaitForRouteServingText(t, ctx, httpProxy.Status.URL.URL(), servinge2e.HelloworldGoText)
 }

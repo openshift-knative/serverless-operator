@@ -45,7 +45,7 @@ func TestRouteConflictBehavior(t *testing.T) {
 			t.Fatal("Knative Service not ready", err)
 		}
 
-		servinge2e.WaitForRouteServingText(t, caCtx, olderSvc.Status.URL.URL(), servinge2e.HelloworldText)
+		servinge2e.WaitForRouteServingText(t, caCtx, olderSvc.Status.URL.URL(), servinge2e.HelloworldGoText)
 
 		_, err = test.CreateService(caCtx, newer.Name, newer.Namespace, pkgTest.ImagePath(test.HelloworldGoImg))
 		if err != nil {
@@ -74,7 +74,7 @@ func TestRouteConflictBehavior(t *testing.T) {
 		}
 
 		// Verify that the "older" service still works.
-		servinge2e.WaitForRouteServingText(t, caCtx, olderSvc.Status.URL.URL(), servinge2e.HelloworldText)
+		servinge2e.WaitForRouteServingText(t, caCtx, olderSvc.Status.URL.URL(), servinge2e.HelloworldGoText)
 
 		for _, svc := range services {
 			if err := caCtx.Clients.Serving.ServingV1().Services(svc.Namespace).Delete(context.Background(), svc.Name, metav1.DeleteOptions{}); err != nil {
