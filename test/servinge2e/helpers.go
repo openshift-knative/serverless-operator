@@ -14,7 +14,7 @@ import (
 )
 
 const (
-	HelloworldText = "Hello World!"
+	HelloworldGoText = "Hello World! How about some tasty noodles?"
 )
 
 func WaitForRouteServingText(t *testing.T, caCtx *test.Context, routeURL *url.URL, expectedText string) {
