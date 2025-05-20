@@ -28,6 +28,10 @@ spec:
         value: task
       resolver: bundles
   params:
+  - default: "false"
+    description: Add built image into an OCI image index
+    name: build-image-index
+    type: string
   - default: --all-projects --org=3e1a4cca-ebfb-495f-b64c-3cc960d566b4 --exclude=test*,vendor,third_party
     description: Append arguments to Snyk code command.
     name: snyk-args
@@ -84,10 +88,6 @@ spec:
     description: Image tag expiration time, time values could be something like 1h,
       2d, 3w for hours, days, and weeks, respectively.
     name: image-expires-after
-  - default: "true"
-    description: Add built image into an OCI image index
-    name: build-image-index
-    type: string
   - default: []
     description: Array of --build-arg values ("arg=value" strings) for buildah
     name: build-args
