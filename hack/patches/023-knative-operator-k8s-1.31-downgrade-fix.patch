@@ -1,0 +1,17 @@
+This patch is only, as knative-operator 1.17 already bumped k8s components to 1.32 (to fix some CI issues), while all
+other components are still on k8s 1.31, causing build failures in the knative-operator.
+This patch can be removed, as soon as we bump to components which are using k8s 1.32
+
+diff --git a/vendor/knative.dev/operator/pkg/client/clientset/versioned/typed/operator/v1beta1/operator_client.go b/vendor/knative.dev/operator/pkg/client/clientset/versioned/typed/operator/v1beta1/operator_client.go
+index 276a28806..539c58c64 100644
+--- a/vendor/knative.dev/operator/pkg/client/clientset/versioned/typed/operator/v1beta1/operator_client.go
++++ b/vendor/knative.dev/operator/pkg/client/clientset/versioned/typed/operator/v1beta1/operator_client.go
+@@ -93,7 +93,7 @@ func setConfigDefaults(config *rest.Config) error {
+ 	gv := operatorv1beta1.SchemeGroupVersion
+ 	config.GroupVersion = &gv
+ 	config.APIPath = "/apis"
+-	config.NegotiatedSerializer = rest.CodecFactoryForGeneratedClient(scheme.Scheme, scheme.Codecs).WithoutConversion()
++	config.NegotiatedSerializer = scheme.Codecs.WithoutConversion()
+ 
+ 	if config.UserAgent == "" {
+ 		config.UserAgent = rest.DefaultKubernetesUserAgent()
