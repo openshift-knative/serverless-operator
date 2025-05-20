@@ -32,6 +32,8 @@ import (
 
 // +genclient
 // +genclient:method=GetScale,verb=get,subresource=scale,result=k8s.io/api/autoscaling/v1.Scale
+// +genclient:method=UpdateScale,verb=update,subresource=scale,input=k8s.io/api/autoscaling/v1.Scale,result=k8s.io/api/autoscaling/v1.Scale
+// +genclient:method=ApplyScale,verb=apply,subresource=scale,input=k8s.io/api/autoscaling/v1.Scale,result=k8s.io/api/autoscaling/v1.Scale
 // +genreconciler
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
@@ -228,6 +230,18 @@ func (cg *ConsumerGroup) IsNotScheduled() bool {
 	// - the condition isn't ready (aka status=false)
 	cond := cg.Status.GetCondition(ConditionConsumerGroupConsumersScheduled)
 	return cond.IsFalse() || cond.IsUnknown()
+}
+
+func (cg *ConsumerGroup) IsAutoscalerNotDisabled() bool {
+	condition := cg.Status.GetCondition(ConditionAutoscaling)
+
+	// If condition doesn't exist or is not true, it's not in "disabled" state
+	if condition == nil || condition.Status != corev1.ConditionTrue {
+		return true
+	}
+
+	// If condition is True but reason is not "autoscaler is disabled", then it's actively enabled
+	return condition.Reason != AutoscalerDisabled
 }
 
 func (cg *ConsumerGroup) HasDeadLetterSink() bool {

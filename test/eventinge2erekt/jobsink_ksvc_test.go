@@ -11,5 +11,5 @@ func TestJobSinkSuccess(t *testing.T) {
 
 	ctx, env := defaultEnvironment(t)
 
-	env.Test(ctx, t, jobsink.Success())
+	env.Test(ctx, t, jobsink.Success(""))
 }
