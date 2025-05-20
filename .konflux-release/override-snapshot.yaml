@@ -1,7 +1,7 @@
 apiVersion: appstudio.redhat.com/v1alpha1
 kind: Snapshot
 metadata:
-  name: serverless-operator-136-override-snapshot-225bf5de
+  name: serverless-operator-136-override-snapshot-2bb5aab7
   labels:
     test.appstudio.openshift.io/type: override
     application: serverless-operator-136
@@ -10,11 +10,11 @@ spec:
   application: serverless-operator-136
   components:
     - name: "kn-backstage-plugins-eventmesh-116"
-      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/kn-backstage-plugins-eventmesh@sha256:885c6089845c9642a744c39556c6c989a092cdeffd08939e3a8342d0ebf48de4"
+      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/kn-backstage-plugins-eventmesh@sha256:123b8cb63e1e616c21199aa228c94579183d3997d578192f833214423948af9d"
       source:
         git:
           url: "https://github.com/openshift-knative/backstage-plugins"
-          revision: "5dd4210a1e4e996a93403d936880ce4ef996e356"
+          revision: "d5fdbf0e870a1f01cf02474720e178f5f7b906d9"
           dockerfileUrl: "openshift/ci-operator/knative-images/eventmesh/Dockerfile"
     - name: "kn-client-cli-artifacts-116"
       containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/kn-client-cli-artifacts@sha256:2d8687d6fae5e80dd646ecb08db201b2e87f94980e0319aa788cfde877982c1a"
@@ -325,9 +325,9 @@ spec:
           revision: "d2a7aad7aa7fb69630461b30f60c1494ed309286"
           dockerfileUrl: "openshift-knative-operator/Dockerfile"
     - name: "serverless-bundle-136"
-      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/serverless-bundle@sha256:d3c68bf821868447fa33449075d9125c733a85e646836e2b7160bc3a7524ef2c"
+      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/serverless-bundle@sha256:3ec3001bf942467b5ad91699cfdfbf0b4fa23bbb4debb0a4383c8c631f657391"
       source:
         git:
           url: "https://github.com/openshift-knative/serverless-operator"
-          revision: "2393e67592be23b9dc4eaacd687be5f6b10ca15f"
+          revision: "c8f3abb5abd0c662cdb2f0d2f21b2929cfe8ca81"
           dockerfileUrl: "olm-catalog/serverless-operator/Dockerfile"
