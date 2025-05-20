@@ -20,10 +20,7 @@ EVENTING_VERSION="release-v1.17"
 EVENTING_KAFKA_BROKER_VERSION="release-v1.17"
 SERVING_VERSION="release-v1.17"
 GO_VERSION="$(metadata.get requirements.golang)"
-# Pinning to OCP 4.17 for openshift/client-go even though 4.18 would be newer here.
-# Later version of OCP 4.18 uses K8s 1.31 generics from k8s.io/client-go/gen-type, not present in 1.30.
-# Otherwise, we would need to bump to whole K8s stack to 1.31.
-OCP_VERSION="4.17"
+OCP_VERSION="$(metadata.get requirements.ocpVersion.list[-1])"
 
 # The list of dependencies that we track at HEAD and periodically
 # float forward in this repository.
