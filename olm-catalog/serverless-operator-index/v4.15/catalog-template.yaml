@@ -458,7 +458,7 @@ entries:
   - image: registry.redhat.io/openshift-serverless-1/serverless-operator-bundle@sha256:91456907c61952017daf07e376b565472ef86d67a2925f60e189c639ceb68595
     schema: olm.bundle
   - schema: olm.bundle
-    image: quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-137/serverless-bundle@sha256:a22f6aeb5da90f296cab3e9e32a1975b07efb06fc8f178807f5da399c9c6742a
+    image: quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-137/serverless-bundle@sha256:078514e2a14707d1388e93a9f606989d5c56700003ba188126a5c790a0781aed
   - schema: olm.bundle
     image: quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/serverless-bundle@sha256:c571362e6183aa8733b126e9b042d527d06e9c06c22b47f8c9a09900fa2fd0e2
   - entries:
