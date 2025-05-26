@@ -148,7 +148,8 @@ func convertHTTPConfigFrom(in *v1alpha1.HTTPConfig) *HTTPConfig {
 		OAuth2:            in.OAuth2,
 		BearerTokenSecret: convertSecretKeySelectorFrom(in.BearerTokenSecret),
 		TLSConfig:         in.TLSConfig,
-		ProxyURL:          in.ProxyURL,
+		ProxyURLOriginal:  in.ProxyURLOriginal,
+		ProxyConfig:       in.ProxyConfig,
 		FollowRedirects:   in.FollowRedirects,
 	}
 }
@@ -266,6 +267,9 @@ func convertDiscordConfigFrom(in v1alpha1.DiscordConfig) DiscordConfig {
 		Title:        in.Title,
 		Message:      in.Message,
 		SendResolved: in.SendResolved,
+		Content:      in.Content,
+		Username:     in.Username,
+		AvatarURL:    (*URL)(in.AvatarURL),
 	}
 }
 
@@ -352,6 +356,7 @@ func convertWebhookConfigFrom(in v1alpha1.WebhookConfig) WebhookConfig {
 		URLSecret:    convertSecretKeySelectorFrom(in.URLSecret),
 		HTTPConfig:   convertHTTPConfigFrom(in.HTTPConfig),
 		MaxAlerts:    in.MaxAlerts,
+		Timeout:      in.Timeout,
 	}
 }
 
@@ -448,6 +453,7 @@ func convertTelegramConfigFrom(in v1alpha1.TelegramConfig) TelegramConfig {
 		BotToken:             convertSecretKeySelectorFrom(in.BotToken),
 		BotTokenFile:         in.BotTokenFile,
 		ChatID:               in.ChatID,
+		MessageThreadID:      in.MessageThreadID,
 		Message:              in.Message,
 		DisableNotifications: in.DisableNotifications,
 		ParseMode:            in.ParseMode,
@@ -461,6 +467,16 @@ func convertMSTeamsConfigFrom(in v1alpha1.MSTeamsConfig) MSTeamsConfig {
 		WebhookURL:   in.WebhookURL,
 		Title:        in.Title,
 		Summary:      in.Summary,
+		Text:         in.Text,
+		HTTPConfig:   convertHTTPConfigFrom(in.HTTPConfig),
+	}
+}
+
+func convertMSTeamsV2ConfigFrom(in v1alpha1.MSTeamsV2Config) MSTeamsV2Config {
+	return MSTeamsV2Config{
+		SendResolved: in.SendResolved,
+		WebhookURL:   in.WebhookURL,
+		Title:        in.Title,
 		Text:         in.Text,
 		HTTPConfig:   convertHTTPConfigFrom(in.HTTPConfig),
 	}
@@ -565,6 +581,13 @@ func (dst *AlertmanagerConfig) ConvertFrom(srcRaw conversion.Hub) error {
 			out.MSTeamsConfigs = append(
 				out.MSTeamsConfigs,
 				convertMSTeamsConfigFrom(in),
+			)
+		}
+
+		for _, in := range in.MSTeamsV2Configs {
+			out.MSTeamsV2Configs = append(
+				out.MSTeamsV2Configs,
+				convertMSTeamsV2ConfigFrom(in),
 			)
 		}
 
