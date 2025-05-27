@@ -905,7 +905,7 @@ spec:
                       - name: "IMAGE_kourier-gateway"
                         value: "registry.redhat.io/openshift-service-mesh/proxyv2-rhel8@sha256:8ee57a44b1fc799fd8565eb339955773bd9beedcbf46f68628ee0bd4abf26515"
                       - name: "IMAGE_net-kourier-controller__controller"
-                        value: "registry.redhat.io/openshift-serverless-1/net-kourier-kourier-rhel8@sha256:a2813fa34e7aca7d2704bb7307d5cef36bbce0140a8e37420949b7acaa44d992"
+                        value: "registry.redhat.io/openshift-serverless-1/net-kourier-kourier-rhel8@sha256:69718202a5ad099558ef6733ddb3aa3bc320143b00dd693b141a00bb719b1ef4"
                       - name: "IMAGE_net-istio-controller__controller"
                         value: "registry.redhat.io/openshift-serverless-1/net-istio-controller-rhel8@sha256:b4644f6eff4f2a367712dbd243b94e19eeaa444ba5a6904eb12bbca710b65adc"
                       - name: "IMAGE_net-istio-webhook__webhook"
@@ -961,7 +961,7 @@ spec:
                       - name: "IMAGE_KN_PLUGIN_EVENT_SENDER"
                         value: "registry.redhat.io/openshift-serverless-1/kn-plugin-event-sender-rhel8@sha256:f57efc85260d1616bb30c0db6e394d1b909d0544b61b2434b7b1497e033914d9"
                       - name: "IMAGE_KN_CLIENT"
-                        value: "registry.redhat.io/openshift-serverless-1/kn-client-kn-rhel8@sha256:8b52fd50a806213248c6ec13f9f3b12fc630323a8746067fff0f3078bb310b27"
+                        value: "registry.redhat.io/openshift-serverless-1/kn-client-kn-rhel8@sha256:7c13fa0e861030349cc36eb8bb94da811cd0d3cf7ae3736b2d786e23c08e8396"
                       - name: "IMAGE_KN_PLUGIN_FUNC_UTIL"
                         value: "registry.redhat.io/openshift-serverless-1/kn-plugin-func-func-util-rhel8@sha256:b87977c92d1db5816be46f7ea7275b9e53d2d67e0e3d987922f5de763fb15295"
                       - name: "IMAGE_KN_PLUGIN_FUNC_TEKTON_BUILDAH"
@@ -1003,7 +1003,7 @@ spec:
                 serviceAccountName: knative-openshift
                 initContainers:
                   - name: cli-artifacts
-                    image: registry.redhat.io/openshift-serverless-1/kn-client-cli-artifacts-rhel8@sha256:d753e1afca81c8f6f24179005b73173e5d865dd5a98c498ce6a9072df3bacddd
+                    image: registry.redhat.io/openshift-serverless-1/kn-client-cli-artifacts-rhel8@sha256:785124f3aca2c7be52aa3502cd0e6d2b2c8c57db4f6b40b0fa16603234903f9f
                     imagePullPolicy: Always
                     command: ["sh", "-c", "rm -rf /cli-artifacts/* && cp /usr/share/kn/**/* /cli-artifacts && chmod 444 /cli-artifacts/*"]
                     volumeMounts:
@@ -1095,7 +1095,7 @@ spec:
                       - name: "IMAGE_kourier-gateway"
                         value: "registry.redhat.io/openshift-service-mesh/proxyv2-rhel8@sha256:8ee57a44b1fc799fd8565eb339955773bd9beedcbf46f68628ee0bd4abf26515"
                       - name: "IMAGE_net-kourier-controller__controller"
-                        value: "registry.redhat.io/openshift-serverless-1/net-kourier-kourier-rhel8@sha256:a2813fa34e7aca7d2704bb7307d5cef36bbce0140a8e37420949b7acaa44d992"
+                        value: "registry.redhat.io/openshift-serverless-1/net-kourier-kourier-rhel8@sha256:69718202a5ad099558ef6733ddb3aa3bc320143b00dd693b141a00bb719b1ef4"
                       - name: "IMAGE_net-istio-controller__controller"
                         value: "registry.redhat.io/openshift-serverless-1/net-istio-controller-rhel8@sha256:b4644f6eff4f2a367712dbd243b94e19eeaa444ba5a6904eb12bbca710b65adc"
                       - name: "IMAGE_net-istio-webhook__webhook"
@@ -1151,7 +1151,7 @@ spec:
                       - name: "IMAGE_KN_PLUGIN_EVENT_SENDER"
                         value: "registry.redhat.io/openshift-serverless-1/kn-plugin-event-sender-rhel8@sha256:f57efc85260d1616bb30c0db6e394d1b909d0544b61b2434b7b1497e033914d9"
                       - name: "IMAGE_KN_CLIENT"
-                        value: "registry.redhat.io/openshift-serverless-1/kn-client-kn-rhel8@sha256:8b52fd50a806213248c6ec13f9f3b12fc630323a8746067fff0f3078bb310b27"
+                        value: "registry.redhat.io/openshift-serverless-1/kn-client-kn-rhel8@sha256:7c13fa0e861030349cc36eb8bb94da811cd0d3cf7ae3736b2d786e23c08e8396"
                       - name: "IMAGE_KN_PLUGIN_FUNC_UTIL"
                         value: "registry.redhat.io/openshift-serverless-1/kn-plugin-func-func-util-rhel8@sha256:b87977c92d1db5816be46f7ea7275b9e53d2d67e0e3d987922f5de763fb15295"
                       - name: "IMAGE_KN_PLUGIN_FUNC_TEKTON_BUILDAH"
@@ -1388,7 +1388,7 @@ spec:
     - name: "IMAGE_kourier-gateway"
       image: "registry.redhat.io/openshift-service-mesh/proxyv2-rhel8@sha256:8ee57a44b1fc799fd8565eb339955773bd9beedcbf46f68628ee0bd4abf26515"
     - name: "IMAGE_net-kourier-controller__controller"
-      image: "registry.redhat.io/openshift-serverless-1/net-kourier-kourier-rhel8@sha256:a2813fa34e7aca7d2704bb7307d5cef36bbce0140a8e37420949b7acaa44d992"
+      image: "registry.redhat.io/openshift-serverless-1/net-kourier-kourier-rhel8@sha256:69718202a5ad099558ef6733ddb3aa3bc320143b00dd693b141a00bb719b1ef4"
     - name: "IMAGE_net-istio-controller__controller"
       image: "registry.redhat.io/openshift-serverless-1/net-istio-controller-rhel8@sha256:b4644f6eff4f2a367712dbd243b94e19eeaa444ba5a6904eb12bbca710b65adc"
     - name: "IMAGE_net-istio-webhook__webhook"
@@ -1444,7 +1444,7 @@ spec:
     - name: "IMAGE_KN_PLUGIN_EVENT_SENDER"
       image: "registry.redhat.io/openshift-serverless-1/kn-plugin-event-sender-rhel8@sha256:f57efc85260d1616bb30c0db6e394d1b909d0544b61b2434b7b1497e033914d9"
     - name: "IMAGE_KN_CLIENT"
-      image: "registry.redhat.io/openshift-serverless-1/kn-client-kn-rhel8@sha256:8b52fd50a806213248c6ec13f9f3b12fc630323a8746067fff0f3078bb310b27"
+      image: "registry.redhat.io/openshift-serverless-1/kn-client-kn-rhel8@sha256:7c13fa0e861030349cc36eb8bb94da811cd0d3cf7ae3736b2d786e23c08e8396"
     - name: "IMAGE_KN_PLUGIN_FUNC_UTIL"
       image: "registry.redhat.io/openshift-serverless-1/kn-plugin-func-func-util-rhel8@sha256:b87977c92d1db5816be46f7ea7275b9e53d2d67e0e3d987922f5de763fb15295"
     - name: "IMAGE_KN_PLUGIN_FUNC_TEKTON_BUILDAH"
@@ -1478,6 +1478,6 @@ spec:
     - name: "IMAGE_MUST_GATHER"
       image: "registry.redhat.io/openshift-serverless-1/serverless-must-gather-rhel8@sha256:6a6afcadc65a3f536576139170f1910627ae2372237c4a3567e4e344140c0ed1"
     - name: "IMAGE_KN_CLIENT_CLI_ARTIFACTS"
-      image: "registry.redhat.io/openshift-serverless-1/kn-client-cli-artifacts-rhel8@sha256:d753e1afca81c8f6f24179005b73173e5d865dd5a98c498ce6a9072df3bacddd"
+      image: "registry.redhat.io/openshift-serverless-1/kn-client-cli-artifacts-rhel8@sha256:785124f3aca2c7be52aa3502cd0e6d2b2c8c57db4f6b40b0fa16603234903f9f"
   replaces: serverless-operator.v1.35.0
   version: 1.36.0
