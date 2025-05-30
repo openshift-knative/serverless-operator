@@ -31,6 +31,29 @@ function archive_cypress_artifacts {
   popd >/dev/null
 }
 
+function enable_dev_prespective() {
+  local ocpversion
+  ocpversion="$(oc get clusterversion/version -o jsonpath='{.status.desired.version}')"
+  if versions.lt "$ocpversion" '4.19.0'; then
+    logger.info 'Dev Console is always enabled for OCP <4.19. Skipping the enablement.'
+    return
+  fi
+  local patch='{"spec":{"customization":{"perspectives":[{"id":"dev","visibility":{"state":"Enabled"}}]}}}'
+
+  if LANG=C oc patch console.operator.openshift.io/cluster \
+      --type='merge' \
+      --dry-run='server' \
+      -p "$patch" | grep -q 'no change'; then
+    logger.success 'Dev Prespective already enabled'
+    return
+  fi
+
+  oc patch console.operator.openshift.io/cluster \
+    --type='merge' \
+    -p "$patch"
+  logger.success 'Dev Prespective enabled'
+}
+
 OCP_VERSION="$(oc get clusterversion version -o jsonpath='{.status.desired.version}')"
 OCP_USERNAME="${OCP_USERNAME:-uitesting}"
 OCP_PASSWORD="${OCP_PASSWORD:-$(echo "$OCP_USERNAME" | sha1sum - | awk '{print $1}')}"
@@ -51,6 +74,7 @@ export OCP_VERSION OCP_USERNAME OCP_PASSWORD OCP_LOGIN_PROVIDER CYPRESS_BASE_URL
 
 add_user "$OCP_USERNAME" "$OCP_PASSWORD"
 check_node
+enable_dev_prespective
 archive_cypress_artifacts
 logger.success '🚀 Cluster prepared for testing.'
 
