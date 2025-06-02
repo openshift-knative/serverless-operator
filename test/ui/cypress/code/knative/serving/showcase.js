@@ -28,6 +28,9 @@ class ShowcaseKservice {
       if (environment.ocpVersion().satisfies('<=4.18')) {
         selector = '.overview__sidebar-pane .pf-v5-c-clipboard-copy input[type=text]'
       }
+      if (environment.ocpVersion().satisfies('<=4.14')) {
+        selector = '.overview__sidebar-pane .pf-c-clipboard-copy input[type=text]'
+      }
       return cy.get(selector)
         .last()
         .scrollIntoView()

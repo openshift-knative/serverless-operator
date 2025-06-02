@@ -73,6 +73,18 @@ class OpenshiftConsole {
   }
 
   sidebarSelectors() {
+    if (environment.ocpVersion().satisfies('<=4.14')) {
+      return {
+        /**
+         * @param drawer {JQuery<HTMLElement>}
+         * @returns {boolean}
+         */
+        checkIsOpen: function (drawer) {
+          return drawer.hasClass('pf-m-expanded')
+        },
+        drawer: '.odc-topology .pf-c-drawer',
+      }
+    }
     if (environment.ocpVersion().satisfies('<=4.18')) {
       return {
         /**

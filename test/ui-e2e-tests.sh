@@ -31,7 +31,7 @@ function archive_cypress_artifacts {
   popd >/dev/null
 }
 
-function enable_dev_prespective() {
+function enable_dev_perspective() {
   local ocpversion
   ocpversion="$(oc get clusterversion/version -o jsonpath='{.status.desired.version}')"
   if versions.lt "$ocpversion" '4.19.0'; then
@@ -44,14 +44,14 @@ function enable_dev_prespective() {
       --type='merge' \
       --dry-run='server' \
       -p "$patch" | grep -q 'no change'; then
-    logger.success 'Dev Prespective already enabled'
+    logger.success 'Dev Perspective already enabled'
     return
   fi
 
   oc patch console.operator.openshift.io/cluster \
     --type='merge' \
     -p "$patch"
-  logger.success 'Dev Prespective enabled'
+  logger.success 'Dev Perspective enabled'
 }
 
 OCP_VERSION="$(oc get clusterversion version -o jsonpath='{.status.desired.version}')"
@@ -74,7 +74,7 @@ export OCP_VERSION OCP_USERNAME OCP_PASSWORD OCP_LOGIN_PROVIDER CYPRESS_BASE_URL
 
 add_user "$OCP_USERNAME" "$OCP_PASSWORD"
 check_node
-enable_dev_prespective
+enable_dev_perspective
 archive_cypress_artifacts
 logger.success '🚀 Cluster prepared for testing.'
 

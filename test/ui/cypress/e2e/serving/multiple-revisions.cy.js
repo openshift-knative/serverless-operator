@@ -47,6 +47,9 @@ describe('OCP UI for Serverless Serving', () => {
     if (environment.ocpVersion().satisfies('<=4.18')) {
       selector = `ul.pf-v5-c-dropdown__menu button`
     }
+    if (environment.ocpVersion().satisfies('<=4.14')) {
+      selector = `ul.pf-c-dropdown__menu button`
+    }
     cy.get(selector).click()
     cy.get('button[type=submit]').click()
 
