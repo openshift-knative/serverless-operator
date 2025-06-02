@@ -9,9 +9,9 @@ COPY olm-catalog/serverless-operator-index/configs /configs
 
 RUN /bin/opm init serverless-operator --default-channel=stable --output yaml >> /configs/index.yaml
 RUN /bin/opm render --skip-tls-verify -o yaml \
-registry.ci.openshift.org/knative/release-1.35.0:serverless-bundle \
-registry.ci.openshift.org/knative/release-1.36.0:serverless-bundle \
-      quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-137/serverless-bundle@sha256:242d44dea37458606231e3d886c748801f70921eb38d7e326dc55916841afb30 >> /configs/index.yaml
+quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/serverless-bundle:1.35.0 \
+quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/serverless-bundle:1.36.0 \
+      quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-137/serverless-bundle@sha256:c1ef1f98e9594a6d82f08c4db8c347a08e03bb30bde3be75ddfbdb7b24f65f14 >> /configs/index.yaml
 
 # The base image is expected to contain
 # /bin/opm (with a serve subcommand) and /bin/grpc_health_probe
