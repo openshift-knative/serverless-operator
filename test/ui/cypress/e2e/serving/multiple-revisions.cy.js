@@ -43,7 +43,10 @@ describe('OCP UI for Serverless Serving', () => {
     cy.get('input[name="trafficSplitting.1.tag"]')
       .type('v1')
     cy.contains('Select a Revision', {matchCase: false}).click()
-    let selector = `ul.pf-v5-c-dropdown__menu button`
+    let selector = `.pf-v6-c-dropdown.pf-m-expanded .pf-v6-c-menu button`
+    if (environment.ocpVersion().satisfies('<=4.18')) {
+      selector = `ul.pf-v5-c-dropdown__menu button`
+    }
     if (environment.ocpVersion().satisfies('<=4.14')) {
       selector = `ul.pf-c-dropdown__menu button`
     }
