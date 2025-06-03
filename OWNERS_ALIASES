@@ -1,24 +1,16 @@
 aliases:
   serverless-approvers:
-  - alanfx
   - aliok
   - creydr
   - dsimansk
   - lberk
   - matzew
-  - mgencur
   - openshift-cherrypick-robot
-  - pierDipi
-  - ReToCode
-  - skonto
   - Kaustubh-pande
+  - maschmid
   serverless-reviewers:
   - aliok
   - creydr
   - dsimansk
   - matzew
-  - mgencur
-  - pierDipi
-  - ReToCode
-  - skonto
   - Kaustubh-pande
