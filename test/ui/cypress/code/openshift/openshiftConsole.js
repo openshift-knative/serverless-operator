@@ -85,6 +85,18 @@ class OpenshiftConsole {
         drawer: '.odc-topology .pf-c-drawer',
       }
     }
+    if (environment.ocpVersion().satisfies('<=4.18')) {
+      return {
+        /**
+         * @param drawer {JQuery<HTMLElement>}
+         * @returns {boolean}
+         */
+        checkIsOpen: function (drawer) {
+          return drawer.find('.pf-topology-resizable-side-bar').length > 0
+        },
+        drawer: '.pf-v5-c-drawer__panel.ocs-sidebar-index',
+      }
+    }
     return {
       /**
        * @param drawer {JQuery<HTMLElement>}
@@ -93,7 +105,7 @@ class OpenshiftConsole {
       checkIsOpen: function (drawer) {
         return drawer.find('.pf-topology-resizable-side-bar').length > 0
       },
-      drawer: '.pf-v5-c-drawer__panel.ocs-sidebar-index',
+      drawer: '.pf-v6-c-drawer__panel.ocs-sidebar-index',
     }
   }
 }
