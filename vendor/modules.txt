@@ -171,10 +171,10 @@ github.com/google/go-cmp/cmp/internal/diff
 github.com/google/go-cmp/cmp/internal/flags
 github.com/google/go-cmp/cmp/internal/function
 github.com/google/go-cmp/cmp/internal/value
-# github.com/google/go-containerregistry v0.17.0
+# github.com/google/go-containerregistry v0.19.2
 ## explicit; go 1.18
 github.com/google/go-containerregistry/pkg/name
-# github.com/google/gofuzz v1.2.0
+# github.com/google/gofuzz v1.2.1-0.20210504230335-f78f29fc09ea
 ## explicit; go 1.12
 github.com/google/gofuzz
 github.com/google/gofuzz/bytesource
