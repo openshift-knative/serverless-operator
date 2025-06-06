@@ -58,7 +58,7 @@ spec:
 EOF
 
   tmp_catalog_dir=$(mktemp -d)
-  max_ocp_version="$(metadata.get requirements.ocpVersion.max)"
+  max_ocp_version="$(metadata.get 'requirements.ocpVersion.list[-1]')"
   max_ocp_version=${max_ocp_version/./}
   latest_index_image="${registry_quay}-fbc-${max_ocp_version}/serverless-index-${so_short_version}-fbc-${max_ocp_version}:latest"
 
