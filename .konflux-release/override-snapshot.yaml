@@ -1,7 +1,7 @@
 apiVersion: appstudio.redhat.com/v1alpha1
 kind: Snapshot
 metadata:
-  name: serverless-operator-136-override-snapshot-cca62089
+  name: serverless-operator-136-override-snapshot-a4b1920c
   labels:
     test.appstudio.openshift.io/type: override
     application: serverless-operator-136
@@ -297,37 +297,37 @@ spec:
           revision: "b7f7b5f989cd1a1e87afc5ae5b10d09d33e4d55c"
           dockerfileUrl: "openshift/ci-operator/knative-images/kourier/Dockerfile"
     - name: "serverless-ingress-136"
-      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/serverless-ingress@sha256:4fe46e37bec06d471fca0fcd10c982bd93ea19566d26eb071a4db71394dfe907"
+      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/serverless-ingress@sha256:fbeb930b3a6964c22efa6b975a5cc56127e902d2860f3484a86b4322a31d2649"
       source:
         git:
           url: "https://github.com/openshift-knative/serverless-operator"
-          revision: "300ca1f9459ec047cac92596f152ca3e3cf9b658"
+          revision: "c2385138a9eca080ee3e818b66995f717299b638"
           dockerfileUrl: "serving/ingress/Dockerfile"
     - name: "serverless-kn-operator-136"
-      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/serverless-kn-operator@sha256:7145262118d684f83826134cbef22da80c33c9bb5aa2b5066a021bf740c2e30f"
+      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/serverless-kn-operator@sha256:34c9fbb247fd922d58db785e24d6486073bed30465b6f7d22ea54c5bddc8335a"
       source:
         git:
           url: "https://github.com/openshift-knative/serverless-operator"
-          revision: "300ca1f9459ec047cac92596f152ca3e3cf9b658"
+          revision: "c2385138a9eca080ee3e818b66995f717299b638"
           dockerfileUrl: "knative-operator/Dockerfile"
     - name: "serverless-must-gather-136"
-      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/serverless-must-gather@sha256:6a6afcadc65a3f536576139170f1910627ae2372237c4a3567e4e344140c0ed1"
+      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/serverless-must-gather@sha256:e6d6957e0a60923b17b32baeb0b46b45f50bf19e8663ca982cf9d92e7105d8a0"
       source:
         git:
           url: "https://github.com/openshift-knative/serverless-operator"
-          revision: "300ca1f9459ec047cac92596f152ca3e3cf9b658"
+          revision: "c2385138a9eca080ee3e818b66995f717299b638"
           dockerfileUrl: "must-gather/Dockerfile"
     - name: "serverless-openshift-kn-operator-136"
-      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/serverless-openshift-kn-operator@sha256:7f94a713df362c9eb683a497cab2795bc164a15eca1061251e6d69000abd074d"
+      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/serverless-openshift-kn-operator@sha256:30030c31149955ab14ae8c5fc144e54012b25ed4e3b93e0f3be6bf6fbbdc793b"
       source:
         git:
           url: "https://github.com/openshift-knative/serverless-operator"
-          revision: "300ca1f9459ec047cac92596f152ca3e3cf9b658"
+          revision: "c2385138a9eca080ee3e818b66995f717299b638"
           dockerfileUrl: "openshift-knative-operator/Dockerfile"
     - name: "serverless-bundle-136"
-      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/serverless-bundle@sha256:4a7323dda6a3419cef4ee58fd51daf9af9e65beafb0216fc0be3619c321ab19c"
+      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/serverless-bundle@sha256:6f7063a82dba5a4808240c7fdb42dc1d1bd7612680f5e3ea9019d59bb371f1f4"
       source:
         git:
           url: "https://github.com/openshift-knative/serverless-operator"
-          revision: "788c8e7903e26063d216c90888632745f731ca08"
+          revision: "9cad2ee3c097e9e0312d4ef9d1f0699cfefc78de"
           dockerfileUrl: "olm-catalog/serverless-operator/Dockerfile"
