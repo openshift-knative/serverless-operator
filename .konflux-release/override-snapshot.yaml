@@ -1,7 +1,7 @@
 apiVersion: appstudio.redhat.com/v1alpha1
 kind: Snapshot
 metadata:
-  name: serverless-operator-136-override-snapshot-bb5678c8
+  name: serverless-operator-136-override-snapshot-a8ad1d65
   labels:
     test.appstudio.openshift.io/type: override
     application: serverless-operator-136
@@ -279,9 +279,9 @@ spec:
       containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/net-istio-controller@sha256:704f827c537f28c192e985f422a40dfa218f474e65fde049f05a3c02b2b54582"
       source:
         git:
-          url: "https://github.com/openshift-knative/net-istio https://github.com/openshift-knative/net-istio https://github.com/openshift-knative/net-istio https://github.com/openshift-knative/net-istio https://github.com/openshift-knative/net-istio https://github.com/openshift-knative/net-istio https://github.com/openshift-knative/net-istio https://github.com/openshift-knative/net-istio https://github.com/openshift-knative/net-istio"
-          revision: "d92466cb79c2012b4bfc7c8f80a59dce6073c91c d92466cb79c2012b4bfc7c8f80a59dce6073c91c d92466cb79c2012b4bfc7c8f80a59dce6073c91c d92466cb79c2012b4bfc7c8f80a59dce6073c91c d92466cb79c2012b4bfc7c8f80a59dce6073c91c d92466cb79c2012b4bfc7c8f80a59dce6073c91c d92466cb79c2012b4bfc7c8f80a59dce6073c91c d92466cb79c2012b4bfc7c8f80a59dce6073c91c d92466cb79c2012b4bfc7c8f80a59dce6073c91c"
-          dockerfileUrl: "openshift/ci-operator/knative-images/controller/Dockerfile openshift/ci-operator/knative-images/controller/Dockerfile openshift/ci-operator/knative-images/controller/Dockerfile openshift/ci-operator/knative-images/controller/Dockerfile openshift/ci-operator/knative-images/controller/Dockerfile openshift/ci-operator/knative-images/controller/Dockerfile openshift/ci-operator/knative-images/controller/Dockerfile openshift/ci-operator/knative-images/controller/Dockerfile openshift/ci-operator/knative-images/controller/Dockerfile"
+          url: "https://github.com/openshift-knative/net-istio"
+          revision: "d92466cb79c2012b4bfc7c8f80a59dce6073c91c"
+          dockerfileUrl: "openshift/ci-operator/knative-images/controller/Dockerfile"
     - name: "net-istio-webhook-116"
       containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/net-istio-webhook@sha256:6939d0ec31480dbfa172783d2531f6497c38dd18b0cbcc1597413e7dd49a4d62"
       source:
