@@ -22,7 +22,7 @@ import (
 	metav1 "k8s.io/client-go/applyconfigurations/meta/v1"
 )
 
-// ThanosRulerSpecApplyConfiguration represents an declarative configuration of the ThanosRulerSpec type for use
+// ThanosRulerSpecApplyConfiguration represents a declarative configuration of the ThanosRulerSpec type for use
 // with apply.
 type ThanosRulerSpecApplyConfiguration struct {
 	Version                            *string                                         `json:"version,omitempty"`
@@ -38,7 +38,11 @@ type ThanosRulerSpecApplyConfiguration struct {
 	Tolerations                        []corev1.Toleration                             `json:"tolerations,omitempty"`
 	TopologySpreadConstraints          []corev1.TopologySpreadConstraint               `json:"topologySpreadConstraints,omitempty"`
 	SecurityContext                    *corev1.PodSecurityContext                      `json:"securityContext,omitempty"`
+	DNSPolicy                          *monitoringv1.DNSPolicy                         `json:"dnsPolicy,omitempty"`
+	DNSConfig                          *PodDNSConfigApplyConfiguration                 `json:"dnsConfig,omitempty"`
+	EnableServiceLinks                 *bool                                           `json:"enableServiceLinks,omitempty"`
 	PriorityClassName                  *string                                         `json:"priorityClassName,omitempty"`
+	ServiceName                        *string                                         `json:"serviceName,omitempty"`
 	ServiceAccountName                 *string                                         `json:"serviceAccountName,omitempty"`
 	Storage                            *StorageSpecApplyConfiguration                  `json:"storage,omitempty"`
 	Volumes                            []corev1.Volume                                 `json:"volumes,omitempty"`
@@ -76,9 +80,11 @@ type ThanosRulerSpecApplyConfiguration struct {
 	HostAliases                        []HostAliasApplyConfiguration                   `json:"hostAliases,omitempty"`
 	AdditionalArgs                     []ArgumentApplyConfiguration                    `json:"additionalArgs,omitempty"`
 	Web                                *ThanosRulerWebSpecApplyConfiguration           `json:"web,omitempty"`
+	RemoteWrite                        []RemoteWriteSpecApplyConfiguration             `json:"remoteWrite,omitempty"`
+	TerminationGracePeriodSeconds      *int64                                          `json:"terminationGracePeriodSeconds,omitempty"`
 }
 
-// ThanosRulerSpecApplyConfiguration constructs an declarative configuration of the ThanosRulerSpec type for use with
+// ThanosRulerSpecApplyConfiguration constructs a declarative configuration of the ThanosRulerSpec type for use with
 // apply.
 func ThanosRulerSpec() *ThanosRulerSpecApplyConfiguration {
 	return &ThanosRulerSpecApplyConfiguration{}
@@ -200,11 +206,43 @@ func (b *ThanosRulerSpecApplyConfiguration) WithSecurityContext(value corev1.Pod
 	return b
 }
 
+// WithDNSPolicy sets the DNSPolicy field in the declarative configuration to the given value
+// and returns the receiver, so that objects can be built by chaining "With" function invocations.
+// If called multiple times, the DNSPolicy field is set to the value of the last call.
+func (b *ThanosRulerSpecApplyConfiguration) WithDNSPolicy(value monitoringv1.DNSPolicy) *ThanosRulerSpecApplyConfiguration {
+	b.DNSPolicy = &value
+	return b
+}
+
+// WithDNSConfig sets the DNSConfig field in the declarative configuration to the given value
+// and returns the receiver, so that objects can be built by chaining "With" function invocations.
+// If called multiple times, the DNSConfig field is set to the value of the last call.
+func (b *ThanosRulerSpecApplyConfiguration) WithDNSConfig(value *PodDNSConfigApplyConfiguration) *ThanosRulerSpecApplyConfiguration {
+	b.DNSConfig = value
+	return b
+}
+
+// WithEnableServiceLinks sets the EnableServiceLinks field in the declarative configuration to the given value
+// and returns the receiver, so that objects can be built by chaining "With" function invocations.
+// If called multiple times, the EnableServiceLinks field is set to the value of the last call.
+func (b *ThanosRulerSpecApplyConfiguration) WithEnableServiceLinks(value bool) *ThanosRulerSpecApplyConfiguration {
+	b.EnableServiceLinks = &value
+	return b
+}
+
 // WithPriorityClassName sets the PriorityClassName field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the PriorityClassName field is set to the value of the last call.
 func (b *ThanosRulerSpecApplyConfiguration) WithPriorityClassName(value string) *ThanosRulerSpecApplyConfiguration {
 	b.PriorityClassName = &value
+	return b
+}
+
+// WithServiceName sets the ServiceName field in the declarative configuration to the given value
+// and returns the receiver, so that objects can be built by chaining "With" function invocations.
+// If called multiple times, the ServiceName field is set to the value of the last call.
+func (b *ThanosRulerSpecApplyConfiguration) WithServiceName(value string) *ThanosRulerSpecApplyConfiguration {
+	b.ServiceName = &value
 	return b
 }
 
@@ -541,5 +579,26 @@ func (b *ThanosRulerSpecApplyConfiguration) WithAdditionalArgs(values ...*Argume
 // If called multiple times, the Web field is set to the value of the last call.
 func (b *ThanosRulerSpecApplyConfiguration) WithWeb(value *ThanosRulerWebSpecApplyConfiguration) *ThanosRulerSpecApplyConfiguration {
 	b.Web = value
+	return b
+}
+
+// WithRemoteWrite adds the given value to the RemoteWrite field in the declarative configuration
+// and returns the receiver, so that objects can be build by chaining "With" function invocations.
+// If called multiple times, values provided by each call will be appended to the RemoteWrite field.
+func (b *ThanosRulerSpecApplyConfiguration) WithRemoteWrite(values ...*RemoteWriteSpecApplyConfiguration) *ThanosRulerSpecApplyConfiguration {
+	for i := range values {
+		if values[i] == nil {
+			panic("nil value passed to WithRemoteWrite")
+		}
+		b.RemoteWrite = append(b.RemoteWrite, *values[i])
+	}
+	return b
+}
+
+// WithTerminationGracePeriodSeconds sets the TerminationGracePeriodSeconds field in the declarative configuration to the given value
+// and returns the receiver, so that objects can be built by chaining "With" function invocations.
+// If called multiple times, the TerminationGracePeriodSeconds field is set to the value of the last call.
+func (b *ThanosRulerSpecApplyConfiguration) WithTerminationGracePeriodSeconds(value int64) *ThanosRulerSpecApplyConfiguration {
+	b.TerminationGracePeriodSeconds = &value
 	return b
 }
