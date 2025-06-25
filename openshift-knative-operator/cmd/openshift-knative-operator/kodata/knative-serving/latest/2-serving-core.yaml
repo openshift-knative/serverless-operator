@@ -9153,7 +9153,7 @@ webhooks:
     service:
       name: webhook
       namespace: knative-serving
-  failurePolicy: Fail
+  failurePolicy: Ignore
   sideEffects: None
   name: config.webhook.serving.knative.dev
   objectSelector:
@@ -9164,7 +9164,7 @@ webhooks:
     - key: app.kubernetes.io/component
       operator: In
       values: ["autoscaler", "controller", "logging", "networking", "observability", "tracing", "net-certmanager"]
-  timeoutSeconds: 10
+  timeoutSeconds: 3
 ---
 # Copyright 2020 The Knative Authors
 #
