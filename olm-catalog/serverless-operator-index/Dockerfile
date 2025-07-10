@@ -7,6 +7,9 @@ COPY --from=opm /bin/opm /bin/opm
 # Copy declarative config root into image at /configs
 COPY olm-catalog/serverless-operator-index/configs /configs
 
+# Copy policy.json for opm
+COPY olm-catalog/serverless-operator-index/policy.json /etc/containers/policy.json
+
 RUN /bin/opm init serverless-operator --default-channel=stable --output yaml >> /configs/index.yaml
 RUN /bin/opm render --skip-tls-verify -o yaml \
 quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/serverless-bundle:1.35.0 \
