@@ -1,4 +1,4 @@
-FROM registry.ci.openshift.org/origin/__OCP_MAX_VERSION__:operator-registry AS opm
+FROM registry.ci.openshift.org/origin/scos-__OCP_MAX_VERSION__:operator-registry AS opm
 
 FROM registry.access.redhat.com/ubi9/ubi-minimal as builder
 
@@ -13,7 +13,7 @@ RUN /bin/opm render --skip-tls-verify -o yaml \
 
 # The base image is expected to contain
 # /bin/opm (with a serve subcommand) and /bin/grpc_health_probe
-FROM registry.ci.openshift.org/origin/__OCP_MAX_VERSION__:operator-registry
+FROM registry.ci.openshift.org/origin/scos-__OCP_MAX_VERSION__:operator-registry
 
 # Copy declarative config root into image at /configs
 COPY --from=builder /configs /configs
