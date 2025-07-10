@@ -1,4 +1,4 @@
-FROM registry.ci.openshift.org/origin/4.18:operator-registry AS opm
+FROM registry.ci.openshift.org/origin/4.20:operator-registry AS opm
 
 FROM registry.access.redhat.com/ubi9/ubi-minimal as builder
 
@@ -15,7 +15,7 @@ quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/serv
 
 # The base image is expected to contain
 # /bin/opm (with a serve subcommand) and /bin/grpc_health_probe
-FROM registry.ci.openshift.org/origin/4.18:operator-registry
+FROM registry.ci.openshift.org/origin/4.20:operator-registry
 
 # Copy declarative config root into image at /configs
 COPY --from=builder /configs /configs
