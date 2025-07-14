@@ -27,8 +27,8 @@ function deploy_certmanager_operator {
   oc wait deployments -n ${deployment_namespace} cert-manager --for condition=available --timeout=600s
 
   # TODO: workaround for the cert-manager being Ready before it setups webhook certs
-  logger.info "Sleeping for 30s to let cert-manager setup its webhook certs"
-  sleep 30
+  logger.info "Sleeping for 60s to let cert-manager setup its webhook certs"
+  sleep 60
 }
 
 function deploy_certificates {
