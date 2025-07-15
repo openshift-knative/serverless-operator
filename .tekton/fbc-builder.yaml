@@ -85,6 +85,7 @@ spec:
     description: Image tag expiration time, time values could be something like 1h,
       2d, 3w for hours, days, and weeks, respectively.
     name: image-expires-after
+    type: string
   - default: "true"
     description: Add built image into an OCI image index
     name: build-image-index
@@ -115,8 +116,10 @@ spec:
     params:
     - name: ADDITIONAL_TAGS
       value: $(params.additional-tags[*])
-    - name: IMAGE
+    - name: IMAGE_URL
       value: $(tasks.build-image-index.results.IMAGE_URL)
+    - name: IMAGE_DIGEST
+      value: $(tasks.build-image-index.results.IMAGE_DIGEST)
     runAfter:
     - build-image-index
     taskRef:
