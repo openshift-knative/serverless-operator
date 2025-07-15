@@ -31,7 +31,9 @@ requirements:
       - "4.19"
       - "4.20"
     min: '4.14'
+    # Version to use for OCP docs links (in CSV or Quickstarts)
     doc: '4.19'
+    # deprecated, use requirements.ocpVersion.list[-1]
     max: '4.20'
     label: 'v4.14'
     # OCP stream for kube-rbac-proxy image.
