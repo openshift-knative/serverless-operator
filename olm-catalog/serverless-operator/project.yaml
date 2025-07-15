@@ -31,7 +31,8 @@ requirements:
       - "4.19"
       - "4.20"
     min: '4.14'
-    max: '4.19'
+    doc: '4.19'
+    max: '4.20'
     label: 'v4.14'
     # OCP stream for kube-rbac-proxy image.
     kube-rbac-proxy: "4.17"
