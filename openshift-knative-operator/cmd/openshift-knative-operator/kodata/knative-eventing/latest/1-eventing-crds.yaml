@@ -1266,6 +1266,7 @@ metadata:
   name: eventtransforms.eventing.knative.dev
   labels:
     knative.dev/crd-install: "true"
+    duck.knative.dev/addressable: "true"
     app.kubernetes.io/version: v1.17
     app.kubernetes.io/name: knative-eventing
 spec:
