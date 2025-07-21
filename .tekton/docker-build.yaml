@@ -1,7 +1,7 @@
 apiVersion: tekton.dev/v1
 kind: Pipeline
 metadata:
-  creationTimestamp:
+  creationTimestamp: null
   labels:
     pipelines.openshift.io/runtime: generic
     pipelines.openshift.io/strategy: docker
@@ -11,7 +11,7 @@ spec:
   description: |
     This pipeline is ideal for building multi-arch container images from a Containerfile while maintaining trust after pipeline customization.
 
-    _Uses `buildah` to create a multi-platform container image leveraging [trusted artifacts](https://konflux-ci.dev/architecture/ADR/0036-trusted-artifacts.html). It also optionally creates a source image and runs some build-time tests. This pipeline requires that the [multi platform controller](https://github.com/konflux-ci/multi-platform-controller) is deployed and configured on your Konflux instance. Information is shared between tasks using OCI artifacts instead of PVCs. EC will pass the [`trusted_task.trusted`](https://enterprisecontract.dev/docs/ec-policies/release_policy.html#trusted_task__trusted) policy as long as all data used to build the artifact is generated from trusted tasks.
+    _Uses `buildah` to create a multi-platform container image leveraging [trusted artifacts](https://konflux-ci.dev/architecture/ADR/0036-trusted-artifacts.html). It also optionally creates a source image and runs some build-time tests. This pipeline requires that the [multi platform controller](https://github.com/konflux-ci/multi-platform-controller) is deployed and configured on your Konflux instance. Information is shared between tasks using OCI artifacts instead of PVCs. EC will pass the [`trusted_task.trusted`](https://conforma.dev/docs/policy/packages/release_trusted_task.html#trusted_task__trusted) policy as long as all data used to build the artifact is generated from trusted tasks.
     This pipeline is pushed as a Tekton bundle to [quay.io](https://quay.io/repository/konflux-ci/tekton-catalog/pipeline-docker-build-multi-platform-oci-ta?tab=tags)_
   finally:
   - name: show-sbom
@@ -33,7 +33,8 @@ spec:
     - linux/arm64
     - linux/ppc64le
     - linux/s390x
-    description: List of platforms to build the container images on. The available set of values is determined by the configuration of the multi-platform-controller.
+    description: List of platforms to build the container images on. The available
+      set of values is determined by the configuration of the multi-platform-controller.
     name: build-platforms
     type: array
   - default: --all-projects --org=3e1a4cca-ebfb-495f-b64c-3cc960d566b4 --exclude=test*,vendor,third_party
@@ -45,7 +46,8 @@ spec:
     name: build-source-image
     type: string
   - default: "false"
-    description: 'Enable in-development package managers. WARNING: the behavior may change at any time without notice. Use at your own risk.'
+    description: 'Enable in-development package managers. WARNING: the behavior may
+      change at any time without notice. Use at your own risk.'
     name: prefetch-input-dev-package-managers
   - default: []
     description: Additional image tags
@@ -62,11 +64,13 @@ spec:
     name: output-image
     type: string
   - default: .
-    description: Path to the source code of an application's component from where to build image.
+    description: Path to the source code of an application's component from where
+      to build image.
     name: path-context
     type: string
   - default: Dockerfile
-    description: Path to the Dockerfile inside the context specified by parameter path-context
+    description: Path to the Dockerfile inside the context specified by parameter
+      path-context
     name: dockerfile
     type: string
   - default: "false"
@@ -86,8 +90,10 @@ spec:
     name: prefetch-input
     type: string
   - default: ""
-    description: Image tag expiration time, time values could be something like 1h, 2d, 3w for hours, days, and weeks, respectively.
+    description: Image tag expiration time, time values could be something like 1h,
+      2d, 3w for hours, days, and weeks, respectively.
     name: image-expires-after
+    type: string
   - default: "true"
     description: Add built image into an OCI image index
     name: build-image-index
@@ -101,7 +107,8 @@ spec:
     name: build-args-file
     type: string
   - default: "false"
-    description: Whether to enable privileged mode, should be used only with remote VMs
+    description: Whether to enable privileged mode, should be used only with remote
+      VMs
     name: privileged-nested
     type: string
   results:
@@ -322,12 +329,12 @@ spec:
     params:
     - name: BINARY_IMAGE
       value: $(tasks.build-image-index.results.IMAGE_URL)
+    - name: BINARY_IMAGE_DIGEST
+      value: $(tasks.build-image-index.results.IMAGE_DIGEST)
     - name: SOURCE_ARTIFACT
       value: $(tasks.prefetch-dependencies.results.SOURCE_ARTIFACT)
     - name: CACHI2_ARTIFACT
       value: $(tasks.prefetch-dependencies.results.CACHI2_ARTIFACT)
-    - name: BINARY_IMAGE_DIGEST
-      value: $(tasks.build-image-index.results.IMAGE_DIGEST)
     runAfter:
     - build-image-index
     taskRef:
@@ -522,7 +529,7 @@ spec:
       - name: name
         value: rpms-signature-scan
       - name: bundle
-        value: quay.io/konflux-ci/tekton-catalog/task-rpms-signature-scan:0.2@sha256:1b6c20ab3dbfb0972803d3ebcb2fa72642e59400c77bd66dfd82028bdd09e120
+        value: quay.io/konflux-ci/konflux-vanguard/task-rpms-signature-scan:0.2@sha256:7d1c087d7d33dd97effb3b4c9f3788e4c3138da2032040d69da6929e9a3aaceb
       - name: kind
         value: task
       resolver: bundles
