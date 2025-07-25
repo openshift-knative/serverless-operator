@@ -9276,7 +9276,7 @@ relatedImages:
   name: IMAGE_KN_PLUGIN_FUNC_TEKTON_BUILDAH
 schema: olm.bundle
 ---
-image: registry.redhat.io/openshift-serverless-1/serverless-operator-bundle@sha256:8a7de387975ad324c97449f4f104f618bc576d6df66b55cfae6846571100473a
+image: registry.redhat.io/openshift-serverless-1/serverless-operator-bundle@sha256:c084a6d7d7b3d97c3b89f5993239ca2f3a0afe0639ef5a232fdb32a1bff4ff28
 name: serverless-operator.v1.37.0
 package: serverless-operator
 properties:
@@ -9529,7 +9529,7 @@ properties:
     provider:
       name: Red Hat
 relatedImages:
-- image: registry.redhat.io/openshift-serverless-1/serverless-operator-bundle@sha256:8a7de387975ad324c97449f4f104f618bc576d6df66b55cfae6846571100473a
+- image: registry.redhat.io/openshift-serverless-1/serverless-operator-bundle@sha256:c084a6d7d7b3d97c3b89f5993239ca2f3a0afe0639ef5a232fdb32a1bff4ff28
   name: ""
 - image: registry.access.redhat.com/ubi8/nodejs-20-minimal@sha256:a2a7e399aaf09a48c28f40820da16709b62aee6f2bc703116b9345fab5830861
   name: IMAGE_KN_PLUGIN_FUNC_NODEJS_20_MINIMAL
