@@ -4,10 +4,10 @@ project:
   # all components in `dependencies.previous` to the same versions as `dependencies` in the same PR.
   # Otherwise, the upgrade tests will not pass, as we have a different SO version with the same bundle contents.
   # Also make sure to update values under `olm.previous` by copying from `olm.replaces` and `olm.skipRange`.
-  version: 1.35.1
+  version: 1.35.2
 olm:
-  replaces: 1.35.0
-  skipRange: '>=1.35.0 <1.35.1'
+  replaces: 1.35.1
+  skipRange: '>=1.35.0 <1.35.2'
   channels:
     default: stable
     list:
@@ -28,8 +28,9 @@ requirements:
       - "4.16"
       - "4.17"
       - "4.18"
+      - "4.19"
     min: '4.14'
-    max: '4.18'
+    max: '4.19'
     label: 'v4.14'
     # OCP stream for kube-rbac-proxy image.
     kube-rbac-proxy: "4.17"
