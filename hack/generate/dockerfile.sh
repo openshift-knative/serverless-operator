@@ -12,7 +12,7 @@ default_serverless_operator_images
 
 declare -A values
 values[NAME]="$(metadata.get project.name)"
-values[LATEST_VERSIONED_CHANNEL]="$(metadata.get 'olm.channels.list[1]')"
+values[LATEST_VERSIONED_CHANNEL]="$(metadata.get 'olm.channels.list[0]')"
 values[DEFAULT_CHANNEL]="$(metadata.get olm.channels.default)"
 values[VERSION]="$(metadata.get project.version)"
 values[SERVING_VERSION]="$(metadata.get dependencies.serving)"
