@@ -1,4 +1,4 @@
-FROM registry.ci.openshift.org/origin/scos-4.20:cli-artifacts AS oc-image
+FROM registry.ci.openshift.org/origin/scos-4.18:cli-artifacts AS oc-image
 
 FROM src
 
