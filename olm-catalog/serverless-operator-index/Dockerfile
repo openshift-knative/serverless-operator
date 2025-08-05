@@ -14,7 +14,7 @@ RUN /bin/opm init serverless-operator --default-channel=stable --output yaml >> 
 RUN /bin/opm render --skip-tls-verify -o yaml \
 quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-135/serverless-bundle:1.35.0 \
 quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-136/serverless-bundle:1.36.0 \
-      quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-137/serverless-bundle@sha256:97846e732e573c0e4f72272de61e1b774c74e8bc0b4f444a45a1d8f9028493a0 >> /configs/index.yaml
+      quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-137/serverless-bundle@sha256:3ffc5452a37202785df30d54a9c792868f541f4b9e4971a68f5183c701abddab >> /configs/index.yaml
 
 # The base image is expected to contain
 # /bin/opm (with a serve subcommand) and /bin/grpc_health_probe
