@@ -14,6 +14,7 @@ declare -A values
 values[NAME]="$(metadata.get project.name)"
 values[LATEST_VERSIONED_CHANNEL]="$(metadata.get 'olm.channels.list[0]')"
 values[DEFAULT_CHANNEL]="$(metadata.get olm.channels.default)"
+values[DEFAULT_INDEX_CHANNEL]="$(metadata.get olm.channels.default_index)"
 values[VERSION]="$(metadata.get project.version)"
 values[SERVING_VERSION]="$(metadata.get dependencies.serving)"
 values[EVENTING_VERSION]="$(metadata.get dependencies.eventing)"

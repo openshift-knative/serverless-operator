@@ -10,6 +10,7 @@ olm:
   skipRange: '>=1.35.0 <1.35.2'
   channels:
     default: stable
+    default_index: stable-1.35
     list:
       - stable-1.35
 requirements:

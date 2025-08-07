@@ -10,7 +10,7 @@ COPY olm-catalog/serverless-operator-index/configs /configs
 # Copy policy.json for opm
 COPY olm-catalog/serverless-operator-index/policy.json /etc/containers/policy.json
 
-RUN /bin/opm init serverless-operator --default-channel=__DEFAULT_CHANNEL__ --output yaml >> /configs/index.yaml
+RUN /bin/opm init serverless-operator --default-channel=__DEFAULT_INDEX_CHANNEL__ --output yaml >> /configs/index.yaml
 RUN /bin/opm render --skip-tls-verify -o yaml \
       __BUNDLE__ >> /configs/index.yaml
 
