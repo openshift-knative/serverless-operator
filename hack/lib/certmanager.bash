@@ -17,7 +17,7 @@ function deploy_certmanager_operator {
 
   deployment_namespace="cert-manager"
 
-  ocp_version=$(oc get clusterversion version -o jsonpath='{.status.desired.version}')
+  oc apply -f "${certmanager_resources_dir}"/subscription.yaml || return $?
 
   logger.info "Waiting until cert manager operator is available"
 
