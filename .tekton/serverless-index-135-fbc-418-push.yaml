@@ -40,7 +40,7 @@ spec:
     - name: additional-tags
       value:
         - $(context.pipelineRun.uid)-{{revision}}
-        - 1.35.1
+        - 1.35.2
         - latest
   pipelineRef:
     name: fbc-builder
