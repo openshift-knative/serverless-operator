@@ -18,8 +18,13 @@ quay_registry_app_version=${quay_registry_app_version%.*} # 136.0 -> 136
 quay_registry_app_version_previous=${PREVIOUS_VERSION/./} # 1.35.0 -> 135.0
 quay_registry_app_version_previous=${quay_registry_app_version_previous%.*} # 135.0 -> 135
 
+quay_registry_app_version_next=${CURRENT_VERSION/./} # 1.36.0 -> 136.0
+quay_registry_app_version_next=${quay_registry_app_version_next%.*} # 136.0 -> 136
+quay_registry_app_version_next="$((quay_registry_app_version_next + 1))" # 136 -> 137
+
 export registry_quay="${registry_prefix_quay}${quay_registry_app_version}"
 export registry_quay_previous="${registry_prefix_quay}${quay_registry_app_version_previous}"
+export registry_quay_next="${registry_prefix_quay}${quay_registry_app_version_next}"
 export registry_redhat_io="registry.redhat.io/openshift-serverless-1"
 
 export FORCE_USE_QUAY_IMAGES=${FORCE_USE_QUAY_IMAGES:-"false"}

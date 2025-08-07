@@ -84,7 +84,7 @@ function install_catalogsource {
     # Use ImageContentSourcePolicy only with the FBC from Konflux as
     # updating machine config pools takes a while.
     # shellcheck disable=SC2154
-    create_image_content_source_policy "$index_image" "$registry_redhat_io" "$registry_quay" "$registry_quay_previous" "$tmpfile" "$idms_tmpfile"
+    create_image_content_source_policy "$index_image" "$registry_redhat_io" "$registry_quay" "$registry_quay_previous" "$registry_quay_next" "$tmpfile" "$idms_tmpfile"
     [ -n "$OPENSHIFT_CI" ] && cat "$tmpfile"
     if oc apply -f "$tmpfile"; then
       echo "Wait for machineconfigpool update to start"
@@ -125,8 +125,9 @@ function create_image_content_source_policy {
   registry_source="${2:?Pass source registry arg[2]}"
   registry_target="${3:?Pass target registry arg[3]}"
   registry_target_previous="${4:?Pass previous target registry arg[4]}"
-  image_content_source_policy_output_file="${5:?Pass output file arg[5]}"
-  image_digest_mirror_output_file="${6:?Pass image_digest_mirror_output_file arg[6]}"
+  registry_target_next="${5:?Pass next target registry arg[5]}"
+  image_content_source_policy_output_file="${6:?Pass output file arg[6]}"
+  image_digest_mirror_output_file="${7:?Pass image_digest_mirror_output_file arg[7]}"
 
   logger.info "Install ImageContentSourcePolicy"
   cat > "$image_content_source_policy_output_file" <<EOF
@@ -181,31 +182,32 @@ EOF
 
         local mirror1="${registry_target}/${target_img}"
         local mirror2="${registry_target_previous}/${target_img}"
+        local mirror3="${registry_target_next}/${target_img}"
 
-        add_repository_digest_mirrors "$image_content_source_policy_output_file" "${registry_source}/${img}" "${mirror1}" "${mirror2}"
-        add_image_digest_mirrors "$image_digest_mirror_output_file" "${registry_source}/${img}" "${mirror1}" "${mirror2}"
+        add_repository_digest_mirrors "$image_content_source_policy_output_file" "${registry_source}/${img}" "${mirror1}" "${mirror2}" "${mirror3}"
+        add_image_digest_mirrors "$image_digest_mirror_output_file" "${registry_source}/${img}" "${mirror1}" "${mirror2}" "${mirror3}"
       fi
     done <<< "$mirrors"
 }
 
 function add_repository_digest_mirrors {
-  echo "Add mirror image to '${1}' - $2 = $3, $4"
+  echo "Add mirror image to '${1}' - $2 = $3, $4, $5"
   cat << EOF | yq write --inplace --script - "$1"
 - command: update
   path: spec.repositoryDigestMirrors[+]
   value:
-    mirrors: [ "${3}", "${4}" ]
+    mirrors: [ "${3}", "${4}", "${5}" ]
     source: "${2}"
 EOF
 }
 
 function add_image_digest_mirrors {
-  echo "Add mirror image to '${1}' - $2 = $3, $4"
+  echo "Add mirror image to '${1}' - $2 = $3, $4, $5"
   cat << EOF | yq write --inplace --script - "$1"
 - command: update
   path: spec.imageDigestMirrors[+]
   value:
-    mirrors: [ "${3}", "${4}" ]
+    mirrors: [ "${3}", "${4}", "${5}" ]
     source: "${2}"
 EOF
 }
