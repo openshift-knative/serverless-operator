@@ -68,11 +68,12 @@ function get_bundle_for_version() {
   fi
 
   if [[ "${image}" == "" ]]; then
+    echo "[ERROR] No image found for $version" > /dev/stderr
     exit 1
   fi
 
   if [[ "${image_version}" != "${version}" ]]; then
-    exit 2
+    echo "[WARNING] Image $image $image_version does not match requested version $version" > /dev/stderr
   fi
 
   echo "$image"
