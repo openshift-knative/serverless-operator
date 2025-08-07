@@ -10,7 +10,7 @@ COPY olm-catalog/serverless-operator-index/configs /configs
 # Copy policy.json for opm
 COPY olm-catalog/serverless-operator-index/policy.json /etc/containers/policy.json
 
-RUN /bin/opm init serverless-operator --default-channel=stable --output yaml >> /configs/index.yaml
+RUN /bin/opm init serverless-operator --default-channel=stable-1.35 --output yaml >> /configs/index.yaml
 RUN /bin/opm render --skip-tls-verify -o yaml \
 registry.ci.openshift.org/knative/release-1.34.0:serverless-bundle \
 registry.ci.openshift.org/knative/release-1.35.0:serverless-bundle \
