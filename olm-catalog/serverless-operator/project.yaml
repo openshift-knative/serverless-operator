@@ -9,8 +9,10 @@ olm:
   replaces: 1.35.1
   skipRange: '>=1.35.0 <1.35.2'
   channels:
-    default: stable
-    default_index: stable-1.35
+    # The "global" operator default, used as "operators.operatorframework.io.bundle.channels.v1" annotation
+    operator_default: stable
+    # The default channel to use for CI
+    default: stable-1.35
     list:
       - stable-1.35
 requirements:
