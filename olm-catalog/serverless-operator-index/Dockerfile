@@ -12,10 +12,10 @@ COPY olm-catalog/serverless-operator-index/policy.json /etc/containers/policy.js
 
 RUN /bin/opm init serverless-operator --default-channel=stable-1.35 --output yaml >> /configs/index.yaml
 RUN /bin/opm render --skip-tls-verify -o yaml \
-quay.io/openshift-knative/serverless-bundle:release-1.32.0 \
 registry.ci.openshift.org/knative/release-1.33.0:serverless-bundle \
 registry.ci.openshift.org/knative/release-1.34.0:serverless-bundle \
 registry.ci.openshift.org/knative/release-1.35.0:serverless-bundle \
+registry.ci.openshift.org/knative/release-1.35.1:serverless-bundle \
       registry.ci.openshift.org/knative/serverless-bundle@sha256:794a8a52da82f11da7a1a7727a283241fe2a2e4a2ef73f6fde55839ea737136b >> /configs/index.yaml
 
 # The base image is expected to contain
