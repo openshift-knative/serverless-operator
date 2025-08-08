@@ -12,8 +12,9 @@ default_serverless_operator_images
 
 declare -A values
 values[NAME]="$(metadata.get project.name)"
-values[LATEST_VERSIONED_CHANNEL]="$(metadata.get 'olm.channels.list[1]')"
+values[LATEST_VERSIONED_CHANNEL]="$(metadata.get 'olm.channels.list[0]')"
 values[DEFAULT_CHANNEL]="$(metadata.get olm.channels.default)"
+values[OPERATOR_DEFAULT_CHANNEL]="$(metadata.get olm.channels.operator_default)"
 values[VERSION]="$(metadata.get project.version)"
 values[SERVING_VERSION]="$(metadata.get dependencies.serving)"
 values[EVENTING_VERSION]="$(metadata.get dependencies.eventing)"
@@ -45,13 +46,14 @@ if [[ "$template" =~ index.Dockerfile ]]; then
   # TODO gradually migrate other bundle images to Konflux-based ones as we build more minor versions with Konflux
   # Generate additional entries
   for i in $(seq $num_csvs); do
-    current_minor=$(( minor-i ))
-    # If the current version is a z-stream then the following entries will
-    # start with the same "minor" version.
-    if [[ "$micro" != "0" ]]; then
-      current_minor=$(( current_minor+1 ))
+    current_minor=$(( minor ))
+    current_micro=$(( micro-i ))
+    if [[ "$current_micro" -le 0 ]]; then
+      current_minor=$((minor + current_micro))
+      current_micro=0
     fi
-    current_version="${major}.${current_minor}.0"
+
+    current_version="${major}.${current_minor}.${current_micro}"
 
     sed --in-place "/opm render/a registry.ci.openshift.org/knative/release-${current_version}:serverless-bundle \\\\" "$target"
   done
