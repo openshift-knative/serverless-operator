@@ -36,11 +36,12 @@ const (
 )
 
 // NewExtension creates a new extension for a Knative Eventing controller.
-func NewExtension(ctx context.Context, _ *controller.Impl) operator.Extension {
+func NewExtension(ctx context.Context, impl *controller.Impl) operator.Extension {
 	return &extension{
 		kubeclient:    kubeclient.Get(ctx),
 		dynamicclient: dynamicclient.Get(ctx),
 		logger:        logging.FromContext(ctx),
+		scaler:        NewScaler(ctx, impl),
 	}
 }
 
@@ -48,6 +49,7 @@ type extension struct {
 	kubeclient    kubernetes.Interface
 	dynamicclient dynamic.Interface
 	logger        *zap.SugaredLogger
+	scaler        *CoreScalerWrapper
 }
 
 func (e *extension) Manifests(ke base.KComponent) ([]mf.Manifest, error) {
@@ -129,11 +131,19 @@ func (e *extension) Reconcile(ctx context.Context, comp base.KComponent) error {
 		}
 	}
 
+	if err := e.scaler.Scale(ke); err != nil {
+		err = fmt.Errorf("failed to scale components based on resources: %w", err)
+		ke.Status.MarkInstallFailed(err.Error())
+		return err
+	}
+
 	if !eventingistio.IsEnabled(ke.GetSpec().GetConfig()) {
 		eventingistio.ScaleIstioController(requiredNs, ke, 0)
 	} else {
 		eventingistio.ScaleIstioController(requiredNs, ke, 1)
 	}
+
+	e.logger.Debugw("resource spec", zap.Any("resource", ke.Spec))
 
 	return monitoring.ReconcileMonitoringForEventing(ctx, e.kubeclient, ke)
 }
