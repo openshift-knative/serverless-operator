@@ -55,7 +55,7 @@ if [[ "$template" =~ index.Dockerfile ]]; then
 
     current_version="${major}.${current_minor}.${current_micro}"
 
-    sed --in-place "/opm render/a registry.ci.openshift.org/knative/release-${current_version}:serverless-bundle \\\\" "$target"
+    sed --in-place "/opm render/a registry.redhat.io/openshift-serverless-1/serverless-operator-bundle:${current_version} \\\\" "$target"
   done
 
   # Hacks. Should gradually go away with next versions.
