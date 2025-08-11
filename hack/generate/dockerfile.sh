@@ -55,7 +55,13 @@ if [[ "$template" =~ index.Dockerfile ]]; then
 
     current_version="${major}.${current_minor}.${current_micro}"
 
-    sed --in-place "/opm render/a registry.redhat.io/openshift-serverless-1/serverless-operator-bundle:${current_version} \\\\" "$target"
+    if [[ "$current_minor" -lt 35 ]]; then
+      current_image="registry.ci.openshift.org/knative/release-${current_version}:serverless-bundle"
+    else
+      current_image="quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-${major}${current_minor}/serverless-bundle:${current_version}"
+    fi
+
+    sed --in-place "/opm render/a ${current_image} \\\\" "$target"
   done
 
   # Hacks. Should gradually go away with next versions.
