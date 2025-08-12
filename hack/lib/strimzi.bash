@@ -31,6 +31,7 @@ metadata:
 spec:
   kafka:
     version: 3.9.0
+    metadataVersion: 3.9-IV0
     replicas: 3
     listeners:
       # PLAINTEXT
@@ -74,7 +75,6 @@ spec:
       offsets.topic.replication.factor: 3
       transaction.state.log.replication.factor: 3
       transaction.state.log.min.isr: 2
-      inter.broker.protocol.version: "3.9"
       auto.create.topics.enable: "false"
   entityOperator:
     topicOperator: {}
