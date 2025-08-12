@@ -8,6 +8,10 @@ target="${1:?Provide a target index yaml file as arg[1]}"
 source "$(dirname "${BASH_SOURCE[0]}")/../lib/__sources__.bash"
 
 function add_previous_bundles {
+  if [[ -n "${REGISTRY_REDHAT_IO_USERNAME:-}" ]] || [[ -n "${REGISTRY_REDHAT_IO_PASSWORD:-}" ]]; then
+    skopeo login registry.redhat.io -u "${REGISTRY_REDHAT_IO_USERNAME}" -p "${REGISTRY_REDHAT_IO_PASSWORD}"
+  fi
+
   # We're adding just the "previous bundles"
   num_csvs=$(( INDEX_IMAGE_NUM_CSVS-1 ))
 
