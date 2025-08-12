@@ -316,6 +316,8 @@ release-files: install-tools
 		openshift/ci-operator/build-image/Dockerfile
 	./hack/generate/index.sh \
 		olm-catalog/serverless-operator-index/configs/index.yaml
+	./hack/generate/index-bundles.sh \
+		olm-catalog/serverless-operator-index/configs/index-bundles.yaml
 	./hack/generate/dockerfile.sh \
 		templates/catalog.Dockerfile \
 		olm-catalog/serverless-operator-index
