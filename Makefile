@@ -287,7 +287,7 @@ generate-ci-config:
 generate-catalog:
 	./hack/generate/catalog.sh
 	./hack/generate/index-bundles.sh \
-		olm-catalog/serverless-operator-index/configs/index-bundles.yaml
+		olm-catalog/serverless-operator-index/index-bundles.yaml
 .PHONY: generate-catalog
 
 generate-override-snapshot: install-tools
