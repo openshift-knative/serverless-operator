@@ -23,6 +23,7 @@ var sinksAll = []component{
 	ksvc,
 	kafkaSink,
 	jobSink,
+	eventTransformSink,
 }
 
 var sinksShort = []component{

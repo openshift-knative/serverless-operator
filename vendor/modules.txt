@@ -1487,6 +1487,7 @@ knative.dev/eventing/test/rekt/resources/channel_impl
 knative.dev/eventing/test/rekt/resources/channel_template
 knative.dev/eventing/test/rekt/resources/containersource
 knative.dev/eventing/test/rekt/resources/delivery
+knative.dev/eventing/test/rekt/resources/eventtransform
 knative.dev/eventing/test/rekt/resources/eventtype
 knative.dev/eventing/test/rekt/resources/jobsink
 knative.dev/eventing/test/rekt/resources/parallel
