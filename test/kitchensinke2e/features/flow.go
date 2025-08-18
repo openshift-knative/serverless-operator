@@ -266,6 +266,10 @@ func sequenceGlobalReplyFeatureSet(short bool, times int) feature.FeatureSet {
 	rnd := rand.New(source)
 	features := make([]*feature.Feature, 0, len(flowTestConfigurations)*len(rpls))
 	steps := sinksAll
+	if short {
+		// Hack for upgrade tests, we don't have JobSink in <= 1.35
+		steps = sinkAllExceptJobSink
+	}
 	for _, flowTestConfiguration := range flowTestConfigurations {
 		for _, reply := range rpls {
 			// We've already tested all possible step kinds above,
@@ -300,6 +304,10 @@ func parallelGlobalReplyFeatureSet(short bool, times int) feature.FeatureSet {
 	if short {
 		rpls = repliesShort
 	}
+	subscrs := subscribers
+	if short {
+		subscrs = sinkAllExceptJobSink
+	}
 	// We're using random to choose a random subscriber for a given reply Kind
 	source := rand.NewSource(time.Now().UnixNano())
 	rnd := rand.New(source)
@@ -310,7 +318,7 @@ func parallelGlobalReplyFeatureSet(short bool, times int) feature.FeatureSet {
 				label := fmt.Sprintf("%s-par-%s-rep-%d", flowTestConfiguration.shortLabel, shortLabel(reply), i)
 				// We've already tested all possible branches kinds above,
 				// so just use a single branch (with a random subscriber) in the sequence for the "with-reply" test
-				features = append(features, ParallelReadiness(label, flowTestConfiguration, []component{subscribers[rnd.Intn(len(subscribers))]}, []component{}, []component{}, reply))
+				features = append(features, ParallelReadiness(label, flowTestConfiguration, []component{subscrs[rnd.Intn(len(subscrs))]}, []component{}, []component{}, reply))
 			}
 		}
 	}
