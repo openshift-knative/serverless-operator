@@ -258,6 +258,7 @@ kitchensink-e2e: install-tools
 	./test/kitchensink-e2e-tests.sh -run TestChannelReadiness
 	./test/kitchensink-e2e-tests.sh -run TestFlowReadiness
 	./test/kitchensink-e2e-tests.sh -run TestSourceReadiness
+	./test/kitchensink-e2e-tests.sh -run TestEventTransformReadiness
 
 test-kitchensink-e2e: kitchensink-e2e
 
