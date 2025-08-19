@@ -25,6 +25,22 @@ var sinksAll = []component{
 	jobSink,
 }
 
+var sinkAllExceptJobSink = []component{
+	kafkaChannel,
+	inMemoryChannel,
+	genericChannelWithKafkaChannelTemplate,
+	genericChannelWithInMemoryChannelTemplate,
+	inMemoryChannelMtBroker,
+	kafkaChannelMtBroker,
+	kafkaBroker,
+	inMemoryChannelSequence,
+	kafkaChannelSequence,
+	inMemoryChannelParallel,
+	kafkaChannelParallel,
+	ksvc,
+	kafkaSink,
+}
+
 var sinksShort = []component{
 	ksvc,
 }

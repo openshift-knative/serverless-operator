@@ -25,9 +25,19 @@ const (
 )
 
 func UpdateSubscriptionChannelSource(ctx *Context, name, channel, source string) (*operatorsv1alpha1.Subscription, error) {
-	patch := []byte(fmt.Sprintf(`{"spec":{"channel":"%s","source":"%s"}}`, channel, source))
-	return ctx.Clients.OLM.OperatorsV1alpha1().Subscriptions(OperatorsNamespace).
-		Patch(context.Background(), name, types.MergePatchType, patch, metav1.PatchOptions{})
+	subscription, err := ctx.Clients.OLM.OperatorsV1alpha1().Subscriptions(OperatorsNamespace).Get(context.Background(), name, metav1.GetOptions{})
+	if err != nil {
+		return nil, err
+	}
+
+	ctx.T.Logf("Current subscription %s channel is %s, source is %s", name, subscription.Spec.Channel, subscription.Spec.CatalogSource)
+	if subscription.Spec.CatalogSource != source || subscription.Spec.Channel != channel {
+		ctx.T.Logf("Patching Subscription %s to channel: %s, source: %s", name, channel, source)
+		patch := []byte(fmt.Sprintf(`{"spec":{"channel":"%s","source":"%s"}}`, channel, source))
+		return ctx.Clients.OLM.OperatorsV1alpha1().Subscriptions(OperatorsNamespace).
+			Patch(context.Background(), name, types.MergePatchType, patch, metav1.PatchOptions{})
+	}
+	return subscription, nil
 }
 
 func WaitForClusterServiceVersionState(ctx *Context, name, namespace string, inState func(s *operatorsv1alpha1.ClusterServiceVersion, err error) (bool, error)) (*operatorsv1alpha1.ClusterServiceVersion, error) {

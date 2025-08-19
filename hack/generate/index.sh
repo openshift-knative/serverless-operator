@@ -8,7 +8,7 @@ target="${1:?Provide a target index yaml file as arg[1]}"
 source "$(dirname "${BASH_SOURCE[0]}")/../lib/__sources__.bash"
 
 function add_channel_entries {
-  local channel_entry_yaml channel target num_csvs
+  local channel_entry_yaml channel target current_version replaces_version base_version
   channel=${1:?Provide channel name}
   target=${2:?Provide target file name}
   channel_entry_yaml="$(mktemp -t default-entry-XXXXX.yaml)"
@@ -26,42 +26,26 @@ EOF
   minor=$(versions.minor "$current_version")
   micro=$(versions.micro "$current_version")
 
-  # Handle the first entry specifically as it might be a z-stream release.
-  if [[ "$micro" == "0" ]]; then
-    previous_version="${major}.$(( minor-1 )).${micro}"
-  else
-    previous_version="${major}.${minor}.0"
-  fi
+  for i in $(seq "$INDEX_IMAGE_NUM_CSVS"); do
+    current_major=$((major))
+    current_minor=$((minor))
+    current_micro=$((micro - i + 1))
 
-  cat << EOF | yq write --inplace --script - "$channel_entry_yaml"
-  - command: update
-    path: entries[+]
-    value:
-      name: "serverless-operator.v${current_version}"
-      replaces: "serverless-operator.v${previous_version}"
-      skipRange: ">=${previous_version} <${current_version}"
-EOF
-
-  # One is already added above specifically
-  num_csvs=$(( INDEX_IMAGE_NUM_CSVS-1 ))
-
-  # Generate additional entries
-  for i in $(seq $num_csvs); do
-    current_minor=$(( minor-i ))
-    previous_minor=$(( minor-i ))
-    previous_minor=$(( previous_minor-1 ))
-    # If the current version is a z-stream then the following entries will
-    # start with the same "minor" version.
-    if [[ "$micro" != "0" ]]; then
-      current_minor=$(( current_minor+1 ))
-      previous_minor=$(( previous_minor+1 ))
+    if [[ "$current_micro" -le 0 ]]; then
+      current_minor=$((minor + current_micro))
+      current_micro=0
     fi
 
-    current_version="${major}.${current_minor}.0"
-    previous_version="${major}.${previous_minor}.0"
+    current_version="${current_major}.${current_minor}.${current_micro}"
+    if [[ "$current_micro" == "0" ]]; then
+      base_version="${current_major}.$(( current_minor-1 )).0"
+      replaces_version="${current_major}.$(( current_minor-1 )).0"
+    else
+      base_version="${current_major}.${current_minor}.0"
+      replaces_version="${current_major}.${current_minor}.$(( current_micro-1 ))"
+    fi
 
-    # If this is the last item enter only name, without "replaces".
-    if [[ $i -eq $num_csvs ]]; then
+    if [[ $i -eq "$INDEX_IMAGE_NUM_CSVS" ]]; then
       yq write --inplace "$channel_entry_yaml" 'entries[+].name' "serverless-operator.v${current_version}"
     else
       cat << EOF | yq write --inplace --script - "$channel_entry_yaml"
@@ -69,8 +53,8 @@ EOF
     path: entries[+]
     value:
       name: "serverless-operator.v${current_version}"
-      replaces: "serverless-operator.v${previous_version}"
-      skipRange: ">=${previous_version} <${current_version}"
+      replaces: "serverless-operator.v${replaces_version}"
+      skipRange: ">=${base_version} <${current_version}"
 EOF
     fi
   done
