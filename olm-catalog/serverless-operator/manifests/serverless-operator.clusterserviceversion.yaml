@@ -506,6 +506,22 @@ spec:
             # These are needed to create the various different resources.
             # Upstream manifests
             - apiGroups:
+                - eventing.knative.dev
+              resources:
+                - brokers
+              verbs:
+                - get
+                - list
+                - watch
+            - apiGroups:
+                - messaging.knative.dev
+              resources:
+                - inmemorychannels
+              verbs:
+                - get
+                - list
+                - watch
+            - apiGroups:
                 - ""
               resources:
                 - configmaps
