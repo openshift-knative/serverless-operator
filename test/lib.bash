@@ -592,9 +592,9 @@ function kitchensink_csvs {
   csv_prefix=$(echo "$csv_last" | sed -E 's/\.[0-9]+$/./')
   for csv in "${csvs_rev[@]}"
   do
-    if [ "${csv#$csv_prefix}" != "${csv}" ]
+    if [ "${csv#"$csv_prefix"}" != "${csv}" ]
     then
-      if [ "$csv" != "$csv_last" ] && [ ${csv#$csv_prefix} != "0" ]; then
+      if [ "$csv" != "$csv_last" ] && [ "${csv#"$csv_prefix"}" != "0" ]; then
         continue
       fi
     fi
