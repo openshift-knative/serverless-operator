@@ -29,9 +29,12 @@ requirements:
       - "4.17"
       - "4.18"
       - "4.19"
+      - "4.20"
     min: '4.14'
+    # Version to use for OCP docs links (in CSV or Quickstarts)
+    doc: '4.19'
     # max ocp version publicly available
-    max: '4.19'
+    max: '4.20'
     label: 'v4.14'
     # OCP stream for kube-rbac-proxy image.
     kube-rbac-proxy: "4.17"
@@ -45,7 +48,7 @@ dependencies:
   net_istio: knative-v1.16
   net_istio_artifacts_branch: release-v1.16
   redhat-knative-istio-authz-chart: 1.36.0
-  service_mesh_proxy: registry.redhat.io/openshift-service-mesh/proxyv2-rhel8@sha256:b9aca441a381227afe58c4b731275996164405b07150db3c9051a82904f31c0b
+  service_mesh_proxy: registry.redhat.io/openshift-service-mesh/proxyv2-rhel8@sha256:1c19cf86fd05940ef3d0d6e79e6f371db993153f70baedb9107bbe73f236dc24
   eventing: knative-v1.16
   # eventing core midstream branch name
   eventing_artifacts_branch: release-v1.16
@@ -64,7 +67,7 @@ dependencies:
   # backstage-plugins midstream branch or commit
   backstage_plugins_artifacts_branch: release-v1.16
   cli: knative-v1.16
-  kube_rbac_proxy: registry.redhat.io/openshift4/ose-kube-rbac-proxy-rhel9@sha256:b08c2aadf9bdef7afb07944524f60088cd5c34fa3b2490df5a819fce84748f10
+  kube_rbac_proxy: registry.redhat.io/openshift4/ose-kube-rbac-proxy-rhel9@sha256:67651adfd8e6c8d12d2b9585c723d5fbdb664818f803312bfe3522e04a81e9b0
   func:
     promotion_tag: knative-v1.16
     tekton_buildah: registry.redhat.io/rhel8/buildah@sha256:3d505d9c0f5d4cd5a4ec03b8d038656c6cdbdf5191e00ce6388f7e0e4d2f1b74
