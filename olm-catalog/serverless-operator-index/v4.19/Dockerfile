@@ -1,4 +1,4 @@
-ARG OPM_IMAGE=registry.ci.openshift.org/origin/4.19:operator-registry
+ARG OPM_IMAGE=registry.ci.openshift.org/origin/scos-4.19:operator-registry
 
 FROM $OPM_IMAGE
 
