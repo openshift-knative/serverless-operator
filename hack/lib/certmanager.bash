@@ -17,14 +17,7 @@ function deploy_certmanager_operator {
 
   deployment_namespace="cert-manager"
 
-  ocp_version=$(oc get clusterversion version -o jsonpath='{.status.desired.version}')
-  # Workaround for cert-manager not being available in 4.18 yet.
-  # https://issues.redhat.com/browse/SRVCOM-3428
-  if versions.ge "$(versions.major_minor "$ocp_version")" "4.18"; then
-    oc apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.15.3/cert-manager.yaml
-  else
-    oc apply -f "${certmanager_resources_dir}"/subscription.yaml || return $?
-  fi
+  oc apply -f "${certmanager_resources_dir}"/subscription.yaml || return $?
 
   logger.info "Waiting until cert manager operator is available"
 
@@ -32,6 +25,10 @@ function deploy_certmanager_operator {
   timeout 600 "[[ \$(oc get deploy -n ${deployment_namespace} cert-manager-webhook --no-headers | wc -l) != 1 ]]" || return 1
   oc wait deployments -n ${deployment_namespace} cert-manager-webhook --for condition=available --timeout=600s
   oc wait deployments -n ${deployment_namespace} cert-manager --for condition=available --timeout=600s
+
+  # TODO: workaround for the cert-manager being Ready before it setups webhook certs
+  logger.info "Sleeping for 60s to let cert-manager setup its webhook certs"
+  sleep 60
 }
 
 function deploy_certificates {

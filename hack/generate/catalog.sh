@@ -58,7 +58,7 @@ function generate_catalog {
 
 function add_channel {
   local channel catalog_template catalog current_version current_csv major \
-    minor micro previous_version channel_entry version
+    minor micro previous_version replaces_version channel_entry version
   catalog_template=${1?Pass catalog template path as arg[1]}
   channel=${2:?Pass channel name as arg[2]}
 
@@ -73,8 +73,10 @@ function add_channel {
   # Handle the first entry specifically as it might be a z-stream release.
   if [[ "$micro" == "0" ]]; then
     previous_version="${major}.$(( minor-1 )).${micro}"
+    replaces_version="${major}.$(( minor-1 )).${micro}"
   else
     previous_version="${major}.${minor}.0"
+    replaces_version="${major}.${minor}.$(( micro-1 ))"
   fi
 
   catalog=$(mktemp catalog-XXX.json)
@@ -97,7 +99,7 @@ function add_channel {
   should_add=0
   # Add entry to the channel if doesn't exist yet
   if [[ "${current_csv_entry}" == "" ]]; then
-    replaces="serverless-operator.v${previous_version}"
+    replaces="serverless-operator.v${replaces_version}"
     entry_with_same_replaces=$(yq read "${catalog_template}" "entries[name==${channel}].entries[replaces==${replaces}].name")
     if [[ "${entry_with_same_replaces}" == "" ]]; then
       should_add=1
