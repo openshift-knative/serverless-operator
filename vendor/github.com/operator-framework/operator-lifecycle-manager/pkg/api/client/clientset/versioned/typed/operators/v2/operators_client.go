@@ -19,10 +19,10 @@ limitations under the License.
 package v2
 
 import (
-	"net/http"
+	http "net/http"
 
-	v2 "github.com/operator-framework/api/pkg/operators/v2"
-	"github.com/operator-framework/operator-lifecycle-manager/pkg/api/client/clientset/versioned/scheme"
+	operatorsv2 "github.com/operator-framework/api/pkg/operators/v2"
+	scheme "github.com/operator-framework/operator-lifecycle-manager/pkg/api/client/clientset/versioned/scheme"
 	rest "k8s.io/client-go/rest"
 )
 
@@ -45,9 +45,7 @@ func (c *OperatorsV2Client) OperatorConditions(namespace string) OperatorConditi
 // where httpClient was generated with rest.HTTPClientFor(c).
 func NewForConfig(c *rest.Config) (*OperatorsV2Client, error) {
 	config := *c
-	if err := setConfigDefaults(&config); err != nil {
-		return nil, err
-	}
+	setConfigDefaults(&config)
 	httpClient, err := rest.HTTPClientFor(&config)
 	if err != nil {
 		return nil, err
@@ -59,9 +57,7 @@ func NewForConfig(c *rest.Config) (*OperatorsV2Client, error) {
 // Note the http client provided takes precedence over the configured transport values.
 func NewForConfigAndClient(c *rest.Config, h *http.Client) (*OperatorsV2Client, error) {
 	config := *c
-	if err := setConfigDefaults(&config); err != nil {
-		return nil, err
-	}
+	setConfigDefaults(&config)
 	client, err := rest.RESTClientForConfigAndClient(&config, h)
 	if err != nil {
 		return nil, err
@@ -84,17 +80,15 @@ func New(c rest.Interface) *OperatorsV2Client {
 	return &OperatorsV2Client{c}
 }
 
-func setConfigDefaults(config *rest.Config) error {
-	gv := v2.SchemeGroupVersion
+func setConfigDefaults(config *rest.Config) {
+	gv := operatorsv2.SchemeGroupVersion
 	config.GroupVersion = &gv
 	config.APIPath = "/apis"
-	config.NegotiatedSerializer = scheme.Codecs.WithoutConversion()
+	config.NegotiatedSerializer = rest.CodecFactoryForGeneratedClient(scheme.Scheme, scheme.Codecs).WithoutConversion()
 
 	if config.UserAgent == "" {
 		config.UserAgent = rest.DefaultKubernetesUserAgent()
 	}
-
-	return nil
 }
 
 // RESTClient returns a RESTClient that is used to communicate
