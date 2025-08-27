@@ -13,9 +13,9 @@ function add_component {
   echo "Adding ${component} (${image_ref})"
 
   parameters="$(cosign download attestation "${image_ref}" | jq -r '.payload' | base64 -d | jq -c '.predicate.invocation.parameters')"
-  git_repo="$(echo "${parameters}" | jq -r '."git-url"')"
-  revision="$(echo "${parameters}" | jq -r ".revision")"
-  dockerfile="$(echo "${parameters}" | jq -r ".dockerfile")"
+  git_repo="$(echo "${parameters}" | jq -r '."git-url"' | tr ' ' '\n' | sort -u | head -n1)"
+  revision="$(echo "${parameters}" | jq -r '.revision' | tr ' ' '\n' | sort -u | head -n1)"
+  dockerfile="$(echo "${parameters}" | jq -r '.dockerfile' | tr ' ' '\n' | sort -u | head -n1)"
 
   cat << EOF | yq write --inplace --script - "$1"
 - command: update

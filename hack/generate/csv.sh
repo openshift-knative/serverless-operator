@@ -156,7 +156,7 @@ yaml_keys[spec.minKubeVersion]="$(metadata.get requirements.kube.minVersion)"
 yaml_keys[spec.replaces]="$(metadata.get project.name).v$(metadata.get olm.replaces)"
 
 declare -A vars
-vars[OCP_TARGET]="$(metadata.get 'requirements.ocpVersion.list[-1]')"
+vars[OCP_TARGET]="$(metadata.get 'requirements.ocpVersion.doc')"
 vars[VERSION_MAJOR_MINOR]="$(versions.major_minor $(metadata.get 'project.version'))"
 
 function add_related_image {
