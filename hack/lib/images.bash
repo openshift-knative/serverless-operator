@@ -88,7 +88,7 @@ function get_bundle_for_version() {
   app_version=${app_version%.*} # 134.0 -> 134
 
   image=$(image_with_sha "${registry_prefix_quay}${app_version}/serverless-bundle:latest")
-  image_version=$(bundle_image_version "${bundle}:latest")
+  image_version=$(bundle_image_version "${registry_prefix_quay}${app_version}/serverless-bundle:latest")
 
   # As a backup, try also CI registry.
   # For .micro releases, it's possible we only have the _previous_ version in Konflux, so also check the version of the bundle
