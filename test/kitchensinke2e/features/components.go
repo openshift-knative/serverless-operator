@@ -3,6 +3,7 @@ package features
 import (
 	"context"
 
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	duckv1 "knative.dev/pkg/apis/duck/v1"
 	"knative.dev/reconciler-test/pkg/resources/service"
 
@@ -357,7 +358,8 @@ var kafkaSource = genericComponent{
 	shortLabel: "kaso",
 	label:      "KafkaSource",
 	kind:       "KafkaSource",
-	gvr:        kafkasource.GVR(),
+	//  TODO: for kitchensink upgrade tests, we still need v1beta1 due to older versions not having v1 yet
+	gvr: schema.GroupVersionResource{Group: kafkasource.GVR().Group, Version: "v1beta1", Resource: kafkasource.GVR().Resource},
 	install: func(name string, opts ...manifest.CfgFn) feature.StepFn {
 		return func(ctx context.Context, t feature.T) {
 			topic := name + "-t"
