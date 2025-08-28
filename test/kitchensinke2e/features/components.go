@@ -365,6 +365,8 @@ var kafkaSource = genericComponent{
 			commonOpts := []manifest.CfgFn{
 				kafkasource.WithTopics([]string{topic}),
 				kafkasource.WithBootstrapServers(testpkg.BootstrapServersPlaintextArr),
+				// TODO: for kitchensink upgrade tests, we still need v1beta1 due to older versions not having v1 yet
+				kafkasource.WithVersion("v1beta1"),
 			}
 			kafkasource.Install(name, append(commonOpts, opts...)...)(ctx, t)
 		}
