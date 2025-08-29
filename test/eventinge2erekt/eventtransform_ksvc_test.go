@@ -21,6 +21,11 @@ func TestEventTransform(t *testing.T) {
 		environment.Managed(t),
 	)
 
+	if ic := environment.GetIstioConfig(ctx); ic.Enabled {
+		// EventTransform does not work with ServiceMesh
+		t.Skip("https://issues.redhat.com/browse/SRVKE-1751")
+	}
+
 	env.Test(ctx, t, eventtransform.JsonataDirect())
 	env.Test(ctx, t, eventtransform.JsonataSink())
 	env.Test(ctx, t, eventtransform.JsonataSinkReplyTransform())
