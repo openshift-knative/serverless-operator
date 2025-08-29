@@ -14,6 +14,7 @@ declare -A values
 values[NAME]="$(metadata.get project.name)"
 values[LATEST_VERSIONED_CHANNEL]="$(metadata.get 'olm.channels.list[1]')"
 values[DEFAULT_CHANNEL]="$(metadata.get olm.channels.default)"
+values[OPERATOR_DEFAULT_CHANNEL]="$(metadata.get olm.channels.operator_default)"
 values[VERSION]="$(metadata.get project.version)"
 values[SERVING_VERSION]="$(metadata.get dependencies.serving)"
 values[EVENTING_VERSION]="$(metadata.get dependencies.eventing)"
@@ -33,28 +34,6 @@ if [[ "$template" =~ index.Dockerfile ]]; then
     echo "Value: ${before} -> ${values[$before]}"
     sed --in-place "s|__${before}__|${values[${before}]}|" "$target"
   done
-
-  current_version=$(metadata.get 'project.version')
-  major=$(versions.major "$current_version")
-  minor=$(versions.minor "$current_version")
-  micro=$(versions.micro "$current_version")
-
-  # One is already added in template
-  num_csvs=$(( INDEX_IMAGE_NUM_CSVS-1 ))
-
-  # Generate additional entries
-  for i in $(seq $num_csvs); do
-    current_minor=$(( minor-i ))
-    # If the current version is a z-stream then the following entries will
-    # start with the same "minor" version.
-    if [[ "$micro" != "0" ]]; then
-      current_minor=$(( current_minor+1 ))
-    fi
-    current_version="${major}.${current_minor}.0"
-
-    sed --in-place "/opm render/a quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-${major}${current_minor}/serverless-bundle:${current_version} \\\\" "$target"
-  done
-
 elif [[ "$template" =~ catalog.Dockerfile ]]; then
   while IFS=$'\n' read -r ocp_version; do
     values[OCP_VERSION]="${ocp_version}"

@@ -12,7 +12,7 @@ LABEL operators.operatorframework.io.bundle.mediatype.v1=registry+v1
 LABEL operators.operatorframework.io.bundle.manifests.v1=manifests/
 LABEL operators.operatorframework.io.bundle.metadata.v1=metadata/
 LABEL operators.operatorframework.io.bundle.package.v1=__NAME__
-LABEL operators.operatorframework.io.bundle.channel.default.v1="__DEFAULT_CHANNEL__"
+LABEL operators.operatorframework.io.bundle.channel.default.v1="__OPERATOR_DEFAULT_CHANNEL__"
 LABEL operators.operatorframework.io.bundle.channels.v1="__DEFAULT_CHANNEL__,__LATEST_VERSIONED_CHANNEL__"
 
 LABEL \

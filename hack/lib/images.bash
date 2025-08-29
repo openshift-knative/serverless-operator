@@ -88,17 +88,27 @@ function get_bundle_for_version() {
   app_version=${app_version%.*} # 134.0 -> 134
 
   image=$(image_with_sha "${registry_prefix_quay}${app_version}/serverless-bundle:latest")
+  image_version=$(bundle_image_version "${registry_prefix_quay}${app_version}/serverless-bundle:latest")
+
   # As a backup, try also CI registry.
+  # For .micro releases, it's possible we only have the _previous_ version in Konflux, so also check the version of the bundle
   local ci_bundle="registry.ci.openshift.org/knative/serverless-bundle"
-  if [[ "${image}" == "" ]]; then
+  if [[ "${image}" == "" || "${image_version}" != "${version}" ]]; then
     image=$(image_with_sha "${ci_bundle}:release-${version}" || echo "")
+    image_version=$(bundle_image_version "${ci_bundle}:release-${version}")
   fi
-  if [[ "${image}" == "" ]]; then
+  if [[ "${image}" == "" || "${image_version}" != "${version}" ]]; then
     image=$(image_with_sha "${ci_bundle}:knative-main")
+    image_version=$(bundle_image_version "${ci_bundle}:knative-main")
   fi
 
   if [[ "${image}" == "" ]]; then
+    echo "[ERROR] No image found for $version" > /dev/stderr
     exit 1
+  fi
+
+  if [[ "${image_version}" != "${version}" ]]; then
+    echo "[WARNING] Image $image $image_version does not match requested version $version" > /dev/stderr
   fi
 
   echo "$image"
@@ -411,6 +421,12 @@ function image_with_sha {
   image_without_tag=${image_without_tag%@*} # Remove sha, if any
 
   echo "${image_without_tag}@${digest}"
+}
+
+function bundle_image_version {
+  image=${1:?"Provide image"}
+  version=$(skopeo inspect --no-tags=true "docker://${image}" | jq -r '.Labels.version')
+  echo "${version}"
 }
 
 function get_app_version_from_tag() {
