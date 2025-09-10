@@ -23,7 +23,7 @@ spec:
       value: ./olm-catalog/serverless-operator-index/v4.15
     - name: build-args
       value:
-        - VERSION=1.36.0
+        - VERSION=1.36.1
         - CLI_ARTIFACTS=registry.redhat.io/openshift4/ose-cli-artifacts:v4.14
         - GO_BUILDER=brew.registry.redhat.io/rh-osbs/openshift-golang-builder:rhel_8_golang_1.23
         - GO_RUNTIME=registry.access.redhat.com/ubi8/ubi-minimal
