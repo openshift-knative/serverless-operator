@@ -16,12 +16,14 @@ import (
 	"knative.dev/eventing-kafka-broker/test/rekt/resources/kafkasink"
 	"knative.dev/eventing-kafka-broker/test/rekt/resources/kafkasource"
 	"knative.dev/eventing-kafka-broker/test/rekt/resources/kafkatopic"
+	eventingv1alpha1 "knative.dev/eventing/pkg/apis/eventing/v1alpha1"
 	sourcesv1 "knative.dev/eventing/pkg/apis/sources/v1"
 	"knative.dev/eventing/test/rekt/resources/account_role"
 	"knative.dev/eventing/test/rekt/resources/apiserversource"
 	brokerresources "knative.dev/eventing/test/rekt/resources/broker"
 	channelresources "knative.dev/eventing/test/rekt/resources/channel"
 	"knative.dev/eventing/test/rekt/resources/containersource"
+	"knative.dev/eventing/test/rekt/resources/eventtransform"
 	"knative.dev/eventing/test/rekt/resources/jobsink"
 	parallelresources "knative.dev/eventing/test/rekt/resources/parallel"
 	"knative.dev/eventing/test/rekt/resources/pingsource"
@@ -294,6 +296,34 @@ var jobSink = genericComponent{
 	install: func(name string, _ ...manifest.CfgFn) feature.StepFn {
 		return func(ctx context.Context, t feature.T) {
 			jobsink.Install(name, jobsink.WithForwarderJob("non-existent-url"))(ctx, t)
+		}
+	},
+}
+
+var eventTransformSink = genericComponent{
+	shortLabel: "evtr",
+	label:      "EventTransform",
+	kind:       "EventTransform",
+	gvr:        eventtransform.GVR(),
+	install: func(name string, _ ...manifest.CfgFn) feature.StepFn {
+		return func(ctx context.Context, t feature.T) {
+			eventtransform.Install(name,
+				eventtransform.WithSpec(
+					eventtransform.WithJsonata(
+						eventingv1alpha1.JsonataEventTransformationSpec{Expression: jsonataSample})))(ctx, t)
+		}
+	},
+}
+
+var eventTransformGeneric = genericComponent{
+	shortLabel: "gevtr",
+	label:      "EventTransform",
+	kind:       "EventTransform",
+	gvr:        eventtransform.GVR(),
+	install: func(name string, opts ...manifest.CfgFn) feature.StepFn {
+		return func(ctx context.Context, t feature.T) {
+			eventtransform.Install(name,
+				opts...)(ctx, t)
 		}
 	},
 }
