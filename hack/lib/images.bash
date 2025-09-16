@@ -407,8 +407,12 @@ function image_with_sha {
   image=${1:?"Provide image"}
   return_input_on_empty=${2:-"false"}
 
+  # Use TARGET_OS and TARGET_ARCH if set, otherwise default to linux/amd64
+  target_os=${TARGET_OS:-linux}
+  target_arch=${TARGET_ARCH:-amd64}
+
   # shellcheck disable=SC2086
-  digest=$(skopeo inspect --retry-times=10 --no-tags=true ${SKOPEO_EXTRA_FLAGS} "docker://${image}" | jq -r '.Digest' || echo "")
+  digest=$(skopeo inspect --retry-times=10 --override-os "${target_os}" --override-arch "${target_arch}" --no-tags=true ${SKOPEO_EXTRA_FLAGS} "docker://${image}" | jq -r '.Digest' || echo "")
   if [ "${digest}" = "" ]; then
     if [ "${return_input_on_empty}" = "true" ]; then
       echo "${image}"
@@ -425,7 +429,12 @@ function image_with_sha {
 
 function bundle_image_version {
   image=${1:?"Provide image"}
-  version=$(skopeo inspect --no-tags=true "docker://${image}" | jq -r '.Labels.version')
+
+  # Use TARGET_OS and TARGET_ARCH if set, otherwise default to linux/amd64
+  target_os=${TARGET_OS:-linux}
+  target_arch=${TARGET_ARCH:-amd64}
+
+  version=$(skopeo inspect --no-tags=true --override-os "${target_os}" --override-arch "${target_arch}" "docker://${image}" | jq -r '.Labels.version')
   echo "${version}"
 }
 

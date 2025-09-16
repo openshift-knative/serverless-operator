@@ -17,8 +17,13 @@ fi
 
 repo=$1
 
+# Set default target architecture and OS if not provided
+TARGET_ARCH=${TARGET_ARCH:-amd64}
+TARGET_OS=${TARGET_OS:-linux}
+
 on_cluster_builds=${ON_CLUSTER_BUILDS:-false}
 echo "On cluster builds: ${on_cluster_builds}"
+echo "Target platform: ${TARGET_OS}/${TARGET_ARCH}"
 
 if [[ $on_cluster_builds = true ]]; then
   #  image-registry.openshift-image-registry.svc:5000/openshift-marketplace/openshift-knative-operator:latest
@@ -32,14 +37,14 @@ if [[ $on_cluster_builds = true ]]; then
 
 else
   tmp_dockerfile=$(replace_images openshift-knative-operator/Dockerfile)
-  podman build -t "$repo/serverless-openshift-knative-operator" -f "${tmp_dockerfile}" .
+  podman build --platform="${TARGET_OS}/${TARGET_ARCH}" -t "$repo/serverless-openshift-knative-operator" -f "${tmp_dockerfile}" .
   podman push "$repo/serverless-openshift-knative-operator"
 
   tmp_dockerfile=$(replace_images knative-operator/Dockerfile)
-  podman build -t "$repo/serverless-knative-operator" -f "${tmp_dockerfile}" .
+  podman build --platform="${TARGET_OS}/${TARGET_ARCH}" -t "$repo/serverless-knative-operator" -f "${tmp_dockerfile}" .
   podman push "$repo/serverless-knative-operator"
 
   tmp_dockerfile=$(replace_images serving/ingress/Dockerfile)
-  podman build -t "$repo/serverless-ingress" -f "${tmp_dockerfile}" .
+  podman build --platform="${TARGET_OS}/${TARGET_ARCH}" -t "$repo/serverless-ingress" -f "${tmp_dockerfile}" .
   podman push "$repo/serverless-ingress"
 fi
