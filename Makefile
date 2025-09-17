@@ -1,10 +1,15 @@
+# Target architecture and OS for image builds
+# Defaults to amd64/linux for OpenShift clusters, but can be overridden for local development
+TARGET_ARCH ?= amd64
+TARGET_OS ?= linux
+
 # Useful for local development
 dev:
 	./hack/dev.sh
 
 # General purpose targets
 images:
-	./hack/images.sh $(DOCKER_REPO_OVERRIDE)
+	TARGET_ARCH=$(TARGET_ARCH) TARGET_OS=$(TARGET_OS) ./hack/images.sh $(DOCKER_REPO_OVERRIDE)
 
 install: install-tools
 	./hack/install.sh
@@ -18,7 +23,7 @@ install-all: install-tools
 	SCALE_UP=4 INSTALL_KAFKA="true" ENABLE_TRACING=true ./hack/install.sh
 
 install-release-next: install-tools generated-files-release-next
-	ON_CLUSTER_BUILDS=true ./hack/images.sh image-registry.openshift-image-registry.svc:5000/openshift-marketplace
+	ON_CLUSTER_BUILDS=true TARGET_ARCH=$(TARGET_ARCH) TARGET_OS=$(TARGET_OS) ./hack/images.sh image-registry.openshift-image-registry.svc:5000/openshift-marketplace
 	USE_RELEASE_NEXT=true DOCKER_REPO_OVERRIDE=image-registry.openshift-image-registry.svc:5000/openshift-marketplace ./hack/install.sh
 
 install-tracing:
