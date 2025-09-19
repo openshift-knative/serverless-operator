@@ -26,11 +26,11 @@ echo "On cluster builds: ${on_cluster_builds}"
 echo "Target platform: ${TARGET_OS}/${TARGET_ARCH}"
 
 if [[ $on_cluster_builds = true ]]; then
-  #  image-registry.openshift-image-registry.svc:5000/openshift-marketplace/openshift-knative-operator:latest
+  #  image-registry.openshift-image-registry.svc:5000/openshift-serverless-builds/openshift-knative-operator:latest
   build_image "serverless-openshift-knative-operator" "${root_dir}" "openshift-knative-operator/Dockerfile" || exit 1
-  #  image-registry.openshift-image-registry.svc:5000/openshift-marketplace/knative-operator:latest
+  #  image-registry.openshift-image-registry.svc:5000/openshift-serverless-builds/knative-operator:latest
   build_image "serverless-knative-operator" "${root_dir}" "knative-operator/Dockerfile" || exit 1
-  #  image-registry.openshift-image-registry.svc:5000/openshift-marketplace/knative-openshift-ingress:latest
+  #  image-registry.openshift-image-registry.svc:5000/openshift-serverless-builds/knative-openshift-ingress:latest
   build_image "serverless-ingress" "${root_dir}" "serving/ingress/Dockerfile" || exit 1
 
   logger.info 'Image builds finished'
