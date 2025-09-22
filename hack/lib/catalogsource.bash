@@ -26,8 +26,8 @@ function install_catalogsource {
   # Build bundle and index images only when running in CI or when DOCKER_REPO_OVERRIDE is defined,
   # unless overridden by FORCE_KONFLUX_INDEX.
   if { [ -n "$OPENSHIFT_CI" ] || [ -n "$DOCKER_REPO_OVERRIDE" ]; } && [ -z "${FORCE_KONFLUX_INDEX:-}" ]; then
-    index_image=image-registry.openshift-image-registry.svc:5000/$OLM_NAMESPACE/serverless-index:latest
-    bundle_image=image-registry.openshift-image-registry.svc:5000/$OLM_NAMESPACE/serverless-bundle:latest
+    index_image=image-registry.openshift-image-registry.svc:5000/$ON_CLUSTER_BUILDS_NAMESPACE/serverless-index:latest
+    bundle_image=image-registry.openshift-image-registry.svc:5000/$ON_CLUSTER_BUILDS_NAMESPACE/serverless-bundle:latest
     rootdir="$(dirname "$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")")"
 
     csv="${rootdir}/olm-catalog/serverless-operator/manifests/serverless-operator.clusterserviceversion.yaml"
@@ -58,12 +58,15 @@ function install_catalogsource {
     # TODO: Use proper secrets for OPM instead of unauthenticated user,
     # See https://github.com/operator-framework/operator-registry/issues/919
 
-    # Allow OPM to pull the serverless-bundle from openshift-marketplace ns from internal registry.
-    oc adm policy add-role-to-group system:image-puller system:unauthenticated --namespace openshift-marketplace
+    # Allow OPM to pull the serverless-bundle from openshift-serverless-builds ns from internal registry.
+    oc adm policy add-role-to-group system:image-puller system:unauthenticated --namespace "${OLM_NAMESPACE}"
+    oc adm policy add-role-to-group system:image-puller system:unauthenticated --namespace "${ON_CLUSTER_BUILDS_NAMESPACE}"
 
     # export ON_CLUSTER_BUILDS=true; make images
-    # will push images to ${OLM_NAMESPACE} namespace, allow the ${OPERATORS_NAMESPACE} namespace to pull those images.
-    oc adm policy add-role-to-group system:image-puller system:serviceaccounts:"${OPERATORS_NAMESPACE}" --namespace "${OLM_NAMESPACE}"
+    # will push images to ${ON_CLUSTER_BUILDS_NAMESPACE} namespace, allow the ${OPERATORS_NAMESPACE} namespace to pull those images.
+    oc adm policy add-role-to-group system:image-puller system:serviceaccounts:"${ON_CLUSTER_BUILDS_NAMESPACE}" --namespace "${ON_CLUSTER_BUILDS_NAMESPACE}"
+    oc adm policy add-role-to-group system:image-puller system:serviceaccounts:"${OLM_NAMESPACE}" --namespace "${ON_CLUSTER_BUILDS_NAMESPACE}"
+    oc adm policy add-role-to-group system:image-puller system:serviceaccounts:"${OPERATORS_NAMESPACE}" --namespace "${ON_CLUSTER_BUILDS_NAMESPACE}"
 
     local index_dorkerfile_path="olm-catalog/serverless-operator-index/Dockerfile"
 
@@ -248,26 +251,26 @@ function build_image() {
 
   logger.info "Using ${tmp_dockerfile} as Dockerfile"
 
-  if ! oc get buildconfigs "$name" -n "$OLM_NAMESPACE" >/dev/null 2>&1; then
+  if ! oc get buildconfigs "$name" -n "$ON_CLUSTER_BUILDS_NAMESPACE" >/dev/null 2>&1; then
     logger.info "Create an image build for ${name}"
-    oc -n "${OLM_NAMESPACE}" new-build \
+    oc -n "${ON_CLUSTER_BUILDS_NAMESPACE}" new-build \
       --strategy=docker --name "$name" --dockerfile "$(cat "${tmp_dockerfile}")"
 
-    from_kind=$(oc get BuildConfig -n "${OLM_NAMESPACE}" "$name" -o json | \
+    from_kind=$(oc get BuildConfig -n "${ON_CLUSTER_BUILDS_NAMESPACE}" "$name" -o json | \
       jq -r '.spec.strategy.dockerStrategy.from.kind')
     if [ "ImageStreamTag" = "$from_kind" ]; then
-      image_stream_tag=$(oc get BuildConfig -n "${OLM_NAMESPACE}" "$name" -o json | \
+      image_stream_tag=$(oc get BuildConfig -n "${ON_CLUSTER_BUILDS_NAMESPACE}" "$name" -o json | \
         jq -r '.spec.strategy.dockerStrategy.from.name')
 
       logger.info "Wait for the ${image_stream_tag} ImageStreamTag to be imported"
-      timeout 60 "! oc get imagestreamtag -n \"${OLM_NAMESPACE}\" \"$image_stream_tag\" -o json | jq -re .image.dockerImageReference"
+      timeout 60 "! oc get imagestreamtag -n \"${ON_CLUSTER_BUILDS_NAMESPACE}\" \"$image_stream_tag\" -o json | jq -re .image.dockerImageReference"
     fi
   else
     logger.info "${name} image build is already created"
   fi
 
   logger.info 'Build the image in the cluster-internal registry.'
-  oc -n "${OLM_NAMESPACE}" start-build "${name}" --from-dir "${from_dir}" -F
+  oc -n "${ON_CLUSTER_BUILDS_NAMESPACE}" start-build "${name}" --from-dir "${from_dir}" -F
 }
 
 function delete_catalog_source {
@@ -276,9 +279,9 @@ function delete_catalog_source {
   oc delete service --ignore-not-found=true -n "$OLM_NAMESPACE" serverless-index
   oc delete deployment --ignore-not-found=true -n "$OLM_NAMESPACE" serverless-index
   oc delete configmap --ignore-not-found=true -n "$OLM_NAMESPACE" serverless-index-sha1sums
-  oc delete buildconfig --ignore-not-found=true -n "$OLM_NAMESPACE" serverless-index
+  oc delete buildconfig --ignore-not-found=true -n "$ON_CLUSTER_BUILDS_NAMESPACE" serverless-index
   oc delete configmap --ignore-not-found=true -n "$OLM_NAMESPACE" serverless-bundle-sha1sums
-  oc delete buildconfig --ignore-not-found=true -n "$OLM_NAMESPACE" serverless-bundle
+  oc delete buildconfig --ignore-not-found=true -n "$ON_CLUSTER_BUILDS_NAMESPACE" serverless-bundle
   logger.info "Wait for the ${OPERATOR} pod to disappear"
   timeout 300 "[[ \$(oc get pods -n ${OPERATORS_NAMESPACE} | grep -c ${OPERATOR}) -gt 0 ]]"
   oc delete imagecontentsourcepolicy --ignore-not-found=true serverless-image-content-source-policy
