@@ -30,7 +30,7 @@ metadata:
     argocd.argoproj.io/sync-wave: "2"
 spec:
   displayName: Serverless Operator
-  image: image-registry.openshift-image-registry.svc:5000/openshift-marketplace/serverless-index:latest
+  image: image-registry.openshift-image-registry.svc:5000/openshift-serverless-builds/serverless-index:latest
   publisher: Red Hat
   sourceType: grpc
  ---
