@@ -23,8 +23,8 @@ install-all: install-tools
 	SCALE_UP=4 INSTALL_KAFKA="true" ENABLE_TRACING=true ./hack/install.sh
 
 install-release-next: install-tools generated-files-release-next
-	ON_CLUSTER_BUILDS=true TARGET_ARCH=$(TARGET_ARCH) TARGET_OS=$(TARGET_OS) ./hack/images.sh image-registry.openshift-image-registry.svc:5000/openshift-marketplace
-	USE_RELEASE_NEXT=true DOCKER_REPO_OVERRIDE=image-registry.openshift-image-registry.svc:5000/openshift-marketplace ./hack/install.sh
+	ON_CLUSTER_BUILDS=true TARGET_ARCH=$(TARGET_ARCH) TARGET_OS=$(TARGET_OS) ./hack/images.sh image-registry.openshift-image-registry.svc:5000/openshift-serverless-builds
+	USE_RELEASE_NEXT=true DOCKER_REPO_OVERRIDE=image-registry.openshift-image-registry.svc:5000/openshift-serverless-builds ./hack/install.sh
 
 install-tracing:
 	./hack/tracing.sh
