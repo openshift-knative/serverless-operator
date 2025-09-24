@@ -26,7 +26,8 @@ USER 65532
 
 LABEL \
       com.redhat.component="openshift-serverless-1-openshift-knative-operator-rhel8-container" \
-      name="openshift-serverless-1/openshift-knative-operator-rhel8" \
+      name="openshift-serverless-1/serverless-openshift-kn-rhel8-operator" \
+      cpe="cpe:/a:redhat:openshift_serverless:1.35::el8" \
       version=$VERSION \
       summary="Red Hat OpenShift Serverless 1 Openshift Knative Operator" \
       maintainer="serverless-support@redhat.com" \
