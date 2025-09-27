@@ -1,7 +1,7 @@
 apiVersion: tekton.dev/v1
 kind: Pipeline
 metadata:
-  creationTimestamp: null
+  creationTimestamp:
   labels:
     pipelines.openshift.io/runtime: fbc
     pipelines.openshift.io/strategy: fbc
@@ -33,8 +33,7 @@ spec:
     - linux/arm64
     - linux/ppc64le
     - linux/s390x
-    description: List of platforms to build the container images on. The available
-      set of values is determined by the configuration of the multi-platform-controller.
+    description: List of platforms to build the container images on. The available set of values is determined by the configuration of the multi-platform-controller.
     name: build-platforms
     type: array
   - default: "true"
@@ -56,13 +55,11 @@ spec:
     name: output-image
     type: string
   - default: .
-    description: Path to the source code of an application's component from where
-      to build image.
+    description: Path to the source code of an application's component from where to build image.
     name: path-context
     type: string
   - default: Dockerfile
-    description: Path to the Dockerfile inside the context specified by parameter
-      path-context
+    description: Path to the Dockerfile inside the context specified by parameter path-context
     name: dockerfile
     type: string
   - default: "false"
@@ -82,8 +79,7 @@ spec:
     name: prefetch-input
     type: string
   - default: ""
-    description: Image tag expiration time, time values could be something like 1h,
-      2d, 3w for hours, days, and weeks, respectively.
+    description: Image tag expiration time, time values could be something like 1h, 2d, 3w for hours, days, and weeks, respectively.
     name: image-expires-after
     type: string
   - default: "true"
@@ -98,6 +94,10 @@ spec:
     description: Path to a file with build arguments for buildah, see https://www.mankier.com/1/buildah-build#--build-arg-file
     name: build-args-file
     type: string
+  - name: buildah-format
+    default: docker
+    type: string
+    description: The format for the resulting image's mediaType. Valid values are oci or docker.
   results:
   - description: ""
     name: IMAGE_URL
@@ -144,7 +144,7 @@ spec:
       - name: name
         value: init
       - name: bundle
-        value: quay.io/konflux-ci/tekton-catalog/task-init:0.2@sha256:ec962d0be18f36ca7d331c99bf243800f569fc0a2ea6f8c8c3d3a574b71c44dc
+        value: quay.io/konflux-ci/tekton-catalog/task-init:0.2@sha256:abf231cfc5a68b56f68a8ac9bb26dca3c3e434c88dd9627c72bdec0b8c335c67
       - name: kind
         value: task
       resolver: bundles
@@ -235,6 +235,8 @@ spec:
       value: $(tasks.prefetch-dependencies.results.CACHI2_ARTIFACT)
     - name: IMAGE_APPEND_PLATFORM
       value: "true"
+    - name: BUILDAH_FORMAT
+      value: $(params.buildah-format)
     runAfter:
     - clone-repository
     taskRef:
@@ -264,6 +266,8 @@ spec:
     - name: IMAGES
       value:
       - $(tasks.build-images.results.IMAGE_REF[*])
+    - name: BUILDAH_FORMAT
+      value: $(params.buildah-format)
     runAfter:
     - build-images
     taskRef:
