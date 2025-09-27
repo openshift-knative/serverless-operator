@@ -31,4 +31,5 @@ LABEL \
       url="https://catalog.redhat.com/software/container-stacks/detail/5ec53fcb110f56bd24f2ddc5" \
       release="1.36.1" \
       io.openshift.tags="bundle" \
-      vendor="Red Hat, Inc."
+      vendor="Red Hat, Inc." \
+      cpe="cpe:/a:redhat:openshift_serverless:1.36::el8"
