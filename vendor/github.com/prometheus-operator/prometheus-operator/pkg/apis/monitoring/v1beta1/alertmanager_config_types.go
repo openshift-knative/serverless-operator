@@ -15,6 +15,7 @@
 package v1beta1
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -60,7 +61,7 @@ type AlertmanagerConfigList struct {
 	// More info: https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/api-conventions.md#metadata
 	metav1.ListMeta `json:"metadata,omitempty"`
 	// List of AlertmanagerConfig
-	Items []*AlertmanagerConfig `json:"items"`
+	Items []AlertmanagerConfig `json:"items"`
 }
 
 // AlertmanagerConfigSpec is a specification of the desired behavior of the Alertmanager configuration.
@@ -143,7 +144,9 @@ func (r *Route) ChildRoutes() ([]Route, error) {
 	out := make([]Route, len(r.Routes))
 
 	for i, v := range r.Routes {
-		if err := json.Unmarshal(v.Raw, &out[i]); err != nil {
+		dec := json.NewDecoder(bytes.NewBuffer(v.Raw))
+		dec.DisallowUnknownFields()
+		if err := dec.Decode(&out[i]); err != nil {
 			return nil, fmt.Errorf("route[%d]: %w", i, err)
 		}
 	}
@@ -183,6 +186,12 @@ type Receiver struct {
 	// List of MSTeams configurations.
 	// It requires Alertmanager >= 0.26.0.
 	MSTeamsConfigs []MSTeamsConfig `json:"msteamsConfigs,omitempty"`
+	// List of MSTeamsV2 configurations.
+	// It requires Alertmanager >= 0.28.0.
+	MSTeamsV2Configs []MSTeamsV2Config `json:"msteamsv2Configs,omitempty"`
+	// List of RocketChat configurations.
+	// It requires Alertmanager >= 0.28.0.
+	RocketChatConfigs []RocketChatConfig `json:"rocketchatConfigs,omitempty"`
 }
 
 // PagerDutyConfig configures notifications via PagerDuty.
@@ -274,21 +283,28 @@ type DiscordConfig struct {
 	// Whether or not to notify about resolved alerts.
 	// +optional
 	SendResolved *bool `json:"sendResolved,omitempty"`
-
 	// The secret's key that contains the Discord webhook URL.
 	// The secret needs to be in the same namespace as the AlertmanagerConfig
 	// object and accessible by the Prometheus Operator.
 	// +required
 	APIURL v1.SecretKeySelector `json:"apiURL,omitempty"`
-
 	// The template of the message's title.
 	// +optional
 	Title *string `json:"title,omitempty"`
-
 	// The template of the message's body.
 	// +optional
 	Message *string `json:"message,omitempty"`
-
+	// The template of the content's body.
+	// +optional
+	// +kubebuilder:validation:MinLength=1
+	Content *string `json:"content,omitempty"`
+	// The username of the message sender.
+	// +optional
+	// +kubebuilder:validation:MinLength=1
+	Username *string `json:"username,omitempty"`
+	// The avatar url of the message sender.
+	// +optional
+	AvatarURL *URL `json:"avatarURL,omitempty"`
 	// HTTP client configuration.
 	// +optional
 	HTTPConfig *HTTPConfig `json:"httpConfig,omitempty"`
@@ -486,6 +502,11 @@ type WebhookConfig struct {
 	// +optional
 	// +kubebuilder:validation:Minimum=0
 	MaxAlerts int32 `json:"maxAlerts,omitempty"`
+	// The maximum time to wait for a webhook request to complete, before failing the
+	// request and allowing it to be retried.
+	// It requires Alertmanager >= v0.28.0.
+	// +optional
+	Timeout *monitoringv1.Duration `json:"timeout,omitempty"`
 }
 
 // OpsGenieConfig configures notifications via OpsGenie.
@@ -612,9 +633,16 @@ type HTTPConfig struct {
 	// TLS configuration for the client.
 	// +optional
 	TLSConfig *monitoringv1.SafeTLSConfig `json:"tlsConfig,omitempty"`
+
 	// Optional proxy URL.
+	//
+	// If defined, this field takes precedence over `proxyUrl`.
+	//
 	// +optional
-	ProxyURL string `json:"proxyURL,omitempty"`
+	ProxyURLOriginal *string `json:"proxyURL,omitempty"`
+
+	monitoringv1.ProxyConfig `json:",inline"`
+
 	// FollowRedirects specifies whether the client should follow HTTP 3xx redirects.
 	// +optional
 	FollowRedirects *bool `json:"followRedirects,omitempty"`
@@ -902,6 +930,10 @@ type TelegramConfig struct {
 	// The Telegram chat ID.
 	// +required
 	ChatID int64 `json:"chatID,omitempty"`
+	// The Telegram Group Topic ID.
+	// It requires Alertmanager >= 0.26.0.
+	// +optional
+	MessageThreadID *int64 `json:"messageThreadID,omitempty"`
 	// Message template
 	// +optional
 	Message string `json:"message,omitempty"`
@@ -939,6 +971,127 @@ type MSTeamsConfig struct {
 	// HTTP client configuration.
 	// +optional
 	HTTPConfig *HTTPConfig `json:"httpConfig,omitempty"`
+}
+
+// MSTeamsV2Config configures notifications via Microsoft Teams using the new message format with adaptive cards as required by flows
+// See https://prometheus.io/docs/alerting/latest/configuration/#msteamsv2_config
+// It requires Alertmanager >= 0.28.0.
+type MSTeamsV2Config struct {
+	// Whether to notify about resolved alerts.
+	// +optional
+	SendResolved *bool `json:"sendResolved,omitempty"`
+	// MSTeams incoming webhook URL.
+	// +optional
+	WebhookURL *v1.SecretKeySelector `json:"webhookURL,omitempty"`
+	// Message title template.
+	// +kubebuilder:validation:MinLength=1
+	// +optional
+	Title *string `json:"title,omitempty"`
+	// Message body template.
+	// +kubebuilder:validation:MinLength=1
+	// +optional
+	Text *string `json:"text,omitempty"`
+	// HTTP client configuration.
+	// +optional
+	HTTPConfig *HTTPConfig `json:"httpConfig,omitempty"`
+}
+
+// RocketChatConfig configures notifications via RocketChat.
+// It requires Alertmanager >= 0.28.0.
+type RocketChatConfig struct {
+	// Whether to notify about resolved alerts.
+	// +optional
+	SendResolved *bool `json:"sendResolved,omitempty"`
+	// The API URL for RocketChat.
+	// Defaults to https://open.rocket.chat/ if not specified.
+	// +optional
+	APIURL *URL `json:"apiURL,omitempty"`
+	// The channel to send alerts to.
+	// +kubebuilder:validation:MinLength=1
+	// +optional
+	Channel *string `json:"channel,omitempty"`
+	// The sender token.
+	// +required
+	Token v1.SecretKeySelector `json:"token,omitempty"`
+	// The sender token ID.
+	// +required
+	TokenID v1.SecretKeySelector `json:"tokenID,omitempty"`
+	// The message color.
+	// +kubebuilder:validation:MinLength=1
+	// +optional
+	Color *string `json:"color,omitempty"`
+	// If provided, the avatar will be displayed as an emoji.
+	// +kubebuilder:validation:MinLength=1
+	// +optional
+	Emoji *string `json:"emoji,omitempty"`
+	// Icon URL for the message.
+	// +optional
+	IconURL *URL `json:"iconURL,omitempty"`
+	// The main message text.
+	// +kubebuilder:validation:MinLength=1
+	// +optional
+	Text *string `json:"text,omitempty"`
+	// The message title.
+	// +kubebuilder:validation:MinLength=1
+	// +optional
+	Title *string `json:"title,omitempty"`
+	// The title link for the message.
+	// +kubebuilder:validation:MinLength=1
+	// +optional
+	TitleLink *string `json:"titleLink,omitempty"`
+	// Additional fields for the message.
+	// +kubebuilder:validation:MinItems=1
+	// +optional
+	Fields []RocketChatFieldConfig `json:"fields,omitempty"`
+	// Whether to use short fields.
+	// +optional
+	ShortFields *bool `json:"shortFields,omitempty"`
+	// Image URL for the message.
+	// +optional
+	ImageURL *URL `json:"imageURL,omitempty"`
+	// Thumbnail URL for the message.
+	// +optional
+	ThumbURL *URL `json:"thumbURL,omitempty"`
+	// Whether to enable link names.
+	// +optional
+	LinkNames *bool `json:"linkNames,omitempty"`
+	// Actions to include in the message.
+	// +kubebuilder:validation:MinItems=1
+	// +optional
+	Actions []RocketChatActionConfig `json:"actions,omitempty"`
+	// HTTP client configuration.
+	// +optional
+	HTTPConfig *HTTPConfig `json:"httpConfig,omitempty"`
+}
+
+// RocketChatFieldConfig defines a field for RocketChat messages.
+type RocketChatFieldConfig struct {
+	// The field title.
+	// +kubebuilder:validation:MinLength=1
+	// +optional
+	Title *string `json:"title,omitempty"`
+	// The field value.
+	// +kubebuilder:validation:MinLength=1
+	// +optional
+	Value *string `json:"value,omitempty"`
+	// Whether the field is displayed in a compact form.
+	// +optional
+	Short *bool `json:"short,omitempty"`
+}
+
+// RocketChatActionConfig defines actions for RocketChat messages.
+type RocketChatActionConfig struct {
+	// The button text.
+	// +kubebuilder:validation:MinLength=1
+	// +optional
+	Text *string `json:"text,omitempty"`
+	// The URL the button links to.
+	// +optional
+	URL *URL `json:"url,omitempty"`
+	// The message to send when the button is clicked.
+	// +kubebuilder:validation:MinLength=1
+	// +optional
+	Msg *string `json:"msg,omitempty"`
 }
 
 // InhibitRule defines an inhibition rule that allows to mute alerts when other
