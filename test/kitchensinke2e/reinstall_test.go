@@ -39,11 +39,15 @@ func TestServerlessReinstallWithBrokerFeatures(t *testing.T) {
 
 	// Split the big Broker featuresets
 	for _, fs := range split(features.BrokerFeatureSetWithBrokerDLS(), groupSize) {
-		testUninstalledFeatureSet(t, fs)
+		t.Run(fs.Name, func(t *testing.T) {
+			testUninstalledFeatureSet(t, fs)
+		})
 	}
 
 	for _, fs := range split(features.BrokerFeatureSetWithTriggerDLS(), groupSize) {
-		testUninstalledFeatureSet(t, fs)
+		t.Run(fs.Name, func(t *testing.T) {
+			testUninstalledFeatureSet(t, fs)
+		})
 	}
 }
 
