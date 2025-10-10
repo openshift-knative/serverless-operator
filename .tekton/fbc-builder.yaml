@@ -13,20 +13,6 @@ spec:
 
     _Uses `buildah` to create a container image. Its build-time tests are limited to verifying the included catalog and do not scan the image.
     This pipeline is pushed as a Tekton bundle to [quay.io](https://quay.io/repository/konflux-ci/tekton-catalog/pipeline-fbc-builder?tab=tags)_
-  finally:
-  - name: show-sbom
-    params:
-    - name: IMAGE_URL
-      value: $(tasks.build-image-index.results.IMAGE_URL)
-    taskRef:
-      params:
-      - name: name
-        value: show-sbom
-      - name: bundle
-        value: quay.io/konflux-ci/tekton-catalog/task-show-sbom:0.1@sha256:beb0616db051952b4b861dd8c3e00fa1c0eccbd926feddf71194d3bb3ace9ce7
-      - name: kind
-        value: task
-      resolver: bundles
   params:
   - default:
     - linux/x86_64
@@ -78,7 +64,7 @@ spec:
     name: hermetic
     type: string
   - default: ""
-    description: Build dependencies to be prefetched by Cachi2
+    description: Build dependencies to be prefetched
     name: prefetch-input
     type: string
   - default: ""
@@ -177,18 +163,43 @@ spec:
     workspaces:
     - name: basic-auth
       workspace: git-auth
+  - name: run-opm-command
+    params:
+    - name: SOURCE_ARTIFACT
+      value: $(tasks.clone-repository.results.SOURCE_ARTIFACT)
+    - name: ociStorage
+      value: $(params.output-image).opm
+    - name: ociArtifactExpiresAfter
+      value: $(params.image-expires-after)
+    - name: OPM_ARGS
+      value: []
+    - name: OPM_OUTPUT_PATH
+      value: ""
+    - name: IDMS_PATH
+      value: ""
+    runAfter:
+    - clone-repository
+    taskRef:
+      params:
+      - name: name
+        value: run-opm-command-oci-ta
+      - name: bundle
+        value: quay.io/konflux-ci/tekton-catalog/task-run-opm-command-oci-ta:0.1@sha256:6202ce43ff90e3d0ece6544bbe972c3284c9c5c6675da4e34176b929285c4081
+      - name: kind
+        value: task
+      resolver: bundles
   - name: prefetch-dependencies
     params:
     - name: input
       value: $(params.prefetch-input)
     - name: SOURCE_ARTIFACT
-      value: $(tasks.clone-repository.results.SOURCE_ARTIFACT)
+      value: $(tasks.run-opm-command.results.SOURCE_ARTIFACT)
     - name: ociStorage
       value: $(params.output-image).prefetch
     - name: ociArtifactExpiresAfter
       value: $(params.image-expires-after)
     runAfter:
-    - clone-repository
+    - run-opm-command
     taskRef:
       params:
       - name: name
@@ -229,6 +240,8 @@ spec:
       - $(params.build-args[*])
     - name: BUILD_ARGS_FILE
       value: $(params.build-args-file)
+    - name: SOURCE_URL
+      value: $(tasks.clone-repository.results.url)
     - name: SOURCE_ARTIFACT
       value: $(tasks.prefetch-dependencies.results.SOURCE_ARTIFACT)
     - name: CACHI2_ARTIFACT
