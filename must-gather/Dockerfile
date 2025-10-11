@@ -1,5 +1,5 @@
 # DO NOT EDIT! Generated Dockerfile for must-gather.
-ARG CLI_ARTIFACTS=registry.ci.openshift.org/ocp/4.15:cli-artifacts
+ARG CLI_ARTIFACTS=registry.ci.openshift.org/ocp/4.16:cli-artifacts
 ARG RUNTIME=registry.access.redhat.com/ubi9/ubi-minimal
 FROM $CLI_ARTIFACTS AS cli-artifacts
 
