@@ -1,5 +1,5 @@
 # Dockerfile to bootstrap build and test in openshift-ci
-FROM registry.ci.openshift.org/openshift/release:rhel-8-release-golang-__GOLANG_VERSION__-openshift-4.19
+FROM registry.ci.openshift.org/openshift/release:rhel-9-release-golang-__GOLANG_VERSION__-openshift-4.19
 
 # make art yum/dnf wrapper to check in /etc/yum.repos.d/ too
 ENV ART_DNF_WRAPPER_POLICY=append
