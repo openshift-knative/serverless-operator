@@ -6,20 +6,18 @@ metadata:
     build.appstudio.redhat.com/commit_sha: '{{revision}}'
     build.appstudio.redhat.com/target_branch: '{{target_branch}}'
     pipelinesascode.tekton.dev/max-keep-runs: "3"
-    pipelinesascode.tekton.dev/on-cel-expression: event == "push" && target_branch == "main" && ( files.all.exists(x, x.matches('^olm-catalog/serverless-operator-index/v4.17/')) || files.all.exists(x, x.matches('^.tekton/')) )
+    pipelinesascode.tekton.dev/on-cel-expression: event == "push" && target_branch == "main" && files.all.exists(x, !x.matches('^olm-catalog/') && !x.matches('^.konflux-release/'))
   creationTimestamp: null
   labels:
-    appstudio.openshift.io/application: serverless-operator-137-fbc-417
-    appstudio.openshift.io/component: serverless-index-137-fbc-417
+    appstudio.openshift.io/application: serverless-operator-138
+    appstudio.openshift.io/component: serverless-openshift-kn-operator-138
     pipelines.appstudio.openshift.io/type: build
-  name: serverless-index-137-fbc-417-on-push
+  name: serverless-openshift-kn-operator-138-on-push
   namespace: ocp-serverless-tenant
 spec:
   params:
     - name: dockerfile
-      value: Dockerfile
-    - name: path-context
-      value: ./olm-catalog/serverless-operator-index/v4.17
+      value: openshift-knative-operator/Dockerfile
     - name: build-args
       value:
         - VERSION=1.37.0
@@ -30,13 +28,12 @@ spec:
         - JAVA_RUNTIME=registry.access.redhat.com/ubi9/openjdk-21-runtime
         - NODE_BUILDER=registry.access.redhat.com/ubi9/nodejs-20
         - NODE_RUNTIME=registry.access.redhat.com/ubi9/nodejs-20
-        - OPM_IMAGE=brew.registry.redhat.io/rh-osbs/openshift-ose-operator-registry-rhel9:v4.17
     - name: git-url
       value: '{{source_url}}'
     - name: hermetic
       value: "true"
     - name: output-image
-      value: quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-137-fbc-417/serverless-index-137-fbc-417:{{revision}}
+      value: quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-138/serverless-openshift-kn-operator:{{revision}}
     - name: revision
       value: '{{revision}}'
     - name: additional-tags
@@ -44,10 +41,23 @@ spec:
         - $(context.pipelineRun.uid)-{{revision}}
         - 1.37.0
         - latest
+    - name: prefetch-input
+      value: '[{"type":"rpm"}]'
+    - name: prefetch-input-dev-package-managers
+      value: 'true'
+  taskRunSpecs:
+    - pipelineTaskName: sast-shell-check
+      stepSpecs:
+        - name: sast-shell-check
+          computeResources:
+            requests:
+              memory: 4Gi
+            limits:
+              memory: 4Gi
   pipelineRef:
-    name: fbc-builder
+    name: docker-build
   taskRunTemplate:
-    serviceAccountName: build-pipeline-serverless-index-137-fbc-417
+    serviceAccountName: build-pipeline-serverless-openshift-kn-operator-138
   workspaces:
     - name: git-auth
       secret:
