@@ -7,7 +7,7 @@ metadata:
     build.appstudio.redhat.com/pull_request_number: '{{pull_request_number}}'
     build.appstudio.redhat.com/target_branch: '{{target_branch}}'
     pipelinesascode.tekton.dev/max-keep-runs: "3"
-    pipelinesascode.tekton.dev/on-cel-expression: event == "pull_request" && target_branch == "main" && ( files.all.exists(x, x.matches('^olm-catalog/serverless-operator-index/v4.15/')) || files.all.exists(x, x.matches('^.tekton/')) )
+    pipelinesascode.tekton.dev/on-cel-expression: event == "pull_request" && target_branch == "release-1.37" && ( files.all.exists(x, x.matches('^olm-catalog/serverless-operator-index/v4.15/')) || files.all.exists(x, x.matches('^.tekton/')) )
   creationTimestamp: null
   labels:
     appstudio.openshift.io/application: serverless-operator-137-fbc-415
@@ -25,7 +25,7 @@ spec:
       value:
         - VERSION=1.37.0
         - CLI_ARTIFACTS=registry.redhat.io/openshift4/ose-cli-artifacts-rhel9:v4.16
-        - GO_BUILDER=brew.registry.redhat.io/rh-osbs/openshift-golang-builder:rhel_9_golang_1.24
+        - GO_BUILDER=brew.registry.redhat.io/rh-osbs/openshift-golang-builder:rhel_9_golang_1.23
         - GO_RUNTIME=registry.access.redhat.com/ubi9/ubi-minimal
         - JAVA_BUILDER=registry.access.redhat.com/ubi9/openjdk-21
         - JAVA_RUNTIME=registry.access.redhat.com/ubi9/openjdk-21-runtime
