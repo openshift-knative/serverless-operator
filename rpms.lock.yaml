@@ -32,6 +32,20 @@ arches:
     name: tzdata
     evr: 2025b-1.el9
     sourcerpm: tzdata-2025b-1.el9.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/baseos/os/Packages/u/unzip-6.0-58.el9_5.aarch64.rpm
+    repoid: ubi-9-for-aarch64-baseos-rpms
+    size: 186875
+    checksum: sha256:edc9b5c0adcfbe04cbfd4cc6a23d326c82ab816eb1fc521f7e483add8bb2b8cd
+    name: unzip
+    evr: 6.0-58.el9_5
+    sourcerpm: unzip-6.0-58.el9_5.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/baseos/os/Packages/z/zip-3.0-35.el9.aarch64.rpm
+    repoid: ubi-9-for-aarch64-baseos-rpms
+    size: 269791
+    checksum: sha256:4dfc9b2afc08b96cba0a8c7f06be5691ec26f2104d9c1a100aa0432e30aac3cd
+    name: zip
+    evr: 3.0-35.el9
+    sourcerpm: zip-3.0-35.el9.src.rpm
   source:
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/appstream/source/SRPMS/Packages/s/socat-1.7.4.1-6.el9_6.1.src.rpm
     repoid: ubi-9-for-aarch64-appstream-source-rpms
@@ -57,6 +71,18 @@ arches:
     checksum: sha256:a2668d1f6b053545a5824a428755484895d72475a9d3833cbfbec9e08660aba2
     name: tzdata
     evr: 2025b-1.el9
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/baseos/source/SRPMS/Packages/u/unzip-6.0-58.el9_5.src.rpm
+    repoid: ubi-9-for-aarch64-baseos-source-rpms
+    size: 1436757
+    checksum: sha256:49de0234c5e8f588c94b435c35225bcccd4cc94bb19cac94110d9aa0c5060f69
+    name: unzip
+    evr: 6.0-58.el9_5
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/aarch64/baseos/source/SRPMS/Packages/z/zip-3.0-35.el9.src.rpm
+    repoid: ubi-9-for-aarch64-baseos-source-rpms
+    size: 1137410
+    checksum: sha256:416b6957a4365204cfb2ba9e5b9b9f21075b615114c6afe46c83166de258bb5d
+    name: zip
+    evr: 3.0-35.el9
   module_metadata: []
 - arch: ppc64le
   packages:
@@ -88,6 +114,20 @@ arches:
     name: tzdata
     evr: 2025b-1.el9
     sourcerpm: tzdata-2025b-1.el9.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/ppc64le/baseos/os/Packages/u/unzip-6.0-58.el9_5.ppc64le.rpm
+    repoid: ubi-9-for-ppc64le-baseos-rpms
+    size: 195024
+    checksum: sha256:7b2b6dfa5eb402f02bbec69c096f12404223dab040cda6ae55a927d104d607bb
+    name: unzip
+    evr: 6.0-58.el9_5
+    sourcerpm: unzip-6.0-58.el9_5.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/ppc64le/baseos/os/Packages/z/zip-3.0-35.el9.ppc64le.rpm
+    repoid: ubi-9-for-ppc64le-baseos-rpms
+    size: 282944
+    checksum: sha256:9af29cefba99330a06abd6ace7eb1f3ea77d1b2d50a2cd6d4e3fade1e603f26f
+    name: zip
+    evr: 3.0-35.el9
+    sourcerpm: zip-3.0-35.el9.src.rpm
   source:
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/ppc64le/appstream/source/SRPMS/Packages/s/socat-1.7.4.1-6.el9_6.1.src.rpm
     repoid: ubi-9-for-ppc64le-appstream-source-rpms
@@ -113,6 +153,18 @@ arches:
     checksum: sha256:a2668d1f6b053545a5824a428755484895d72475a9d3833cbfbec9e08660aba2
     name: tzdata
     evr: 2025b-1.el9
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/ppc64le/baseos/source/SRPMS/Packages/u/unzip-6.0-58.el9_5.src.rpm
+    repoid: ubi-9-for-ppc64le-baseos-source-rpms
+    size: 1436757
+    checksum: sha256:49de0234c5e8f588c94b435c35225bcccd4cc94bb19cac94110d9aa0c5060f69
+    name: unzip
+    evr: 6.0-58.el9_5
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/ppc64le/baseos/source/SRPMS/Packages/z/zip-3.0-35.el9.src.rpm
+    repoid: ubi-9-for-ppc64le-baseos-source-rpms
+    size: 1137410
+    checksum: sha256:416b6957a4365204cfb2ba9e5b9b9f21075b615114c6afe46c83166de258bb5d
+    name: zip
+    evr: 3.0-35.el9
   module_metadata: []
 - arch: s390x
   packages:
@@ -144,6 +196,20 @@ arches:
     name: tzdata
     evr: 2025b-1.el9
     sourcerpm: tzdata-2025b-1.el9.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/s390x/baseos/os/Packages/u/unzip-6.0-58.el9_5.s390x.rpm
+    repoid: ubi-9-for-s390x-baseos-rpms
+    size: 185386
+    checksum: sha256:b772da82fd038a447b98428d31ed3d3c3208a4c37960f5d2fadd0070df64d157
+    name: unzip
+    evr: 6.0-58.el9_5
+    sourcerpm: unzip-6.0-58.el9_5.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/s390x/baseos/os/Packages/z/zip-3.0-35.el9.s390x.rpm
+    repoid: ubi-9-for-s390x-baseos-rpms
+    size: 276776
+    checksum: sha256:ac9f81e15ac141940073706ed38e3efd1d2278642d80dbd2945b28f0e6ffae62
+    name: zip
+    evr: 3.0-35.el9
+    sourcerpm: zip-3.0-35.el9.src.rpm
   source:
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/s390x/appstream/source/SRPMS/Packages/s/socat-1.7.4.1-6.el9_6.1.src.rpm
     repoid: ubi-9-for-s390x-appstream-source-rpms
@@ -169,6 +235,18 @@ arches:
     checksum: sha256:a2668d1f6b053545a5824a428755484895d72475a9d3833cbfbec9e08660aba2
     name: tzdata
     evr: 2025b-1.el9
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/s390x/baseos/source/SRPMS/Packages/u/unzip-6.0-58.el9_5.src.rpm
+    repoid: ubi-9-for-s390x-baseos-source-rpms
+    size: 1436757
+    checksum: sha256:49de0234c5e8f588c94b435c35225bcccd4cc94bb19cac94110d9aa0c5060f69
+    name: unzip
+    evr: 6.0-58.el9_5
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/s390x/baseos/source/SRPMS/Packages/z/zip-3.0-35.el9.src.rpm
+    repoid: ubi-9-for-s390x-baseos-source-rpms
+    size: 1137410
+    checksum: sha256:416b6957a4365204cfb2ba9e5b9b9f21075b615114c6afe46c83166de258bb5d
+    name: zip
+    evr: 3.0-35.el9
   module_metadata: []
 - arch: x86_64
   packages:
@@ -200,6 +278,20 @@ arches:
     name: tzdata
     evr: 2025b-1.el9
     sourcerpm: tzdata-2025b-1.el9.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/u/unzip-6.0-58.el9_5.x86_64.rpm
+    repoid: ubi-9-for-x86_64-baseos-rpms
+    size: 190785
+    checksum: sha256:009698f3b4432b9df219fd2f894234aad1cee8c4e4e61384b4e293ef8e28e9c2
+    name: unzip
+    evr: 6.0-58.el9_5
+    sourcerpm: unzip-6.0-58.el9_5.src.rpm
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/os/Packages/z/zip-3.0-35.el9.x86_64.rpm
+    repoid: ubi-9-for-x86_64-baseos-rpms
+    size: 276200
+    checksum: sha256:ef28011ba191f53260cebb1e42b0148ae65d9029940146699e802f501dba009c
+    name: zip
+    evr: 3.0-35.el9
+    sourcerpm: zip-3.0-35.el9.src.rpm
   source:
   - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/source/SRPMS/Packages/s/socat-1.7.4.1-6.el9_6.1.src.rpm
     repoid: ubi-9-for-x86_64-appstream-source-rpms
@@ -225,4 +317,16 @@ arches:
     checksum: sha256:a2668d1f6b053545a5824a428755484895d72475a9d3833cbfbec9e08660aba2
     name: tzdata
     evr: 2025b-1.el9
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/source/SRPMS/Packages/u/unzip-6.0-58.el9_5.src.rpm
+    repoid: ubi-9-for-x86_64-baseos-source-rpms
+    size: 1436757
+    checksum: sha256:49de0234c5e8f588c94b435c35225bcccd4cc94bb19cac94110d9aa0c5060f69
+    name: unzip
+    evr: 6.0-58.el9_5
+  - url: https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/baseos/source/SRPMS/Packages/z/zip-3.0-35.el9.src.rpm
+    repoid: ubi-9-for-x86_64-baseos-source-rpms
+    size: 1137410
+    checksum: sha256:416b6957a4365204cfb2ba9e5b9b9f21075b615114c6afe46c83166de258bb5d
+    name: zip
+    evr: 3.0-35.el9
   module_metadata: []
