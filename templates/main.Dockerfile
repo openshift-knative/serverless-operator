@@ -18,6 +18,7 @@ LABEL operators.operatorframework.io.bundle.channels.v1="__DEFAULT_CHANNEL__,__L
 LABEL \
       com.redhat.component="openshift-serverless-1-serverless-operator-bundle-container" \
       name="openshift-serverless-1/serverless-operator-bundle" \
+      cpe="cpe:/a:redhat:openshift_serverless:1.__VERSION_MINOR__::el9" \
       version="__VERSION__" \
       summary="Red Hat OpenShift Serverless Bundle" \
       maintainer="serverless-support@redhat.com" \
