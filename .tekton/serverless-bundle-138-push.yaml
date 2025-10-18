@@ -9,10 +9,10 @@ metadata:
     pipelinesascode.tekton.dev/on-cel-expression: event == "push" && target_branch == "main" && ( files.all.exists(x, x.matches('^olm-catalog/serverless-operator/')) || files.all.exists(x, x.matches('^.tekton/')) )
   creationTimestamp: null
   labels:
-    appstudio.openshift.io/application: serverless-operator-137
-    appstudio.openshift.io/component: serverless-bundle-137
+    appstudio.openshift.io/application: serverless-operator-138
+    appstudio.openshift.io/component: serverless-bundle-138
     pipelines.appstudio.openshift.io/type: build
-  name: serverless-bundle-137-on-push
+  name: serverless-bundle-138-on-push
   namespace: ocp-serverless-tenant
 spec:
   params:
@@ -33,7 +33,7 @@ spec:
     - name: hermetic
       value: "true"
     - name: output-image
-      value: quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-137/serverless-bundle:{{revision}}
+      value: quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-138/serverless-bundle:{{revision}}
     - name: revision
       value: '{{revision}}'
     - name: additional-tags
@@ -57,7 +57,7 @@ spec:
   pipelineRef:
     name: bundle-build
   taskRunTemplate:
-    serviceAccountName: build-pipeline-serverless-bundle-137
+    serviceAccountName: build-pipeline-serverless-bundle-138
   workspaces:
     - name: git-auth
       secret:

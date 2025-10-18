@@ -4,20 +4,21 @@ metadata:
   annotations:
     build.appstudio.openshift.io/repo: https://github.com/openshift-knative/serverless-operator?rev={{revision}}
     build.appstudio.redhat.com/commit_sha: '{{revision}}'
+    build.appstudio.redhat.com/pull_request_number: '{{pull_request_number}}'
     build.appstudio.redhat.com/target_branch: '{{target_branch}}'
     pipelinesascode.tekton.dev/max-keep-runs: "3"
-    pipelinesascode.tekton.dev/on-cel-expression: event == "push" && target_branch == "main" && files.all.exists(x, !x.matches('^olm-catalog/') && !x.matches('^.konflux-release/'))
+    pipelinesascode.tekton.dev/on-cel-expression: event == "pull_request" && target_branch == "main" && files.all.exists(x, !x.matches('^olm-catalog/') && !x.matches('^.konflux-release/'))
   creationTimestamp: null
   labels:
-    appstudio.openshift.io/application: serverless-operator-137
-    appstudio.openshift.io/component: serverless-kn-operator-137
+    appstudio.openshift.io/application: serverless-operator-138
+    appstudio.openshift.io/component: serverless-openshift-kn-operator-138
     pipelines.appstudio.openshift.io/type: build
-  name: serverless-kn-operator-137-on-push
+  name: serverless-openshift-kn-operator-138-on-pull-request
   namespace: ocp-serverless-tenant
 spec:
   params:
     - name: dockerfile
-      value: knative-operator/Dockerfile
+      value: openshift-knative-operator/Dockerfile
     - name: build-args
       value:
         - VERSION=1.37.0
@@ -32,15 +33,15 @@ spec:
       value: '{{source_url}}'
     - name: hermetic
       value: "true"
+    - name: image-expires-after
+      value: 5d
     - name: output-image
-      value: quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-137/serverless-kn-operator:{{revision}}
+      value: quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-138/serverless-openshift-kn-operator:on-pr-{{revision}}
+    - name: build-platforms
+      value:
+        - linux/x86_64
     - name: revision
       value: '{{revision}}'
-    - name: additional-tags
-      value:
-        - $(context.pipelineRun.uid)-{{revision}}
-        - 1.37.0
-        - latest
     - name: prefetch-input
       value: '[{"type":"rpm"}]'
     - name: prefetch-input-dev-package-managers
@@ -57,7 +58,7 @@ spec:
   pipelineRef:
     name: docker-build
   taskRunTemplate:
-    serviceAccountName: build-pipeline-serverless-kn-operator-137
+    serviceAccountName: build-pipeline-serverless-openshift-kn-operator-138
   workspaces:
     - name: git-auth
       secret:
