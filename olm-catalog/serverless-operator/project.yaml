@@ -17,16 +17,16 @@ olm:
       - stable
       - stable-1.37
   previousBundles:
-  # List of previous bundles to add to the generated index, also used in upgrade tests
-  - version: 1.36.1
-    replaces: 1.36.0
-    skipRange: ">=1.36.0 <1.36.1"
-  - version: 1.36.0
-    replaces: 1.35.0
-    skipRange: ">=1.35.0 <1.36.0"
-  - version: 1.35.0
-    replaces: 1.34.0
-    skipRange: ">=1.34.0 <1.35.0"
+    # List of previous bundles to add to the generated index, also used in upgrade tests
+    - version: 1.36.1
+      replaces: 1.36.0
+      skipRange: ">=1.36.0 <1.36.1"
+    - version: 1.36.0
+      replaces: 1.35.0
+      skipRange: ">=1.35.0 <1.36.0"
+    - version: 1.35.0
+      replaces: 1.34.0
+      skipRange: ">=1.34.0 <1.35.0"
 requirements:
   kube:
     # The min version validation in `vendor/knative.dev/pkg/version/version.go`
