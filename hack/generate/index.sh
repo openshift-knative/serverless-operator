@@ -36,9 +36,9 @@ EOF
 
   previous_bundles_len=$(metadata.get 'olm.previousBundles' | yq read - -l '')
   for i in $(seq "${previous_bundles_len}"); do
-    version=$(metadata.get "olm.previousBundles" | yq read - "[$i]['version']")
-    replaces_version=$(metadata.get "olm.previousBundles" | yq read - "[$i]['replaces']")
-    skip_range=$(metadata.get "olm.previousBundles" | yq read - "[$i]['skipRange']")
+    version=$(metadata.get "olm.previousBundles" | yq read - "[$i].version")
+    replaces_version=$(metadata.get "olm.previousBundles" | yq read - "[$i].replaces")
+    skip_range=$(metadata.get "olm.previousBundles" | yq read - "[$i].skipRange")
 
     if [[ $i -eq $previous_bundles_len ]]; then
       yq write --inplace "$channel_entry_yaml" 'entries[+].name' "serverless-operator.v${version}"
