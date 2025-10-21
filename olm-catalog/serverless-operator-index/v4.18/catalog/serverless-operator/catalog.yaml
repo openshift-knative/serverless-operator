@@ -9656,7 +9656,7 @@ relatedImages:
   name: IMAGE_KN_PLUGIN_FUNC_TEKTON_BUILDAH
 schema: olm.bundle
 ---
-image: registry.redhat.io/openshift-serverless-1/serverless-operator-bundle@sha256:65e3771ceb603a86aae60d5ee54668cbee9bfd9ac0d846fe4a63d1b70b39674a
+image: registry.redhat.io/openshift-serverless-1/serverless-operator-bundle@sha256:04b153467bfed37d4344e42128ad4468a6e4fb3d0cef4cf8da9440743f419ada
 name: serverless-operator.v1.37.0
 package: serverless-operator
 properties:
@@ -9746,7 +9746,7 @@ properties:
       features.operators.openshift.io/token-auth-aws: "false"
       features.operators.openshift.io/token-auth-azure: "false"
       features.operators.openshift.io/token-auth-gcp: "false"
-      olm.skipRange: '>=1.36.0 <1.37.0'
+      olm.skipRange: '>1.36.1 <1.37.0'
       operatorframework.io/suggested-namespace: openshift-serverless
       operators.openshift.io/must-gather-image: registry.redhat.io/openshift-serverless-1/serverless-must-gather-rhel9@sha256:f0ba70e487b08fb37c402cd50f995efcd81ae29d3ae15acffc4b94d7eefdd2dc
       operators.openshift.io/valid-subscription: '["OpenShift Container Platform",
@@ -9909,7 +9909,7 @@ properties:
     provider:
       name: Red Hat
 relatedImages:
-- image: registry.redhat.io/openshift-serverless-1/serverless-operator-bundle@sha256:65e3771ceb603a86aae60d5ee54668cbee9bfd9ac0d846fe4a63d1b70b39674a
+- image: registry.redhat.io/openshift-serverless-1/serverless-operator-bundle@sha256:04b153467bfed37d4344e42128ad4468a6e4fb3d0cef4cf8da9440743f419ada
   name: ""
 - image: registry.access.redhat.com/ubi8/nodejs-20-minimal@sha256:a2a7e399aaf09a48c28f40820da16709b62aee6f2bc703116b9345fab5830861
   name: IMAGE_KN_PLUGIN_FUNC_NODEJS_20_MINIMAL
