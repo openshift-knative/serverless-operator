@@ -77,7 +77,7 @@ metadata:
       Deploy and manage event-driven serverless applications and functions using Knative.
     repository: https://github.com/openshift-knative/serverless-operator
     support: Red Hat
-    olm.skipRange: '>=1.36.0 <1.37.0'
+    olm.skipRange: '>1.36.1 <1.37.0'
     operators.openshift.io/must-gather-image: registry.redhat.io/openshift-serverless-1/serverless-must-gather-rhel9@sha256:f0ba70e487b08fb37c402cd50f995efcd81ae29d3ae15acffc4b94d7eefdd2dc
   labels:
     operatorframework.io/arch.amd64: supported
@@ -1479,5 +1479,5 @@ spec:
       image: "registry.redhat.io/openshift-serverless-1/serverless-must-gather-rhel9@sha256:f0ba70e487b08fb37c402cd50f995efcd81ae29d3ae15acffc4b94d7eefdd2dc"
     - name: "IMAGE_KN_CLIENT_CLI_ARTIFACTS"
       image: "registry.redhat.io/openshift-serverless-1/kn-client-cli-artifacts-rhel9@sha256:e85fd8245308b2882dec76e901ad5db4f922afcac47f8845a11bf18a844516ed"
-  replaces: serverless-operator.v1.36.0
+  replaces: serverless-operator.v1.36.1
   version: 1.37.0
