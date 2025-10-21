@@ -57,8 +57,8 @@ function generate_catalog {
 }
 
 function add_channel {
-  local channel catalog_template catalog current_version current_csv major \
-    minor micro previous_version replaces_version channel_entry version
+  local channel catalog_template catalog current_version current_csv \
+    replaces_version skip_range channel_entry version
   catalog_template=${1?Pass catalog template path as arg[1]}
   channel=${2:?Pass channel name as arg[2]}
 
@@ -66,18 +66,8 @@ function add_channel {
   version="${3:-$current_version}"
 
   current_csv="serverless-operator.v${version}"
-  major=$(versions.major "${version}")
-  minor=$(versions.minor "${version}")
-  micro=$(versions.micro "${version}")
-
-  # Handle the first entry specifically as it might be a z-stream release.
-  if [[ "$micro" == "0" ]]; then
-    previous_version="${major}.$(( minor-1 )).${micro}"
-    replaces_version="${major}.$(( minor-1 )).${micro}"
-  else
-    previous_version="${major}.${minor}.0"
-    replaces_version="${major}.${minor}.$(( micro-1 ))"
-  fi
+  replaces_version=$(metadata.get 'olm.replaces')
+  skip_range=$(metadata.get 'olm.skipRange')
 
   catalog=$(mktemp catalog-XXX.json)
   channel_entry=$(yq read "${catalog_template}" "entries[name==${channel}]")
@@ -133,7 +123,7 @@ function add_channel {
         value:
           name: "serverless-operator.v${version}"
           replaces: "${replaces}"
-          skipRange: "\u003e=${previous_version} \u003c${version}"
+          skipRange: "${skip_range}"
 EOF
       mv "${catalog}" "${catalog_template}"
 
