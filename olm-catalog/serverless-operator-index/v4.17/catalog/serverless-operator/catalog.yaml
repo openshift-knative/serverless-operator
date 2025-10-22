@@ -9656,7 +9656,7 @@ relatedImages:
   name: IMAGE_KN_PLUGIN_FUNC_TEKTON_BUILDAH
 schema: olm.bundle
 ---
-image: registry.redhat.io/openshift-serverless-1/serverless-operator-bundle@sha256:aa8ccf8abec0fa1a45f1e2751c6862e639880650de669218de1a9bfe7f0f45a1
+image: registry.redhat.io/openshift-serverless-1/serverless-operator-bundle@sha256:15012ce6bffc051eb3f5bec2a547276be835261ef89b346d2b7636a118d87b11
 name: serverless-operator.v1.37.0
 package: serverless-operator
 properties:
@@ -9909,13 +9909,13 @@ properties:
     provider:
       name: Red Hat
 relatedImages:
-- image: registry.redhat.io/openshift-serverless-1/serverless-operator-bundle@sha256:aa8ccf8abec0fa1a45f1e2751c6862e639880650de669218de1a9bfe7f0f45a1
+- image: registry.redhat.io/openshift-serverless-1/serverless-operator-bundle@sha256:15012ce6bffc051eb3f5bec2a547276be835261ef89b346d2b7636a118d87b11
   name: ""
 - image: registry.access.redhat.com/ubi9/nodejs-20-minimal@sha256:5f64d6ce542fa7008deca5f47b2b972c0be6d73a50fc850c3d9b463599ec8411
   name: IMAGE_KN_PLUGIN_FUNC_NODEJS_20_MINIMAL
 - image: registry.access.redhat.com/ubi9/openjdk-21@sha256:acf2917463c3b0d211063a9732098f5356e5e670e3cdcdfa32e51db73477f4ef
   name: IMAGE_KN_PLUGIN_FUNC_OPENJDK_21
-- image: registry.access.redhat.com/ubi9/python-39@sha256:bla
+- image: registry.access.redhat.com/ubi9/python-39@sha256:dee7605bfc0cc89b83075937cd48ff7b61bf5e396f8bd2ae13e7f7299be53326
   name: IMAGE_KN_PLUGIN_FUNC_PYTHON_39
 - image: registry.redhat.io/openshift-serverless-1/kn-backstage-plugins-eventmesh-rhel9@sha256:714a313545822c13726255d8766ab5ba5c58146f12f202c781c793fc751b9b23
   name: IMAGE_eventmesh-backend__controller
