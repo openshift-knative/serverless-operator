@@ -19,6 +19,10 @@ updates:
           update-types:
             - version-update:semver-major
             - version-update:semver-minor
+        - dependency-name: istio.io/*
+          update-types:
+            - version-update:semver-major
+            - version-update:semver-minor
       groups:
         major:
             update-types:
@@ -50,8 +54,6 @@ updates:
             patterns:
                 - '*'
             applies-to: version-updates
-            exclude-patterns:
-                - istio.io/*
         security:
             update-types:
                 - patch
@@ -83,6 +85,10 @@ updates:
           update-types:
             - version-update:semver-major
             - version-update:semver-minor
+        - dependency-name: istio.io/*
+          update-types:
+            - version-update:semver-major
+            - version-update:semver-minor
       groups:
         major:
             update-types:
@@ -114,8 +120,6 @@ updates:
             patterns:
                 - '*'
             applies-to: version-updates
-            exclude-patterns:
-                - istio.io/*
         security:
             update-types:
                 - patch
@@ -147,6 +151,10 @@ updates:
           update-types:
             - version-update:semver-major
             - version-update:semver-minor
+        - dependency-name: istio.io/*
+          update-types:
+            - version-update:semver-major
+            - version-update:semver-minor
       groups:
         major:
             update-types:
@@ -178,8 +186,6 @@ updates:
             patterns:
                 - '*'
             applies-to: version-updates
-            exclude-patterns:
-                - istio.io/*
         security:
             update-types:
                 - patch
@@ -191,4 +197,70 @@ updates:
       target-branch: release-1.36
       commit-message:
         prefix: '[release-1.36][gomod]'
+      open-pull-requests-limit: 10
+    - package-ecosystem: gomod
+      directories:
+        - /
+      schedule:
+        interval: weekly
+      ignore:
+        - dependency-name: knative.dev/*
+        - dependency-name: k8s.io/*
+          update-types:
+            - version-update:semver-major
+            - version-update:semver-minor
+        - dependency-name: github.com/openshift/*
+          update-types:
+            - version-update:semver-major
+            - version-update:semver-minor
+        - dependency-name: sigs.k8s.io/controller-runtime
+          update-types:
+            - version-update:semver-major
+            - version-update:semver-minor
+        - dependency-name: istio.io/*
+          update-types:
+            - version-update:semver-major
+            - version-update:semver-minor
+      groups:
+        major:
+            update-types:
+                - major
+            patterns:
+                - '*'
+            applies-to: version-updates
+            exclude-patterns:
+                - knative.dev/*
+                - istio.io/*
+                - k8s.io/*
+                - github.com/openshift/*
+                - sigs.k8s.io/controller-runtime*
+        minor:
+            update-types:
+                - minor
+            patterns:
+                - '*'
+            applies-to: version-updates
+            exclude-patterns:
+                - knative.dev/*
+                - k8s.io/*
+                - github.com/openshift/*
+                - sigs.k8s.io/controller-runtime*
+                - istio.io/*
+        patch:
+            update-types:
+                - patch
+            patterns:
+                - '*'
+            applies-to: version-updates
+        security:
+            update-types:
+                - patch
+                - minor
+                - major
+            patterns:
+                - '*'
+            applies-to: security-updates
+      target-branch: release-1.37
+      commit-message:
+        prefix: '[release-1.37][gomod]'
       open-pull-requests-limit: 10
