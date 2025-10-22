@@ -12,25 +12,9 @@ function add_previous_bundles {
     skopeo login registry.redhat.io -u "${REGISTRY_REDHAT_IO_USERNAME}" -p "${REGISTRY_REDHAT_IO_PASSWORD}"
   fi
 
-  # We're adding just the "previous bundles"
-  num_csvs=$(( INDEX_IMAGE_NUM_CSVS-1 ))
-
-  current_version=$(metadata.get 'project.version')
-  major=$(versions.major "$current_version")
-  minor=$(versions.minor "$current_version")
-  micro=$(versions.micro "$current_version")
-
-  for i in $(seq $num_csvs); do
-    current_minor=$(( minor ))
-    current_micro=$(( micro-i ))
-    if [[ "$current_micro" -le 0 ]]; then
-      current_minor=$((minor + current_micro))
-      current_micro=0
-    fi
-
-    current_version="${major}.${current_minor}.${current_micro}"
-
-    opm render --skip-tls-verify -o yaml "registry.redhat.io/openshift-serverless-1/serverless-operator-bundle:${current_version}" >> "$target"
+  for version in $(metadata.get 'olm.previousBundles' | yq read - '[*].version')
+  do
+    opm render --skip-tls-verify -o yaml "registry.redhat.io/openshift-serverless-1/serverless-operator-bundle:${version}" >> "$target"
   done
 }
 # Clear the file.
