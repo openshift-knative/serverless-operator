@@ -169,6 +169,19 @@ function upgrade_kube_rbac_proxy_image() {
   yq w --inplace olm-catalog/serverless-operator/project.yaml 'dependencies.kube_rbac_proxy' "${image}"
 }
 
+function upgrade_func_images() {
+  # List of images in project.yaml dependencies.func
+  local images=("tekton_buildah" "nodejs_20_minimal" "openjdk_21" "python-39")
+  for img_name in "${images[@]}" ; do
+    logger.info "Upgrading func image: ${img_name}"
+    local image image_stream
+    image=$(metadata.get "dependencies.func.${img_name}")
+    image_stream="latest"
+    image=$(latest_konflux_image_sha "${image}" "${image_stream}")
+    yq w --inplace olm-catalog/serverless-operator/project.yaml "dependencies.func.${img_name}" "${image}"
+  done
+}
+
 function upgrade_dependencies_images {
   if [[ -n "${REGISTRY_REDHAT_IO_USERNAME:-}" ]] || [[ -n "${REGISTRY_REDHAT_IO_PASSWORD:-}" ]]; then
     skopeo login registry.redhat.io -u "${REGISTRY_REDHAT_IO_USERNAME}" -p "${REGISTRY_REDHAT_IO_PASSWORD}"
@@ -177,6 +190,8 @@ function upgrade_dependencies_images {
   upgrade_service_mesh_proxy_image
 
   upgrade_kube_rbac_proxy_image
+
+  upgrade_func_images
 }
 
 logger.info "Upgrading registry.redhat.io images"
