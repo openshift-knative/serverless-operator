@@ -139,6 +139,7 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, ke *v1beta1.KnativeEvent
 			return nil
 		},
 		r.transform,
+		r.handleBackstageResources,
 		r.handleTLSResources,
 		manifests.Install,
 		manifests.SetManifestPaths, // setting path right after applying manifests to populate paths

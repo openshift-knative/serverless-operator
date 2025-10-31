@@ -83,15 +83,3 @@ index 000000000..e23d375d6
 +
 +	return f.IsEnabled(backstageBackendFeatureFlag)
 +}
-diff --git a/vendor/knative.dev/operator/pkg/reconciler/knativeeventing/knativeeventing.go b/vendor/knative.dev/operator/pkg/reconciler/knativeeventing/knativeeventing.go
-index b85ec89e4..59bd74dd1 100644
---- a/vendor/knative.dev/operator/pkg/reconciler/knativeeventing/knativeeventing.go
-+++ b/vendor/knative.dev/operator/pkg/reconciler/knativeeventing/knativeeventing.go
-@@ -140,6 +140,7 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, ke *v1beta1.KnativeEvent
- 		},
- 		r.transform,
- 		r.handleTLSResources,
-+		r.handleBackstageResources,
- 		manifests.Install,
- 		common.CheckDeployments,
- 		common.InstallWebhookConfigs,
