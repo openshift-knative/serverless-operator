@@ -22,8 +22,8 @@ RUN mkdir -p $LOGS_DIR && \
 USER 65532
 
 LABEL \
-      com.redhat.component="openshift-serverless-1-must-gather--rhel9-container" \
-      name="openshift-serverless-1/serverless-must-gather--rhel9" \
+      com.redhat.component="openshift-serverless-1-serverless-must-gather-rhel9-container" \
+      name="openshift-serverless-1/serverless-must-gather-rhel9" \
       version=1.37.0 \
       summary="Red Hat OpenShift Serverless 1 Must Gather" \
       maintainer="serverless-support@redhat.com" \
@@ -31,6 +31,8 @@ LABEL \
       io.k8s.display-name="Red Hat OpenShift Serverless 1 Must Gather" \
       io.k8s.description="Red Hat OpenShift Serverless Must Gather" \
       io.openshift.tags="must-gather" \
+      vendor="Red Hat, Inc." \
+      release=$VERSION \
       cpe="cpe:/a:redhat:openshift_serverless:1.37::el9"  
 
 ENTRYPOINT /usr/bin/gather
