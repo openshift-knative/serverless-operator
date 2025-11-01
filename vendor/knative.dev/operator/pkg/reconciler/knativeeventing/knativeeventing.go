@@ -139,12 +139,11 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, ke *v1beta1.KnativeEvent
 			return nil
 		},
 		r.transform,
-		r.handleTLSResources,
 		r.handleBackstageResources,
+		r.handleTLSResources,
 		manifests.Install,
+		manifests.SetManifestPaths, // setting path right after applying manifests to populate paths
 		common.CheckDeployments,
-		common.InstallWebhookConfigs,
-		manifests.SetManifestPaths,
 		common.MarkStatusSuccess,
 		common.DeleteObsoleteResources(ctx, ke, r.installed),
 	}

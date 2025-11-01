@@ -19,13 +19,14 @@ package knativeserving
 import (
 	"context"
 	"fmt"
-	"os"
+  "os"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 
 	"knative.dev/pkg/logging"
 	pkgreconciler "knative.dev/pkg/reconciler"
+
 	mf "github.com/manifestival/manifestival"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"knative.dev/operator/pkg/apis/operator/base"
@@ -89,6 +90,7 @@ func (r *Reconciler) FinalizeKind(ctx context.Context, original *v1beta1.Knative
 	}
 
 	if manifest == nil {
+		logger.Warnf("No manifest found; no cluster-scoped resources will be finalized")
 		return nil
 	}
 	// we need this to apply the correct namespace to the resources otherwise it defaults to knative-serving
@@ -107,13 +109,13 @@ func (r *Reconciler) FinalizeKind(ctx context.Context, original *v1beta1.Knative
 func overrideKourierNamespace(ks base.KComponent) mf.Transformer {
 	if ns, required := os.LookupEnv("REQUIRED_SERVING_INGRESS_NAMESPACE"); required {
 		nsInjector := mf.InjectNamespace(ns)
-		return func(u *unstructured.Unstructured) error {
-			provider := u.GetLabels()["networking.knative.dev/ingress-provider"]
-			if provider != "kourier" {
-				return nil
+			return func(u *unstructured.Unstructured) error {
+				provider := u.GetLabels()["networking.knative.dev/ingress-provider"]
+				if provider != "kourier" {
+					return nil
+				}
+				return nsInjector(u)
 			}
-			return nsInjector(u)
-		}
 	}
 	return nil
 }
@@ -144,10 +146,9 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, ks *v1beta1.KnativeServi
 		},
 		r.transform,
 		manifests.Install,
+		manifests.SetManifestPaths, // setting path right after applying manifests to populate paths
 		common.CheckDeployments,
-		common.InstallWebhookConfigs,
 		common.InstallWebhookDependentResources,
-		manifests.SetManifestPaths,
 		common.MarkStatusSuccess,
 		common.DeleteObsoleteResources(ctx, ks, r.installed),
 	}
