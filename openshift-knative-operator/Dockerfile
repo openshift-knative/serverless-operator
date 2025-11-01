@@ -25,8 +25,8 @@ COPY openshift-knative-operator/cmd/openshift-knative-operator/kodata $KO_DATA_P
 USER 65532
 
 LABEL \
-      com.redhat.component="openshift-serverless-1-openshift-knative-operator-rhel9-container" \
-      name="openshift-serverless-1/openshift-knative-operator-rhel9" \
+      com.redhat.component="openshift-serverless-1-serverless-openshift-kn-rhel9-operator-container" \
+      name="openshift-serverless-1/serverless-openshift-kn-rhel9-operator" \
       version=$VERSION \
       summary="Red Hat OpenShift Serverless 1 Openshift Knative Operator" \
       maintainer="serverless-support@redhat.com" \
@@ -34,6 +34,8 @@ LABEL \
       io.k8s.display-name="Red Hat OpenShift Serverless 1 Openshift Knative Operator" \
       io.k8s.description="Red Hat OpenShift Serverless Openshift Knative Operator" \
       io.openshift.tags="openshift-knative-operator" \
+      vendor="Red Hat, Inc." \
+      release=$VERSION \
       cpe="cpe:/a:redhat:openshift_serverless:1.37::el9"
 
 ENTRYPOINT ["/usr/bin/openshift-knative-operator"]
