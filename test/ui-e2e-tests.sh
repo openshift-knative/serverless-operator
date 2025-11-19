@@ -80,10 +80,13 @@ export OCP_VERSION OCP_USERNAME OCP_PASSWORD OCP_LOGIN_PROVIDER CYPRESS_BASE_URL
 add_user "$OCP_USERNAME" "$OCP_PASSWORD"
 
 check_node
+logger.info "OCP version: $OCP_VERSION"
+oc version
 enable_dev_perspective
 logger.success '🚀 Cluster prepared for testing.'
 
 pushd "$(dirname "${BASH_SOURCE[0]}")/ui" >/dev/null
 npm install
 npm run install
+npm run unit
 npm run "${NPM_TARGET:-$DEFAULT_NPM_TARGET}" -- "${cypress_args[@]}"

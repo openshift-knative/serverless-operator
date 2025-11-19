@@ -1,6 +1,6 @@
-const {defineConfig} = require('cypress')
-const path = require('path')
-const fs = require('fs')
+import { defineConfig } from 'cypress'
+import path from 'path'
+import fs from 'fs'
 
 // Determine base directory for test results
 const artifactsDir = path.join(process.env.ARTIFACTS || 'results', 'ui')
@@ -17,7 +17,7 @@ function safeUnlink(filePath) {
   }
 }
 
-module.exports = defineConfig({
+export default defineConfig({
   defaultCommandTimeout: 60_000,
   reporter: 'cypress-multi-reporters',
   reporterOptions: {
