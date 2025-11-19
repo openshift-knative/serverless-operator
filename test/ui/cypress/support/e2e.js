@@ -9,4 +9,4 @@
 import './commands'
 import './nolog-fetch'
 
-require('@cypress/skip-test/support')
+import '@cypress/skip-test/support'

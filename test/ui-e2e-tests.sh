@@ -21,16 +21,6 @@ function check_node {
   logger.info "NPM version: $(npm --version)"
 }
 
-function archive_cypress_artifacts {
-  mkdir -p "${ARTIFACTS}/ui/screenshots" "${ARTIFACTS}/ui/videos" "${ARTIFACTS}/ui/results"
-  pushd "$(dirname "${BASH_SOURCE[0]}")/ui/cypress" >/dev/null
-  ln -sf "${ARTIFACTS}/ui/screenshots" "${ARTIFACTS}/ui/videos" .
-  popd >/dev/null
-  pushd "$(dirname "${BASH_SOURCE[0]}")/ui" >/dev/null
-  ln -sf "${ARTIFACTS}/ui/results" .
-  popd >/dev/null
-}
-
 function enable_dev_perspective() {
   local ocpversion
   ocpversion="$(oc get clusterversion/version -o jsonpath='{.status.desired.version}')"
@@ -60,12 +50,27 @@ OCP_PASSWORD="${OCP_PASSWORD:-$(echo "$OCP_USERNAME" | sha1sum - | awk '{print $
 OCP_LOGIN_PROVIDER="${OCP_LOGIN_PROVIDER:-my_htpasswd_provider}"
 CYPRESS_BASE_URL="https://$(oc get route console -n openshift-console -o jsonpath='{.status.ingress[].host}')"
 
-# use dev to run test development UI
+# Process arguments
 DEFAULT_NPM_TARGET='test'
-if [ $# -gt 0 ] && [ "$1" = "--dev" ]; then
-  DEFAULT_NPM_TARGET='dev'
-  shift
-fi
+cypress_args=()
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --dev)
+      DEFAULT_NPM_TARGET='dev'
+      shift
+      ;;
+    --no-retries)
+      cypress_args+=("--config" "retries=0")
+      shift
+      ;;
+    *)
+      # Pass through any other argument to cypress
+      cypress_args+=("$1")
+      shift
+      ;;
+  esac
+done
+
 
 if [ -n "${BUILD_ID:-}" ]; then
   export CYPRESS_NUM_TESTS_KEPT_IN_MEMORY=0
@@ -73,12 +78,12 @@ fi
 export OCP_VERSION OCP_USERNAME OCP_PASSWORD OCP_LOGIN_PROVIDER CYPRESS_BASE_URL
 
 add_user "$OCP_USERNAME" "$OCP_PASSWORD"
+
 check_node
 enable_dev_perspective
-archive_cypress_artifacts
 logger.success '🚀 Cluster prepared for testing.'
 
 pushd "$(dirname "${BASH_SOURCE[0]}")/ui" >/dev/null
 npm install
 npm run install
-npm run "${NPM_TARGET:-$DEFAULT_NPM_TARGET}"
+npm run "${NPM_TARGET:-$DEFAULT_NPM_TARGET}" -- "${cypress_args[@]}"

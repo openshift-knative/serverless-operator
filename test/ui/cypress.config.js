@@ -1,16 +1,29 @@
 const {defineConfig} = require('cypress')
+const path = require('path')
+
+// Determine base directory for test results
+const artifactsDir = path.join(process.env.ARTIFACTS || 'results', 'ui')
 
 module.exports = defineConfig({
   defaultCommandTimeout: 60_000,
   reporter: 'cypress-multi-reporters',
   reporterOptions: {
-    configFile: 'reporter-config.json',
+    reporterEnabled: 'spec, mocha-junit-reporter',
+    mochaJunitReporterReporterOptions: {
+      mochaFile: path.join(artifactsDir, 'junit-[hash].xml'),
+    },
   },
   retries: {
     runMode: 2,
     openMode: 0,
   },
+  // Configure artifact directories
+  screenshotsFolder: path.join(artifactsDir, 'screenshots'),
+  videosFolder: path.join(artifactsDir, 'videos'),
   e2e: {
+    // Disable web security to allow cross-origin OAuth flow (console → oauth-openshift → console)
+    chromeWebSecurity: false,
+    video: true,
     setupNodeEvents(on, config) {
       config.env.TEST_NAMESPACE = process.env.TEST_NAMESPACE || 'default'
       config.env.OCP_LOGIN_PROVIDER = process.env.OCP_LOGIN_PROVIDER || 'kube:admin'

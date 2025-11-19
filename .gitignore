@@ -1,5 +1,7 @@
 _output/
 .idea/
+.ai/
+AGENTS.md
 *.kubeconfig
 users.htpasswd
 # certs created by hack/lib/mesh.bash

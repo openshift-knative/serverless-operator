@@ -63,8 +63,7 @@ class OpenshiftConsole {
     const selectors = this.sidebarSelectors()
     cy.get(selectors.drawer)
       .then(($drawer) => {
-        const selector = selectors.drawer +
-          ' button[data-test-id=sidebar-close-button]'
+        const selector = selectors.drawer + selectors.closeButtonSelector
         if (selectors.checkIsOpen($drawer)) {
           cy.log('Closing sidebar')
           cy.get(selector).click()
@@ -72,40 +71,56 @@ class OpenshiftConsole {
       })
   }
 
+  /**
+   * Returns CSS selectors for topology sidebar based on OCP version.
+   *
+   * Version Timeline:
+   * - OCP 4.14:      PatternFly v4, old drawer, data-test-id
+   * - OCP 4.15-4.18: PatternFly v5, new drawer, data-test-id
+   * - OCP 4.19.x:    PatternFly v6, new drawer, data-test-id (migration in progress)
+   * - OCP 4.20+:     PatternFly v6, new drawer, data-test (migration complete)
+   *
+   * @returns {{checkIsOpen: function(JQuery<HTMLElement>): boolean, drawer: string, closeButtonSelector: string}}
+   *   Object containing sidebar selectors:
+   *   - checkIsOpen: Function to check if drawer is open
+   *   - drawer: CSS selector for the drawer panel element
+   *   - closeButtonSelector: CSS selector for the close button (appended to drawer selector)
+   */
   sidebarSelectors() {
-    if (environment.ocpVersion().satisfies('<=4.14')) {
+    const version = environment.ocpVersion()
+    
+    // OCP 4.14 and earlier: PatternFly v4
+    if (version.satisfies('<=4.14')) {
       return {
-        /**
-         * @param drawer {JQuery<HTMLElement>}
-         * @returns {boolean}
-         */
-        checkIsOpen: function (drawer) {
-          return drawer.hasClass('pf-m-expanded')
-        },
+        checkIsOpen: (drawer) => drawer.hasClass('pf-m-expanded'),
         drawer: '.odc-topology .pf-c-drawer',
+        closeButtonSelector: ' button[data-test-id=sidebar-close-button]',
       }
     }
-    if (environment.ocpVersion().satisfies('<=4.18')) {
+    
+    // OCP 4.15-4.18: PatternFly v5
+    if (version.satisfies('<=4.18')) {
       return {
-        /**
-         * @param drawer {JQuery<HTMLElement>}
-         * @returns {boolean}
-         */
-        checkIsOpen: function (drawer) {
-          return drawer.find('.pf-topology-resizable-side-bar').length > 0
-        },
+        checkIsOpen: (drawer) => drawer.find('.pf-topology-resizable-side-bar').length > 0,
         drawer: '.pf-v5-c-drawer__panel.ocs-sidebar-index',
+        closeButtonSelector: ' button[data-test-id=sidebar-close-button]',
       }
     }
+    
+    // OCP 4.19.x: PatternFly v6 with old data-test-id attribute
+    if (version.satisfies('<4.20')) {
+      return {
+        checkIsOpen: (drawer) => drawer.find('.pf-topology-resizable-side-bar').length > 0,
+        drawer: '.pf-v6-c-drawer__panel.ocs-sidebar-index',
+        closeButtonSelector: ' button[data-test-id=sidebar-close-button]',
+      }
+    }
+    
+    // OCP 4.20+: PatternFly v6 with new data-test attribute
     return {
-      /**
-       * @param drawer {JQuery<HTMLElement>}
-       * @returns {boolean}
-       */
-      checkIsOpen: function (drawer) {
-        return drawer.find('.pf-topology-resizable-side-bar').length > 0
-      },
+      checkIsOpen: (drawer) => drawer.find('.pf-topology-resizable-side-bar').length > 0,
       drawer: '.pf-v6-c-drawer__panel.ocs-sidebar-index',
+      closeButtonSelector: ' button[data-test=sidebar-close-button]',
     }
   }
 }
