@@ -1,8 +1,21 @@
 const {defineConfig} = require('cypress')
 const path = require('path')
+const fs = require('fs')
 
 // Determine base directory for test results
 const artifactsDir = path.join(process.env.ARTIFACTS || 'results', 'ui')
+
+/**
+ * Safely delete a file, ignoring errors if file doesn't exist
+ * @param {string} filePath - Path to file to delete
+ */
+function safeUnlink(filePath) {
+  try {
+    fs.unlinkSync(filePath)
+  } catch (err) {
+    // Ignore errors (file may not exist)
+  }
+}
 
 module.exports = defineConfig({
   defaultCommandTimeout: 60_000,
@@ -25,6 +38,23 @@ module.exports = defineConfig({
     chromeWebSecurity: false,
     video: true,
     setupNodeEvents(on, config) {
+      // Delete videos for specs without failing or retried tests
+      // This saves artifact storage space by only keeping videos of failed tests
+      on('after:spec', (spec, results) => {
+        if (results && results.video) {
+          // Check if any test attempt failed
+          const hasFailures = results.tests.some((test) =>
+            test.attempts.some((attempt) => attempt.state === 'failed')
+          )
+          // Delete video if all tests passed
+          if (!hasFailures) {
+            safeUnlink(results.video)
+            // Also delete compressed video if it exists
+            safeUnlink(results.video.replace('.mp4', '-compressed.mp4'))
+          }
+        }
+      })
+
       config.env.TEST_NAMESPACE = process.env.TEST_NAMESPACE || 'default'
       config.env.OCP_LOGIN_PROVIDER = process.env.OCP_LOGIN_PROVIDER || 'kube:admin'
       config.env.OCP_VERSION = process.env.OCP_VERSION || '0.0.0'
