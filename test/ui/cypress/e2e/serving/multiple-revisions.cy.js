@@ -43,7 +43,16 @@ describe('OCP UI for Serverless Serving', () => {
     cy.get('input[name="trafficSplitting.1.tag"]')
       .type('v1')
     cy.contains('Select a Revision', {matchCase: false}).click()
-    let selector = `.pf-v6-c-dropdown.pf-m-expanded .pf-v6-c-menu button`
+    
+    // PatternFly dropdown selectors vary by OCP version:
+    // - OCP 4.20+: PatternFly v6 (without .pf-m-expanded)
+    // - OCP 4.19: PatternFly v6 (requires .pf-m-expanded state class)
+    // - OCP 4.15-4.18: PatternFly v5
+    // - OCP ≤4.14: PatternFly v4
+    let selector = `.pf-v6-c-menu button`
+    if (environment.ocpVersion().satisfies('<=4.19')) {
+      selector = `.pf-v6-c-dropdown.pf-m-expanded .pf-v6-c-menu button`
+    }
     if (environment.ocpVersion().satisfies('<=4.18')) {
       selector = `ul.pf-v5-c-dropdown__menu button`
     }

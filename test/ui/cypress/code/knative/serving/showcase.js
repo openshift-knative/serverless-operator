@@ -37,7 +37,15 @@ class ShowcaseKservice {
         .should('have.attr', 'value')
         .and('include', 'showcase')
     }
-    let selector = '.co-external-link--block a'
+    
+    // OCP 4.20+ uses ExternalLinkWithCopy inside clipboard-copy component
+    let selector = '.pf-v6-c-clipboard-copy a.pf-m-link'
+    
+    // OCP 4.19 and earlier use co-external-link--block
+    if (environment.ocpVersion().satisfies('<4.20')) {
+      selector = '.co-external-link--block a'
+    }
+    
     return cy.get(selector)
       .last()
       .scrollIntoView()
