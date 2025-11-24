@@ -7,9 +7,7 @@ class SemverResolver {
 
   satisfies(range) {
     const r = new semver.Range(range)
-    const result = r.test(this.version)
-    console.log(`Version '${this.version}' matches range '${range}': ${result}`)
-    return result
+    return r.test(this.version)
   }
 }
 

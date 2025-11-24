@@ -2,21 +2,23 @@
   "name": "serverless-ui-tests",
   "version": "0.1.0-pre",
   "description": "A UI tests for Serverless UI on OCP console",
+  "type": "module",
   "scripts": {
     "test": "cypress run",
     "dev": "cypress open",
-    "install": "cypress install && node cypress/apply-patches.mjs"
+    "install": "cypress install && node cypress/apply-patches.js",
+    "unit": "node --test --test-reporter=spec cypress/code/*.test.js"
   },
   "license": "Apache-2.0",
   "devDependencies": {
     "@cypress/skip-test": "^2.6.1",
     "cachedir": "^2.4.0",
-    "chalk": "^5.3.0",
-    "cypress": "^13.7.0",
-    "cypress-multi-reporters": "^1.6.4",
-    "diff": "^5.2.0",
-    "mocha": "^10.3.0",
+    "chalk": "^5.6.2",
+    "cypress": "^15.6.0",
+    "cypress-multi-reporters": "^2.0.5",
+    "diff": "^8.0.2",
+    "mocha": "^11.7.5",
     "mocha-junit-reporter": "^2.2.1",
-    "semver": "^7.6.0"
+    "semver": "^7.7.3"
   }
 }
