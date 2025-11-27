@@ -1,7 +1,6 @@
 apiVersion: tekton.dev/v1
 kind: Pipeline
 metadata:
-  creationTimestamp: null
   labels:
     pipelines.openshift.io/runtime: fbc
     pipelines.openshift.io/strategy: fbc
