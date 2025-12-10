@@ -6,13 +6,27 @@ project:
   # Also make sure to update values under `olm.previous` by copying from `olm.replaces` and `olm.skipRange`.
   version: 1.37.0
 olm:
-  replaces: 1.36.0
-  skipRange: '>=1.36.0 <1.37.0'
+  replaces: 1.36.1
+  skipRange: '>1.36.1 <1.37.0'
   channels:
+    # The "global" operator default, used as "operators.operatorframework.io.bundle.channels.v1" annotation
+    operator_default: stable
+    # The default channel to use for CI
     default: stable
     list:
       - stable
       - stable-1.37
+  previousBundles:
+    # List of previous bundles to add to the generated index, also used in upgrade tests
+    - version: 1.36.1
+      replaces: 1.36.0
+      skipRange: ">=1.36.0 <1.36.1"
+    - version: 1.36.0
+      replaces: 1.35.0
+      skipRange: ">=1.35.0 <1.36.0"
+    - version: 1.35.0
+      replaces: 1.34.0
+      skipRange: ">=1.34.0 <1.35.0"
 requirements:
   kube:
     # The min version validation in `vendor/knative.dev/pkg/version/version.go`
@@ -48,7 +62,7 @@ dependencies:
   net_istio: knative-v1.17
   net_istio_artifacts_branch: release-v1.17
   redhat-knative-istio-authz-chart: 1.37.0
-  service_mesh_proxy: registry.redhat.io/openshift-service-mesh/proxyv2-rhel8@sha256:b9aca441a381227afe58c4b731275996164405b07150db3c9051a82904f31c0b
+  service_mesh_proxy: registry.redhat.io/openshift-service-mesh/proxyv2-rhel9@sha256:fe1e78971352ddd76ee6f88aa0f4e4ac6d1298da8c960f877ae9f883c291dfd6
   eventing: knative-v1.17
   # eventing core midstream branch name
   eventing_artifacts_branch: release-v1.17
@@ -58,6 +72,8 @@ dependencies:
   eventing_kafka_broker_artifacts_branch: release-v1.17
   # eventing-integrations promotion tag
   eventing_integrations: knative-v1.17
+  # eventing-integrations midstream branch or commit
+  eventing_integrations_artifacts_branch: release-v1.17
   # eventing-istio promotion tag
   eventing_istio: knative-v1.17
   # eventing-istio midstream branch or commit
@@ -67,13 +83,14 @@ dependencies:
   # backstage-plugins midstream branch or commit
   backstage_plugins_artifacts_branch: release-v1.17
   cli: knative-v1.17
-  kube_rbac_proxy: registry.redhat.io/openshift4/ose-kube-rbac-proxy-rhel9@sha256:b08c2aadf9bdef7afb07944524f60088cd5c34fa3b2490df5a819fce84748f10
+  kube_rbac_proxy: registry.redhat.io/openshift4/ose-kube-rbac-proxy-rhel9@sha256:f64b1bf7dca0906dfa673ae299a2d965527c1c7a714020d046dad277d329f965
   func:
     promotion_tag: knative-v1.17
-    tekton_buildah: registry.redhat.io/rhel8/buildah@sha256:3d505d9c0f5d4cd5a4ec03b8d038656c6cdbdf5191e00ce6388f7e0e4d2f1b74
-    nodejs_20_minimal: registry.access.redhat.com/ubi8/nodejs-20-minimal@sha256:a2a7e399aaf09a48c28f40820da16709b62aee6f2bc703116b9345fab5830861
-    openjdk_21: registry.access.redhat.com/ubi8/openjdk-21@sha256:441897a1f691c7d4b3a67bb3e0fea83e18352214264cb383fd057bbbd5ed863c
-    python-39: registry.access.redhat.com/ubi8/python-39@sha256:27e795fd6b1b77de70d1dc73a65e4c790650748a9cfda138fdbd194b3d6eea3d
+    # if additional image is added amend the list in hack/generate/catalog.sh
+    tekton_buildah: registry.redhat.io/rhel9/buildah@sha256:0bb077206aefdf1cfff4e18428f179903805b0398578746827d353613d1f73ae
+    nodejs_20_minimal: registry.access.redhat.com/ubi9/nodejs-20-minimal@sha256:af1b05b89e826582445f32c2c656b172b7799511aafc71a09d41ec51b9ac22c7
+    openjdk_21: registry.access.redhat.com/ubi9/openjdk-21@sha256:05e7e5b8d2e20f01ddda871f0e41460eaf82aa1bf6c6799ce2e7bdcc638b60f1
+    python-39: registry.access.redhat.com/ubi9/python-39@sha256:6c9426e868f2d5a271054db13a71276c3812afb93ae3096cb66b3e9a03cb3f2a
   operator: 1.17.8
   # Previous versions required for downgrade testing
   previous:

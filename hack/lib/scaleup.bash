@@ -22,7 +22,7 @@ function scale_up_workers {
   # (us-east-1e). Please retry your request by not specifying an Availability Zone
   # or choosing us-east-1a, us-east-1b, us-east-1c, us-east-1d, us-east-1f."
   ignored_zone="us-east-1e"
-  az_total="$(oc get machineset -n openshift-machine-api -oname | grep -cv "$ignored_zone")"
+  az_total="$(oc get machineset.machine.openshift.io -n openshift-machine-api -oname | grep -cv "$ignored_zone")"
 
   logger.debug "ready machine count: ${current_total}, number of available zones: ${az_total}"
 
@@ -32,7 +32,7 @@ function scale_up_workers {
   fi
 
   idx=0
-  for mset in $(oc get machineset -n openshift-machine-api -o name | grep -v "$ignored_zone"); do
+  for mset in $(oc get machineset.machine.openshift.io -n openshift-machine-api -o name | grep -v "$ignored_zone"); do
     replicas=$(( SCALE_UP / az_total ))
     if [ ${idx} -lt $(( SCALE_UP % az_total )) ];then
       (( replicas++ )) || true
@@ -88,7 +88,7 @@ function use_spot_instances {
     return
   fi
 
-  if [[ $(oc get machineset -n openshift-machine-api -ojsonpath='{.items[*].spec.template.spec.providerSpec.value.spotMarketOptions}') != "" ]]; then
+  if [[ $(oc get machineset.machine.openshift.io -n openshift-machine-api -ojsonpath='{.items[*].spec.template.spec.providerSpec.value.spotMarketOptions}') != "" ]]; then
     logger.info "Spot instances already configured."
     return
   fi
@@ -101,7 +101,7 @@ function use_spot_instances {
   local available
   available=$(oc get machineconfigpool worker -o jsonpath='{.status.readyMachineCount}')
 
-  for mset in $(oc get machineset -n openshift-machine-api -oname); do
+  for mset in $(oc get machineset.machine.openshift.io -n openshift-machine-api -oname); do
     oc get "${mset}" -n openshift-machine-api -ojson > "$mset_file"
     oc delete "${mset}" -n openshift-machine-api
     jq ".spec.template.spec.providerSpec.value.spotMarketOptions |= {}" "$mset_file" | oc create -f -

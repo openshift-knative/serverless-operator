@@ -57,8 +57,8 @@ function generate_catalog {
 }
 
 function add_channel {
-  local channel catalog_template catalog current_version current_csv major \
-    minor micro previous_version channel_entry version
+  local channel catalog_template catalog current_version current_csv \
+    replaces_version skip_range channel_entry version
   catalog_template=${1?Pass catalog template path as arg[1]}
   channel=${2:?Pass channel name as arg[2]}
 
@@ -66,16 +66,8 @@ function add_channel {
   version="${3:-$current_version}"
 
   current_csv="serverless-operator.v${version}"
-  major=$(versions.major "${version}")
-  minor=$(versions.minor "${version}")
-  micro=$(versions.micro "${version}")
-
-  # Handle the first entry specifically as it might be a z-stream release.
-  if [[ "$micro" == "0" ]]; then
-    previous_version="${major}.$(( minor-1 )).${micro}"
-  else
-    previous_version="${major}.${minor}.0"
-  fi
+  replaces_version=$(metadata.get 'olm.replaces')
+  skip_range=$(metadata.get 'olm.skipRange')
 
   catalog=$(mktemp catalog-XXX.json)
   channel_entry=$(yq read "${catalog_template}" "entries[name==${channel}]")
@@ -97,7 +89,7 @@ function add_channel {
   should_add=0
   # Add entry to the channel if doesn't exist yet
   if [[ "${current_csv_entry}" == "" ]]; then
-    replaces="serverless-operator.v${previous_version}"
+    replaces="serverless-operator.v${replaces_version}"
     entry_with_same_replaces=$(yq read "${catalog_template}" "entries[name==${channel}].entries[replaces==${replaces}].name")
     if [[ "${entry_with_same_replaces}" == "" ]]; then
       should_add=1
@@ -131,7 +123,7 @@ function add_channel {
         value:
           name: "serverless-operator.v${version}"
           replaces: "${replaces}"
-          skipRange: "\u003e=${previous_version} \u003c${version}"
+          skipRange: "${skip_range}"
 EOF
       mv "${catalog}" "${catalog_template}"
 
@@ -177,6 +169,19 @@ function upgrade_kube_rbac_proxy_image() {
   yq w --inplace olm-catalog/serverless-operator/project.yaml 'dependencies.kube_rbac_proxy' "${image}"
 }
 
+function upgrade_func_images() {
+  # List of images in project.yaml dependencies.func
+  local images=("tekton_buildah" "nodejs_20_minimal" "openjdk_21" "python-39")
+  for img_name in "${images[@]}" ; do
+    logger.info "Upgrading func image: ${img_name}"
+    local image image_stream
+    image=$(metadata.get "dependencies.func.${img_name}")
+    image_stream="latest"
+    image=$(latest_konflux_image_sha "${image}" "${image_stream}")
+    yq w --inplace olm-catalog/serverless-operator/project.yaml "dependencies.func.${img_name}" "${image}"
+  done
+}
+
 function upgrade_dependencies_images {
   if [[ -n "${REGISTRY_REDHAT_IO_USERNAME:-}" ]] || [[ -n "${REGISTRY_REDHAT_IO_PASSWORD:-}" ]]; then
     skopeo login registry.redhat.io -u "${REGISTRY_REDHAT_IO_USERNAME}" -p "${REGISTRY_REDHAT_IO_PASSWORD}"
@@ -185,6 +190,8 @@ function upgrade_dependencies_images {
   upgrade_service_mesh_proxy_image
 
   upgrade_kube_rbac_proxy_image
+
+  upgrade_func_images
 }
 
 logger.info "Upgrading registry.redhat.io images"
@@ -197,4 +204,4 @@ logger.info "Generating ImageContextSourcePolicy"
 
 default_serverless_operator_images
 # shellcheck disable=SC2154
-create_image_content_source_policy "${INDEX_IMAGE}" "$registry_redhat_io" "$registry_quay" "$registry_quay_previous" "olm-catalog/serverless-operator-index/image_content_source_policy.yaml" ".tekton/images-mirror-set.yaml"
+create_image_content_source_policy "${INDEX_IMAGE}" "$registry_redhat_io" "$registry_quay" "$registry_quay_previous" "$registry_quay_next" "olm-catalog/serverless-operator-index/image_content_source_policy.yaml" ".tekton/images-mirror-set.yaml"

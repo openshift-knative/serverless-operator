@@ -1,5 +1,5 @@
 # Dockerfile to bootstrap build and test in openshift-ci
-FROM registry.ci.openshift.org/openshift/release:rhel-8-release-golang-__GOLANG_VERSION__-openshift-4.19
+FROM registry.ci.openshift.org/openshift/release:rhel-9-release-golang-__GOLANG_VERSION__-openshift-4.19
 
 # make art yum/dnf wrapper to check in /etc/yum.repos.d/ too
 ENV ART_DNF_WRAPPER_POLICY=append
@@ -17,7 +17,7 @@ RUN rm -rf $GOPATH/.cache
 # Allow runtime users to add entries to /etc/passwd
 RUN chmod g+rw /etc/passwd
 
-RUN yum install -y https://rpm.nodesource.com/pub___NODEJS_VERSION__/el/8/x86_64/nodesource-release-el8-1.noarch.rpm
+RUN yum install -y https://rpm.nodesource.com/pub_20.x/el/9/x86_64/nodesource-release-el9-1.noarch.rpm
 RUN yum module disable -y nodejs
 RUN yum install -y \
   gcc-c++ \
@@ -27,7 +27,7 @@ RUN yum install -y \
   gtk2-devel \
   gtk3-devel \
   libnotify-devel \
-  GConf2 \
   nss \
   libXScrnSaver \
   alsa-lib
+ # Only in RHEL 9 EPEL GConf2 \

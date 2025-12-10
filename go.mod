@@ -25,7 +25,7 @@ require (
 	k8s.io/api v0.32.2
 	k8s.io/apimachinery v0.32.2
 	k8s.io/client-go v0.32.2
-	knative.dev/eventing v0.44.5
+	knative.dev/eventing v0.46.0
 	knative.dev/eventing-kafka-broker v0.37.0
 	knative.dev/hack v0.0.0-20250220110655-b5e4ff820460
 	knative.dev/networking v0.0.0-20250117155906-67d1c274ba6a
@@ -43,11 +43,11 @@ require (
 	github.com/coreos/go-oidc/v3 v3.9.0 // indirect
 	github.com/emicklei/go-restful/v3 v3.12.1 // indirect
 	github.com/fxamacker/cbor/v2 v2.7.0 // indirect
-	github.com/go-jose/go-jose/v3 v3.0.3 // indirect
+	github.com/go-jose/go-jose/v3 v3.0.4 // indirect
 	github.com/google/gnostic-models v0.6.9 // indirect
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.26.1 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
-	github.com/hashicorp/go-retryablehttp v0.7.7 // indirect
+	github.com/hashicorp/go-retryablehttp v0.7.8 // indirect
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
 	github.com/opencontainers/go-digest v1.0.0 // indirect
 	github.com/rs/dnscache v0.0.0-20230804202142-fc85eb664529 // indirect
@@ -177,7 +177,7 @@ require (
 
 replace (
 	// Knative components
-	knative.dev/eventing => github.com/openshift-knative/eventing v0.99.1-0.20250514204204-6fb978ae15c5
+	knative.dev/eventing => github.com/openshift-knative/eventing v0.99.1-0.20250812122432-f2f4c42f1dae
 	knative.dev/eventing-kafka-broker => github.com/openshift-knative/eventing-kafka-broker v0.25.1-0.20250517033211-3771b93c8b09
 	knative.dev/hack => knative.dev/hack v0.0.0-20250116150306-c142b4835bc5
 	knative.dev/networking => knative.dev/networking v0.0.0-20250117155906-67d1c274ba6a

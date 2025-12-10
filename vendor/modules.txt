@@ -104,7 +104,7 @@ github.com/fsnotify/fsnotify
 # github.com/fxamacker/cbor/v2 v2.7.0
 ## explicit; go 1.17
 github.com/fxamacker/cbor/v2
-# github.com/go-jose/go-jose/v3 v3.0.3
+# github.com/go-jose/go-jose/v3 v3.0.4
 ## explicit; go 1.12
 github.com/go-jose/go-jose/v3
 github.com/go-jose/go-jose/v3/cipher
@@ -204,8 +204,8 @@ github.com/hashicorp/go-cleanhttp
 # github.com/hashicorp/go-multierror v1.1.1
 ## explicit; go 1.13
 github.com/hashicorp/go-multierror
-# github.com/hashicorp/go-retryablehttp v0.7.7
-## explicit; go 1.19
+# github.com/hashicorp/go-retryablehttp v0.7.8
+## explicit; go 1.23
 github.com/hashicorp/go-retryablehttp
 # github.com/hashicorp/go-uuid v1.0.3
 ## explicit
@@ -1360,7 +1360,7 @@ k8s.io/utils/trace
 ## explicit; go 1.22.7
 knative.dev/caching/pkg/apis/caching
 knative.dev/caching/pkg/apis/caching/v1alpha1
-# knative.dev/eventing v0.44.5 => github.com/openshift-knative/eventing v0.99.1-0.20250514204204-6fb978ae15c5
+# knative.dev/eventing v0.46.0 => github.com/openshift-knative/eventing v0.99.1-0.20250812122432-f2f4c42f1dae
 ## explicit; go 1.23.0
 knative.dev/eventing/pkg/apis
 knative.dev/eventing/pkg/apis/common/integration/v1alpha1
@@ -1472,6 +1472,7 @@ knative.dev/eventing/test/lib/sender
 knative.dev/eventing/test/rekt/features
 knative.dev/eventing/test/rekt/features/broker
 knative.dev/eventing/test/rekt/features/channel
+knative.dev/eventing/test/rekt/features/eventtransform
 knative.dev/eventing/test/rekt/features/featureflags
 knative.dev/eventing/test/rekt/features/jobsink
 knative.dev/eventing/test/rekt/features/knconf
@@ -1487,6 +1488,7 @@ knative.dev/eventing/test/rekt/resources/channel_impl
 knative.dev/eventing/test/rekt/resources/channel_template
 knative.dev/eventing/test/rekt/resources/containersource
 knative.dev/eventing/test/rekt/resources/delivery
+knative.dev/eventing/test/rekt/resources/eventtransform
 knative.dev/eventing/test/rekt/resources/eventtype
 knative.dev/eventing/test/rekt/resources/jobsink
 knative.dev/eventing/test/rekt/resources/parallel
@@ -1850,7 +1852,7 @@ sigs.k8s.io/structured-merge-diff/v4/value
 ## explicit; go 1.12
 sigs.k8s.io/yaml
 sigs.k8s.io/yaml/goyaml.v2
-# knative.dev/eventing => github.com/openshift-knative/eventing v0.99.1-0.20250514204204-6fb978ae15c5
+# knative.dev/eventing => github.com/openshift-knative/eventing v0.99.1-0.20250812122432-f2f4c42f1dae
 # knative.dev/eventing-kafka-broker => github.com/openshift-knative/eventing-kafka-broker v0.25.1-0.20250517033211-3771b93c8b09
 # knative.dev/hack => knative.dev/hack v0.0.0-20250116150306-c142b4835bc5
 # knative.dev/networking => knative.dev/networking v0.0.0-20250117155906-67d1c274ba6a

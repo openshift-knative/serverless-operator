@@ -63,10 +63,10 @@ pushed to your docker repository.
 `make images` requires docker or podman to build images, by setting
 `ON_CLUSTER_BUILDS=true` env variable, `make images` will build images
 using OpenShift Build and they will be available at the in-cluster
-registry `image-registry.openshift-image-registry.svc:5000/openshift-marketplace/<image_name>`.
+registry `image-registry.openshift-image-registry.svc:5000/openshift-serverless-builds/<image_name>`.
 
 To install the system using those images, use
-`DOCKER_REPO_OVERRIDE=image-registry.openshift-image-registry.svc:5000/openshift-marketplace`
+`DOCKER_REPO_OVERRIDE=image-registry.openshift-image-registry.svc:5000/openshift-serverless-builds`
 
 ### Installing the system
 
@@ -227,7 +227,7 @@ changed usually are `project.version`, `olm.replaces` and `olm.skipRange`.
 Next, add the now outdated version of serverless-operator to the CatalogSource deployment
 in [catalogsource.bash](./hack/lib/catalogsource.bash). The image to be added usually has
 the following format: `registry.ci.openshift.org/openshift/openshift-serverless-$OLD_VERSION:serverless-bundle`.
-Add it before the "current" image, which is `image-registry.openshift-image-registry.svc:5000/$OLM_NAMESPACE/serverless-bundle`.
+Add it before the "current" image, which is `image-registry.openshift-image-registry.svc:5000/openshift-serverless-builds/serverless-bundle`.
 
 After the changes are done, commit them and run `make generated-files`. All manifests
 will now be updated accordingly. It's encouraged to commit the generated changes

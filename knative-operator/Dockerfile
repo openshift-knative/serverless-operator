@@ -1,6 +1,6 @@
 # DO NOT EDIT! Generated Dockerfile for knative-operator/cmd/knative-operator.
-ARG GO_BUILDER=registry.ci.openshift.org/openshift/release:rhel-8-release-golang-1.23-openshift-4.19
-ARG GO_RUNTIME=registry.access.redhat.com/ubi8/ubi-minimal
+ARG GO_BUILDER=registry.ci.openshift.org/openshift/release:rhel-9-release-golang-1.23-openshift-4.19
+ARG GO_RUNTIME=registry.access.redhat.com/ubi9/ubi-minimal
 
 FROM $GO_BUILDER as builder
 
@@ -24,14 +24,17 @@ COPY knative-operator/deploy /deploy
 USER 65532
 
 LABEL \
-      com.redhat.component="openshift-serverless-1-knative-operator-rhel8-container" \
-      name="openshift-serverless-1/knative-operator-rhel8" \
+      com.redhat.component="openshift-serverless-1-serverless-kn-operator-rhel9-container" \
+      name="openshift-serverless-1/serverless-kn-operator-rhel9" \
       version=$VERSION \
       summary="Red Hat OpenShift Serverless 1 Knative Operator" \
       maintainer="serverless-support@redhat.com" \
       description="Red Hat OpenShift Serverless 1 Knative Operator" \
       io.k8s.display-name="Red Hat OpenShift Serverless 1 Knative Operator" \
       io.k8s.description="Red Hat OpenShift Serverless Knative Operator" \
-      io.openshift.tags="knative-operator"
+      io.openshift.tags="knative-operator" \
+      vendor="Red Hat, Inc." \
+      release=$VERSION \
+      cpe="cpe:/a:redhat:openshift_serverless:1.37::el9"
 
 ENTRYPOINT ["/usr/bin/knative-operator"]

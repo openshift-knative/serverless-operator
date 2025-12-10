@@ -48,6 +48,7 @@ export OPERATOR="${OPERATOR:-serverless-operator}"
 export SCALE_UP="${SCALE_UP:--1}"
 
 export OLM_NAMESPACE="${OLM_NAMESPACE:-openshift-marketplace}"
+export ON_CLUSTER_BUILDS_NAMESPACE="${ON_CLUSTER_BUILDS_NAMESPACE:-openshift-serverless-builds}"
 export OPERATORS_NAMESPACE="${OPERATORS_NAMESPACE:-openshift-serverless}"
 export SERVING_NAMESPACE="${SERVING_NAMESPACE:-knative-serving}"
 export INGRESS_NAMESPACE="${INGRESS_NAMESPACE:-knative-serving-ingress}"
@@ -57,7 +58,7 @@ export TRACING_NAMESPACE="${TRACING_NAMESPACE:-knative-tracing}"
 export TRACING_BACKEND="${TRACING_BACKEND:-tempo}"
 
 declare -a SYSTEM_NAMESPACES
-SYSTEM_NAMESPACES=("${TRACING_NAMESPACE}" "${OPERATORS_NAMESPACE}")
+SYSTEM_NAMESPACES=("${TRACING_NAMESPACE}" "${OPERATORS_NAMESPACE}" "${ON_CLUSTER_BUILDS_NAMESPACE}")
 export SYSTEM_NAMESPACES
 export UPGRADE_SERVERLESS="${UPGRADE_SERVERLESS:-"true"}"
 export UPGRADE_CLUSTER="${UPGRADE_CLUSTER:-"false"}"
@@ -110,7 +111,6 @@ EOF
 )
 export IMAGE_TEMPLATE="${IMAGE_TEMPLATE:-"$DEFAULT_IMAGE_TEMPLATE"}"
 export INDEX_IMAGE="${INDEX_IMAGE:-}"
-export INDEX_IMAGE_NUM_CSVS="${INDEX_IMAGE_NUM_CSVS:-3}"
 # Might be used to disable tests which need additional users.
 # Managed environments such as Hypershift might now allow creating new users.
 export USER_MANAGEMENT_ALLOWED="${USER_MANAGEMENT_ALLOWED:-true}"

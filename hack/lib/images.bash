@@ -18,8 +18,13 @@ quay_registry_app_version=${quay_registry_app_version%.*} # 136.0 -> 136
 quay_registry_app_version_previous=${PREVIOUS_VERSION/./} # 1.35.0 -> 135.0
 quay_registry_app_version_previous=${quay_registry_app_version_previous%.*} # 135.0 -> 135
 
+quay_registry_app_version_next=${CURRENT_VERSION/./} # 1.36.0 -> 136.0
+quay_registry_app_version_next=${quay_registry_app_version_next%.*} # 136.0 -> 136
+quay_registry_app_version_next="$((quay_registry_app_version_next + 1))" # 136 -> 137
+
 export registry_quay="${registry_prefix_quay}${quay_registry_app_version}"
 export registry_quay_previous="${registry_prefix_quay}${quay_registry_app_version_previous}"
+export registry_quay_next="${registry_prefix_quay}${quay_registry_app_version_next}"
 export registry_redhat_io="registry.redhat.io/openshift-serverless-1"
 
 export FORCE_USE_QUAY_IMAGES=${FORCE_USE_QUAY_IMAGES:-"false"}
@@ -83,17 +88,27 @@ function get_bundle_for_version() {
   app_version=${app_version%.*} # 134.0 -> 134
 
   image=$(image_with_sha "${registry_prefix_quay}${app_version}/serverless-bundle:latest")
+  image_version=$(bundle_image_version "${registry_prefix_quay}${app_version}/serverless-bundle:latest")
+
   # As a backup, try also CI registry.
+  # For .micro releases, it's possible we only have the _previous_ version in Konflux, so also check the version of the bundle
   local ci_bundle="registry.ci.openshift.org/knative/serverless-bundle"
-  if [[ "${image}" == "" ]]; then
+  if [[ "${image}" == "" || "${image_version}" != "${version}" ]]; then
     image=$(image_with_sha "${ci_bundle}:release-${version}" || echo "")
+    image_version=$(bundle_image_version "${ci_bundle}:release-${version}")
   fi
-  if [[ "${image}" == "" ]]; then
+  if [[ "${image}" == "" || "${image_version}" != "${version}" ]]; then
     image=$(image_with_sha "${ci_bundle}:knative-main")
+    image_version=$(bundle_image_version "${ci_bundle}:knative-main")
   fi
 
   if [[ "${image}" == "" ]]; then
+    echo "[ERROR] No image found for $version" > /dev/stderr
     exit 1
+  fi
+
+  if [[ "${image_version}" != "${version}" ]]; then
+    echo "[WARNING] Image $image $image_version does not match requested version $version" > /dev/stderr
   fi
 
   echo "$image"
@@ -392,8 +407,12 @@ function image_with_sha {
   image=${1:?"Provide image"}
   return_input_on_empty=${2:-"false"}
 
+  # Use TARGET_OS and TARGET_ARCH if set, otherwise default to linux/amd64
+  target_os=${TARGET_OS:-linux}
+  target_arch=${TARGET_ARCH:-amd64}
+
   # shellcheck disable=SC2086
-  digest=$(skopeo inspect --retry-times=10 --no-tags=true ${SKOPEO_EXTRA_FLAGS} "docker://${image}" | jq -r '.Digest' || echo "")
+  digest=$(skopeo inspect --retry-times=10 --override-os "${target_os}" --override-arch "${target_arch}" --no-tags=true ${SKOPEO_EXTRA_FLAGS} "docker://${image}" | jq -r '.Digest' || echo "")
   if [ "${digest}" = "" ]; then
     if [ "${return_input_on_empty}" = "true" ]; then
       echo "${image}"
@@ -406,6 +425,17 @@ function image_with_sha {
   image_without_tag=${image_without_tag%@*} # Remove sha, if any
 
   echo "${image_without_tag}@${digest}"
+}
+
+function bundle_image_version {
+  image=${1:?"Provide image"}
+
+  # Use TARGET_OS and TARGET_ARCH if set, otherwise default to linux/amd64
+  target_os=${TARGET_OS:-linux}
+  target_arch=${TARGET_ARCH:-amd64}
+
+  version=$(skopeo inspect --no-tags=true --override-os "${target_os}" --override-arch "${target_arch}" "docker://${image}" | jq -r '.Labels.version')
+  echo "${version}"
 }
 
 function get_app_version_from_tag() {

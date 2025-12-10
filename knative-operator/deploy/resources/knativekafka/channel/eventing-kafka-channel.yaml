@@ -451,6 +451,9 @@ spec:
         - name: config-tracing
           configMap:
             name: config-tracing
+        - name: contract-resources
+          # only a placeholder. Will be replaced later by our pod defaulting webhook
+          emptyDir: {}
       restartPolicy: Always
       dnsConfig:
         options:

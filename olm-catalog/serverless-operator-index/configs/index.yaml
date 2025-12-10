@@ -4,8 +4,11 @@ name: stable
 package: serverless-operator
 entries:
   - name: "serverless-operator.v1.37.0"
+    replaces: "serverless-operator.v1.36.1"
+    skipRange: ">1.36.1 <1.37.0"
+  - name: "serverless-operator.v1.36.1"
     replaces: "serverless-operator.v1.36.0"
-    skipRange: ">=1.36.0 <1.37.0"
+    skipRange: ">=1.36.0 <1.36.1"
   - name: "serverless-operator.v1.36.0"
     replaces: "serverless-operator.v1.35.0"
     skipRange: ">=1.35.0 <1.36.0"
@@ -16,8 +19,11 @@ name: stable-1.37
 package: serverless-operator
 entries:
   - name: "serverless-operator.v1.37.0"
+    replaces: "serverless-operator.v1.36.1"
+    skipRange: ">1.36.1 <1.37.0"
+  - name: "serverless-operator.v1.36.1"
     replaces: "serverless-operator.v1.36.0"
-    skipRange: ">=1.36.0 <1.37.0"
+    skipRange: ">=1.36.0 <1.36.1"
   - name: "serverless-operator.v1.36.0"
     replaces: "serverless-operator.v1.35.0"
     skipRange: ">=1.35.0 <1.36.0"

@@ -8,7 +8,7 @@ target="${1:?Provide a target index yaml file as arg[1]}"
 source "$(dirname "${BASH_SOURCE[0]}")/../lib/__sources__.bash"
 
 function add_channel_entries {
-  local channel_entry_yaml channel target num_csvs
+  local channel_entry_yaml channel target version replaces_version skip_range previous_bundles_len
   channel=${1:?Provide channel name}
   target=${2:?Provide target file name}
   channel_entry_yaml="$(mktemp -t default-entry-XXXXX.yaml)"
@@ -21,56 +21,35 @@ package: serverless-operator
 entries:
 EOF
 
-  current_version=$(metadata.get 'project.version')
-  major=$(versions.major "$current_version")
-  minor=$(versions.minor "$current_version")
-  micro=$(versions.micro "$current_version")
-
-  # Handle the first entry specifically as it might be a z-stream release.
-  if [[ "$micro" == "0" ]]; then
-    previous_version="${major}.$(( minor-1 )).${micro}"
-  else
-    previous_version="${major}.${minor}.0"
-  fi
+  version=$(metadata.get 'project.version')
+  replaces_version=$(metadata.get 'olm.replaces')
+  skip_range=$(metadata.get 'olm.skipRange')
 
   cat << EOF | yq write --inplace --script - "$channel_entry_yaml"
   - command: update
     path: entries[+]
     value:
-      name: "serverless-operator.v${current_version}"
-      replaces: "serverless-operator.v${previous_version}"
-      skipRange: ">=${previous_version} <${current_version}"
+      name: "serverless-operator.v${version}"
+      replaces: "serverless-operator.v${replaces_version}"
+      skipRange: "${skip_range}"
 EOF
 
-  # One is already added above specifically
-  num_csvs=$(( INDEX_IMAGE_NUM_CSVS-1 ))
+  previous_bundles_len=$(metadata.get 'olm.previousBundles' | yq read - -l '')
+  for i in $(seq "${previous_bundles_len}"); do
+    version=$(metadata.get "olm.previousBundles" | yq read - "[$((i-1))].version")
+    replaces_version=$(metadata.get "olm.previousBundles" | yq read - "[$((i-1))].replaces")
+    skip_range=$(metadata.get "olm.previousBundles" | yq read - "[$((i-1))].skipRange")
 
-  # Generate additional entries
-  for i in $(seq $num_csvs); do
-    current_minor=$(( minor-i ))
-    previous_minor=$(( minor-i ))
-    previous_minor=$(( previous_minor-1 ))
-    # If the current version is a z-stream then the following entries will
-    # start with the same "minor" version.
-    if [[ "$micro" != "0" ]]; then
-      current_minor=$(( current_minor+1 ))
-      previous_minor=$(( previous_minor+1 ))
-    fi
-
-    current_version="${major}.${current_minor}.0"
-    previous_version="${major}.${previous_minor}.0"
-
-    # If this is the last item enter only name, without "replaces".
-    if [[ $i -eq $num_csvs ]]; then
-      yq write --inplace "$channel_entry_yaml" 'entries[+].name' "serverless-operator.v${current_version}"
+    if [[ $i -eq $previous_bundles_len ]]; then
+      yq write --inplace "$channel_entry_yaml" 'entries[+].name' "serverless-operator.v${version}"
     else
       cat << EOF | yq write --inplace --script - "$channel_entry_yaml"
   - command: update
     path: entries[+]
     value:
-      name: "serverless-operator.v${current_version}"
-      replaces: "serverless-operator.v${previous_version}"
-      skipRange: ">=${previous_version} <${current_version}"
+      name: "serverless-operator.v${version}"
+      replaces: "serverless-operator.v${replaces_version}"
+      skipRange: "${skip_range}"
 EOF
     fi
   done
