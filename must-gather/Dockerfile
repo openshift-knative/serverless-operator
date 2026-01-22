@@ -24,7 +24,7 @@ USER 65532
 LABEL \
       com.redhat.component="openshift-serverless-1-serverless-must-gather-rhel9-container" \
       name="openshift-serverless-1/serverless-must-gather-rhel9" \
-      version=1.37.0 \
+      version=1.37.1 \
       summary="Red Hat OpenShift Serverless 1 Must Gather" \
       maintainer="serverless-support@redhat.com" \
       description="Red Hat OpenShift Serverless 1 Must Gather" \
