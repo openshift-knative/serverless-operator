@@ -1,7 +1,6 @@
 apiVersion: tekton.dev/v1
 kind: Pipeline
 metadata:
-  creationTimestamp: null
   labels:
     pipelines.openshift.io/runtime: generic
     pipelines.openshift.io/strategy: docker
@@ -89,6 +88,9 @@ spec:
       oci or docker.
     name: buildah-format
     type: string
+  - default: "false"
+    description: Enable cache proxy configuration
+    name: enable-cache-proxy
   - default: []
     description: Array of --build-arg values ("arg=value" strings) for buildah
     name: build-args
@@ -199,6 +201,8 @@ spec:
       value: $(params.rebuild)
     - name: skip-checks
       value: $(params.skip-checks)
+    - name: enable-cache-proxy
+      value: $(params.enable-cache-proxy)
     taskRef:
       params:
       - name: name
@@ -269,6 +273,10 @@ spec:
       value: $(tasks.clone-repository.results.url)
     - name: BUILDAH_FORMAT
       value: $(params.buildah-format)
+    - name: HTTP_PROXY
+      value: $(tasks.init.results.http-proxy)
+    - name: NO_PROXY
+      value: $(tasks.init.results.no-proxy)
     - name: SOURCE_ARTIFACT
       value: $(tasks.prefetch-dependencies.results.SOURCE_ARTIFACT)
     - name: CACHI2_ARTIFACT
