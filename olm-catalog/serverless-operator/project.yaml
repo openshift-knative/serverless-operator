@@ -4,10 +4,10 @@ project:
   # all components in `dependencies.previous` to the same versions as `dependencies` in the same PR.
   # Otherwise, the upgrade tests will not pass, as we have a different SO version with the same bundle contents.
   # Also make sure to update values under `olm.previous` by copying from `olm.replaces` and `olm.skipRange`.
-  version: 1.37.0
+  version: 1.37.1
 olm:
-  replaces: 1.36.1
-  skipRange: '>1.36.1 <1.37.0'
+  replaces: 1.37.0
+  skipRange: '>1.37.0 <1.37.1'
   channels:
     # The "global" operator default, used as "operators.operatorframework.io.bundle.channels.v1" annotation
     operator_default: stable
@@ -18,6 +18,9 @@ olm:
       - stable-1.37
   previousBundles:
     # List of previous bundles to add to the generated index, also used in upgrade tests
+    - version: 1.37.0
+      replaces: 1.36.1
+      skipRange: ">=1.36.1 <1.37.0"
     - version: 1.36.1
       replaces: 1.36.0
       skipRange: ">=1.36.0 <1.36.1"
@@ -44,9 +47,11 @@ requirements:
       - "4.18"
       - "4.19"
       - "4.20"
+      - "4.21"
+      - "4.22"
     min: '4.14'
     # Version to use for OCP docs links (in CSV or Quickstarts)
-    doc: '4.19'
+    doc: '4.20'
     # deprecated, use requirements.ocpVersion.list[-1]
     max: '4.20'
     label: 'v4.14'
