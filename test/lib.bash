@@ -52,7 +52,7 @@ function go_test_e2e {
   set -Eeuo pipefail
   print_test_result "$retcode"
 
-  if [[ "${MAP_TESTS}" == "true" ]]; then
+  if [[ "${MAP_TESTS:-false}" == "true" ]]; then
     map_lp_interop_reports
   fi
 
