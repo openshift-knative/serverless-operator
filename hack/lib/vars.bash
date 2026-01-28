@@ -73,6 +73,21 @@ export OLM_CHANNEL
 # Change this when upgrades need switching to a different channel
 export OLM_UPGRADE_CHANNEL="${OLM_UPGRADE_CHANNEL:-"$OLM_CHANNEL"}"
 export OLM_SOURCE="${OLM_SOURCE:-"$OPERATOR"}"
+
+# OLM version control (v0 or v1)
+export OLM_VERSION="${OLM_VERSION:-v0}"
+
+# OLMv1-specific configuration
+export OLMV1_CATALOG_NAME="${OLMV1_CATALOG_NAME:-serverless-operator}"
+export OLMV1_CATALOG_PRIORITY="${OLMV1_CATALOG_PRIORITY:-10}"
+export OLMV1_INSTALLER_SA="${OLMV1_INSTALLER_SA:-serverless-operator-installer}"
+export OLMV1_CLUSTEREXTENSION_NAME="${OLMV1_CLUSTEREXTENSION_NAME:-serverless-operator}"
+export OLMV1_UPGRADE_CONSTRAINT_POLICY="${OLMV1_UPGRADE_CONSTRAINT_POLICY:-CatalogProvided}"
+
+# OLMv1 system namespaces
+export CATALOGD_NAMESPACE="${CATALOGD_NAMESPACE:-openshift-catalogd}"
+export OPERATOR_CONTROLLER_NAMESPACE="${OPERATOR_CONTROLLER_NAMESPACE:-openshift-operator-controller}"
+
 export TEST_KNATIVE_UPGRADE="${TEST_KNATIVE_UPGRADE:-true}"
 export TEST_KNATIVE_E2E="${TEST_KNATIVE_E2E:-true}"
 export TEST_KNATIVE_SERVING="${TEST_KNATIVE_SERVING:-false}"

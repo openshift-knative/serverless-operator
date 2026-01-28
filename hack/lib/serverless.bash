@@ -5,21 +5,21 @@ function ensure_content_source_policy {
     oc apply -f "$rootdir/olm-catalog/serverless-operator-index/image_content_source_policy.yaml"
 }
 
-function ensure_serverless_installed {
-  logger.info 'Check if Serverless is installed'
+# Check if Knative resources are already installed
+function check_serverless_already_installed {
   if oc get knativeserving.operator.knative.dev knative-serving -n "${SERVING_NAMESPACE}" >/dev/null 2>&1 && \
     oc get knativeeventing.operator.knative.dev knative-eventing -n "${EVENTING_NAMESPACE}" >/dev/null 2>&1 && \
     oc get knativekafka.operator.serverless.openshift.io knative-kafka -n "${EVENTING_NAMESPACE}" >/dev/null 2>&1
   then
-    logger.success 'Serverless is already installed.'
     return 0
   fi
+  return 1
+}
 
-  # Deploy config-logging configmap before running serving-opreator pod.
-  # Otherwise, we cannot change log level by configmap.
-  enable_debug_log
-
-  local csv
+# Determine CSV version based on environment variables
+# Sets the csv variable in the calling scope
+function determine_csv_version {
+  local rootdir
   if [[ "${INSTALL_OLDEST_COMPATIBLE}" == "true" ]]; then
     rootdir="$(dirname "$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")")"
     csv=$(yq read --doc 0 "$rootdir/olm-catalog/serverless-operator-index/configs/index.yaml" 'entries[-1].name')
@@ -28,21 +28,100 @@ function ensure_serverless_installed {
   else
     csv="$CURRENT_CSV"
   fi
+}
 
-  # Remove installplan from previous installations, leaving this would make the operator
-  # upgrade to the latest version immediately
-  if [[ "$csv" != "$CURRENT_CSV" ]]; then
-    remove_installplan "$CURRENT_CSV"
+# Teardown Knative CRs and wait for pods/namespaces to be cleaned up
+function teardown_knative_resources {
+  if oc get knativeserving.operator.knative.dev knative-serving -n "${SERVING_NAMESPACE}" >/dev/null 2>&1; then
+    logger.info 'Removing KnativeServing CR'
+    oc delete knativeserving.operator.knative.dev knative-serving -n "${SERVING_NAMESPACE}"
   fi
-
-   if [[ ${SKIP_OPERATOR_SUBSCRIPTION:-} != "true" ]]; then
-    logger.info "Installing Serverless version $csv"
-    deploy_serverless_operator "$csv"
+  if oc get knativekafkas.operator.serverless.openshift.io knative-kafka -n "${EVENTING_NAMESPACE}" >/dev/null 2>&1; then
+    logger.info 'Removing KnativeKafka CR'
+    oc delete knativekafka.operator.serverless.openshift.io knative-kafka -n "${EVENTING_NAMESPACE}"
   fi
+  if oc get knativeeventing.operator.knative.dev knative-eventing -n "${EVENTING_NAMESPACE}" >/dev/null 2>&1; then
+    logger.info 'Removing KnativeEventing CR'
+    oc delete knativeeventing.operator.knative.dev knative-eventing -n "${EVENTING_NAMESPACE}"
+    # TODO: Remove workaround for stale pingsource resources (https://issues.redhat.com/browse/SRVKE-473)
+    oc delete deployment -n "${EVENTING_NAMESPACE}" --ignore-not-found=true pingsource-mt-adapter
+  fi
+  logger.info 'Ensure no knative serving pods running'
+  timeout 600 "[[ \$(oc get pods -n ${SERVING_NAMESPACE} --field-selector=status.phase!=Succeeded -o jsonpath='{.items}') != '[]' ]]"
+  if oc get namespace "${SERVING_NAMESPACE}" &>/dev/null; then
+    oc delete namespace "${SERVING_NAMESPACE}"
+  fi
+  logger.info 'Ensure no ingress pods running'
+  timeout 600 "[[ \$(oc get pods -n ${INGRESS_NAMESPACE} --field-selector=status.phase!=Succeeded -o jsonpath='{.items}') != '[]' ]]"
+  if oc get namespace "${INGRESS_NAMESPACE}" &>/dev/null; then
+    oc delete namespace "${INGRESS_NAMESPACE}"
+  fi
+  timeout 600 "[[ \$(oc get ns ${INGRESS_NAMESPACE} --no-headers | wc -l) == 1 ]]"
+  logger.info 'Ensure no knative eventing or knative kafka pods running'
+  timeout 700 "[[ \$(oc get pods -n ${EVENTING_NAMESPACE} --field-selector=status.phase!=Succeeded -o jsonpath='{.items}') != '[]' ]]"
+  if oc get namespace "${EVENTING_NAMESPACE}" &>/dev/null; then
+    oc delete namespace "${EVENTING_NAMESPACE}"
+  fi
+}
 
-  install_knative_resources "${csv#serverless-operator.v}"
+# Cleanup operator deployments, namespace, and CRDs
+function teardown_operator_and_crds {
+  logger.info 'Ensure no operators present'
+  timeout 600 "[[ \$(oc get deployments -n ${OPERATORS_NAMESPACE} -oname | grep -c 'knative') != 0 ]]"
+  logger.info 'Deleting operators namespace'
+  oc delete namespace "${OPERATORS_NAMESPACE}" --ignore-not-found=true
+  logger.info 'Ensure no CRDs left'
+  if [[ "${DELETE_CRD_ON_TEARDOWN}" == "true" ]]; then
+    if [[ ! $(oc get crd -oname | grep -c 'knative.dev') -eq 0 ]]; then
+      oc get crd -oname | grep 'knative.dev' | xargs oc delete --timeout=60s
+    fi
+  fi
+}
 
-  logger.success "Serverless is installed: $csv"
+function ensure_serverless_installed {
+  if [[ "${OLM_VERSION}" == "v1" ]]; then
+    ensure_serverless_installed_olmv1
+  else
+    ensure_serverless_installed_olmv0
+  fi
+}
+
+function deploy_serverless_operator {
+  local csv
+  csv="${1:?Pass a CSV as arg[1]}"
+  if [[ "${OLM_VERSION}" == "v1" ]]; then
+    deploy_serverless_operator_olmv1 "$csv"
+  else
+    deploy_serverless_operator_olmv0 "$csv"
+  fi
+}
+
+function deploy_serverless_operator_latest {
+  deploy_serverless_operator "$CURRENT_CSV"
+}
+
+function teardown_serverless {
+  if [[ "${OLM_VERSION}" == "v1" ]]; then
+    teardown_serverless_olmv1
+  else
+    teardown_serverless_olmv0
+  fi
+}
+
+function ensure_catalog_installed {
+  if [[ "${OLM_VERSION}" == "v1" ]]; then
+    ensure_clustercatalog_installed
+  else
+    ensure_catalogsource_installed
+  fi
+}
+
+function delete_catalog {
+  if [[ "${OLM_VERSION}" == "v1" ]]; then
+    delete_clustercatalog
+  else
+    delete_catalogsource
+  fi
 }
 
 function install_knative_resources {
@@ -72,84 +151,6 @@ function install_knative_resources {
   if [[ $INSTALL_KAFKA == "true" ]]; then
     wait_for_knative_kafka_ready
   fi
-}
-
-function remove_installplan {
-  local install_plan csv
-  csv="${1:?Pass a CSV as arg[1]}"
-  logger.info "Removing installplan for $csv"
-  install_plan=$(find_install_plan "$csv")
-  if [[ -n $install_plan ]]; then
-    oc delete "$install_plan" -n "${OPERATORS_NAMESPACE}"
-  else
-    logger.debug "No install plan for $csv"
-  fi
-}
-
-function deploy_serverless_operator_latest {
-  deploy_serverless_operator "$CURRENT_CSV"
-}
-
-function deploy_serverless_operator {
-  local csv tmpfile
-  csv="${1:?Pass as CSV as arg[1]}"
-  logger.info "Install the Serverless Operator: ${csv}"
-  tmpfile=$(mktemp /tmp/subscription.XXXXXX.yaml)
-  cat > "$tmpfile" <<EOF
-apiVersion: operators.coreos.com/v1alpha1
-kind: Subscription
-metadata:
-  name: "${OPERATOR}"
-  namespace: "${OPERATORS_NAMESPACE}"
-spec:
-  channel: "${OLM_CHANNEL}"
-  name: "${OPERATOR}"
-  source: "${OLM_SOURCE}"
-  sourceNamespace: "${OLM_NAMESPACE}"
-  installPlanApproval: Manual
-  startingCSV: "${csv}"
-EOF
-  [ -n "$OPENSHIFT_CI" ] && cat "$tmpfile"
-  oc apply -f "$tmpfile"
-
-  # Approve the initial installplan automatically
-  approve_csv "$csv" "$OLM_CHANNEL"
-}
-
-function approve_csv {
-  local csv_version install_plan channel
-  csv_version=${1:?Pass a CSV as arg[1]}
-  channel=${2:?Pass channel as arg[2]}
-
-  logger.info 'Ensure channel and source is set properly'
-  oc patch subscriptions.operators.coreos.com "$OPERATOR" -n "${OPERATORS_NAMESPACE}" \
-    --type 'merge' \
-    --patch '{"spec": {"channel": "'"${channel}"'", "source": "'"${OLM_SOURCE}"'"}}'
-
-  logger.info 'Wait for the installplan to be available'
-  timeout 900 "[[ -z \$(find_install_plan ${csv_version}) ]]"
-
-  install_plan=$(find_install_plan "${csv_version}")
-  oc patch "$install_plan" -n "${OPERATORS_NAMESPACE}" \
-    --type merge --patch '{"spec":{"approved":true}}'
-
-  if ! timeout 300 "[[ \$(oc get ClusterServiceVersion $csv_version -n ${OPERATORS_NAMESPACE} -o jsonpath='{.status.phase}') != Succeeded ]]" ; then
-    oc get ClusterServiceVersion "$csv_version" -n "${OPERATORS_NAMESPACE}" -o yaml || true
-    return 105
-  fi
-}
-
-function find_install_plan {
-  local csv="${1:-Pass a CSV as arg[1]}"
-  for plan in $(oc get installplan -n "${OPERATORS_NAMESPACE}" --no-headers -o name); do
-    if [[ $(oc get "$plan" -n "${OPERATORS_NAMESPACE}" -o=jsonpath='{.spec.clusterServiceVersionNames}' | grep -c "$csv") -eq 1 && \
-      $(oc get "$plan" -n "${OPERATORS_NAMESPACE}" -o=jsonpath="{.status.bundleLookups[0].catalogSourceRef.name}" | grep -c "$OLM_SOURCE") -eq 1 ]]
-    then
-      echo "$plan"
-      return 0
-    fi
-  done
-  echo ""
 }
 
 function deploy_knativeserving_cr {
@@ -474,61 +475,6 @@ function ensure_kafka_channel_default {
   rm -f "${patchfile}"
 
   logger.success 'KafkaChannel is set as default.'
-}
-
-function teardown_serverless {
-  logger.warn '😭  Teardown Serverless...'
-
-  if oc get knativeserving.operator.knative.dev knative-serving -n "${SERVING_NAMESPACE}" >/dev/null 2>&1; then
-    logger.info 'Removing KnativeServing CR'
-    oc delete knativeserving.operator.knative.dev knative-serving -n "${SERVING_NAMESPACE}"
-  fi
-  if oc get knativekafkas.operator.serverless.openshift.io knative-kafka -n "${EVENTING_NAMESPACE}" >/dev/null 2>&1; then
-    logger.info 'Removing KnativeKafka CR'
-    oc delete knativekafka.operator.serverless.openshift.io knative-kafka -n "${EVENTING_NAMESPACE}"
-  fi
-  if oc get knativeeventing.operator.knative.dev knative-eventing -n "${EVENTING_NAMESPACE}" >/dev/null 2>&1; then
-    logger.info 'Removing KnativeEventing CR'
-    oc delete knativeeventing.operator.knative.dev knative-eventing -n "${EVENTING_NAMESPACE}"
-    # TODO: Remove workaround for stale pingsource resources (https://issues.redhat.com/browse/SRVKE-473)
-    oc delete deployment -n "${EVENTING_NAMESPACE}" --ignore-not-found=true pingsource-mt-adapter
-  fi
-  logger.info 'Ensure no knative serving pods running'
-  timeout 600 "[[ \$(oc get pods -n ${SERVING_NAMESPACE} --field-selector=status.phase!=Succeeded -o jsonpath='{.items}') != '[]' ]]"
-  if oc get namespace "${SERVING_NAMESPACE}" &>/dev/null; then
-    oc delete namespace "${SERVING_NAMESPACE}"
-  fi
-  logger.info 'Ensure no ingress pods running'
-  timeout 600 "[[ \$(oc get pods -n ${INGRESS_NAMESPACE} --field-selector=status.phase!=Succeeded -o jsonpath='{.items}') != '[]' ]]"
-  if oc get namespace "${INGRESS_NAMESPACE}" &>/dev/null; then
-    oc delete namespace "${INGRESS_NAMESPACE}"
-  fi
-  timeout 600 "[[ \$(oc get ns ${INGRESS_NAMESPACE} --no-headers | wc -l) == 1 ]]"
-  logger.info 'Ensure no knative eventing or knative kafka pods running'
-  timeout 700 "[[ \$(oc get pods -n ${EVENTING_NAMESPACE} --field-selector=status.phase!=Succeeded -o jsonpath='{.items}') != '[]' ]]"
-  if oc get namespace "${EVENTING_NAMESPACE}" &>/dev/null; then
-    oc delete namespace "${EVENTING_NAMESPACE}"
-  fi
-  logger.info 'Deleting subscription'
-  oc delete subscriptions.operators.coreos.com \
-    -n "${OPERATORS_NAMESPACE}" "${OPERATOR}" \
-    --ignore-not-found
-  logger.info 'Deleting ClusterServiceVersion'
-  for csv in $(set +o pipefail && oc get csv -n "${OPERATORS_NAMESPACE}" --no-headers 2>/dev/null \
-      | grep "${OPERATOR}" | cut -f1 -d' '); do
-    oc delete csv -n "${OPERATORS_NAMESPACE}" "${csv}"
-  done
-  logger.info 'Ensure no operators present'
-  timeout 600 "[[ \$(oc get deployments -n ${OPERATORS_NAMESPACE} -oname | grep -c 'knative') != 0 ]]"
-  logger.info 'Deleting operators namespace'
-  oc delete namespace "${OPERATORS_NAMESPACE}" --ignore-not-found=true
-  logger.info 'Ensure not CRDs left'
-  if [[ "${DELETE_CRD_ON_TEARDOWN}" == "true" ]]; then
-    if [[ ! $(oc get crd -oname | grep -c 'knative.dev') -eq 0 ]]; then
-      oc get crd -oname | grep 'knative.dev' | xargs oc delete --timeout=60s
-    fi
-  fi
-  logger.success 'Serverless has been uninstalled.'
 }
 
 # Enable debug log on knative-serving-operator

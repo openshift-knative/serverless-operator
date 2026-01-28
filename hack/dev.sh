@@ -18,4 +18,4 @@ debugging.setup
 if [[ ${INSTALL_WITH_ARGO_CD:-} != "true" ]]; then
   create_namespaces "${SYSTEM_NAMESPACES[@]}"
 fi
-ensure_catalogsource_installed
+ensure_catalog_installed
