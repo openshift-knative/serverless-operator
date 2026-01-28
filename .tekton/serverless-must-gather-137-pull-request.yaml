@@ -21,7 +21,7 @@ spec:
       value: must-gather/Dockerfile
     - name: build-args
       value:
-        - VERSION=1.37.0
+        - VERSION=1.37.1
         - TAG=v1.17.0
         - CLI_ARTIFACTS=registry.redhat.io/openshift4/ose-cli-artifacts-rhel9:v4.16
         - GO_BUILDER=brew.registry.redhat.io/rh-osbs/openshift-golang-builder:rhel_9_golang_1.23
