@@ -674,7 +674,7 @@ function teardown {
   teardown_tracing
   # shellcheck disable=SC2153
   delete_namespaces "${SYSTEM_NAMESPACES[@]}" "${TEST_NAMESPACES[@]}"
-  delete_catalog_source
+  delete_catalog
   delete_users
 }
 
