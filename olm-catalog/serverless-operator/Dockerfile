@@ -19,7 +19,7 @@ LABEL \
       com.redhat.component="openshift-serverless-1-serverless-operator-bundle-container" \
       name="openshift-serverless-1/serverless-operator-bundle" \
       cpe="cpe:/a:redhat:openshift_serverless:1.37::el9" \
-      version="1.37.0" \
+      version="1.37.1" \
       summary="Red Hat OpenShift Serverless Bundle" \
       maintainer="serverless-support@redhat.com" \
       description="Red Hat OpenShift Serverless Bundle" \
@@ -30,6 +30,6 @@ LABEL \
       com.redhat.delivery.backport=false \
       distribution-scope="authoritative-source-only" \
       url="https://catalog.redhat.com/software/container-stacks/detail/5ec53fcb110f56bd24f2ddc5" \
-      release="1.37.0" \
+      release="1.37.1" \
       io.openshift.tags="bundle" \
       vendor="Red Hat, Inc."

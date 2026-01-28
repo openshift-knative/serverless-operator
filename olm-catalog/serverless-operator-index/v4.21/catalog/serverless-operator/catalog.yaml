@@ -9909,8 +9909,6 @@ properties:
     provider:
       name: Red Hat
 relatedImages:
-- image: registry.redhat.io/openshift-serverless-1/serverless-operator-bundle@sha256:18c5bc25aa7fd36f1433fe4920a843336517210c903c467b16f035e3a46f2d4e
-  name: ""
 - image: registry.access.redhat.com/ubi9/nodejs-20-minimal@sha256:badc5c47327f1af2ca2c0d9c68bac4c0a5e3f42bea398fc9654effbefc40b40b
   name: IMAGE_KN_PLUGIN_FUNC_NODEJS_20_MINIMAL
 - image: registry.access.redhat.com/ubi9/openjdk-21@sha256:b4f4010269b9783e01dc07ae9461c96f33a20d075b501f131b85e0e604c568ab
@@ -9924,11 +9922,11 @@ relatedImages:
 - image: registry.redhat.io/openshift-serverless-1/kn-client-kn-rhel9@sha256:e213fd263772c5286aa560132cd8c043cf2946f04f96eedf18cd240859bd8a48
   name: IMAGE_KN_CLIENT
 - image: registry.redhat.io/openshift-serverless-1/kn-ekb-dispatcher-rhel9@sha256:591bc064b99356334b7b53c56e2b14538dd8747577127b37fcffadbbd5df4498
+  name: KAFKA_IMAGE_kafka-source-dispatcher__kafka-source-dispatcher
+- image: registry.redhat.io/openshift-serverless-1/kn-ekb-dispatcher-rhel9@sha256:591bc064b99356334b7b53c56e2b14538dd8747577127b37fcffadbbd5df4498
   name: KAFKA_IMAGE_kafka-channel-dispatcher__kafka-channel-dispatcher
 - image: registry.redhat.io/openshift-serverless-1/kn-ekb-dispatcher-rhel9@sha256:591bc064b99356334b7b53c56e2b14538dd8747577127b37fcffadbbd5df4498
   name: KAFKA_IMAGE_kafka-broker-dispatcher__kafka-broker-dispatcher
-- image: registry.redhat.io/openshift-serverless-1/kn-ekb-dispatcher-rhel9@sha256:591bc064b99356334b7b53c56e2b14538dd8747577127b37fcffadbbd5df4498
-  name: KAFKA_IMAGE_kafka-source-dispatcher__kafka-source-dispatcher
 - image: registry.redhat.io/openshift-serverless-1/kn-ekb-kafka-controller-rhel9@sha256:4a7848b64e1bacadf5205de9a0fd64437c8b7dcf86959dc1095e12d873a4610a
   name: KAFKA_IMAGE_kafka-controller__controller
 - image: registry.redhat.io/openshift-serverless-1/kn-ekb-post-install-rhel9@sha256:70807d51d23088e80fe00213802fd8d7ed718e8c16301831058acac2652f67d9
@@ -10019,6 +10017,8 @@ relatedImages:
   name: IMAGE_MUST_GATHER
 - image: registry.redhat.io/openshift-serverless-1/serverless-openshift-kn-rhel9-operator@sha256:23e10eb061828568dc06cf4d4b3485e8fbd5fe8b711b2424ea954b7e1dd2534f
   name: knative-operator
+- image: registry.redhat.io/openshift-serverless-1/serverless-operator-bundle@sha256:18c5bc25aa7fd36f1433fe4920a843336517210c903c467b16f035e3a46f2d4e
+  name: ""
 - image: registry.redhat.io/openshift-service-mesh/proxyv2-rhel9@sha256:fe1e78971352ddd76ee6f88aa0f4e4ac6d1298da8c960f877ae9f883c291dfd6
   name: IMAGE_kourier-gateway
 - image: registry.redhat.io/openshift4/ose-kube-rbac-proxy-rhel9@sha256:f64b1bf7dca0906dfa673ae299a2d965527c1c7a714020d046dad277d329f965

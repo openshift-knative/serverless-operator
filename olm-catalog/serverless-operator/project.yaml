@@ -67,7 +67,7 @@ dependencies:
   net_istio: knative-v1.17
   net_istio_artifacts_branch: release-v1.17
   redhat-knative-istio-authz-chart: 1.37.0
-  service_mesh_proxy: registry.redhat.io/openshift-service-mesh/proxyv2-rhel9@sha256:fe1e78971352ddd76ee6f88aa0f4e4ac6d1298da8c960f877ae9f883c291dfd6
+  service_mesh_proxy: registry.redhat.io/openshift-service-mesh/proxyv2-rhel9@sha256:7ef494feff5e4ed3d966e487434597f3c0ef344a87b474199b042eb1657a8e91
   eventing: knative-v1.17
   # eventing core midstream branch name
   eventing_artifacts_branch: release-v1.17
@@ -88,17 +88,17 @@ dependencies:
   # backstage-plugins midstream branch or commit
   backstage_plugins_artifacts_branch: release-v1.17
   cli: knative-v1.17
-  kube_rbac_proxy: registry.redhat.io/openshift4/ose-kube-rbac-proxy-rhel9@sha256:f64b1bf7dca0906dfa673ae299a2d965527c1c7a714020d046dad277d329f965
+  kube_rbac_proxy: registry.redhat.io/openshift4/ose-kube-rbac-proxy-rhel9@sha256:d701232c63ae5920cb35ff5096ff9ed5db8aeb8f8b39941d1e926eaa5a54cc97
   func:
     promotion_tag: knative-v1.17
     # if additional image is added amend the list in hack/generate/catalog.sh
-    tekton_buildah: registry.redhat.io/rhel9/buildah@sha256:a3978b1b626897c19e834e27f49e7cd07a3947fc27fd4f6e6a0850d6cc2e0511
-    nodejs_20_minimal: registry.access.redhat.com/ubi9/nodejs-20-minimal@sha256:badc5c47327f1af2ca2c0d9c68bac4c0a5e3f42bea398fc9654effbefc40b40b
-    openjdk_21: registry.access.redhat.com/ubi9/openjdk-21@sha256:b4f4010269b9783e01dc07ae9461c96f33a20d075b501f131b85e0e604c568ab
-    python-39: registry.access.redhat.com/ubi9/python-39@sha256:1985fef5119fbecf1e9746f8e9ae023df82a33c75aaf5b4d6ce570b6a712a267
+    tekton_buildah: registry.redhat.io/rhel9/buildah@sha256:63f2027d693c0e71c03256f33283373e63f19c977d9925b8aa08c2362b8489f7
+    nodejs_20_minimal: registry.access.redhat.com/ubi9/nodejs-20-minimal@sha256:df3aa231f9e86f05ce8bd5b55a0ed391859313475ba41755b64c82156e498220
+    openjdk_21: registry.access.redhat.com/ubi9/openjdk-21@sha256:9b97d1359f4c36440d6fc84b29792e67393d2bf7c6b55c5c9fd4cd464dac6468
+    python-39: registry.access.redhat.com/ubi9/python-39@sha256:bdc09052ddc6fca1b707b12672ce97c4ac538f412841a4d90c82e50d1bbf154f
   operator: 1.17.8
   # Previous versions required for downgrade testing
   previous:
-    serving: knative-v1.16
-    eventing: knative-v1.16
-    eventing_kafka_broker: knative-v1.16
+    serving: knative-v1.17
+    eventing: knative-v1.17
+    eventing_kafka_broker: knative-v1.17
