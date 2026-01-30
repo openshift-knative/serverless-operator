@@ -94,8 +94,8 @@ dependencies:
     # if additional image is added amend the list in hack/generate/catalog.sh
     tekton_buildah: registry.redhat.io/rhel9/buildah@sha256:63f2027d693c0e71c03256f33283373e63f19c977d9925b8aa08c2362b8489f7
     nodejs_20_minimal: registry.access.redhat.com/ubi9/nodejs-20-minimal@sha256:df3aa231f9e86f05ce8bd5b55a0ed391859313475ba41755b64c82156e498220
-    openjdk_21: registry.access.redhat.com/ubi9/openjdk-21@sha256:9b97d1359f4c36440d6fc84b29792e67393d2bf7c6b55c5c9fd4cd464dac6468
-    python-39: registry.access.redhat.com/ubi9/python-39@sha256:bdc09052ddc6fca1b707b12672ce97c4ac538f412841a4d90c82e50d1bbf154f
+    openjdk_21: registry.access.redhat.com/ubi9/openjdk-21@sha256:aa552a19b077d4ce165e147268b25296ab6d8a76b22130890bd802fd6435e2b5
+    python-39: registry.access.redhat.com/ubi9/python-39@sha256:463c9ae02bb7aaefe1853444228a06ff6121e922a79ecd9c1bc4104f4147602d
   operator: 1.17.8
   # Previous versions required for downgrade testing
   previous:

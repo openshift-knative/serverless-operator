@@ -35,7 +35,9 @@ function generate_catalog {
     while IFS=$'\n' read -r channel; do
       add_channel "${catalog_template}" "$channel"
       # Also add previous version for cases when it was not released yet
-      add_channel "${catalog_template}" "$channel" "$(metadata.get 'olm.replaces')"
+
+      # TODO: skipping this for 1.37, breaks on OCP 4.21 and 4.22 catalog generation, as they don't have 1.37.0 and it doesn't exist in CI
+      # add_channel "${catalog_template}" "$channel" "$(metadata.get 'olm.replaces')"
     done < <(metadata.get 'olm.channels.list[*]')
 
     level=none
