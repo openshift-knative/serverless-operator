@@ -54,21 +54,12 @@ entries:
       - name: serverless-operator.v1.34.0
         replaces: serverless-operator.v1.33.0
         skipRange: '>=1.33.0 <1.34.0'
-      - name: serverless-operator.v1.35.0
+      - name: serverless-operator.v1.34.1
         replaces: serverless-operator.v1.34.0
-        skipRange: '>=1.34.0 <1.35.0'
-      - name: serverless-operator.v1.36.0
-        replaces: serverless-operator.v1.35.0
-        skipRange: '>=1.35.0 <1.36.0'
-      - name: serverless-operator.v1.36.1
-        replaces: serverless-operator.v1.36.0
-        skipRange: '>=1.36.0 <1.36.1'
-      - name: serverless-operator.v1.37.0
-        replaces: serverless-operator.v1.36.1
-        skipRange: '>1.36.1 <1.37.0'
-      - name: "serverless-operator.v1.37.1"
-        replaces: "serverless-operator.v1.37.0"
-        skipRange: ">1.37.0 <1.37.1"
+        skipRange: '>=1.34.0 <1.34.1'
+      - name: serverless-operator.v1.37.1
+        replaces: serverless-operator.v1.37.0
+        skipRange: '>1.37.0 <1.37.1'
     name: stable
     package: serverless-operator
     schema: olm.channel
@@ -357,192 +348,6 @@ entries:
     name: stable-1.34
     package: serverless-operator
     schema: olm.channel
-  - entries:
-      - name: serverless-operator.v1.20.0
-        replaces: serverless-operator.v1.19.0
-        skipRange: '>=1.19.0 <1.20.0'
-      - name: serverless-operator.v1.21.0
-        replaces: serverless-operator.v1.20.0
-        skipRange: '>=1.20.0 <1.21.0'
-      - name: serverless-operator.v1.22.0
-        replaces: serverless-operator.v1.21.0
-        skipRange: '>=1.21.0 <1.22.0'
-      - name: serverless-operator.v1.23.0
-        replaces: serverless-operator.v1.22.0
-        skipRange: '>=1.22.0 <1.23.0'
-      - name: serverless-operator.v1.24.0
-        replaces: serverless-operator.v1.23.0
-        skipRange: '>=1.23.0 <1.24.0'
-      - name: serverless-operator.v1.25.0
-        replaces: serverless-operator.v1.24.0
-        skipRange: '>=1.24.0 <1.25.0'
-      - name: serverless-operator.v1.26.0
-        replaces: serverless-operator.v1.25.0
-        skipRange: '>=1.25.0 <1.26.0'
-      - name: serverless-operator.v1.27.0
-        replaces: serverless-operator.v1.26.0
-        skipRange: '>=1.26.0 <1.27.0'
-      - name: serverless-operator.v1.27.1
-        replaces: serverless-operator.v1.27.0
-        skipRange: '>=1.26.0 <1.27.1'
-      - name: serverless-operator.v1.28.0
-        replaces: serverless-operator.v1.27.1
-        skipRange: '>=1.27.0 <1.28.0'
-      - name: serverless-operator.v1.29.0
-        replaces: serverless-operator.v1.28.0
-        skipRange: '>=1.28.0 <1.29.0'
-      - name: serverless-operator.v1.30.0
-        replaces: serverless-operator.v1.29.0
-        skipRange: '>=1.29.0 <1.30.0'
-      - name: serverless-operator.v1.31.0
-        replaces: serverless-operator.v1.30.0
-        skipRange: '>=1.30.0 <1.31.0'
-      - name: serverless-operator.v1.32.0
-        replaces: serverless-operator.v1.31.0
-        skipRange: '>=1.31.0 <1.32.0'
-      - name: serverless-operator.v1.33.0
-        replaces: serverless-operator.v1.32.0
-        skipRange: '>=1.32.0 <1.33.0'
-      - name: serverless-operator.v1.34.0
-        replaces: serverless-operator.v1.33.0
-        skipRange: '>=1.33.0 <1.34.0'
-      - name: serverless-operator.v1.35.0
-        replaces: serverless-operator.v1.34.0
-        skipRange: '>=1.34.0 <1.35.0'
-      - name: serverless-operator.v1.35.1
-        replaces: serverless-operator.v1.35.0
-        skipRange: '>=1.35.0 <1.35.1'
-    name: stable-1.35
-    package: serverless-operator
-    schema: olm.channel
-  - entries:
-      - name: serverless-operator.v1.20.0
-        replaces: serverless-operator.v1.19.0
-        skipRange: '>=1.19.0 <1.20.0'
-      - name: serverless-operator.v1.21.0
-        replaces: serverless-operator.v1.20.0
-        skipRange: '>=1.20.0 <1.21.0'
-      - name: serverless-operator.v1.22.0
-        replaces: serverless-operator.v1.21.0
-        skipRange: '>=1.21.0 <1.22.0'
-      - name: serverless-operator.v1.23.0
-        replaces: serverless-operator.v1.22.0
-        skipRange: '>=1.22.0 <1.23.0'
-      - name: serverless-operator.v1.24.0
-        replaces: serverless-operator.v1.23.0
-        skipRange: '>=1.23.0 <1.24.0'
-      - name: serverless-operator.v1.25.0
-        replaces: serverless-operator.v1.24.0
-        skipRange: '>=1.24.0 <1.25.0'
-      - name: serverless-operator.v1.26.0
-        replaces: serverless-operator.v1.25.0
-        skipRange: '>=1.25.0 <1.26.0'
-      - name: serverless-operator.v1.27.0
-        replaces: serverless-operator.v1.26.0
-        skipRange: '>=1.26.0 <1.27.0'
-      - name: serverless-operator.v1.27.1
-        replaces: serverless-operator.v1.27.0
-        skipRange: '>=1.26.0 <1.27.1'
-      - name: serverless-operator.v1.28.0
-        replaces: serverless-operator.v1.27.1
-        skipRange: '>=1.27.0 <1.28.0'
-      - name: serverless-operator.v1.29.0
-        replaces: serverless-operator.v1.28.0
-        skipRange: '>=1.28.0 <1.29.0'
-      - name: serverless-operator.v1.30.0
-        replaces: serverless-operator.v1.29.0
-        skipRange: '>=1.29.0 <1.30.0'
-      - name: serverless-operator.v1.31.0
-        replaces: serverless-operator.v1.30.0
-        skipRange: '>=1.30.0 <1.31.0'
-      - name: serverless-operator.v1.32.0
-        replaces: serverless-operator.v1.31.0
-        skipRange: '>=1.31.0 <1.32.0'
-      - name: serverless-operator.v1.33.0
-        replaces: serverless-operator.v1.32.0
-        skipRange: '>=1.32.0 <1.33.0'
-      - name: serverless-operator.v1.34.0
-        replaces: serverless-operator.v1.33.0
-        skipRange: '>=1.33.0 <1.34.0'
-      - name: serverless-operator.v1.35.0
-        replaces: serverless-operator.v1.34.0
-        skipRange: '>=1.34.0 <1.35.0'
-      - name: serverless-operator.v1.36.0
-        replaces: serverless-operator.v1.35.0
-        skipRange: '>=1.35.0 <1.36.0'
-      - name: serverless-operator.v1.36.1
-        replaces: serverless-operator.v1.36.0
-        skipRange: '>=1.36.0 <1.36.1'
-    name: stable-1.36
-    package: serverless-operator
-    schema: olm.channel
-  - entries:
-      - name: serverless-operator.v1.20.0
-        replaces: serverless-operator.v1.19.0
-        skipRange: '>=1.19.0 <1.20.0'
-      - name: serverless-operator.v1.21.0
-        replaces: serverless-operator.v1.20.0
-        skipRange: '>=1.20.0 <1.21.0'
-      - name: serverless-operator.v1.22.0
-        replaces: serverless-operator.v1.21.0
-        skipRange: '>=1.21.0 <1.22.0'
-      - name: serverless-operator.v1.23.0
-        replaces: serverless-operator.v1.22.0
-        skipRange: '>=1.22.0 <1.23.0'
-      - name: serverless-operator.v1.24.0
-        replaces: serverless-operator.v1.23.0
-        skipRange: '>=1.23.0 <1.24.0'
-      - name: serverless-operator.v1.25.0
-        replaces: serverless-operator.v1.24.0
-        skipRange: '>=1.24.0 <1.25.0'
-      - name: serverless-operator.v1.26.0
-        replaces: serverless-operator.v1.25.0
-        skipRange: '>=1.25.0 <1.26.0'
-      - name: serverless-operator.v1.27.0
-        replaces: serverless-operator.v1.26.0
-        skipRange: '>=1.26.0 <1.27.0'
-      - name: serverless-operator.v1.27.1
-        replaces: serverless-operator.v1.27.0
-        skipRange: '>=1.26.0 <1.27.1'
-      - name: serverless-operator.v1.28.0
-        replaces: serverless-operator.v1.27.1
-        skipRange: '>=1.27.0 <1.28.0'
-      - name: serverless-operator.v1.29.0
-        replaces: serverless-operator.v1.28.0
-        skipRange: '>=1.28.0 <1.29.0'
-      - name: serverless-operator.v1.30.0
-        replaces: serverless-operator.v1.29.0
-        skipRange: '>=1.29.0 <1.30.0'
-      - name: serverless-operator.v1.31.0
-        replaces: serverless-operator.v1.30.0
-        skipRange: '>=1.30.0 <1.31.0'
-      - name: serverless-operator.v1.32.0
-        replaces: serverless-operator.v1.31.0
-        skipRange: '>=1.31.0 <1.32.0'
-      - name: serverless-operator.v1.33.0
-        replaces: serverless-operator.v1.32.0
-        skipRange: '>=1.32.0 <1.33.0'
-      - name: serverless-operator.v1.34.0
-        replaces: serverless-operator.v1.33.0
-        skipRange: '>=1.33.0 <1.34.0'
-      - name: serverless-operator.v1.35.0
-        replaces: serverless-operator.v1.34.0
-        skipRange: '>=1.34.0 <1.35.0'
-      - name: serverless-operator.v1.36.0
-        replaces: serverless-operator.v1.35.0
-        skipRange: '>=1.35.0 <1.36.0'
-      - name: serverless-operator.v1.36.1
-        replaces: serverless-operator.v1.36.0
-        skipRange: '>=1.36.0 <1.36.1'
-      - name: serverless-operator.v1.37.0
-        replaces: serverless-operator.v1.36.1
-        skipRange: '>1.36.1 <1.37.0'
-      - name: "serverless-operator.v1.37.1"
-        replaces: "serverless-operator.v1.37.0"
-        skipRange: ">1.37.0 <1.37.1"
-    name: stable-1.37
-    package: serverless-operator
-    schema: olm.channel
   - image: registry.redhat.io/openshift-serverless-1/serverless-operator-bundle@sha256:003a5c5c3682db69aa57da4c05ed3ccbaf94fb80a4972c8ddcf91eb3d5e299b9
     schema: olm.bundle
   - image: registry.redhat.io/openshift-serverless-1/serverless-operator-bundle@sha256:1905984e13c9d165aad06f954904fc33d3f3a6e2f0041f98bc5840d05a87abaf
@@ -587,16 +392,64 @@ entries:
     schema: olm.bundle
   - image: registry.redhat.io/openshift-serverless-1/serverless-operator-bundle@sha256:095629572a40469eb651c9f81d6c10ff46254eff8b9813cadce54d6f0075c2fb
     schema: olm.bundle
-  - image: registry.redhat.io/openshift-serverless-1/serverless-operator-bundle@sha256:93b945eb2361b07bc86d67a9a7d77a0301a0bad876c83a9a64af2cfb86c83bff
-    schema: olm.bundle
-  - image: registry.redhat.io/openshift-serverless-1/serverless-operator-bundle@sha256:91456907c61952017daf07e376b565472ef86d67a2925f60e189c639ceb68595
-    schema: olm.bundle
-  - image: registry.redhat.io/openshift-serverless-1/serverless-operator-bundle@sha256:2d675f8bf31b0cfb64503ee72e082183b7b11979d65eb636fc83f4f3a25fa5d0
-    schema: olm.bundle
-  - image: registry.redhat.io/openshift-serverless-1/serverless-operator-bundle@sha256:01d632b69b4a4112426afc4184c72eae6d8816974088e5980c9c808f0782b85c
-    schema: olm.bundle
-  - image: registry.redhat.io/openshift-serverless-1/serverless-operator-bundle@sha256:18c5bc25aa7fd36f1433fe4920a843336517210c903c467b16f035e3a46f2d4e
-    schema: olm.bundle
-  - schema: "olm.bundle"
-    image: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-137/serverless-bundle@sha256:3dc574ac4f85b21cafe4a586f047d5e31fd18a0e5514832d064d8100591b26b8"
+  - schema: olm.bundle
+    image: quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-137/serverless-bundle@sha256:9798ddd6498df9f88df7aaf719c529915097c192054f9a16add174033ef5721c
+  - entries:
+      - name: serverless-operator.v1.20.0
+        replaces: serverless-operator.v1.19.0
+        skipRange: '>=1.19.0 <1.20.0'
+      - name: serverless-operator.v1.21.0
+        replaces: serverless-operator.v1.20.0
+        skipRange: '>=1.20.0 <1.21.0'
+      - name: serverless-operator.v1.22.0
+        replaces: serverless-operator.v1.21.0
+        skipRange: '>=1.21.0 <1.22.0'
+      - name: serverless-operator.v1.23.0
+        replaces: serverless-operator.v1.22.0
+        skipRange: '>=1.22.0 <1.23.0'
+      - name: serverless-operator.v1.24.0
+        replaces: serverless-operator.v1.23.0
+        skipRange: '>=1.23.0 <1.24.0'
+      - name: serverless-operator.v1.25.0
+        replaces: serverless-operator.v1.24.0
+        skipRange: '>=1.24.0 <1.25.0'
+      - name: serverless-operator.v1.26.0
+        replaces: serverless-operator.v1.25.0
+        skipRange: '>=1.25.0 <1.26.0'
+      - name: serverless-operator.v1.27.0
+        replaces: serverless-operator.v1.26.0
+        skipRange: '>=1.26.0 <1.27.0'
+      - name: serverless-operator.v1.27.1
+        replaces: serverless-operator.v1.27.0
+        skipRange: '>=1.26.0 <1.27.1'
+      - name: serverless-operator.v1.28.0
+        replaces: serverless-operator.v1.27.1
+        skipRange: '>=1.27.0 <1.28.0'
+      - name: serverless-operator.v1.29.0
+        replaces: serverless-operator.v1.28.0
+        skipRange: '>=1.28.0 <1.29.0'
+      - name: serverless-operator.v1.30.0
+        replaces: serverless-operator.v1.29.0
+        skipRange: '>=1.29.0 <1.30.0'
+      - name: serverless-operator.v1.31.0
+        replaces: serverless-operator.v1.30.0
+        skipRange: '>=1.30.0 <1.31.0'
+      - name: serverless-operator.v1.32.0
+        replaces: serverless-operator.v1.31.0
+        skipRange: '>=1.31.0 <1.32.0'
+      - name: serverless-operator.v1.33.0
+        replaces: serverless-operator.v1.32.0
+        skipRange: '>=1.32.0 <1.33.0'
+      - name: serverless-operator.v1.34.0
+        replaces: serverless-operator.v1.33.0
+        skipRange: '>=1.33.0 <1.34.0'
+      - name: serverless-operator.v1.34.1
+        replaces: serverless-operator.v1.34.0
+        skipRange: '>=1.34.0 <1.34.1'
+      - name: serverless-operator.v1.37.1
+        replaces: serverless-operator.v1.37.0
+        skipRange: '>1.37.0 <1.37.1'
+    name: stable-1.37
+    package: serverless-operator
+    schema: olm.channel
 schema: olm.template.basic
