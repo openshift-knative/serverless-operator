@@ -95,7 +95,7 @@ dependencies:
     tekton_buildah: registry.redhat.io/rhel9/buildah@sha256:63f2027d693c0e71c03256f33283373e63f19c977d9925b8aa08c2362b8489f7
     nodejs_20_minimal: registry.access.redhat.com/ubi9/nodejs-20-minimal@sha256:df3aa231f9e86f05ce8bd5b55a0ed391859313475ba41755b64c82156e498220
     openjdk_21: registry.access.redhat.com/ubi9/openjdk-21@sha256:aa552a19b077d4ce165e147268b25296ab6d8a76b22130890bd802fd6435e2b5
-    python-39: registry.access.redhat.com/ubi9/python-39@sha256:fecb260bdb384c3ae58925b6b6b3a8b519fd53ad88ca98e3bc44fa4bbd4722ea
+    python-39: registry.access.redhat.com/ubi9/python-39@sha256:db255d9c5e3d4aa0f444af6a960befa1bb271b3472b3117e9562b8bcf7f6097b
   operator: 1.17.8
   # Previous versions required for downgrade testing
   previous:
