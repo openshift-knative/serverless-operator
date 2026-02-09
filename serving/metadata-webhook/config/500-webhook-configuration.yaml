@@ -14,12 +14,6 @@ webhooks:
   failurePolicy: Fail
   sideEffects: None
   name: webhook.metadata-webhook.example.com
-  # Limit scope to only the serving-tests namespace where the webhook
-  # service is deployed. This prevents blocking resource deletions in
-  # other namespaces when the serving-tests namespace is torn down.
-  namespaceSelector:
-    matchLabels:
-      samples.knative.dev/release: devel
 ---
 apiVersion: v1
 kind: Secret
