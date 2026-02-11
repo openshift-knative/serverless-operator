@@ -81,7 +81,7 @@ function default_serverless_operator_images() {
 
 # Bundle image is specific as we need to pull older versions for including in the catalog.
 function get_bundle_for_version() {
-  local version app_version quay_image quay_image_version
+  local version app_version quay_image quay_image_version image image_version ci_bundle ci_image
   version=${1:?"Provide version for Bundle image"}
 
   app_version=${version/./} # 1.34.0 -> 134.0
