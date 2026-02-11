@@ -1,7 +1,6 @@
 apiVersion: tekton.dev/v1
 kind: Pipeline
 metadata:
-  creationTimestamp:
   labels:
     pipelines.openshift.io/runtime: fbc
     pipelines.openshift.io/strategy: fbc
@@ -13,27 +12,14 @@ spec:
 
     _Uses `buildah` to create a container image. Its build-time tests are limited to verifying the included catalog and do not scan the image.
     This pipeline is pushed as a Tekton bundle to [quay.io](https://quay.io/repository/konflux-ci/tekton-catalog/pipeline-fbc-builder?tab=tags)_
-  finally:
-  - name: show-sbom
-    params:
-    - name: IMAGE_URL
-      value: $(tasks.build-image-index.results.IMAGE_URL)
-    taskRef:
-      params:
-      - name: name
-        value: show-sbom
-      - name: bundle
-        value: quay.io/konflux-ci/tekton-catalog/task-show-sbom:0.1@sha256:86c069cac0a669797e8049faa8aa4088e70ff7fcd579d5bdc37626a9e0488a05
-      - name: kind
-        value: task
-      resolver: bundles
   params:
   - default:
     - linux/x86_64
     - linux/arm64
     - linux/ppc64le
     - linux/s390x
-    description: List of platforms to build the container images on. The available set of values is determined by the configuration of the multi-platform-controller.
+    description: List of platforms to build the container images on. The available
+      set of values is determined by the configuration of the multi-platform-controller.
     name: build-platforms
     type: array
   - default: "true"
@@ -55,16 +41,14 @@ spec:
     name: output-image
     type: string
   - default: .
-    description: Path to the source code of an application's component from where to build image.
+    description: Path to the source code of an application's component from where
+      to build image.
     name: path-context
     type: string
   - default: Dockerfile
-    description: Path to the Dockerfile inside the context specified by parameter path-context
+    description: Path to the Dockerfile inside the context specified by parameter
+      path-context
     name: dockerfile
-    type: string
-  - default: "false"
-    description: Force rebuild image
-    name: rebuild
     type: string
   - default: "false"
     description: Skip checks against built image
@@ -75,16 +59,21 @@ spec:
     name: hermetic
     type: string
   - default: ""
-    description: Build dependencies to be prefetched by Cachi2
+    description: Build dependencies to be prefetched
     name: prefetch-input
     type: string
   - default: ""
-    description: Image tag expiration time, time values could be something like 1h, 2d, 3w for hours, days, and weeks, respectively.
+    description: Image tag expiration time, time values could be something like 1h,
+      2d, 3w for hours, days, and weeks, respectively.
     name: image-expires-after
+    type: string
   - default: "true"
     description: Add built image into an OCI image index
     name: build-image-index
     type: string
+  - default: "false"
+    description: Enable cache proxy configuration
+    name: enable-cache-proxy
   - default: []
     description: Array of --build-arg values ("arg=value" strings) for buildah
     name: build-args
@@ -128,12 +117,8 @@ spec:
       resolver: bundles
   - name: init
     params:
-    - name: image-url
-      value: $(params.output-image)
-    - name: rebuild
-      value: $(params.rebuild)
-    - name: skip-checks
-      value: $(params.skip-checks)
+    - name: enable-cache-proxy
+      value: $(params.enable-cache-proxy)
     taskRef:
       params:
       - name: name
@@ -164,26 +149,46 @@ spec:
       - name: kind
         value: task
       resolver: bundles
-    when:
-    - input: $(tasks.init.results.build)
-      operator: in
-      values:
-      - "true"
     workspaces:
     - name: basic-auth
       workspace: git-auth
+  - name: run-opm-command
+    params:
+    - name: SOURCE_ARTIFACT
+      value: $(tasks.clone-repository.results.SOURCE_ARTIFACT)
+    - name: ociStorage
+      value: $(params.output-image).opm
+    - name: ociArtifactExpiresAfter
+      value: $(params.image-expires-after)
+    - name: OPM_ARGS
+      value: []
+    - name: OPM_OUTPUT_PATH
+      value: ""
+    - name: IDMS_PATH
+      value: ""
+    runAfter:
+    - clone-repository
+    taskRef:
+      params:
+      - name: name
+        value: run-opm-command-oci-ta
+      - name: bundle
+        value: quay.io/konflux-ci/tekton-catalog/task-run-opm-command-oci-ta:0.1@sha256:671866aa9acb0ec82ef6112411e494eceb2e71786b0519bcd0e60e61e207034e
+      - name: kind
+        value: task
+      resolver: bundles
   - name: prefetch-dependencies
     params:
     - name: input
       value: $(params.prefetch-input)
     - name: SOURCE_ARTIFACT
-      value: $(tasks.clone-repository.results.SOURCE_ARTIFACT)
+      value: $(tasks.run-opm-command.results.SOURCE_ARTIFACT)
     - name: ociStorage
       value: $(params.output-image).prefetch
     - name: ociArtifactExpiresAfter
       value: $(params.image-expires-after)
     runAfter:
-    - clone-repository
+    - run-opm-command
     taskRef:
       params:
       - name: name
@@ -224,6 +229,12 @@ spec:
       - $(params.build-args[*])
     - name: BUILD_ARGS_FILE
       value: $(params.build-args-file)
+    - name: SOURCE_URL
+      value: $(tasks.clone-repository.results.url)
+    - name: HTTP_PROXY
+      value: $(tasks.init.results.http-proxy)
+    - name: NO_PROXY
+      value: $(tasks.init.results.no-proxy)
     - name: SOURCE_ARTIFACT
       value: $(tasks.prefetch-dependencies.results.SOURCE_ARTIFACT)
     - name: CACHI2_ARTIFACT
@@ -241,11 +252,6 @@ spec:
       - name: kind
         value: task
       resolver: bundles
-    when:
-    - input: $(tasks.init.results.build)
-      operator: in
-      values:
-      - "true"
   - name: build-image-index
     params:
     - name: IMAGE
@@ -270,11 +276,6 @@ spec:
       - name: kind
         value: task
       resolver: bundles
-    when:
-    - input: $(tasks.init.results.build)
-      operator: in
-      values:
-      - "true"
   - name: deprecated-base-image-check
     params:
     - name: IMAGE_URL
