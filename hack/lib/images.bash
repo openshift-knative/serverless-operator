@@ -93,11 +93,11 @@ function get_bundle_for_version() {
   # As a backup, try also CI registry.
   # For .micro releases, it's possible we only have the _previous_ version in Konflux, so also check the version of the bundle
   local ci_bundle="registry.ci.openshift.org/knative/serverless-bundle"
-  if [[ "${image}" == "" || "${image_version}" != "${version}" ]]; then
+  if [[ "${image}" == "" ]]; then
     image=$(image_with_sha "${ci_bundle}:release-${version}" || echo "")
     image_version=$(bundle_image_version "${ci_bundle}:release-${version}")
   fi
-  if [[ "${image}" == "" || "${image_version}" != "${version}" ]]; then
+  if [[ "${image}" == "" ]]; then
     image=$(image_with_sha "${ci_bundle}:knative-main")
     image_version=$(bundle_image_version "${ci_bundle}:knative-main")
   fi

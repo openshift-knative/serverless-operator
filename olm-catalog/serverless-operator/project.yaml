@@ -4,10 +4,10 @@ project:
   # all components in `dependencies.previous` to the same versions as `dependencies` in the same PR.
   # Otherwise, the upgrade tests will not pass, as we have a different SO version with the same bundle contents.
   # Also make sure to update values under `olm.previous` by copying from `olm.replaces` and `olm.skipRange`.
-  version: 1.37.0
+  version: 1.38.0
 olm:
-  replaces: 1.36.1
-  skipRange: '>1.36.1 <1.37.0'
+  replaces: 1.37.1
+  skipRange: '>1.37.1 <1.38.0'
   channels:
     # The "global" operator default, used as "operators.operatorframework.io.bundle.channels.v1" annotation
     operator_default: stable
@@ -15,41 +15,44 @@ olm:
     default: stable
     list:
       - stable
-      - stable-1.37
+      - stable-1.38
   previousBundles:
     # List of previous bundles to add to the generated index, also used in upgrade tests
+    - version: 1.37.1
+      replaces: 1.37.0
+      skipRange: ">=1.37.0 <1.37.1"
+    - version: 1.37.0
+      replaces: 1.36.1
+      skipRange: ">=1.36.1 <1.37.0"
     - version: 1.36.1
       replaces: 1.36.0
       skipRange: ">=1.36.0 <1.36.1"
     - version: 1.36.0
       replaces: 1.35.0
       skipRange: ">=1.35.0 <1.36.0"
-    - version: 1.35.0
-      replaces: 1.34.0
-      skipRange: ">=1.34.0 <1.35.0"
 requirements:
   kube:
     # The min version validation in `vendor/knative.dev/pkg/version/version.go`
     # is ignored as it is overridden by fake version via KUBERNETES_MIN_VERSION.
     # This value is used for CSV's min version validation.
-    minVersion: 1.25.0
-  golang: '1.23'
+    minVersion: 1.29.0
+  golang: '1.25'
   nodejs: 20.x
   ocpVersion:
     list:
-      - "4.14"
-      - "4.15"
       - "4.16"
       - "4.17"
       - "4.18"
       - "4.19"
       - "4.20"
-    min: '4.14'
+      - "4.21"
+      - "4.22"
+    min: '4.16'
     # Version to use for OCP docs links (in CSV or Quickstarts)
-    doc: '4.19'
+    doc: '4.20'
     # deprecated, use requirements.ocpVersion.list[-1]
     max: '4.20'
-    label: 'v4.14'
+    label: 'v4.16'
     # OCP stream for kube-rbac-proxy image.
     kube-rbac-proxy: "4.17"
 dependencies:
