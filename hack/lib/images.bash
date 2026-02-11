@@ -81,25 +81,45 @@ function default_serverless_operator_images() {
 
 # Bundle image is specific as we need to pull older versions for including in the catalog.
 function get_bundle_for_version() {
-  local version app_version
+  local version app_version quay_image quay_image_version
   version=${1:?"Provide version for Bundle image"}
 
   app_version=${version/./} # 1.34.0 -> 134.0
   app_version=${app_version%.*} # 134.0 -> 134
 
-  image=$(image_with_sha "${registry_prefix_quay}${app_version}/serverless-bundle:latest")
-  image_version=$(bundle_image_version "${registry_prefix_quay}${app_version}/serverless-bundle:latest")
+  # Try quay registry first and save as fallback
+  quay_image=$(image_with_sha "${registry_prefix_quay}${app_version}/serverless-bundle:latest")
+  if [[ "${quay_image}" != "" ]]; then
+    quay_image_version=$(bundle_image_version "${registry_prefix_quay}${app_version}/serverless-bundle:latest")
+  else
+    quay_image_version=""
+  fi
+
+  image="$quay_image"
+  image_version="$quay_image_version"
 
   # As a backup, try also CI registry.
   # For .micro releases, it's possible we only have the _previous_ version in Konflux, so also check the version of the bundle
   local ci_bundle="registry.ci.openshift.org/knative/serverless-bundle"
   if [[ "${image}" == "" || "${image_version}" != "${version}" ]]; then
-    image=$(image_with_sha "${ci_bundle}:release-${version}" || echo "")
-    image_version=$(bundle_image_version "${ci_bundle}:release-${version}")
+    ci_image=$(image_with_sha "${ci_bundle}:release-${version}" || echo "")
+    if [[ "${ci_image}" != "" ]]; then
+      image="$ci_image"
+      image_version=$(bundle_image_version "${ci_bundle}:release-${version}")
+    fi
   fi
   if [[ "${image}" == "" || "${image_version}" != "${version}" ]]; then
-    image=$(image_with_sha "${ci_bundle}:knative-main")
-    image_version=$(bundle_image_version "${ci_bundle}:knative-main")
+    ci_image=$(image_with_sha "${ci_bundle}:knative-main" || echo "")
+    if [[ "${ci_image}" != "" ]]; then
+      image="$ci_image"
+      image_version=$(bundle_image_version "${ci_bundle}:knative-main")
+    fi
+  fi
+
+  # If CI images didn't exist or had wrong version, fall back to quay image if available
+  if [[ "${image}" == "" && "${quay_image}" != "" ]]; then
+    image="$quay_image"
+    image_version="$quay_image_version"
   fi
 
   if [[ "${image}" == "" ]]; then
