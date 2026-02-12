@@ -1,7 +1,6 @@
 apiVersion: tekton.dev/v1
 kind: Pipeline
 metadata:
-  creationTimestamp: null
   labels:
     pipelines.openshift.io/runtime: generic
     pipelines.openshift.io/strategy: docker
@@ -13,20 +12,6 @@ spec:
 
     _Uses `buildah` to create a multi-platform container image leveraging [trusted artifacts](https://konflux-ci.dev/architecture/ADR/0036-trusted-artifacts.html). It also optionally creates a source image and runs some build-time tests. This pipeline requires that the [multi platform controller](https://github.com/konflux-ci/multi-platform-controller) is deployed and configured on your Konflux instance. Information is shared between tasks using OCI artifacts instead of PVCs. EC will pass the [`trusted_task.trusted`](https://conforma.dev/docs/policy/packages/release_trusted_task.html#trusted_task__trusted) policy as long as all data used to build the artifact is generated from trusted tasks.
     This pipeline is pushed as a Tekton bundle to [quay.io](https://quay.io/repository/konflux-ci/tekton-catalog/pipeline-docker-build-multi-platform-oci-ta?tab=tags)_
-  finally:
-  - name: show-sbom
-    params:
-    - name: IMAGE_URL
-      value: $(tasks.build-image-index.results.IMAGE_URL)
-    taskRef:
-      params:
-      - name: name
-        value: show-sbom
-      - name: bundle
-        value: quay.io/konflux-ci/tekton-catalog/task-show-sbom:0.1@sha256:beb0616db051952b4b861dd8c3e00fa1c0eccbd926feddf71194d3bb3ace9ce7
-      - name: kind
-        value: task
-      resolver: bundles
   params:
   - default:
     - linux/x86_64
@@ -74,10 +59,6 @@ spec:
     name: dockerfile
     type: string
   - default: "false"
-    description: Force rebuild image
-    name: rebuild
-    type: string
-  - default: "false"
     description: Skip checks against built image
     name: skip-checks
     type: string
@@ -86,7 +67,7 @@ spec:
     name: hermetic
     type: string
   - default: ""
-    description: Build dependencies to be prefetched by Cachi2
+    description: Build dependencies to be prefetched
     name: prefetch-input
     type: string
   - default: ""
@@ -98,6 +79,14 @@ spec:
     description: Add built image into an OCI image index
     name: build-image-index
     type: string
+  - default: docker
+    description: The format for the resulting image's mediaType. Valid values are
+      oci or docker.
+    name: buildah-format
+    type: string
+  - default: "false"
+    description: Enable cache proxy configuration
+    name: enable-cache-proxy
   - default: []
     description: Array of --build-arg values ("arg=value" strings) for buildah
     name: build-args
@@ -202,12 +191,8 @@ spec:
       resolver: bundles
   - name: init
     params:
-    - name: image-url
-      value: $(params.output-image)
-    - name: rebuild
-      value: $(params.rebuild)
-    - name: skip-checks
-      value: $(params.skip-checks)
+    - name: enable-cache-proxy
+      value: $(params.enable-cache-proxy)
     taskRef:
       params:
       - name: name
@@ -238,11 +223,6 @@ spec:
       - name: kind
         value: task
       resolver: bundles
-    when:
-    - input: $(tasks.init.results.build)
-      operator: in
-      values:
-      - "true"
     workspaces:
     - name: basic-auth
       workspace: git-auth
@@ -274,6 +254,14 @@ spec:
       value: $(params.build-args-file)
     - name: PRIVILEGED_NESTED
       value: $(params.privileged-nested)
+    - name: SOURCE_URL
+      value: $(tasks.clone-repository.results.url)
+    - name: BUILDAH_FORMAT
+      value: $(params.buildah-format)
+    - name: HTTP_PROXY
+      value: $(tasks.init.results.http-proxy)
+    - name: NO_PROXY
+      value: $(tasks.init.results.no-proxy)
     - name: SOURCE_ARTIFACT
       value: $(tasks.prefetch-dependencies.results.SOURCE_ARTIFACT)
     - name: CACHI2_ARTIFACT
@@ -291,11 +279,6 @@ spec:
       - name: kind
         value: task
       resolver: bundles
-    when:
-    - input: $(tasks.init.results.build)
-      operator: in
-      values:
-      - "true"
   - name: build-image-index
     params:
     - name: IMAGE
@@ -309,6 +292,8 @@ spec:
     - name: IMAGES
       value:
       - $(tasks.build-images.results.IMAGE_REF[*])
+    - name: BUILDAH_FORMAT
+      value: $(params.buildah-format)
     runAfter:
     - build-images
     taskRef:
@@ -320,11 +305,6 @@ spec:
       - name: kind
         value: task
       resolver: bundles
-    when:
-    - input: $(tasks.init.results.build)
-      operator: in
-      values:
-      - "true"
   - name: build-source-image
     params:
     - name: BINARY_IMAGE
@@ -347,10 +327,6 @@ spec:
         value: task
       resolver: bundles
     when:
-    - input: $(tasks.init.results.build)
-      operator: in
-      values:
-      - "true"
     - input: $(params.build-source-image)
       operator: in
       values:
@@ -404,7 +380,12 @@ spec:
       operator: in
       values:
       - "false"
-  - name: ecosystem-cert-preflight-checks
+  - matrix:
+      params:
+      - name: platform
+        value:
+        - $(params.build-platforms)
+    name: ecosystem-cert-preflight-checks
     params:
     - name: image-url
       value: $(tasks.build-image-index.results.IMAGE_URL)
@@ -429,11 +410,6 @@ spec:
       - name: image-arch
         value:
         - $(params.build-platforms)
-    matrix:
-      params:
-      - name: platform
-        value:
-        - $(params.build-platforms)
     name: clamav-scan
     params:
     - name: image-digest
@@ -456,11 +432,6 @@ spec:
       operator: in
       values:
       - "false"
-    matrix:
-      params:
-      - name: image-arch
-        value:
-        - $(params.build-platforms)
   - name: sast-shell-check
     params:
     - name: image-digest
@@ -549,7 +520,7 @@ spec:
       - name: name
         value: rpms-signature-scan
       - name: bundle
-        value: quay.io/konflux-ci/konflux-vanguard/task-rpms-signature-scan:0.2@sha256:098297ee2cd66da57c050d88024b6f221f52af847ab36ca36748906de804adcd
+        value: quay.io/konflux-ci/tekton-catalog/task-rpms-signature-scan:0.2@sha256:47b81d6b3d752649eddfbb8b3fd8f6522c4bb07f6d1946f9bc45dae3f92e2c9a
       - name: kind
         value: task
       resolver: bundles
