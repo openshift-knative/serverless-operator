@@ -76,6 +76,8 @@ function map_lp_interop_reports {
   find "${ARTIFACTS}" -type f -iname "junit_*.xml" | while IFS= read -r result_file; do
     cp "$result_file" "$result_file.premap"
     sed -i -E 's|(<testsuite .*name=")([^"]*)(")|\1Serverless-lp-interop\3|' "$result_file"
+
+    cp "$result_file" "${SHARED_DIR}" || echo "Warning: couldn't copy $result_file to SHARED_DIR" >&2
   done
 }
 
