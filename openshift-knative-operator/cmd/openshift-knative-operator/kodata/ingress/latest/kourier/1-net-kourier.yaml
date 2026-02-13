@@ -21,7 +21,7 @@ metadata:
     networking.knative.dev/ingress-provider: kourier
     app.kubernetes.io/name: knative-serving
     app.kubernetes.io/component: net-kourier
-    app.kubernetes.io/version: "release-v1.17"
+    app.kubernetes.io/version: "release-v1.21"
 ---
 # Copyright 2020 The Knative Authors
 #
@@ -45,7 +45,7 @@ metadata:
   labels:
     networking.knative.dev/ingress-provider: kourier
     app.kubernetes.io/component: net-kourier
-    app.kubernetes.io/version: "release-v1.17"
+    app.kubernetes.io/version: "release-v1.21"
     app.kubernetes.io/name: knative-serving
 data:
   envoy-bootstrap.yaml: |
@@ -173,7 +173,7 @@ metadata:
   labels:
     networking.knative.dev/ingress-provider: kourier
     app.kubernetes.io/component: net-kourier
-    app.kubernetes.io/version: "release-v1.17"
+    app.kubernetes.io/version: "release-v1.21"
     app.kubernetes.io/name: knative-serving
 data:
   _example: |
@@ -196,6 +196,11 @@ data:
     # in the context of services should be logged. Readiness
     # probes etc. must be configured via the bootstrap config.
     enable-service-access-logging: "true"
+
+    # Specifies the format of the access log used by the Kourier gateway.
+    # This template follows the envoy format.
+    # see: https://www.envoyproxy.io/docs/envoy/latest/configuration/observability/access_log/usage#access-logging
+    service-access-log-template: ""
 
     # Specifies whether to use proxy-protocol in order to safely
     # transport connection information such as a client's address
@@ -236,6 +241,65 @@ data:
 
     # Disable the Envoy server header injection in the response when response has no such header.
     disable-envoy-server-header: "false"
+
+    # The external authorization service and port, my-auth:2222.
+    # This value overrides environment variable if defined.
+    extauthz-host: ""
+
+    # The protocol used to query the ext auth service. Can be one of : grpc, http, https. Defaults to grpc
+    # This value overrides environment variable if defined.
+    extauthz-protocol: "grpc"
+
+    # Allow traffic to go through if the ext auth service is down. Accepts true/false.
+    # This value overrides environment variable if defined.
+    extauthz-failure-mode-allow: ""
+
+    # Max request bytes, if not set, defaults to 8192 Bytes. More info Envoy Docs
+    # see: https://www.envoyproxy.io/docs/envoy/latest/api-v3/extensions/filters/http/ext_authz/v3/ext_authz.proto.html#extensions-filters-http-ext-authz-v3-buffersettings
+    # This value overrides environment variable if defined.
+    extauthz-max-request-body-bytes: 8192
+
+    # Max time in ms to wait for the ext authz service. Defaults to 2000 ms
+    # This value overrides environment variable if defined.
+    extauthz-timeout: 2000
+
+    # If extauthz-protocol is equal to http or https, path to query the ext auth service.
+    # Example : if set to /verify, it will query /verify/ (notice the trailing /). If not set, it will query /
+    # This value overrides environment variable if defined.
+    extauthz-path-prefix: ""
+
+    # If extauthz-protocol is equal to grpc, sends the body as raw bytes instead of a UTF-8 string.
+    # Accepts only true/false, t/f or 1/0. Attempting to set another value will throw an error.
+    # Defaults to false. More info Envoy Docs.
+    # see: https://www.envoyproxy.io/docs/envoy/latest/api-v3/extensions/filters/http/ext_authz/v3/ext_authz.proto.html#extensions-filters-http-ext-authz-v3-buffersettings
+    # This value overrides environment variable if defined.
+    extauthz-pack-as-byte: "false"
+
+    # Specifies the secret that contains the TLS certificate and key pair when using HTTPS communication with Kourier Ingress.
+    # This value overrides environment variable if defined.
+    certs-secret-name: ""
+    certs-secret-namespace: ""
+
+    # Specifies the OTLP collector endpoint for distributed tracing.
+    # The endpoint format depends on the protocol (see tracing-protocol).
+    # Examples:
+    # - For HTTP: "http://otel-collector.observability.svc:4318/v1/traces"
+    # - For gRPC: "http://otel-collector.observability.svc:4317"
+    # Use an empty value to disable distributed tracing (default).
+    tracing-endpoint: ""
+
+    # Protocol for tracing collector communication.
+    # Valid values: http/protobuf, grpc
+    tracing-protocol: "grpc"
+
+    # Tracing sampling rate (0.0 to 1.0)
+    # Controls the percentage of requests that are traced.
+    # Example: "1.0" traces 100% of requests.
+    tracing-sampling-rate: "1.0"
+
+    # Service name for traces
+    # This identifies the Kourier gateway in your tracing system.
+    tracing-service-name: "kourier-knative"
 ---
 # Copyright 2020 The Knative Authors
 #
@@ -259,7 +323,7 @@ metadata:
   labels:
     networking.knative.dev/ingress-provider: kourier
     app.kubernetes.io/component: net-kourier
-    app.kubernetes.io/version: "release-v1.17"
+    app.kubernetes.io/version: "release-v1.21"
     app.kubernetes.io/name: knative-serving
 ---
 apiVersion: rbac.authorization.k8s.io/v1
@@ -269,17 +333,20 @@ metadata:
   labels:
     networking.knative.dev/ingress-provider: kourier
     app.kubernetes.io/component: net-kourier
-    app.kubernetes.io/version: "release-v1.17"
+    app.kubernetes.io/version: "release-v1.21"
     app.kubernetes.io/name: knative-serving
 rules:
   - apiGroups: [""]
     resources: ["events"]
     verbs: ["create", "update", "patch"]
   - apiGroups: [""]
-    resources: ["pods", "endpoints", "services", "secrets"]
+    resources: ["pods", "services", "secrets"]
     verbs: ["get", "list", "watch"]
   - apiGroups: [""]
     resources: ["configmaps"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["discovery.k8s.io"]
+    resources: ["endpointslices"]
     verbs: ["get", "list", "watch"]
   - apiGroups: ["coordination.k8s.io"]
     resources: ["leases"]
@@ -298,7 +365,7 @@ metadata:
   labels:
     networking.knative.dev/ingress-provider: kourier
     app.kubernetes.io/component: net-kourier
-    app.kubernetes.io/version: "release-v1.17"
+    app.kubernetes.io/version: "release-v1.21"
     app.kubernetes.io/name: knative-serving
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -331,7 +398,7 @@ metadata:
   labels:
     networking.knative.dev/ingress-provider: kourier
     app.kubernetes.io/component: net-kourier
-    app.kubernetes.io/version: "release-v1.17"
+    app.kubernetes.io/version: "release-v1.21"
     app.kubernetes.io/name: knative-serving
 spec:
   strategy:
@@ -356,6 +423,8 @@ spec:
         - image: TO_BE_REPLACED
           name: controller
           env:
+            # CERTS_SECRET_NAMESPACE and CERTS_SECRET_NAME can also be configured from a ConfigMap.
+            # Settings configured in a configmap take precedence over environment variable settings.
             - name: CERTS_SECRET_NAMESPACE
               value: ""
             - name: CERTS_SECRET_NAME
@@ -421,7 +490,7 @@ metadata:
   labels:
     networking.knative.dev/ingress-provider: kourier
     app.kubernetes.io/component: net-kourier
-    app.kubernetes.io/version: "release-v1.17"
+    app.kubernetes.io/version: "release-v1.21"
     app.kubernetes.io/name: knative-serving
 spec:
   ports:
@@ -459,7 +528,7 @@ metadata:
   labels:
     networking.knative.dev/ingress-provider: kourier
     app.kubernetes.io/component: net-kourier
-    app.kubernetes.io/version: "release-v1.17"
+    app.kubernetes.io/version: "release-v1.21"
     app.kubernetes.io/name: knative-serving
 spec:
   strategy:
@@ -490,9 +559,7 @@ spec:
             - --drain-time-s $(DRAIN_TIME_SECONDS)
             - --drain-strategy immediate
           command:
-            - /bin/sh
-            - -c
-            - ulimit -S -n $(ulimit -n -H); exec /usr/local/bin/envoy "$@"
+            - /usr/local/bin/envoy
           env:
             - name: DRAIN_TIME_SECONDS
               value: "15"
@@ -544,6 +611,7 @@ spec:
             initialDelaySeconds: 10
             periodSeconds: 5
             failureThreshold: 3
+            timeoutSeconds: 3
           livenessProbe:
             httpGet:
               httpHeaders:
@@ -555,6 +623,7 @@ spec:
             initialDelaySeconds: 10
             periodSeconds: 5
             failureThreshold: 6
+            timeoutSeconds: 3
           resources:
             requests:
               cpu: 200m
@@ -578,7 +647,7 @@ metadata:
   labels:
     networking.knative.dev/ingress-provider: kourier
     app.kubernetes.io/component: net-kourier
-    app.kubernetes.io/version: "release-v1.17"
+    app.kubernetes.io/version: "release-v1.21"
     app.kubernetes.io/name: knative-serving
 spec:
   ports:
@@ -602,7 +671,7 @@ metadata:
   labels:
     networking.knative.dev/ingress-provider: kourier
     app.kubernetes.io/component: net-kourier
-    app.kubernetes.io/version: "release-v1.17"
+    app.kubernetes.io/version: "release-v1.21"
     app.kubernetes.io/name: knative-serving
 spec:
   ports:
@@ -626,7 +695,7 @@ metadata:
   labels:
     networking.knative.dev/ingress-provider: kourier
     app.kubernetes.io/component: net-kourier
-    app.kubernetes.io/version: "release-v1.17"
+    app.kubernetes.io/version: "release-v1.21"
     app.kubernetes.io/name: knative-serving
 spec:
   minReplicas: 1
@@ -652,7 +721,7 @@ metadata:
   labels:
     networking.knative.dev/ingress-provider: kourier
     app.kubernetes.io/component: net-kourier
-    app.kubernetes.io/version: "release-v1.17"
+    app.kubernetes.io/version: "release-v1.21"
     app.kubernetes.io/name: knative-serving
 spec:
   minAvailable: 1
@@ -671,7 +740,7 @@ metadata:
     app.kubernetes.io/name: knative-serving
     app.kubernetes.io/component: net-kourier
     networking.knative.dev/ingress-provider: kourier
-    app.kubernetes.io/version: "release-v1.17"
+    app.kubernetes.io/version: "release-v1.21"
   name: routing-serving-certs
   namespace: knative-serving
 spec:
@@ -703,7 +772,7 @@ metadata:
     app.kubernetes.io/name: knative-serving
     app.kubernetes.io/component: net-kourier
     networking.knative.dev/ingress-provider: kourier
-    app.kubernetes.io/version: "release-v1.17"
+    app.kubernetes.io/version: "release-v1.21"
 data:
   _example: ""
 ---
@@ -730,7 +799,7 @@ metadata:
     app.kubernetes.io/name: knative-serving
     app.kubernetes.io/component: net-kourier
     networking.knative.dev/ingress-provider: kourier
-    app.kubernetes.io/version: "release-v1.17"
+    app.kubernetes.io/version: "release-v1.21"
 data:
   _example: ""
 ---
@@ -757,6 +826,6 @@ metadata:
     app.kubernetes.io/name: knative-serving
     app.kubernetes.io/component: net-kourier
     networking.knative.dev/ingress-provider: kourier
-    app.kubernetes.io/version: "release-v1.17"
+    app.kubernetes.io/version: "release-v1.21"
 data:
   _example: ""
