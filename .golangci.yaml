@@ -18,6 +18,10 @@ linters:
   disable:
     - errcheck
   settings:
+    staticcheck:
+      checks:
+        - all
+        - -QF1008
     importas:
       alias:
         - pkg: k8s.io/apimachinery/pkg/apis/(\w+)/(v[\w\d]+)
