@@ -60,6 +60,9 @@ linters:
       - linters:
           - revive
         text: avoid meaningless package names
+      - linters:
+          - revive
+        text: void package names that conflict with Go standard library package names
     paths:
       - pkg/client
 formatters:
