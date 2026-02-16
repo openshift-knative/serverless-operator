@@ -1,5 +1,5 @@
 # DO NOT EDIT! Generated Dockerfile for serving/ingress/cmd/ingress.
-ARG GO_BUILDER=registry.ci.openshift.org/openshift/release:rhel-9-release-golang-1.23-openshift-4.19
+ARG GO_BUILDER=registry.ci.openshift.org/openshift/release:rhel-9-release-golang-1.25-openshift-4.21
 ARG GO_RUNTIME=registry.access.redhat.com/ubi9/ubi-minimal
 
 FROM $GO_BUILDER as builder
