@@ -21,9 +21,10 @@ spec:
       value: serving/ingress/Dockerfile
     - name: build-args
       value:
-        - VERSION=1.37.0
+        - VERSION=1.38.0
+        - TAG=v1.21.0
         - CLI_ARTIFACTS=registry.redhat.io/openshift4/ose-cli-artifacts-rhel9:v4.16
-        - GO_BUILDER=brew.registry.redhat.io/rh-osbs/openshift-golang-builder:rhel_9_golang_1.24
+        - GO_BUILDER=brew.registry.redhat.io/rh-osbs/openshift-golang-builder:rhel_9_golang_1.25
         - GO_RUNTIME=registry.access.redhat.com/ubi9/ubi-minimal
         - JAVA_BUILDER=registry.access.redhat.com/ubi9/openjdk-21
         - JAVA_RUNTIME=registry.access.redhat.com/ubi9/openjdk-21-runtime
