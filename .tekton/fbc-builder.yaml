@@ -1,7 +1,6 @@
 apiVersion: tekton.dev/v1
 kind: Pipeline
 metadata:
-  creationTimestamp: null
   labels:
     pipelines.openshift.io/runtime: fbc
     pipelines.openshift.io/strategy: fbc
@@ -72,6 +71,9 @@ spec:
     description: Add built image into an OCI image index
     name: build-image-index
     type: string
+  - default: "false"
+    description: Enable cache proxy configuration
+    name: enable-cache-proxy
   - default: []
     description: Array of --build-arg values ("arg=value" strings) for buildah
     name: build-args
@@ -114,6 +116,9 @@ spec:
         value: task
       resolver: bundles
   - name: init
+    params:
+    - name: enable-cache-proxy
+      value: $(params.enable-cache-proxy)
     taskRef:
       params:
       - name: name
@@ -226,6 +231,10 @@ spec:
       value: $(params.build-args-file)
     - name: SOURCE_URL
       value: $(tasks.clone-repository.results.url)
+    - name: HTTP_PROXY
+      value: $(tasks.init.results.http-proxy)
+    - name: NO_PROXY
+      value: $(tasks.init.results.no-proxy)
     - name: SOURCE_ARTIFACT
       value: $(tasks.prefetch-dependencies.results.SOURCE_ARTIFACT)
     - name: CACHI2_ARTIFACT
