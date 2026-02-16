@@ -36,7 +36,7 @@ func TestExternalAccessWithEncryptionEnabled(t *testing.T) {
 	}
 	for _, r := range routes.Items {
 		if r.ObjectMeta.Labels[resources.OpenShiftIngressLabelKey] == ksvc.Name {
-			if !(r.Spec.TLS != nil && r.Spec.TLS.Termination == routev1.TLSTerminationPassthrough && r.Spec.TLS.InsecureEdgeTerminationPolicy == routev1.InsecureEdgeTerminationPolicyRedirect) {
+			if r.Spec.TLS == nil || r.Spec.TLS.Termination != routev1.TLSTerminationPassthrough || r.Spec.TLS.InsecureEdgeTerminationPolicy != routev1.InsecureEdgeTerminationPolicyRedirect {
 				t.Fatalf("Route %s does not have expected TLS termination and http redirects: %v", r.Name, r.Spec.TLS)
 			}
 			if r.Spec.Port.TargetPort.StrVal != "https" {
