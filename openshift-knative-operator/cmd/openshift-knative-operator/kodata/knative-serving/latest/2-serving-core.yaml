@@ -7596,7 +7596,7 @@ metadata:
 data:
   # This is the Go import path for the binary that is containerized
   # and substituted here.
-  queue-sidecar-image: TO_BE_REPLACED
+  queue-sidecar-image: ko://knative.dev/serving/cmd/queue
   _example: |-
     ################################
     #                              #
@@ -7966,7 +7966,7 @@ data:
     # Controls whether volume support for image is enabled or not.
     # 1. Enabled: enabling image volume support
     # 2. Disabled: disabling image volume support
-    kubernetes.podspec-volumes-image: TO_BE_REPLACED
+    kubernetes.podspec-volumes-image: "disabled"
 
     # Controls whether volume support for HostPath is enabled or not.
     # WARNING: Cannot safely be disabled once enabled.
