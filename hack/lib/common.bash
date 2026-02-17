@@ -95,8 +95,9 @@ function versions.micro {
 }
 
 # Breaks all image references in the passed YAML file.
+# Only replaces "image:" fields (with space before), not fields ending in "-image:"
 function yaml.break_image_references {
-  sed -i "s,image: .*,image: TO_BE_REPLACED," "$1"
+  sed -i "s,\([[:space:]]\)image: .*,\1image: TO_BE_REPLACED," "$1"
   sed -i "s,value: gcr.io/knative-releases.*,value: TO_BE_REPLACED," "$1"
 }
 
