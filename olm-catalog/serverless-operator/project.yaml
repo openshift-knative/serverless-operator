@@ -98,5 +98,5 @@ dependencies:
   # Previous versions required for downgrade testing
   previous:
     serving: knative-v1.17
-    eventing: knative-v1.16
-    eventing_kafka_broker: knative-v1.16
+    eventing: knative-v1.17
+    eventing_kafka_broker: knative-v1.17
