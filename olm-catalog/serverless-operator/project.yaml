@@ -66,25 +66,25 @@ dependencies:
   net_istio_artifacts_branch: release-v1.21
   redhat-knative-istio-authz-chart: 1.37.0
   service_mesh_proxy: registry.redhat.io/openshift-service-mesh/proxyv2-rhel9@sha256:b79868dacf1e42a6daed9ea9d1cf05142cee185061bf3cb91d191e8f50885edf
-  eventing: knative-v1.17
+  eventing: knative-v1.21
   # eventing core midstream branch name
-  eventing_artifacts_branch: release-v1.17
+  eventing_artifacts_branch: release-v1.21
   # eventing-kafka-broker promotion tag
-  eventing_kafka_broker: knative-v1.17
+  eventing_kafka_broker: knative-v1.21
   # eventing-kafka-broker midstream branch or commit
-  eventing_kafka_broker_artifacts_branch: release-v1.17
+  eventing_kafka_broker_artifacts_branch: release-v1.21
   # eventing-integrations promotion tag
-  eventing_integrations: knative-v1.17
+  eventing_integrations: knative-v1.21
   # eventing-integrations midstream branch or commit
-  eventing_integrations_artifacts_branch: release-v1.17
+  eventing_integrations_artifacts_branch: release-v1.21
   # eventing-istio promotion tag
-  eventing_istio: knative-v1.17
+  eventing_istio: knative-v1.21
   # eventing-istio midstream branch or commit
-  eventing_istio_artifacts_branch: release-v1.17
+  eventing_istio_artifacts_branch: release-v1.21
   # backstage-plugins promotion tag
-  backstage_plugins: knative-v1.17
+  backstage_plugins: knative-v1.21
   # backstage-plugins midstream branch or commit
-  backstage_plugins_artifacts_branch: release-v1.17
+  backstage_plugins_artifacts_branch: release-v1.21
   cli: knative-v1.17
   kube_rbac_proxy: registry.redhat.io/openshift4/ose-kube-rbac-proxy-rhel9@sha256:f550296753e9898c67d563b7deb16ba540ca1367944c905415f35537b6b949d4
   func:
