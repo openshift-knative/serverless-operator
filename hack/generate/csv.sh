@@ -113,6 +113,7 @@ image "job-sink__job-sink"                                                      
 
 # The first param need to match the env variable name expected by the controllers, the second param is defined in `images.bash`.
 image "APISERVER_RA_IMAGE"                                                       "${KNATIVE_EVENTING_APISERVER_RECEIVE_ADAPTER}"
+image "AUTH_PROXY_IMAGE"                                                         "${KNATIVE_EVENTING_AUTH_PROXY}"
 image "DISPATCHER_IMAGE"                                                         "${KNATIVE_EVENTING_CHANNEL_DISPATCHER}"
 image "EVENT_TRANSFORM_JSONATA_IMAGE"                                            "${KNATIVE_EVENTING_INTEGRATIONS_TRANSFORM_JSONATA}"
 image "INTEGRATION_SOURCE_TIMER_IMAGE"                                           "${KNATIVE_EVENTING_INTEGRATIONS_TIMER_SOURCE}"
