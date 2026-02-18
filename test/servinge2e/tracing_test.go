@@ -75,7 +75,8 @@ func tracingTest(t *testing.T, activatorInPath bool) {
 
 	serviceNamePrefixes := []string{name}
 	if activatorInPath {
-		serviceNamePrefixes = append(serviceNamePrefixes, "activator-service")
+		// With OpenTelemetry (Serving 1.21+), the activator service name is "activator"
+		serviceNamePrefixes = append(serviceNamePrefixes, "activator")
 	}
 	var err error
 	// Verify all the traces of our service also contain spans from the activator.
