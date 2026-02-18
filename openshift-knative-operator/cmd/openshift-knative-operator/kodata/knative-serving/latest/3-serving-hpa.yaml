@@ -22,7 +22,7 @@ metadata:
     autoscaling.knative.dev/autoscaler-provider: hpa
     app.kubernetes.io/component: autoscaler-hpa
     app.kubernetes.io/name: knative-serving
-    app.kubernetes.io/version: "v1.17"
+    app.kubernetes.io/version: "v1.21"
 spec:
   selector:
     matchLabels:
@@ -33,7 +33,7 @@ spec:
         app: autoscaler-hpa
         app.kubernetes.io/component: autoscaler-hpa
         app.kubernetes.io/name: knative-serving
-        app.kubernetes.io/version: "v1.17"
+        app.kubernetes.io/version: "v1.21"
     spec:
       # To avoid node becoming SPOF, spread our replicas to different nodes.
       affinity:
@@ -70,10 +70,6 @@ spec:
           value: config-logging
         - name: CONFIG_OBSERVABILITY_NAME
           value: config-observability
-
-        # TODO(https://github.com/knative/pkg/pull/953): Remove stackdriver specific config
-        - name: METRICS_DOMAIN
-          value: knative.dev/serving
 
         securityContext:
           allowPrivilegeEscalation: false
@@ -117,7 +113,7 @@ metadata:
     autoscaling.knative.dev/autoscaler-provider: hpa
     app.kubernetes.io/component: autoscaler-hpa
     app.kubernetes.io/name: knative-serving
-    app.kubernetes.io/version: "v1.17"
+    app.kubernetes.io/version: "v1.21"
   name: autoscaler-hpa
   namespace: knative-serving
 spec:

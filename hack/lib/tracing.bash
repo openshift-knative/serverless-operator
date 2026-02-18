@@ -399,12 +399,10 @@ function enable_tracing {
   cat - << EOF > "$tracing_patch"
 spec:
   config:
-    tracing:
-      backend: zipkin
-      debug: "false"
-      enable: "true"
-      sample-rate: "${SAMPLE_RATE}"
-      zipkin-endpoint: "${tracing_endpoint}"
+    observability:
+      tracing-protocol: http/protobuf
+      tracing-endpoint: "${tracing_endpoint}"
+      tracing-sampling-rate: "${SAMPLE_RATE}"
 EOF
 
   yq merge --inplace --arrays=append --overwrite "$custom_resource" "$tracing_patch"
@@ -414,11 +412,11 @@ EOF
 
 function get_tracing_endpoint {
   if [[ "${TRACING_BACKEND}" == "zipkin" ]]; then
-    echo "http://zipkin.${TRACING_NAMESPACE}.svc.cluster.local:9411/api/v2/spans"
+    echo "http://zipkin.${TRACING_NAMESPACE}.svc.cluster.local:4318/v1/traces"
   elif [[ "${TRACING_BACKEND}" == "tempo" ]]; then
-    echo "http://tempo-serverless-distributor.${TRACING_NAMESPACE}.svc:9411/api/v2/spans"
+    echo "http://tempo-serverless-distributor.${TRACING_NAMESPACE}.svc:4318/v1/traces"
   else
-    echo "http://cluster-collector-collector-headless.${TRACING_NAMESPACE}.svc:9411/api/v2/spans"
+    echo "http://cluster-collector-collector-headless.${TRACING_NAMESPACE}.svc:4318/v1/traces"
   fi
 }
 

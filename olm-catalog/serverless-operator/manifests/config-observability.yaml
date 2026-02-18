@@ -3,4 +3,8 @@ kind: ConfigMap
 metadata:
   name: config-observability
 data:
+  # Deprecated: use metrics-protocol instead (kept for backwards compatibility)
   metrics.backend-destination: prometheus
+  # OpenTelemetry metrics configuration (Serving 1.21+)
+  metrics-protocol: prometheus
+  request-metrics-protocol: prometheus
