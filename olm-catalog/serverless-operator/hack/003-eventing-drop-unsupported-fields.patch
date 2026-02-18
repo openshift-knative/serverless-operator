@@ -1,8 +1,8 @@
 diff --git a/olm-catalog/serverless-operator/manifests/operator_v1beta1_knativeeventing_crd.yaml b/olm-catalog/serverless-operator/manifests/operator_v1beta1_knativeeventing_crd.yaml
-index e5704143c..298276ddd 100644
+index 3ebcc05ce..a4e835a75 100644
 --- a/olm-catalog/serverless-operator/manifests/operator_v1beta1_knativeeventing_crd.yaml
 +++ b/olm-catalog/serverless-operator/manifests/operator_v1beta1_knativeeventing_crd.yaml
-@@ -46,17 +46,8 @@ spec:
+@@ -45,17 +45,8 @@ spec:
              type: object
            spec:
              description: Spec defines the desired state of KnativeEventing
@@ -21,7 +21,7 @@ index e5704143c..298276ddd 100644
                config:
                  additionalProperties:
                    additionalProperties:
-@@ -2247,43 +2238,6 @@ spec:
+@@ -2261,43 +2252,6 @@ spec:
                          type: boolean
                      type: object
                  type: object
@@ -65,7 +65,7 @@ index e5704143c..298276ddd 100644
                sinkBindingSelectionMode:
                  description: Specifies the selection mode for the sinkbinding webhook.
                    If the value is `inclusion`, only namespaces/objects labelled as
-@@ -2291,9 +2245,6 @@ spec:
+@@ -2305,9 +2259,6 @@ spec:
                    is selected, only `bindings.knative.dev/exclude:true` label is checked
                    and these will NOT be considered. The default for Openshift Serverless is `inclusion`.
                  type: string

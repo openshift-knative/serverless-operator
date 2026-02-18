@@ -1,8 +1,8 @@
 diff --git a/olm-catalog/serverless-operator/manifests/operator_v1beta1_knativeeventing_crd.yaml b/olm-catalog/serverless-operator/manifests/operator_v1beta1_knativeeventing_crd.yaml
-index ebc0b57e9..e5704143c 100644
+index ee714a17e..3ebcc05ce 100644
 --- a/olm-catalog/serverless-operator/manifests/operator_v1beta1_knativeeventing_crd.yaml
 +++ b/olm-catalog/serverless-operator/manifests/operator_v1beta1_knativeeventing_crd.yaml
-@@ -995,7 +995,7 @@ spec:
+@@ -2303,7 +2303,7 @@ spec:
                    If the value is `inclusion`, only namespaces/objects labelled as
                    `bindings.knative.dev/include:true` will be considered. If `exclusion`
                    is selected, only `bindings.knative.dev/exclude:true` label is checked
@@ -11,4 +11,3 @@ index ebc0b57e9..e5704143c 100644
                  type: string
                version:
                  description: The version of Knative Eventing to be installed
-

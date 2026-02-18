@@ -1,5 +1,5 @@
 diff --git a/olm-catalog/serverless-operator/manifests/operator_v1beta1_knativeeventing_crd.yaml b/olm-catalog/serverless-operator/manifests/operator_v1beta1_knativeeventing_crd.yaml
-index fbd48dba4..52951f00a 100644
+index 09e88f692..950c2ba68 100644
 --- a/olm-catalog/serverless-operator/manifests/operator_v1beta1_knativeeventing_crd.yaml
 +++ b/olm-catalog/serverless-operator/manifests/operator_v1beta1_knativeeventing_crd.yaml
 @@ -1133,20 +1133,6 @@ spec:
@@ -24,7 +24,7 @@ index fbd48dba4..52951f00a 100644
                  description: A mapping of deployment name to override
                  type: array
 diff --git a/olm-catalog/serverless-operator/manifests/operator_v1beta1_knativeserving_crd.yaml b/olm-catalog/serverless-operator/manifests/operator_v1beta1_knativeserving_crd.yaml
-index cb69a3aa7..21bc0a70b 100644
+index ba9080300..f1f8385d7 100644
 --- a/olm-catalog/serverless-operator/manifests/operator_v1beta1_knativeserving_crd.yaml
 +++ b/olm-catalog/serverless-operator/manifests/operator_v1beta1_knativeserving_crd.yaml
 @@ -1144,20 +1144,6 @@ spec:
