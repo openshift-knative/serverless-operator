@@ -47,11 +47,15 @@ function go_test_e2e {
     [[ -n "$arg" ]] && go_test_args+=("$arg")
   done
   set +Eeuo pipefail
-  report_go_test -race -count=1 "${go_test_args[@]}"
-  retcode=$?
+  retcode=0
+  report_go_test -race -count=1 "${go_test_args[@]}" || retcode=$?
   set -Eeuo pipefail
-
   print_test_result "$retcode"
+
+  if [[ "${MAP_TESTS:-false}" == "true" ]]; then
+    map_lp_interop_reports
+  fi
+
   return "$retcode"
 }
 
@@ -64,6 +68,15 @@ function print_test_result {
   else
     logger.error '🚨 Tests have failures! 🚨'
   fi
+}
+
+# Map junit XMLs for the common Layered Product Interop reporting tool
+# (renames all Serverless testsuites to "Serverless-lp-interop")
+function map_lp_interop_reports {
+  find "${ARTIFACTS}" -type f -iname "junit_*.xml" | while IFS= read -r result_file; do
+    cp "$result_file" "$result_file.premap"
+    sed -i -E 's|(<testsuite .*name=")([^"]*)(")|\1Serverless-lp-interop\3|' "$result_file"
+  done
 }
 
 function serverless_operator_e2e_tests {
