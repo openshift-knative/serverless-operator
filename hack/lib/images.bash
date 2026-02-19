@@ -172,8 +172,10 @@ function knative_eventing_images() {
   export KNATIVE_EVENTING_CHANNEL_CONTROLLER=${KNATIVE_EVENTING_CHANNEL_CONTROLLER:-$(latest_registry_redhat_io_image_sha "${eventing}-channel-controller:${tag}")}
   export KNATIVE_EVENTING_CHANNEL_DISPATCHER=${KNATIVE_EVENTING_CHANNEL_DISPATCHER:-$(latest_registry_redhat_io_image_sha "${eventing}-channel-dispatcher:${tag}")}
   export KNATIVE_EVENTING_APISERVER_RECEIVE_ADAPTER=${KNATIVE_EVENTING_APISERVER_RECEIVE_ADAPTER:-$(latest_registry_redhat_io_image_sha "${eventing}-apiserver-receive-adapter:${tag}")}
+  export KNATIVE_EVENTING_AUTH_PROXY=${KNATIVE_EVENTING_AUTH_PROXY:-$(latest_registry_redhat_io_image_sha "${eventing}-auth-proxy:${tag}")}
   export KNATIVE_EVENTING_JOBSINK=${KNATIVE_EVENTING_JOBSINK:-$(latest_registry_redhat_io_image_sha "${eventing}-jobsink:${tag}")}
   export KNATIVE_EVENTING_MIGRATE=${KNATIVE_EVENTING_MIGRATE:-$(latest_registry_redhat_io_image_sha "${eventing}-migrate:${tag}")}
+  export KNATIVE_EVENTING_REQUEST_REPLY=${KNATIVE_EVENTING_REQUEST_REPLY:-$(latest_registry_redhat_io_image_sha "${eventing}-requestreply:${tag}")}
 
   # Point to Konflux Quay repo for images not present in ClusterServiceVersion.
   export KNATIVE_EVENTING_APPENDER=${KNATIVE_EVENTING_APPENDER:-$(latest_konflux_image_sha "${eventing}-appender:${tag}")}

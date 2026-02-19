@@ -18,7 +18,7 @@ metadata:
   name: config-kafka-source-data-plane
   namespace: knative-eventing
   labels:
-    app.kubernetes.io/version: v1.17
+    app.kubernetes.io/version: v1.21
   annotations:
     knative.dev/example-checksum: "8157ecb1"
 data:
@@ -181,7 +181,7 @@ kind: ClusterRole
 metadata:
   name: knative-kafka-source-data-plane
   labels:
-    app.kubernetes.io/version: v1.17
+    app.kubernetes.io/version: v1.21
 rules:
   - apiGroups:
       - ""
@@ -220,7 +220,7 @@ metadata:
   name: knative-kafka-source-data-plane
   namespace: knative-eventing
   labels:
-    app.kubernetes.io/version: v1.17
+    app.kubernetes.io/version: v1.21
 ---
 ---
 
@@ -243,7 +243,7 @@ kind: ClusterRoleBinding
 metadata:
   name: knative-kafka-source-data-plane
   labels:
-    app.kubernetes.io/version: v1.17
+    app.kubernetes.io/version: v1.21
 subjects:
   - kind: ServiceAccount
     name: knative-kafka-source-data-plane
@@ -276,7 +276,7 @@ metadata:
   namespace: knative-eventing
   labels:
     app: kafka-source-dispatcher
-    app.kubernetes.io/version: v1.17
+    app.kubernetes.io/version: v1.21
     app.kubernetes.io/component: kafka-source-dispatcher
     app.kubernetes.io/name: knative-eventing
 spec:
@@ -290,7 +290,7 @@ spec:
       name: kafka-source-dispatcher
       labels:
         app: kafka-source-dispatcher
-        app.kubernetes.io/version: v1.17
+        app.kubernetes.io/version: v1.21
         app.kubernetes.io/component: kafka-channel-dispatcher
         app.kubernetes.io/name: knative-eventing
         app.kubernetes.io/kind: kafka-dispatcher
@@ -331,8 +331,8 @@ spec:
             - mountPath: /etc/logging
               name: kafka-config-logging
               readOnly: true
-            - mountPath: /etc/tracing
-              name: config-tracing
+            - mountPath: /etc/observability
+              name: config-observability
               readOnly: true
           ports:
             - containerPort: 9090
@@ -359,16 +359,12 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.uid
-            - name: METRICS_PATH
-              value: /metrics
-            - name: METRICS_PORT
-              value: "9090"
             - name: METRICS_PUBLISH_QUANTILES
               value: "false"
             - name: METRICS_JVM_ENABLED
               value: "false"
-            - name: CONFIG_TRACING_PATH
-              value: "/etc/tracing"
+            - name: CONFIG_OBSERVABILITY_PATH
+              value: "/etc/observability"
             # https://github.com/fabric8io/kubernetes-client/issues/2212
             - name: HTTP2_DISABLE
               value: "true"
@@ -386,18 +382,21 @@ spec:
 
           livenessProbe:
             failureThreshold: 3
-            tcpSocket:
-              port: 9090
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - "ls /proc/1"
             initialDelaySeconds: 10
             periodSeconds: 3
             successThreshold: 1
             timeoutSeconds: 1
           readinessProbe:
             failureThreshold: 3
-            httpGet:
-              port: 9090
-              path: /metrics
-              scheme: HTTP
+            exec:
+              command:
+                - cat
+                - /tmp/healthy
             initialDelaySeconds: 10
             periodSeconds: 3
             successThreshold: 1
@@ -419,9 +418,9 @@ spec:
         - name: kafka-config-logging
           configMap:
             name: kafka-config-logging
-        - name: config-tracing
+        - name: config-observability
           configMap:
-            name: config-tracing
+            name: config-observability
         - name: contract-resources
           # only a placeholder. Will be replaced later by our pod defaulting webhook
           emptyDir: {}
