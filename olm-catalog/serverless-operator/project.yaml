@@ -85,16 +85,16 @@ dependencies:
   backstage_plugins: knative-v1.21
   # backstage-plugins midstream branch or commit
   backstage_plugins_artifacts_branch: release-v1.21
-  cli: knative-v1.17
+  cli: knative-v1.21
   kube_rbac_proxy: registry.redhat.io/openshift4/ose-kube-rbac-proxy-rhel9@sha256:f550296753e9898c67d563b7deb16ba540ca1367944c905415f35537b6b949d4
   func:
-    promotion_tag: knative-v1.17
+    promotion_tag: knative-v1.21
     # if additional image is added amend the list in hack/generate/catalog.sh
     tekton_buildah: registry.redhat.io/rhel9/buildah@sha256:c011d25b3b0ca55e54118957a824c69dc6542060ba7f083df9d708347b9be79d
     nodejs_20_minimal: registry.access.redhat.com/ubi9/nodejs-20-minimal@sha256:106ce430764e40e96f07fd085c77a3e8855f8183578d0651e762a51e13648cf3
     openjdk_21: registry.access.redhat.com/ubi9/openjdk-21@sha256:5a58d6a421b113a937a284f6661b26147ce98e3d924a87d40e48897862979ebb
     python-39: registry.access.redhat.com/ubi9/python-39@sha256:c871688f22d2ac783a37703b1944fd94d8d2707aac8a3363fd1a039141b365f6
-  operator: 1.17.8
+  operator: 1.21.0
   # Previous versions required for downgrade testing
   previous:
     serving: knative-v1.17
