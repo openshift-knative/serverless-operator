@@ -32,12 +32,17 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"knative.dev/pkg/test/ingress"
 	"knative.dev/pkg/test/logging"
-	"knative.dev/pkg/test/zipkin"
-	"knative.dev/pkg/tracing/propagation/tracecontextb3"
 
-	"go.opencensus.io/plugin/ochttp"
-	"go.opencensus.io/trace"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/trace"
 )
+
+var tracer trace.Tracer
+
+func init() {
+	tracer = otel.GetTracerProvider().Tracer("knative.dev/pkg/test/spoof")
+}
 
 // Response is a stripped down subset of http.Response. The is primarily useful
 // for ResponseCheckers to inspect the response body without consuming it.
@@ -125,11 +130,7 @@ func New(
 		transport = opt(transport)
 	}
 
-	// Enable Zipkin tracing
-	roundTripper := &ochttp.Transport{
-		Base:        transport,
-		Propagation: tracecontextb3.TraceContextB3Egress,
-	}
+	roundTripper := otelhttp.NewTransport(transport)
 
 	sc := &SpoofingClient{
 		Client:          &http.Client{Transport: roundTripper},
@@ -154,7 +155,7 @@ func ResolveEndpoint(ctx context.Context, kubeClientset kubernetes.Interface, do
 
 // Do dispatches to the underlying http.Client.Do, spoofing domains as needed
 // and transforming the http.Response into a spoof.Response.
-// Each response is augmented with "ZipkinTraceID" header that identifies the zipkin trace corresponding to the request.
+// Each response is augmented with "X-Trace-Id" header that identifies the trace corresponding to the request.
 func (sc *SpoofingClient) Do(req *http.Request, errorRetryCheckers ...interface{}) (*Response, error) {
 	return sc.Poll(req, func(*Response) (bool, error) { return true, nil }, errorRetryCheckers...)
 }
@@ -164,13 +165,13 @@ func (sc *SpoofingClient) Do(req *http.Request, errorRetryCheckers ...interface{
 // If no retry checkers are specified `DefaultErrorRetryChecker` will be used.
 func (sc *SpoofingClient) Poll(req *http.Request, inState ResponseChecker, checkers ...interface{}) (*Response, error) {
 	if len(checkers) == 0 {
-		checkers = []interface{}{ErrorRetryChecker(DefaultErrorRetryChecker), ResponseRetryChecker(DefaultResponseRetryChecker), ResponseRetryChecker(RouteInconsistencyRetryChecker)}
+		checkers = []interface{}{ErrorRetryChecker(DefaultErrorRetryChecker), ResponseRetryChecker(DefaultResponseRetryChecker)}
 	}
 
 	var resp *Response
 	err := wait.PollUntilContextTimeout(context.Background(), sc.RequestInterval, sc.RequestTimeout, true, func(ctx context.Context) (bool, error) {
 		// Starting span to capture zipkin trace.
-		traceContext, span := trace.StartSpan(req.Context(), "SpoofingClient-Trace")
+		traceContext, span := tracer.Start(req.Context(), "SpoofingClient-Trace")
 		defer span.End()
 		rawResp, err := sc.Client.Do(req.WithContext(traceContext))
 		if err != nil {
@@ -192,7 +193,6 @@ func (sc *SpoofingClient) Poll(req *http.Request, inState ResponseChecker, check
 		if err != nil {
 			return true, err
 		}
-		rawResp.Header.Add(zipkin.ZipkinTraceIDHeader, span.SpanContext().TraceID.String())
 
 		resp = &Response{
 			Status:     rawResp.Status,
@@ -216,11 +216,6 @@ func (sc *SpoofingClient) Poll(req *http.Request, inState ResponseChecker, check
 
 		return inState(resp)
 	})
-
-	if resp != nil {
-		sc.logZipkinTrace(resp)
-	}
-
 	if err != nil {
 		return resp, fmt.Errorf("response: %s did not pass checks: %w", resp, err)
 	}
@@ -252,9 +247,6 @@ func DefaultErrorRetryChecker(err error) (bool, error) {
 	if isNoRouteToHostError(err) {
 		return true, fmt.Errorf("retrying for 'no route to host' error: %w", err)
 	}
-	if isUnknownAuthority(err) {
-		return true, fmt.Errorf("retrying for certificate signed by unknown authority: %w", err)
-	}
 	return false, err
 }
 
@@ -264,27 +256,6 @@ func DefaultResponseRetryChecker(resp *Response) (bool, error) {
 		return true, fmt.Errorf("retrying for DNS related failure response: %v", resp)
 	}
 	return false, nil
-}
-
-// logZipkinTrace provides support to log Zipkin Trace for param: spoofResponse
-// We only log Zipkin trace for HTTP server errors i.e for HTTP status codes between 500 to 600
-func (sc *SpoofingClient) logZipkinTrace(spoofResp *Response) {
-	if !zipkin.IsTracingEnabled() || spoofResp.StatusCode < http.StatusInternalServerError || spoofResp.StatusCode >= 600 {
-		return
-	}
-
-	traceID := spoofResp.Header.Get(zipkin.ZipkinTraceIDHeader)
-	sc.Logf("Logging Zipkin Trace for: %s", traceID)
-
-	json, err := zipkin.JSONTrace(traceID /* We don't know the expected number of spans */, -1, 5*time.Second)
-	if err != nil {
-		var errTimeout *zipkin.TimeoutError
-		if !errors.As(err, &errTimeout) {
-			sc.Logf("Error getting zipkin trace: %v", err)
-		}
-	}
-
-	sc.Logf("%s", json)
 }
 
 func (sc *SpoofingClient) WaitForEndpointState(

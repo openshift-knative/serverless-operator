@@ -26,17 +26,18 @@ const (
 	rerunTimes = 5
 
 	// Kafka bootstrap server.
-	BootstrapServersPlaintext     = "my-cluster-kafka-bootstrap.kafka:9092"
-	BootstrapServersSsl           = "my-cluster-kafka-bootstrap.kafka:9093"
-	BootstrapServersTlsNoAuth     = "my-cluster-kafka-bootstrap.kafka:9096"
-	BootstrapServersSaslPlaintext = "my-cluster-kafka-bootstrap.kafka:9095"
-	BootstrapServersSslSaslScram  = "my-cluster-kafka-bootstrap.kafka:9094"
+	BootstrapServersPlaintext              = "my-cluster-kafka-bootstrap.kafka:9092"
+	BootstrapServersSsl                    = "my-cluster-kafka-bootstrap.kafka:9093"
+	BootstrapServersTLSNoAuth              = "my-cluster-kafka-bootstrap.kafka:9096"
+	BootstrapServersSaslPlaintext          = "my-cluster-kafka-bootstrap.kafka:9095"
+	BootstrapServersSslSaslScram           = "my-cluster-kafka-bootstrap.kafka:9094"
+	BootstrapServersImplicitCASslSaslScram = "my-cluster-kafka-bootstrap.kafka:9194"
 
 	NumPartitions     = 10
 	ReplicationFactor = 3
 
 	KafkaClusterNamespace        = "kafka"
-	TlsUserSecretName            = "my-tls-user"
+	TLSUserSecretName            = "my-tls-user"
 	SaslUserSecretName           = "my-sasl-user"
 	SaslRestrictedUserSecretName = "my-restricted-sasl-user"
 	CaSecretName                 = "my-cluster-cluster-ca-cert"
@@ -46,7 +47,7 @@ var (
 	// Kafka bootstrap server as array.
 	BootstrapServersPlaintextArr     = []string{BootstrapServersPlaintext}
 	BootstrapServersSslArr           = []string{BootstrapServersSsl}
-	BootstrapServersTlsNoAuthArr     = []string{BootstrapServersTlsNoAuth}
+	BootstrapServersTLSNoAuthArr     = []string{BootstrapServersTLSNoAuth}
 	BootstrapServersSaslPlaintextArr = []string{BootstrapServersSaslPlaintext}
 	BootstrapServersSslSaslScramArr  = []string{BootstrapServersSslSaslScram}
 )

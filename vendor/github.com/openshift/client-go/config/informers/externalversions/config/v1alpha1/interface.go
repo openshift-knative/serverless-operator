@@ -10,8 +10,12 @@ import (
 type Interface interface {
 	// Backups returns a BackupInformer.
 	Backups() BackupInformer
+	// CRIOCredentialProviderConfigs returns a CRIOCredentialProviderConfigInformer.
+	CRIOCredentialProviderConfigs() CRIOCredentialProviderConfigInformer
 	// ClusterImagePolicies returns a ClusterImagePolicyInformer.
 	ClusterImagePolicies() ClusterImagePolicyInformer
+	// ClusterMonitorings returns a ClusterMonitoringInformer.
+	ClusterMonitorings() ClusterMonitoringInformer
 	// ImagePolicies returns a ImagePolicyInformer.
 	ImagePolicies() ImagePolicyInformer
 	// InsightsDataGathers returns a InsightsDataGatherInformer.
@@ -34,9 +38,19 @@ func (v *version) Backups() BackupInformer {
 	return &backupInformer{factory: v.factory, tweakListOptions: v.tweakListOptions}
 }
 
+// CRIOCredentialProviderConfigs returns a CRIOCredentialProviderConfigInformer.
+func (v *version) CRIOCredentialProviderConfigs() CRIOCredentialProviderConfigInformer {
+	return &cRIOCredentialProviderConfigInformer{factory: v.factory, tweakListOptions: v.tweakListOptions}
+}
+
 // ClusterImagePolicies returns a ClusterImagePolicyInformer.
 func (v *version) ClusterImagePolicies() ClusterImagePolicyInformer {
 	return &clusterImagePolicyInformer{factory: v.factory, tweakListOptions: v.tweakListOptions}
+}
+
+// ClusterMonitorings returns a ClusterMonitoringInformer.
+func (v *version) ClusterMonitorings() ClusterMonitoringInformer {
+	return &clusterMonitoringInformer{factory: v.factory, tweakListOptions: v.tweakListOptions}
 }
 
 // ImagePolicies returns a ImagePolicyInformer.

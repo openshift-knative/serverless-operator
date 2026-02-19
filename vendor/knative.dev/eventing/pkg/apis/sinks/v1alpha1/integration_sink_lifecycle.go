@@ -43,12 +43,17 @@ const (
 
 	// Certificate related condition reasons
 	IntegrationSinkCertificateNotReady string = "CertificateNotReady"
+
+	// IntegrationSinkTrustBundlePropagated is configured to indicate whether the
+	// TLS trust bundle has been properly propagated.
+	IntegrationSinkTrustBundlePropagated apis.ConditionType = "TrustBundlePropagated"
 )
 
 var IntegrationSinkCondSet = apis.NewLivingConditionSet(
 	IntegrationSinkConditionAddressable,
 	IntegrationSinkConditionDeploymentReady,
 	IntegrationSinkConditionEventPoliciesReady,
+	IntegrationSinkTrustBundlePropagated,
 )
 
 // GetConditionSet retrieves the condition set for this resource. Implements the KRShaped interface.
@@ -101,22 +106,51 @@ func (s *IntegrationSinkStatus) MarkEventPoliciesTrueWithReason(reason, messageF
 	IntegrationSinkCondSet.Manage(s).MarkTrueWithReason(IntegrationSinkConditionEventPoliciesReady, reason, messageFormat, messageA...)
 }
 
-func (s *IntegrationSinkStatus) PropagateDeploymentStatus(d *appsv1.DeploymentStatus) {
+func (s *IntegrationSinkStatus) PropagateDeploymentStatus(d *appsv1.Deployment) {
+	// A deployment is fully rolled out when:
+	// 1. ObservedGeneration == Generation: controller has observed the latest spec
+	// 2. UpdatedReplicas == Replicas: all pods updated to the new pod template
+	// 3. AvailableReplicas == Replicas: all updated pods are ready
+	// This ensures EventPolicy changes have propagated to all pods before marking Ready.
+	desiredReplicas := int32(1)
+	if d.Spec.Replicas != nil {
+		desiredReplicas = *d.Spec.Replicas
+	}
+
+	deploymentFullyRolledOut := d.Status.ObservedGeneration == d.Generation &&
+		d.Status.UpdatedReplicas == desiredReplicas &&
+		d.Status.AvailableReplicas == desiredReplicas
+
+	if deploymentFullyRolledOut {
+		IntegrationSinkCondSet.Manage(s).MarkTrue(IntegrationSinkConditionDeploymentReady)
+		return
+	}
+
+	// Check deployment conditions for error states
 	deploymentAvailableFound := false
-	for _, cond := range d.Conditions {
+	for _, cond := range d.Status.Conditions {
 		if cond.Type == appsv1.DeploymentAvailable {
 			deploymentAvailableFound = true
-			if cond.Status == corev1.ConditionTrue {
-				IntegrationSinkCondSet.Manage(s).MarkTrue(IntegrationSinkConditionDeploymentReady)
-			} else if cond.Status == corev1.ConditionFalse {
+			if cond.Status == corev1.ConditionFalse {
 				IntegrationSinkCondSet.Manage(s).MarkFalse(IntegrationSinkConditionDeploymentReady, cond.Reason, cond.Message)
-			} else if cond.Status == corev1.ConditionUnknown {
-				IntegrationSinkCondSet.Manage(s).MarkUnknown(IntegrationSinkConditionDeploymentReady, cond.Reason, cond.Message)
+				return
 			}
 		}
+		// Also check Progressing condition for failures (e.g., ImagePullBackOff, insufficient quota)
+		if cond.Type == appsv1.DeploymentProgressing && cond.Status == corev1.ConditionFalse {
+			IntegrationSinkCondSet.Manage(s).MarkFalse(IntegrationSinkConditionDeploymentReady, cond.Reason, cond.Message)
+			return
+		}
 	}
-	if !deploymentAvailableFound {
-		IntegrationSinkCondSet.Manage(s).MarkUnknown(IntegrationSinkConditionDeploymentReady, "DeploymentUnavailable", "The Deployment '%s' is unavailable.", d)
+
+	// Deployment is progressing but not fully rolled out yet
+	if deploymentAvailableFound {
+		IntegrationSinkCondSet.Manage(s).MarkUnknown(IntegrationSinkConditionDeploymentReady,
+			"DeploymentRollingOut",
+			"Deployment rollout in progress: %d/%d replicas updated and available",
+			d.Status.AvailableReplicas, desiredReplicas)
+	} else {
+		IntegrationSinkCondSet.Manage(s).MarkUnknown(IntegrationSinkConditionDeploymentReady, "DeploymentUnavailable", "The Deployment is unavailable")
 	}
 }
 
@@ -151,12 +185,26 @@ func (s *IntegrationSinkStatus) PropagateCertificateStatus(cs cmv1.CertificateSt
 	return true
 }
 
-func (s *IntegrationSinkStatus) SetAddress(address *duckv1.Addressable) {
-	s.Address = address
-	if address == nil || address.URL.IsEmpty() {
+func (s *IntegrationSinkStatus) SetAddresses(addresses ...duckv1.Addressable) {
+	if len(addresses) == 0 || addresses[0].URL.IsEmpty() {
 		IntegrationSinkCondSet.Manage(s).MarkFalse(IntegrationSinkConditionAddressable, "EmptyHostname", "hostname is the empty string")
-	} else {
-		IntegrationSinkCondSet.Manage(s).MarkTrue(IntegrationSinkConditionAddressable)
-
+		return
 	}
+
+	s.AddressStatus = duckv1.AddressStatus{
+		Address:   &addresses[0],
+		Addresses: addresses,
+	}
+	IntegrationSinkCondSet.Manage(s).MarkTrue(IntegrationSinkConditionAddressable)
+}
+
+// MarkFailedTrustBundlePropagation marks the IntegrationSink's SinkBindingTrustBundlePropagated condition to False with
+// the provided reason and message.
+func (s *IntegrationSinkStatus) MarkFailedTrustBundlePropagation(reason, message string) {
+	IntegrationSinkCondSet.Manage(s).MarkFalse(IntegrationSinkTrustBundlePropagated, reason, message)
+}
+
+// MarkTrustBundlePropagated marks the IntegrationSink's SinkBindingTrustBundlePropagated condition to True.
+func (s *IntegrationSinkStatus) MarkTrustBundlePropagated() {
+	IntegrationSinkCondSet.Manage(s).MarkTrue(IntegrationSinkTrustBundlePropagated)
 }

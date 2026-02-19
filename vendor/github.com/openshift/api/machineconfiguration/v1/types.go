@@ -38,8 +38,11 @@ type ControllerConfig struct {
 	// TODO(jkyros): inconsistent historical generation resulted in the controllerconfig CRD being
 	// generated with all fields required, while everything else was generated with optional
 
-	// +kubebuilder:validation:Required
+	// spec contains the desired controller config configuration.
+	// +required
 	Spec ControllerConfigSpec `json:"spec"`
+
+	// status contains observed information about the controller config.
 	// +optional
 	Status ControllerConfigStatus `json:"status"`
 }
@@ -47,11 +50,11 @@ type ControllerConfig struct {
 // ControllerConfigSpec is the spec for ControllerConfig resource.
 type ControllerConfigSpec struct {
 	// clusterDNSIP is the cluster DNS IP address
-	// +kubebuilder:validation:Required
+	// +required
 	ClusterDNSIP string `json:"clusterDNSIP"`
 
 	// cloudProviderConfig is the configuration for the given cloud provider
-	// +kubebuilder:validation:Required
+	// +required
 	CloudProviderConfig string `json:"cloudProviderConfig"`
 
 	// platform is deprecated, use Infra.Status.PlatformStatus.Type instead
@@ -65,21 +68,21 @@ type ControllerConfigSpec struct {
 	// TODO: Use string for CA data
 
 	// kubeAPIServerServingCAData managed Kubelet to API Server Cert... Rotated automatically
-	// +kubebuilder:validation:Required
+	// +required
 	KubeAPIServerServingCAData []byte `json:"kubeAPIServerServingCAData"`
 
 	// rootCAData specifies the root CA data
-	// +kubebuilder:validation:Required
+	// +required
 	RootCAData []byte `json:"rootCAData"`
 
-	// cloudProvider specifies the cloud provider CA data
-	// +kubebuilder:validation:Required
+	// cloudProviderCAData specifies the cloud provider CA data
+	// +required
 	// +nullable
 	CloudProviderCAData []byte `json:"cloudProviderCAData"`
 
 	// additionalTrustBundle is a certificate bundle that will be added to the nodes
 	// trusted certificate store.
-	// +kubebuilder:validation:Required
+	// +required
 	// +nullable
 	AdditionalTrustBundle []byte `json:"additionalTrustBundle"`
 
@@ -107,44 +110,44 @@ type ControllerConfigSpec struct {
 	InternalRegistryPullSecret []byte `json:"internalRegistryPullSecret"`
 
 	// images is map of images that are used by the controller to render templates under ./templates/
-	// +kubebuilder:validation:Required
+	// +required
 	Images map[string]string `json:"images"`
 
-	// BaseOSContainerImage is the new-format container image for operating system updates.
-	// +kubebuilder:validation:Required
+	// baseOSContainerImage is the new-format container image for operating system updates.
+	// +required
 	BaseOSContainerImage string `json:"baseOSContainerImage"`
 
-	// BaseOSExtensionsContainerImage is the matching extensions container for the new-format container
+	// baseOSExtensionsContainerImage is the matching extensions container for the new-format container
 	// +optional
 	BaseOSExtensionsContainerImage string `json:"baseOSExtensionsContainerImage"`
 
-	// OSImageURL is the old-format container image that contains the OS update payload.
+	// osImageURL is the old-format container image that contains the OS update payload.
 	// +optional
 	OSImageURL string `json:"osImageURL"`
 
 	// releaseImage is the image used when installing the cluster
-	// +kubebuilder:validation:Required
+	// +required
 	ReleaseImage string `json:"releaseImage"`
 
 	// proxy holds the current proxy configuration for the nodes
-	// +kubebuilder:validation:Required
+	// +required
 	// +nullable
 	Proxy *configv1.ProxyStatus `json:"proxy"`
 
 	// infra holds the infrastructure details
 	// +kubebuilder:validation:EmbeddedResource
-	// +kubebuilder:validation:Required
+	// +required
 	// +nullable
 	Infra *configv1.Infrastructure `json:"infra"`
 
 	// dns holds the cluster dns details
 	// +kubebuilder:validation:EmbeddedResource
-	// +kubebuilder:validation:Required
+	// +required
 	// +nullable
 	DNS *configv1.DNS `json:"dns"`
 
 	// ipFamilies indicates the IP families in use by the cluster network
-	// +kubebuilder:validation:Required
+	// +required
 	IPFamilies IPFamiliesType `json:"ipFamilies"`
 
 	// networkType holds the type of network the cluster is using
@@ -155,8 +158,8 @@ type ControllerConfigSpec struct {
 	// +optional
 	NetworkType string `json:"networkType,omitempty"`
 
-	// Network contains additional network related information
-	// +kubebuilder:validation:Required
+	// network contains additional network related information
+	// +required
 	// +nullable
 	Network *NetworkInfo `json:"network"`
 }
@@ -164,10 +167,10 @@ type ControllerConfigSpec struct {
 // ImageRegistryBundle contains information for writing image registry certificates
 type ImageRegistryBundle struct {
 	// file holds the name of the file where the bundle will be written to disk
-	// +kubebuilder:validation:Required
+	// +required
 	File string `json:"file"`
 	// data holds the contents of the bundle that will be written to the file location
-	// +kubebuilder:validation:Required
+	// +required
 	Data []byte `json:"data"`
 }
 
@@ -183,8 +186,8 @@ const (
 
 // Network contains network related configuration
 type NetworkInfo struct {
-	// MTUMigration contains the MTU migration configuration.
-	// +kubebuilder:validation:Required
+	// mtuMigration contains the MTU migration configuration.
+	// +required
 	// +nullable
 	MTUMigration *configv1.MTUMigration `json:"mtuMigration"`
 }
@@ -210,38 +213,38 @@ type ControllerConfigStatus struct {
 // ControllerCertificate contains info about a specific cert.
 type ControllerCertificate struct {
 	// subject is the cert subject
-	// +kubebuilder:validation:Required
+	// +required
 	Subject string `json:"subject"`
 
 	// signer is the  cert Issuer
-	// +kubebuilder:validation:Required
+	// +required
 	Signer string `json:"signer"`
 
 	// notBefore is the lower boundary for validity
 	// +optional
-	NotBefore *metav1.Time `json:"notBefore"`
+	NotBefore *metav1.Time `json:"notBefore,omitempty"`
 
 	// notAfter is the upper boundary for validity
 	// +optional
-	NotAfter *metav1.Time `json:"notAfter"`
+	NotAfter *metav1.Time `json:"notAfter,omitempty"`
 
 	// bundleFile is the larger bundle a cert comes from
-	// +kubebuilder:validation:Required
+	// +required
 	BundleFile string `json:"bundleFile"`
 }
 
 // ControllerConfigStatusCondition contains condition information for ControllerConfigStatus
 type ControllerConfigStatusCondition struct {
 	// type specifies the state of the operator's reconciliation functionality.
-	// +kubebuilder:validation:Required
+	// +required
 	Type ControllerConfigStatusConditionType `json:"type"`
 
 	// status of the condition, one of True, False, Unknown.
-	// +kubebuilder:validation:Required
+	// +required
 	Status corev1.ConditionStatus `json:"status"`
 
 	// lastTransitionTime is the time of the last update to the current status object.
-	// +kubebuilder:validation:Required
+	// +required
 	// +nullable
 	LastTransitionTime metav1.Time `json:"lastTransitionTime"`
 
@@ -308,19 +311,19 @@ type MachineConfig struct {
 
 // MachineConfigSpec is the spec for MachineConfig
 type MachineConfigSpec struct {
-	// OSImageURL specifies the remote location that will be used to
+	// osImageURL specifies the remote location that will be used to
 	// fetch the OS.
 	// +optional
 	OSImageURL string `json:"osImageURL"`
 
-	// BaseOSExtensionsContainerImage specifies the remote location that will be used
+	// baseOSExtensionsContainerImage specifies the remote location that will be used
 	// to fetch the extensions container matching a new-format OS image
 	// +optional
 	BaseOSExtensionsContainerImage string `json:"baseOSExtensionsContainerImage"`
 
-	// Config is a Ignition Config object.
+	// config is a Ignition Config object.
 	// +optional
-	Config runtime.RawExtension `json:"config"`
+	Config runtime.RawExtension `json:"config,omitempty"`
 
 	// kernelArguments contains a list of kernel arguments to be added
 	// +listType=atomic
@@ -383,8 +386,11 @@ type MachineConfigPool struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	// +kubebuilder:validation:Required
+	// spec contains the desired machine config pool configuration.
+	// +required
 	Spec MachineConfigPoolSpec `json:"spec"`
+
+	// status contains observed information about the machine config pool.
 	// +optional
 	Status MachineConfigPoolStatus `json:"status"`
 }
@@ -446,6 +452,34 @@ type MachineConfigPoolSpec struct {
 	// +listMapKey=name
 	// +kubebuilder:validation:MaxItems=100
 	PinnedImageSets []PinnedImageSetRef `json:"pinnedImageSets,omitempty"`
+
+	// osImageStream specifies an OS stream to be used for the pool.
+	//
+	// This field can be optionally set to a known OSImageStream name to change the
+	// OS and Extension images with a well-known, tested, release-provided set of images.
+	// This enables a streamlined way of switching the pool's node OS to a different version
+	// than the cluster default, such as transitioning to a major RHEL version.
+	//
+	// When set, the referenced stream overrides the cluster-wide OS
+	// images for the pool with the OS and Extensions associated to stream.
+	// When omitted, the pool uses the cluster-wide default OS images.
+	//
+	// +openshift:enable:FeatureGate=OSStreams
+	// +optional
+	OSImageStream OSImageStreamReference `json:"osImageStream,omitempty,omitzero"`
+}
+
+type OSImageStreamReference struct {
+	// name is a required reference to an OSImageStream to be used for the pool.
+	//
+	// It must be a valid RFC 1123 subdomain between 1 and 253 characters in length,
+	// consisting of lowercase alphanumeric characters, hyphens ('-'), and periods ('.').
+	//
+	// +required
+	// +kubebuilder:validation:MinLength=1
+	// +kubebuilder:validation:MaxLength=253
+	// +kubebuilder:validation:XValidation:rule="!format.dns1123Subdomain().validate(self).hasValue()",message="a RFC 1123 subdomain must consist of lower case alphanumeric characters, '-' or '.', and must start and end with an alphanumeric character."
+	Name string `json:"name,omitempty"`
 }
 
 type PinnedImageSetRef struct {
@@ -459,7 +493,7 @@ type PinnedImageSetRef struct {
 	// +kubebuilder:validation:MinLength=1
 	// +kubebuilder:validation:MaxLength=253
 	// +kubebuilder:validation:Pattern=`^([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])(\.([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]{0,61}[a-zA-Z0-9]))*$`
-	// +kubebuilder:validation:Required
+	// +required
 	Name string `json:"name"`
 }
 
@@ -511,6 +545,13 @@ type MachineConfigPoolStatus struct {
 	// +listMapKey=poolSynchronizerType
 	// +optional
 	PoolSynchronizersStatus []PoolSynchronizerStatus `json:"poolSynchronizersStatus,omitempty"`
+
+	// osImageStream specifies the last updated OSImageStream for the pool.
+	//
+	// When omitted, the pool is using the cluster-wide default OS images.
+	// +openshift:enable:FeatureGate=OSStreams
+	// +optional
+	OSImageStream OSImageStreamReference `json:"osImageStream,omitempty,omitzero"`
 }
 
 // +kubebuilder:validation:XValidation:rule="self.machineCount >= self.updatedMachineCount", message="machineCount must be greater than or equal to updatedMachineCount"
@@ -520,26 +561,26 @@ type MachineConfigPoolStatus struct {
 // +kubebuilder:validation:XValidation:rule="self.availableMachineCount >= self.readyMachineCount", message="availableMachineCount must be greater than or equal to readyMachineCount"
 type PoolSynchronizerStatus struct {
 	// poolSynchronizerType describes the type of the pool synchronizer.
-	// +kubebuilder:validation:Required
+	// +required
 	PoolSynchronizerType PoolSynchronizerType `json:"poolSynchronizerType"`
 	// machineCount is the number of machines that are managed by the node synchronizer.
-	// +kubebuilder:validation:Required
+	// +required
 	// +kubebuilder:validation:Minimum=0
 	MachineCount int64 `json:"machineCount"`
 	// updatedMachineCount is the number of machines that have been updated by the node synchronizer.
-	// +kubebuilder:validation:Required
+	// +required
 	// +kubebuilder:validation:Minimum=0
 	UpdatedMachineCount int64 `json:"updatedMachineCount"`
 	// readyMachineCount is the number of machines managed by the node synchronizer that are in a ready state.
-	// +kubebuilder:validation:Required
+	// +required
 	// +kubebuilder:validation:Minimum=0
 	ReadyMachineCount int64 `json:"readyMachineCount"`
 	// availableMachineCount is the number of machines managed by the node synchronizer which are available.
-	// +kubebuilder:validation:Required
+	// +required
 	// +kubebuilder:validation:Minimum=0
 	AvailableMachineCount int64 `json:"availableMachineCount"`
 	// unavailableMachineCount is the number of machines managed by the node synchronizer but are unavailable.
-	// +kubebuilder:validation:Required
+	// +required
 	// +kubebuilder:validation:Minimum=0
 	UnavailableMachineCount int64 `json:"unavailableMachineCount"`
 	// +kubebuilder:validation:XValidation:rule="self >= oldSelf || (self == 0 && oldSelf > 0)", message="observedGeneration must not move backwards except to zero"
@@ -563,10 +604,10 @@ const (
 // ceryExpiry contains the bundle name and the expiry date
 type CertExpiry struct {
 	// bundle is the name of the bundle in which the subject certificate resides
-	// +kubebuilder:validation:Required
+	// +required
 	Bundle string `json:"bundle"`
 	// subject is the subject of the certificate
-	// +kubebuilder:validation:Required
+	// +required
 	Subject string `json:"subject"`
 	// expiry is the date after which the certificate will no longer be valid
 	// +optional
@@ -592,7 +633,7 @@ type MachineConfigPoolCondition struct {
 
 	// status of the condition, one of ('True', 'False', 'Unknown').
 	// +optional
-	Status corev1.ConditionStatus `json:"status"`
+	Status corev1.ConditionStatus `json:"status,omitempty"`
 
 	// lastTransitionTime is the timestamp corresponding to the last status
 	// change of this condition.
@@ -630,6 +671,10 @@ const (
 	// MachineConfigPoolRenderDegraded means the rendered configuration for the pool cannot be generated because of an error
 	MachineConfigPoolRenderDegraded MachineConfigPoolConditionType = "RenderDegraded"
 
+	// MachineConfigPoolImageBuildDegraded means the image build for the pool was not successful
+	// This condition is only used when Image Mode is enabled for the pool
+	MachineConfigPoolImageBuildDegraded MachineConfigPoolConditionType = "ImageBuildDegraded"
+
 	// MachineConfigPoolPinnedImageSetsDegraded means the pinned image sets for the pool cannot be populated because of an error
 	// +openshift:enable:FeatureGate=PinnedImages
 	MachineConfigPoolPinnedImageSetsDegraded MachineConfigPoolConditionType = "PinnedImageSetsDegraded"
@@ -638,7 +683,7 @@ const (
 	// +openshift:enable:FeatureGate=PinnedImages
 	MachineConfigPoolSynchronizerDegraded MachineConfigPoolConditionType = "PoolSynchronizerDegraded"
 
-	// MachineConfigPoolDegraded is the overall status of the pool based, today, on whether we fail with NodeDegraded or RenderDegraded
+	// MachineConfigPoolDegraded is the overall status of the pool based, today, on whether we fail with NodeDegraded, RenderDegraded, or ImageBuildDegraded
 	MachineConfigPoolDegraded MachineConfigPoolConditionType = "Degraded"
 
 	MachineConfigPoolBuildPending MachineConfigPoolConditionType = "BuildPending"
@@ -683,8 +728,11 @@ type KubeletConfig struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	// +kubebuilder:validation:Required
+	// spec contains the desired kubelet configuration.
+	// +required
 	Spec KubeletConfigSpec `json:"spec"`
+
+	// status contains observed information about the kubelet configuration.
 	// +optional
 	Status KubeletConfigStatus `json:"status"`
 }
@@ -696,7 +744,7 @@ type KubeletConfigSpec struct {
 	// +optional
 	LogLevel *int32 `json:"logLevel,omitempty"`
 
-	// MachineConfigPoolSelector selects which pools the KubeletConfig shoud apply to.
+	// machineConfigPoolSelector selects which pools the KubeletConfig shoud apply to.
 	// A nil selector will result in no pools being selected.
 	// +optional
 	MachineConfigPoolSelector *metav1.LabelSelector `json:"machineConfigPoolSelector,omitempty"`
@@ -733,7 +781,7 @@ type KubeletConfigCondition struct {
 
 	// status of the condition, one of True, False, Unknown.
 	// +optional
-	Status corev1.ConditionStatus `json:"status"`
+	Status corev1.ConditionStatus `json:"status,omitempty"`
 
 	// lastTransitionTime is the time of the last update to the current status object.
 	// +optional
@@ -792,20 +840,24 @@ type ContainerRuntimeConfig struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	// +kubebuilder:validation:Required
+	// spec contains the desired container runtime configuration.
+	// +required
 	Spec ContainerRuntimeConfigSpec `json:"spec"`
+
+	// status contains observed information about the container runtime configuration.
 	// +optional
 	Status ContainerRuntimeConfigStatus `json:"status"`
 }
 
 // ContainerRuntimeConfigSpec defines the desired state of ContainerRuntimeConfig
 type ContainerRuntimeConfigSpec struct {
-	// MachineConfigPoolSelector selects which pools the ContainerRuntimeConfig shoud apply to.
+	// machineConfigPoolSelector selects which pools the ContainerRuntimeConfig shoud apply to.
 	// A nil selector will result in no pools being selected.
 	// +optional
 	MachineConfigPoolSelector *metav1.LabelSelector `json:"machineConfigPoolSelector,omitempty"`
 
-	// +kubebuilder:validation:Required
+	// containerRuntimeConfig defines the tuneables of the container runtime.
+	// +required
 	ContainerRuntimeConfig *ContainerRuntimeConfiguration `json:"containerRuntimeConfig,omitempty"`
 }
 
@@ -831,18 +883,25 @@ type ContainerRuntimeConfiguration struct {
 	// +optional
 	OverlaySize *resource.Quantity `json:"overlaySize,omitempty"`
 
-	// defaultRuntime is the name of the OCI runtime to be used as the default.
+	// defaultRuntime is the name of the OCI runtime to be used as the default for containers.
+	// Allowed values are `runc` and `crun`.
+	// When set to `runc`, OpenShift will use runc to execute the container
+	// When set to `crun`, OpenShift will use crun to execute the container
+	// When omitted, this means no opinion and the platform is left to choose a reasonable default,
+	// which is subject to change over time. Currently, the default is `crun`.
+	// +kubebuilder:validation:Enum=crun;runc
 	// +optional
 	DefaultRuntime ContainerRuntimeDefaultRuntime `json:"defaultRuntime,omitempty"`
 }
 
 type ContainerRuntimeDefaultRuntime string
 
+// These constants are used in the Machine Config Operator (MCO)
 const (
 	ContainerRuntimeDefaultRuntimeEmpty   = ""
 	ContainerRuntimeDefaultRuntimeRunc    = "runc"
 	ContainerRuntimeDefaultRuntimeCrun    = "crun"
-	ContainerRuntimeDefaultRuntimeDefault = ContainerRuntimeDefaultRuntimeRunc
+	ContainerRuntimeDefaultRuntimeDefault = ContainerRuntimeDefaultRuntimeCrun
 )
 
 // ContainerRuntimeConfigStatus defines the observed state of a ContainerRuntimeConfig
@@ -865,7 +924,7 @@ type ContainerRuntimeConfigCondition struct {
 
 	// status of the condition, one of True, False, Unknown.
 	// +optional
-	Status corev1.ConditionStatus `json:"status"`
+	Status corev1.ConditionStatus `json:"status,omitempty"`
 
 	// lastTransitionTime is the time of the last update to the current status object.
 	// +nullable

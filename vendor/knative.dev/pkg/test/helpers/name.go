@@ -27,7 +27,7 @@ import (
 const (
 	letterBytes     = "abcdefghijklmnopqrstuvwxyz"
 	randSuffixLen   = 8
-	nameLengthLimit = 40
+	nameLengthLimit = 50
 	sep             = '-'
 	sepS            = "-"
 	testNamePrefix  = "Test"
@@ -101,7 +101,7 @@ func MakeK8sNamePrefix(s string) string {
 outer:
 	for i := 0; i < len(s); i++ {
 		c := rune(s[i])
-		if !(unicode.IsLetter(c) || unicode.IsNumber(c)) {
+		if !unicode.IsLetter(c) && !unicode.IsNumber(c) {
 			newToken = true
 			continue
 		}

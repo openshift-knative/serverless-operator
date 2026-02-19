@@ -42,8 +42,7 @@ function stage_test_resources() {
 # Skip installing istio as an add-on.
 # Skip installing a pvc as it is not used in upgrade tests
 # Skip installing a resource quota as it is not used in upgrade tests
-PVC=0 QUOTA=0 initialize "$@" --num-nodes=4 --cluster-version=1.30 \
-  --install-latest-release
+PVC=0 QUOTA=0 initialize "$@" --num-nodes=4 --install-latest-release
 
 # TODO(#2656): Reduce the timeout after we get this test to consistently passing.
 TIMEOUT=30m
@@ -55,7 +54,4 @@ go_test_e2e -tags=upgrade -timeout=${TIMEOUT} \
   --disable-logstream \
   --resolvabledomain=$(use_resolvable_domain) || fail_test
 
-# Remove the kail log file if the test flow passes.
-# This is for preventing too many large log files to be uploaded to GCS in CI.
-rm "${ARTIFACTS}/k8s.log-$(basename "${E2E_SCRIPT}").txt"
 success

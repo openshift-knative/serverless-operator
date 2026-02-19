@@ -61,8 +61,8 @@ func SetupBrokerAuthSsl(ctx context.Context) *feature.Feature {
 }
 
 func SetupBrokerNoAuthSsl(ctx context.Context) *feature.Feature {
-	return SetupBrokerAuth(testpkg.BootstrapServersTlsNoAuth,
-		kafkaauthsecret.WithTlsNoAuthData(ctx))
+	return SetupBrokerAuth(testpkg.BootstrapServersTLSNoAuth,
+		kafkaauthsecret.WithTLSNoAuthData(ctx))
 }
 
 func SetupBrokerAuthSaslPlaintextScram512(ctx context.Context) *feature.Feature {
@@ -73,6 +73,11 @@ func SetupBrokerAuthSaslPlaintextScram512(ctx context.Context) *feature.Feature 
 func SetupBrokerAuthSslSaslScram512(ctx context.Context) *feature.Feature {
 	return SetupBrokerAuth(testpkg.BootstrapServersSslSaslScram,
 		kafkaauthsecret.WithSslSaslScram512Data(ctx))
+}
+
+func SetupBrokerAuthImplicitCASslSaslScram512(ctx context.Context) *feature.Feature {
+	return SetupBrokerAuth(testpkg.BootstrapServersImplicitCASslSaslScram,
+		kafkaauthsecret.WithImplicitCASslSaslScram512Data(ctx))
 }
 
 func SetupBrokerAuthRestrictedSslSaslScram512(ctx context.Context) *feature.Feature {
@@ -90,9 +95,9 @@ func SetupBrokerAuth(bootstrapServer string, authSecretOptions ...manifest.CfgFn
 	triggerName := feature.MakeRandomK8sName("trigger")
 	senderName := feature.MakeRandomK8sName("sender")
 
-	eventId := uuid.New().String()
+	eventID := uuid.New().String()
 	eventToSend := test.MinEvent()
-	eventToSend.SetID(eventId)
+	eventToSend.SetID(eventID)
 
 	f.Setup("Create auth secret", kafkaauthsecret.Install(authSecretName, authSecretOptions...))
 
@@ -119,7 +124,7 @@ func SetupBrokerAuth(bootstrapServer string, authSecretOptions ...manifest.CfgFn
 		eventshub.InputEvent(eventToSend),
 		eventshub.StartSenderToResource(broker.GVR(), brokerName)))
 
-	f.Assert("Event received", assert.OnStore(sinkName).MatchEvent(test.HasId(eventId)).Exact(1))
+	f.Assert("Event received", assert.OnStore(sinkName).MatchEvent(test.HasId(eventID)).Exact(1))
 
 	return f
 }
@@ -212,7 +217,7 @@ func checkTriggerConsumerGroupIDAnnotation(triggerName string) feature.StepFn {
 
 		expectedAnnotation := expectedBytes.String()
 
-		cgAnnotation, ok := trig.Status.Annotations[kafka.GroupIdAnnotation]
+		cgAnnotation, ok := trig.Status.Annotations[kafka.GroupIDAnnotation]
 		if !ok {
 			t.Fatal("no consumer group annotation present on the trigger")
 		}

@@ -115,11 +115,11 @@ func IsVersionValidMigrationEligible(instance base.KComponent) error {
 	}
 	target := SanitizeSemver(targetVersion)
 	if !semver.IsValid(target) {
-		return fmt.Errorf("target version %v is not in a valid semantic versioning format.", target)
+		return fmt.Errorf("target version %v is not in a valid semantic versioning format", target)
 	}
 
 	if len(strings.Split(target, ".")) < 2 {
-		return fmt.Errorf("target version %v should at least include the major and minor numbers.", target)
+		return fmt.Errorf("target version %v should at least include the major and minor numbers", target)
 	}
 
 	current := instance.GetStatus().GetVersion()
@@ -135,11 +135,11 @@ func IsVersionValidMigrationEligible(instance base.KComponent) error {
 
 	currentMinor, err := strconv.Atoi(strings.Split(current, ".")[1])
 	if err != nil {
-		return fmt.Errorf("minor number of the current version %v should be an integer.", current)
+		return fmt.Errorf("minor number of the current version %v should be an integer", current)
 	}
 	targetMinor, err := strconv.Atoi(strings.Split(target, ".")[1])
 	if err != nil {
-		return fmt.Errorf("minor number of the target version %v should be an integer.", target)
+		return fmt.Errorf("minor number of the target version %v should be an integer", target)
 	}
 
 	if currentMajor != targetMajor {
@@ -157,7 +157,7 @@ func IsVersionValidMigrationEligible(instance base.KComponent) error {
 		}
 
 		return fmt.Errorf("not supported to upgrade or downgrade across the MAJOR version. The "+
-			"installed KnativeServing version is %v.", current)
+			"installed KnativeServing version is %v", current)
 	}
 
 	// If the diff between minor versions are less than 2, return nil.
@@ -166,7 +166,7 @@ func IsVersionValidMigrationEligible(instance base.KComponent) error {
 	}
 
 	return fmt.Errorf("not supported to upgrade or downgrade across multiple MINOR versions. The "+
-		"installed KnativeServing version is %v.", current)
+		"installed KnativeServing version is %v", current)
 }
 
 type manifestFetcher func(string) (mf.Manifest, error)
@@ -195,20 +195,18 @@ func getManifestWithVersionValidation(manifestsPath string, instance base.KCompo
 		return manifests, nil
 	}
 
-	// We support only one version, there is no need to check manifest consistency and it is actually a pain to experiment
-	// with future releases.
-	//
-	//targetVersion := SanitizeSemver(version)
-	//key := getVersionKey(instance)
-	//for _, u := range manifests.Resources() {
-	//	// Check the labels of the resources one by one to see if the version matches the target version in terms of
-	//	// major.minor.
-	//	manifestVersion := u.GetLabels()[key]
-	//	if manifestVersion != "" && semver.MajorMinor(targetVersion) != semver.MajorMinor(manifestVersion) {
-	//		return mf.Manifest{}, fmt.Errorf("the version of the manifests %s of the component %s does not match the target "+
-	//			"version of the operator CR %s", manifestVersion, u.GetName(), targetVersion)
-	//	}
-	//}
+	targetVersion := SanitizeSemver(version)
+	key := "app.kubernetes.io/version"
+	for _, u := range manifests.Resources() {
+		// Check the labels of the resources one by one to see if the version matches the target version in terms of
+		// major.minor.
+		manifestVersion := u.GetLabels()[key]
+		manifestVersionSan := SanitizeSemver(u.GetLabels()[key])
+		if manifestVersion != "" && semver.MajorMinor(targetVersion) != semver.MajorMinor(manifestVersionSan) {
+			return mf.Manifest{}, fmt.Errorf("the version of the manifests %s of the component %s does not match the target "+
+				"version of the operator CR %s", manifestVersionSan, u.GetName(), targetVersion)
+		}
+	}
 
 	return manifests, nil
 }
