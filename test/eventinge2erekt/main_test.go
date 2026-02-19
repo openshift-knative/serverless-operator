@@ -42,7 +42,7 @@ func defaultEnvironment(t *testing.T) (context.Context, environment.Environment)
 	return global.Environment(
 		knative.WithKnativeNamespace(system.Namespace()),
 		knative.WithLoggingConfig,
-		knative.WithTracingConfig,
+		knative.WithObservabilityConfig,
 		k8s.WithEventListener,
 		// Enables KnativeService in the scenario.
 		eventshub.WithKnativeServiceForwarder,

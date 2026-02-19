@@ -32,7 +32,7 @@ func TestBrokerDeliverLongResponseMessage(t *testing.T) {
 	ctx, env := global.Environment(
 		knative.WithKnativeNamespace(system.Namespace()),
 		knative.WithLoggingConfig,
-		knative.WithTracingConfig,
+		knative.WithObservabilityConfig,
 		k8s.WithEventListener,
 		environment.WithPollTimings(5*time.Second, 4*time.Minute),
 		environment.Managed(t),

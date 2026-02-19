@@ -36,7 +36,7 @@ func (fe *FeatureWithEnvironment) CreateEnvironment() {
 	ctx, env := fe.Global.Environment(
 		knative.WithKnativeNamespace(system.Namespace()),
 		knative.WithLoggingConfig,
-		knative.WithTracingConfig,
+		knative.WithObservabilityConfig,
 		k8s.WithEventListener,
 		environment.WithPollTimings(4*time.Second, 600*time.Second),
 	)
