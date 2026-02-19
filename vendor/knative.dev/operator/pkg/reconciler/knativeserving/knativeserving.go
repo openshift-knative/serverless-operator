@@ -19,9 +19,11 @@ package knativeserving
 import (
 	"context"
 	"fmt"
+	"os"
 
 	mf "github.com/manifestival/manifestival"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/client-go/kubernetes"
 
 	"knative.dev/pkg/logging"
@@ -92,8 +94,29 @@ func (r *Reconciler) FinalizeKind(ctx context.Context, original *v1beta1.Knative
 		return nil
 	}
 
+	// we need this to apply the correct namespace to the resources otherwise it defaults to knative-serving
+	*manifest, err = manifest.Transform(overrideKourierNamespace(original))
+	if err != nil {
+		logger.Error("Unable to apply kourier namespace transform", err)
+		return nil
+	}
+
 	if err := common.Uninstall(manifest); err != nil {
 		logger.Error("Failed to finalize platform resources", err)
+	}
+	return nil
+}
+
+func overrideKourierNamespace(ks base.KComponent) mf.Transformer {
+	if ns, required := os.LookupEnv("REQUIRED_SERVING_INGRESS_NAMESPACE"); required {
+		nsInjector := mf.InjectNamespace(ns)
+		return func(u *unstructured.Unstructured) error {
+			provider := u.GetLabels()["networking.knative.dev/ingress-provider"]
+			if provider != "kourier" {
+				return nil
+			}
+			return nsInjector(u)
+		}
 	}
 	return nil
 }
@@ -107,10 +130,6 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, ks *v1beta1.KnativeServi
 
 	logger.Infow("Reconciling KnativeServing", "status", ks.Status)
 
-	if err := common.IsVersionValidMigrationEligible(ks); err != nil {
-		ks.Status.MarkVersionMigrationNotEligible(err.Error())
-		return nil
-	}
 	ks.Status.MarkVersionMigrationEligible()
 
 	if err := r.extension.Reconcile(ctx, ks); err != nil {
@@ -122,6 +141,10 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, ks *v1beta1.KnativeServi
 		security.AppendTargetSecurity,
 		common.AppendAdditionalManifests,
 		r.appendExtensionManifests,
+		func(ctx context.Context, manifest *mf.Manifest, component base.KComponent) error {
+			*manifest = manifest.Filter(mf.Not(mf.All(mf.ByKind("Namespace"), mf.ByName("kourier-system"))))
+			return nil
+		},
 		r.transform,
 		manifests.Install,
 		manifests.SetManifestPaths,    // setting path right after applying manifests to populate paths

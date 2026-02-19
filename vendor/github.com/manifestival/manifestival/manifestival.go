@@ -133,7 +133,7 @@ func (m Manifest) apply(spec *unstructured.Unstructured, opts ...ApplyOption) er
 		annotate(current, v1.LastAppliedConfigAnnotation, lastApplied(current))
 		return m.Client.Create(current, opts...)
 	} else {
-		diff, err := patch.New(current, spec)
+		diff, err := patch.New(unsetStatus(current), unsetStatus(spec))
 		if err != nil {
 			return err
 		}
@@ -154,6 +154,14 @@ func (m Manifest) apply(spec *unstructured.Unstructured, opts ...ApplyOption) er
 
 		return m.update(current, spec, opts...)
 	}
+}
+
+func unsetStatus(spec *unstructured.Unstructured) *unstructured.Unstructured {
+	spec = spec.DeepCopy()
+	if _, ok := spec.Object["status"]; ok {
+		spec.Object["status"] = nil
+	}
+	return spec
 }
 
 // update a single resource
