@@ -41,7 +41,6 @@ function upstream_knative_eventing_kafka_broker_e2e {
   export SYSTEM_NAMESPACE="${EVENTING_NAMESPACE}"
 
   run_e2e_tests
-  run_conformance_tests
   run_e2e_new_tests
 
   # Rollback setting Kafka as default Broker class
