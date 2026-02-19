@@ -15,7 +15,6 @@ func ExampleAdditionalResourcesForNamespacedBroker() {
 	// - apiVersion: monitoring.coreos.com/v1
 	//   kind: ServiceMonitor
 	//   metadata:
-	//     creationTimestamp: null
 	//     labels:
 	//       app: kafka-broker-receiver
 	//     name: kafka-broker-receiver-sm
@@ -41,7 +40,6 @@ func ExampleAdditionalResourcesForNamespacedBroker() {
 	// - apiVersion: monitoring.coreos.com/v1
 	//   kind: ServiceMonitor
 	//   metadata:
-	//     creationTimestamp: null
 	//     labels:
 	//       app: kafka-broker-dispatcher
 	//     name: kafka-broker-dispatcher-sm
@@ -69,7 +67,6 @@ func ExampleAdditionalResourcesForNamespacedBroker() {
 	//   metadata:
 	//     annotations:
 	//       service.beta.openshift.io/serving-cert-secret-name: kafka-broker-receiver-sm-service-tls
-	//     creationTimestamp: null
 	//     labels:
 	//       name: kafka-broker-receiver-sm-service
 	//     name: kafka-broker-receiver-sm-service
@@ -88,7 +85,6 @@ func ExampleAdditionalResourcesForNamespacedBroker() {
 	//   metadata:
 	//     annotations:
 	//       service.beta.openshift.io/serving-cert-secret-name: kafka-broker-dispatcher-sm-service-tls
-	//     creationTimestamp: null
 	//     labels:
 	//       name: kafka-broker-dispatcher-sm-service
 	//     name: kafka-broker-dispatcher-sm-service
@@ -105,7 +101,6 @@ func ExampleAdditionalResourcesForNamespacedBroker() {
 	// - apiVersion: rbac.authorization.k8s.io/v1
 	//   kind: ClusterRoleBinding
 	//   metadata:
-	//     creationTimestamp: null
 	//     name: rbac-proxy-reviews-prom-rb-knative-kafka-broker-data-plane-{{.Namespace}}
 	//   roleRef:
 	//     apiGroup: rbac.authorization.k8s.io
@@ -118,7 +113,6 @@ func ExampleAdditionalResourcesForNamespacedBroker() {
 	// - apiVersion: rbac.authorization.k8s.io/v1
 	//   kind: RoleBinding
 	//   metadata:
-	//     creationTimestamp: null
 	//     name: eventing-kafka-knative-prometheus-k8s
 	//     namespace: '{{.Namespace}}'
 	//   roleRef:
@@ -132,7 +126,6 @@ func ExampleAdditionalResourcesForNamespacedBroker() {
 	// - apiVersion: v1
 	//   kind: Namespace
 	//   metadata:
-	//     creationTimestamp: null
 	//     labels:
 	//       openshift.io/cluster-monitoring: "true"
 	//     name: '{{.Namespace}}'
