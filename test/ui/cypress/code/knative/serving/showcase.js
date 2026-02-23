@@ -46,6 +46,11 @@ class ShowcaseKservice {
       selector = '.co-external-link--block a'
     }
     
+    // OCP 4.13 and earlier use a.co-external-link
+    if (environment.ocpVersion().satisfies('<=4.13')) {
+      selector = 'a.co-external-link'
+    }
+    
     return cy.get(selector)
       .last()
       .scrollIntoView()
