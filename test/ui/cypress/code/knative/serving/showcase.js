@@ -130,8 +130,17 @@ class ShowcaseKservice {
 
   isServiceDeployed() {
     return new Cypress.Promise((resolve, _) => {
-      const cmd = `kubectl get all -l app.kubernetes.io/part-of=${this.app} -n ${this.namespace} -o name`
-      cy.exec(cmd).then((result) => {
+      // On OCP <=4.14, OCPBUGS-6685 causes imagestreams to be left behind from
+      // previous runs. Checking 'all' resources would falsely indicate the app is
+      // deployed (imagestream exists, but ksvc is gone). Check for ksvc specifically.
+      // On newer OCP, 'all' is fine as UI delete properly cleans up all resources.
+      let cmd
+      if (environment.ocpVersion().satisfies('<=4.14')) {
+        cmd = `kubectl get ksvc ${this.name} -n ${this.namespace} -o name`
+      } else {
+        cmd = `kubectl get all -l app.kubernetes.io/part-of=${this.app} -n ${this.namespace} -o name`
+      }
+      cy.exec(cmd, { failOnNonZeroExit: false }).then((result) => {
         cy.log(result.stdout)
         let out = result.stdout.trim()
         resolve(out.length > 0)
