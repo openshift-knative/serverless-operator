@@ -20,59 +20,60 @@ const (
 var (
 	prometheusTargetTimeout = 20 * time.Minute
 	servingMetricQueries    = []string{
-		"activator_go_mallocs",
-		"autoscaler_go_mallocs",
-		"hpaautoscaler_go_mallocs",
-		"controller_go_mallocs{namespace=\"knative-serving\"}",
-		"webhook_go_mallocs",
+		"go_memory_allocations_total{job=\"activator-sm-service\"}",
+		"go_memory_allocations_total{job=\"autoscaler-sm-service\"}",
+		"go_memory_allocations_total{job=\"autoscaler-hpa-sm-service\"}",
+		"go_memory_allocations_total{job=\"controller-sm-service\",namespace=\"knative-serving\"}",
+		"go_memory_allocations_total{job=\"webhook-sm-service\"}",
 	}
 	eventingMetricQueries = []string{
-		"controller_go_mallocs{namespace=\"knative-eventing\"}",
-		"eventing_webhook_go_mallocs",
-		"inmemorychannel_webhook_go_mallocs",
-		"inmemorychannel_dispatcher_go_mallocs",
-		"mt_broker_controller_go_mallocs",
-		"mt_broker_filter_go_mallocs",
-		"mt_broker_ingress_go_mallocs",
+		"go_memory_allocations_total{job=\"eventing-controller-sm-service\",namespace=\"knative-eventing\"}",
+		"go_memory_allocations_total{job=\"eventing-webhook-sm-service\"}",
+		"go_memory_allocations_total{job=\"imc-controller-sm-service\"}",
+		// TODO: imc-dispatcher-sm-service removed due to upstream bug - metrics endpoint fails with duplicate metric registration
+		// "go_memory_allocations_total{job=\"imc-dispatcher-sm-service\"}",
+		"go_memory_allocations_total{job=\"mt-broker-controller-sm-service\"}",
+		"go_memory_allocations_total{job=\"mt-broker-filter-sm-service\"}",
+		"go_memory_allocations_total{job=\"mt-broker-ingress-sm-service\"}",
 	}
 
 	EventingPingSourceMetricQueries = []string{
-		"pingsource_event_count",
+		"go_memory_allocations_total{job=\"pingsource-mt-adapter-sm-service\"}",
 	}
 
 	KafkaQueries = []string{
-		"kafka_broker_controller_go_mallocs",
-		"kafka_webhook_eventing_go_mallocs",
+		"go_memory_allocations_total{job=\"kafka-controller-sm-service\"}",
+		"go_memory_allocations_total{job=\"kafka-webhook-eventing-sm-service\"}",
 	}
 
 	KafkaBrokerDataPlaneQueries = []string{
-		"sum(rate(event_dispatch_latencies_ms_bucket{le=\"100.0\", namespace=\"knative-eventing\", job=\"kafka-broker-receiver-sm-service\"}[5m])) by (name, namespace_name) / sum(rate(event_dispatch_latencies_ms_count{job=\"kafka-broker-receiver-sm-service\", namespace=\"knative-eventing\",}[5m])) by (name, namespace_name)",
-		"sum(rate(event_dispatch_latencies_ms_bucket{le=\"100.0\", job=\"kafka-broker-dispatcher-sm-service\", namespace=\"knative-eventing\"}[5m])) by (name, namespace_name) / sum(rate(event_dispatch_latencies_ms_count{job=\"kafka-broker-dispatcher-sm-service\", namespace=\"knative-eventing\"}[5m])) by (name, namespace_name)",
-		"sum(event_count_1_total{job=\"kafka-broker-receiver-sm-service\", namespace=\"knative-eventing\"}) by (name, namespace_name)",
-		"sum(event_count_1_total{job=\"kafka-broker-dispatcher-sm-service\", namespace=\"knative-eventing\"}) by (name, namespace_name)",
+		"sum(rate(kn_eventing_dispatch_latency_milliseconds_bucket{le=\"100.0\", namespace=\"knative-eventing\", job=\"kafka-broker-receiver-sm-service\"}[5m])) by (name, namespace_name) / sum(rate(kn_eventing_dispatch_latency_milliseconds_count{job=\"kafka-broker-receiver-sm-service\", namespace=\"knative-eventing\",}[5m])) by (name, namespace_name)",
+		"sum(rate(kn_eventing_dispatch_latency_milliseconds_bucket{le=\"100.0\", job=\"kafka-broker-dispatcher-sm-service\", namespace=\"knative-eventing\"}[5m])) by (name, namespace_name) / sum(rate(kn_eventing_dispatch_latency_milliseconds_count{job=\"kafka-broker-dispatcher-sm-service\", namespace=\"knative-eventing\"}[5m])) by (name, namespace_name)",
+		"sum(http_events_sent_total{job=\"kafka-broker-receiver-sm-service\", namespace=\"knative-eventing\"}) by (name, namespace_name)",
+		"sum(http_events_sent_total{job=\"kafka-broker-dispatcher-sm-service\", namespace=\"knative-eventing\"}) by (name, namespace_name)",
 	}
 
 	NamespacedKafkaBrokerDataPlaneQueries = func(namespace string) []string {
 		return []string{
-			fmt.Sprintf("sum(rate(event_dispatch_latencies_ms_bucket{le=\"100.0\", namespace=\"%s\", job=\"kafka-broker-receiver-sm-service\"}[5m])) by (name, namespace_name) / sum(rate(event_dispatch_latencies_ms_count{job=\"kafka-broker-receiver-sm-service\", namespace=\"%s\",}[5m])) by (name, namespace_name)", namespace, namespace),
-			fmt.Sprintf("sum(rate(event_dispatch_latencies_ms_bucket{le=\"100.0\", job=\"kafka-broker-dispatcher-sm-service\", namespace=\"%s\"}[5m])) by (name, namespace_name) / sum(rate(event_dispatch_latencies_ms_count{job=\"kafka-broker-dispatcher-sm-service\", namespace=\"%s\"}[5m])) by (name, namespace_name)", namespace, namespace),
-			fmt.Sprintf("sum(event_count_1_total{job=\"kafka-broker-receiver-sm-service\", namespace=\"%s\"}) by (name, namespace_name)", namespace),
-			fmt.Sprintf("sum(event_count_1_total{job=\"kafka-broker-dispatcher-sm-service\", namespace=\"%s\"}) by (name, namespace_name)", namespace),
+			fmt.Sprintf("sum(rate(kn_eventing_dispatch_latency_milliseconds_bucket{le=\"100.0\", namespace=\"%s\", job=\"kafka-broker-receiver-sm-service\"}[5m])) by (name, namespace_name) / sum(rate(kn_eventing_dispatch_latency_milliseconds_count{job=\"kafka-broker-receiver-sm-service\", namespace=\"%s\",}[5m])) by (name, namespace_name)", namespace, namespace),
+			fmt.Sprintf("sum(rate(kn_eventing_dispatch_latency_milliseconds_bucket{le=\"100.0\", job=\"kafka-broker-dispatcher-sm-service\", namespace=\"%s\"}[5m])) by (name, namespace_name) / sum(rate(kn_eventing_dispatch_latency_milliseconds_count{job=\"kafka-broker-dispatcher-sm-service\", namespace=\"%s\"}[5m])) by (name, namespace_name)", namespace, namespace),
+			fmt.Sprintf("sum(http_events_sent_total{job=\"kafka-broker-receiver-sm-service\", namespace=\"%s\"}) by (name, namespace_name)", namespace),
+			fmt.Sprintf("sum(http_events_sent_total{job=\"kafka-broker-dispatcher-sm-service\", namespace=\"%s\"}) by (name, namespace_name)", namespace),
 		}
 	}
 
 	KafkaControllerQueries = []string{
-		"sum(rate(kafka_broker_controller_reconcile_latency_bucket{le=~\"100(.0)?\", job=\"kafka-controller-sm-service\", namespace=\"knative-eventing\"}[5m])) / sum(rate(kafka_broker_controller_reconcile_latency_count{job=\"kafka-controller-sm-service\", namespace=\"knative-eventing\"}[5m]))",
-		"sum(kafka_broker_controller_workqueue_depth{job=\"kafka-controller-sm-service\", namespace=\"knative-eventing\"}) by (name)",
+		"sum(rate(http_client_request_duration_seconds_bucket{le=~\"0.1\", job=\"kafka-controller-sm-service\", namespace=\"knative-eventing\"}[5m])) / sum(rate(http_client_request_duration_seconds_count{job=\"kafka-controller-sm-service\", namespace=\"knative-eventing\"}[5m]))",
+		"sum(kn_workqueue_unfinished_work_seconds{job=\"kafka-controller-sm-service\", namespace=\"knative-eventing\"}) by (name)",
 	}
 
 	serverlessComponentQueries = []string{
 		// Checks if openshift-knative-operator metrics are served
-		"knative_operator_go_mallocs",
+		"go_memory_allocations_total{job=\"knative-operator-metrics\"}",
 		// Checks if knative-openshift metrics are served
 		"controller_runtime_active_workers{controller=\"knativeserving-controller\"}",
 		// Checks if knative-openshift-ingress metrics are served
-		"openshift_ingress_controller_go_mallocs",
+		"go_memory_allocations_total{job=\"knative-openshift-ingress-metrics\"}",
 	}
 )
 
