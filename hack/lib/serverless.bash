@@ -416,11 +416,6 @@ spec:
   channel:
     enabled: true
     bootstrapServers: my-cluster-kafka-bootstrap.kafka:9092
-  config:
-    observability:
-      metrics.backend-destination: "prometheus"
-      metrics-protocol: "prometheus"
-      request-metrics-protocol: "prometheus"
 EOF
 
   if [[ $MESH == "true" ]]; then
