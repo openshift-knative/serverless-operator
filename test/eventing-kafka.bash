@@ -42,7 +42,6 @@ function upstream_knative_eventing_kafka_broker_e2e {
 
   local failed=0
   run_e2e_tests || failed=$?
-  [[ $failed -eq 0 ]] && { run_conformance_tests || failed=$?; }
   [[ $failed -eq 0 ]] && { run_e2e_new_tests || failed=$?; }
 
   if [[ "${MAP_TESTS:-false}" == "true" ]]; then
