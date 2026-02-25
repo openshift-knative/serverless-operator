@@ -199,12 +199,12 @@ require (
 
 replace (
 	// Knative components
-	knative.dev/eventing => github.com/openshift-knative/eventing v0.99.1-0.20260216131614-70403cf0b9de
+	knative.dev/eventing => github.com/openshift-knative/eventing v0.99.1-0.20260225095816-314001a990dc
 	knative.dev/eventing-kafka-broker => github.com/openshift-knative/eventing-kafka-broker v0.25.1-0.20260216114454-c56bb0c48168
 	knative.dev/hack => knative.dev/hack v0.0.0-20260120115810-bf6758cba446
 	knative.dev/networking => knative.dev/networking v0.0.0-20260120131110-a7cdca238a0d
 	knative.dev/pkg => knative.dev/pkg v0.0.0-20260120122510-4a022ed9999a
-	knative.dev/reconciler-test => knative.dev/reconciler-test v0.0.0-20260224210419-6f2fbd71f1a3
+	knative.dev/reconciler-test => knative.dev/reconciler-test v0.0.0-20260225102520-330ffb2184a7
 	knative.dev/serving => github.com/openshift-knative/serving v0.10.1-0.20260219105213-64125b69a62a
 )
 
