@@ -40,10 +40,17 @@ function upstream_knative_eventing_kafka_broker_e2e {
 
   export SYSTEM_NAMESPACE="${EVENTING_NAMESPACE}"
 
-  run_e2e_tests
-  run_conformance_tests
-  run_e2e_new_tests
+  local failed=0
+  run_e2e_tests || failed=$?
+  [[ $failed -eq 0 ]] && { run_conformance_tests || failed=$?; }
+  [[ $failed -eq 0 ]] && { run_e2e_new_tests || failed=$?; }
+
+  if [[ "${MAP_TESTS:-false}" == "true" ]]; then
+    map_lp_interop_reports
+  fi
 
   # Rollback setting Kafka as default Broker class
   oc patch knativeeventing --type merge -n knative-eventing knative-eventing --patch-file "${root_dir}/test/config/eventing/kafka-broker-default-patch-rollback.yaml"
+
+  return $failed
 }
