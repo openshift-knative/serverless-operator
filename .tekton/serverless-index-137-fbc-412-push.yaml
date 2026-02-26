@@ -1,0 +1,55 @@
+apiVersion: tekton.dev/v1
+kind: PipelineRun
+metadata:
+  annotations:
+    build.appstudio.openshift.io/repo: https://github.com/openshift-knative/serverless-operator?rev={{revision}}
+    build.appstudio.redhat.com/commit_sha: '{{revision}}'
+    build.appstudio.redhat.com/target_branch: '{{target_branch}}'
+    pipelinesascode.tekton.dev/max-keep-runs: "3"
+    pipelinesascode.tekton.dev/on-cel-expression: event == "push" && target_branch == "release-1.37" && ( files.all.exists(x, x.matches('^olm-catalog/serverless-operator-index/v4.12/')) || files.all.exists(x, x.matches('^.tekton/')) )
+  creationTimestamp: null
+  labels:
+    appstudio.openshift.io/application: serverless-operator-137-fbc-412
+    appstudio.openshift.io/component: serverless-index-137-fbc-412
+    pipelines.appstudio.openshift.io/type: build
+  name: serverless-index-137-fbc-412-on-push
+  namespace: ocp-serverless-tenant
+spec:
+  params:
+    - name: dockerfile
+      value: Dockerfile
+    - name: path-context
+      value: ./olm-catalog/serverless-operator-index/v4.12
+    - name: build-args
+      value:
+        - VERSION=1.37.1
+        - TAG=v1.17.0
+        - CLI_ARTIFACTS=registry.redhat.io/openshift4/ose-cli-artifacts-rhel9:v4.16
+        - GO_BUILDER=brew.registry.redhat.io/rh-osbs/openshift-golang-builder:rhel_9_golang_1.23
+        - GO_RUNTIME=registry.access.redhat.com/ubi9/ubi-minimal
+        - JAVA_BUILDER=registry.access.redhat.com/ubi9/openjdk-21
+        - JAVA_RUNTIME=registry.access.redhat.com/ubi9/openjdk-21-runtime
+        - NODE_BUILDER=registry.access.redhat.com/ubi9/nodejs-20
+        - NODE_RUNTIME=registry.access.redhat.com/ubi9/nodejs-20
+        - OPM_IMAGE=registry.redhat.io/openshift4/ose-operator-registry:v4.12
+    - name: git-url
+      value: '{{source_url}}'
+    - name: hermetic
+      value: "true"
+    - name: output-image
+      value: quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-137-fbc-412/serverless-index-137-fbc-412:{{revision}}
+    - name: revision
+      value: '{{revision}}'
+    - name: additional-tags
+      value:
+        - $(context.pipelineRun.uid)-{{revision}}
+        - 1.37.1
+        - latest
+  pipelineRef:
+    name: fbc-builder
+  taskRunTemplate:
+    serviceAccountName: build-pipeline-serverless-index-137-fbc-412
+  workspaces:
+    - name: git-auth
+      secret:
+        secretName: '{{ git_auth_secret }}'
