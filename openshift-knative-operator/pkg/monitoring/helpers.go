@@ -231,12 +231,19 @@ func CreateClusterRoleBindingManifest(serviceAccountName string, ns string) (*mf
 
 // getDefaultMetricsPort returns the expected metrics port under the assumption that this will not change
 // This is static information since observability cm does not allow any changes for the prometheus config
-// TODO(skonto): fix this upstream so ports are aligned if possible
 func getDefaultMetricsPort(name string) string {
-	if name == "mt-broker-ingress" || name == "mt-broker-filter" || name == "job-sink" {
+	// Components that use eventing's otel.SetupObservabilityOrDie use port 9092
+	// (DefaultMetricsPort in eventing/pkg/observability/config.go)
+	switch name {
+	case "mt-broker-filter",
+		"mt-broker-ingress",
+		"pingsource-mt-adapter",
+		"job-sink":
 		return "9092"
+	default:
+		// All other components (Serving, eventing controllers using sharedmain) use 9090
+		return "9090"
 	}
-	return "9090"
 }
 
 // getSelectorLabels returns the correct deployment label to use with the service monitor service.
