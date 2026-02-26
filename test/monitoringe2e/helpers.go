@@ -49,16 +49,12 @@ var (
 	KafkaBrokerDataPlaneQueries = []string{
 		"sum(rate(kn_eventing_dispatch_latency_ms_bucket{le=\"100.0\", namespace=\"knative-eventing\", job=\"kafka-broker-receiver-sm-service\"}[5m])) by (name, namespace_name) / sum(rate(kn_eventing_dispatch_latency_ms_count{job=\"kafka-broker-receiver-sm-service\", namespace=\"knative-eventing\",}[5m])) by (name, namespace_name)",
 		"sum(rate(kn_eventing_dispatch_latency_ms_bucket{le=\"100.0\", job=\"kafka-broker-dispatcher-sm-service\", namespace=\"knative-eventing\"}[5m])) by (name, namespace_name) / sum(rate(kn_eventing_dispatch_latency_ms_count{job=\"kafka-broker-dispatcher-sm-service\", namespace=\"knative-eventing\"}[5m])) by (name, namespace_name)",
-		"sum(http_events_sent_total{job=\"kafka-broker-receiver-sm-service\", namespace=\"knative-eventing\"}) by (name, namespace_name)",
-		"sum(http_events_sent_total{job=\"kafka-broker-dispatcher-sm-service\", namespace=\"knative-eventing\"}) by (name, namespace_name)",
 	}
 
 	NamespacedKafkaBrokerDataPlaneQueries = func(namespace string) []string {
 		return []string{
 			fmt.Sprintf("sum(rate(kn_eventing_dispatch_latency_ms_bucket{le=\"100.0\", namespace=\"%s\", job=\"kafka-broker-receiver-sm-service\"}[5m])) by (name, namespace_name) / sum(rate(kn_eventing_dispatch_latency_ms_count{job=\"kafka-broker-receiver-sm-service\", namespace=\"%s\",}[5m])) by (name, namespace_name)", namespace, namespace),
 			fmt.Sprintf("sum(rate(kn_eventing_dispatch_latency_ms_bucket{le=\"100.0\", job=\"kafka-broker-dispatcher-sm-service\", namespace=\"%s\"}[5m])) by (name, namespace_name) / sum(rate(kn_eventing_dispatch_latency_ms_count{job=\"kafka-broker-dispatcher-sm-service\", namespace=\"%s\"}[5m])) by (name, namespace_name)", namespace, namespace),
-			fmt.Sprintf("sum(http_events_sent_total{job=\"kafka-broker-receiver-sm-service\", namespace=\"%s\"}) by (name, namespace_name)", namespace),
-			fmt.Sprintf("sum(http_events_sent_total{job=\"kafka-broker-dispatcher-sm-service\", namespace=\"%s\"}) by (name, namespace_name)", namespace),
 		}
 	}
 
