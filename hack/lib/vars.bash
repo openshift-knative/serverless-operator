@@ -12,7 +12,7 @@ fi
 source "$(dirname "${BASH_SOURCE[0]}")/../../vendor/knative.dev/hack/e2e-tests.sh"
 source "$(dirname "${BASH_SOURCE[0]}")/images.bash"
 
-export STRIMZI_VERSION=0.45.1
+export STRIMZI_VERSION=0.46.1
 
 # Adjust these when upgrading the knative versions.
 export KNATIVE_SERVING_VERSION="${KNATIVE_SERVING_VERSION:-$(metadata.get dependencies.serving)}"
