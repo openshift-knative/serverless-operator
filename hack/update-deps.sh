@@ -15,10 +15,10 @@ set -o pipefail
 cd "${ROOT_DIR}"
 
 # This controls the knative release version we track.
-KN_VERSION="release-1.17" # when bumping to 1.18 / k8s 1.32, the hack/patches/023-knative-operator-k8s-1.31-downgrade-fix patch can be removed again
-EVENTING_VERSION="release-v1.17"
-EVENTING_KAFKA_BROKER_VERSION="release-v1.17"
-SERVING_VERSION="release-v1.17"
+KN_VERSION="release-1.21"
+EVENTING_VERSION="release-v1.21"
+EVENTING_KAFKA_BROKER_VERSION="release-v1.21"
+SERVING_VERSION="release-v1.21"
 GO_VERSION="$(metadata.get requirements.golang)"
 OCP_VERSION="$(metadata.get requirements.ocpVersion.list[-1])"
 

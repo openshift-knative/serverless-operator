@@ -331,6 +331,9 @@ func TestCustomCertsConfigMap(t *testing.T) {
 
 				// Unset as its not significant anyway.
 				got.ResourceVersion = ""
+				// TypeMeta is not populated by client.Get() in newer controller-runtime
+				test.outCtrl.TypeMeta.Kind = ""
+				test.outCtrl.TypeMeta.APIVersion = ""
 
 				if !cmp.Equal(got, test.outCtrl) {
 					t.Errorf("Deployments not equal, diff: %s", cmp.Diff(got, test.outCtrl))

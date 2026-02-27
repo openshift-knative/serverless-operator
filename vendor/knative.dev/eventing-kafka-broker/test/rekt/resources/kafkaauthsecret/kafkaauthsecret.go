@@ -44,7 +44,7 @@ func WithSslData(ctx context.Context) manifest.CfgFn {
 		panic(err)
 	}
 
-	tlsUserSecret, err := client.Get(ctx).CoreV1().Secrets(pkg.KafkaClusterNamespace).Get(ctx, pkg.TlsUserSecretName, metav1.GetOptions{})
+	tlsUserSecret, err := client.Get(ctx).CoreV1().Secrets(pkg.KafkaClusterNamespace).Get(ctx, pkg.TLSUserSecretName, metav1.GetOptions{})
 	if err != nil {
 		panic(err)
 	}
@@ -57,7 +57,7 @@ func WithSslData(ctx context.Context) manifest.CfgFn {
 	})
 }
 
-func WithTlsNoAuthData(ctx context.Context) manifest.CfgFn {
+func WithTLSNoAuthData(ctx context.Context) manifest.CfgFn {
 	caSecret, err := client.Get(ctx).CoreV1().Secrets(pkg.KafkaClusterNamespace).Get(ctx, pkg.CaSecretName, metav1.GetOptions{})
 	if err != nil {
 		panic(err)
@@ -99,6 +99,21 @@ func WithSslSaslScram512Data(ctx context.Context) manifest.CfgFn {
 		"protocol":       []byte("SASL_SSL"),
 		"sasl.mechanism": []byte("SCRAM-SHA-512"),
 		"ca.crt":         caSecret.Data["ca.crt"],
+		"user":           []byte(pkg.SaslUserSecretName),
+		"password":       saslUserSecret.Data["password"],
+	})
+}
+
+// WithImplicitCASslSaslScram512Data same as WithSslSaslScram512Data but using an implicit CA configured in the control-plane and data-plane containers
+func WithImplicitCASslSaslScram512Data(ctx context.Context) manifest.CfgFn {
+	saslUserSecret, err := client.Get(ctx).CoreV1().Secrets(pkg.KafkaClusterNamespace).Get(ctx, pkg.SaslUserSecretName, metav1.GetOptions{})
+	if err != nil {
+		panic(err)
+	}
+
+	return secret.WithData(map[string][]byte{
+		"protocol":       []byte("SASL_SSL"),
+		"sasl.mechanism": []byte("SCRAM-SHA-512"),
 		"user":           []byte(pkg.SaslUserSecretName),
 		"password":       saslUserSecret.Data["password"],
 	})

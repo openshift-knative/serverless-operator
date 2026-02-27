@@ -62,7 +62,7 @@ func soakTestEnvironment(t *testing.T, namespace string) (context.Context, envir
 		environment.WithNamespace(namespace),
 		knative.WithKnativeNamespace(system.Namespace()),
 		knative.WithLoggingConfig,
-		knative.WithTracingConfig,
+		knative.WithObservabilityConfig,
 		k8s.WithEventListener,
 		// Enables KnativeService in the scenario.
 		//eventshub.WithKnativeServiceForwarder,

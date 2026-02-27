@@ -3,10 +3,10 @@
 package internal
 
 import (
-	"fmt"
-	"sync"
+	fmt "fmt"
+	sync "sync"
 
-	typed "sigs.k8s.io/structured-merge-diff/v4/typed"
+	typed "sigs.k8s.io/structured-merge-diff/v6/typed"
 )
 
 func Parser() *typed.Parser {
@@ -215,6 +215,19 @@ var schemaYAML = typed.YAMLObject(`types:
       fields:
       - fieldName: service
         discriminatorValue: Service
+- name: com.github.openshift.api.console.v1.ConsolePluginCSP
+  map:
+    fields:
+    - name: directive
+      type:
+        scalar: string
+      default: ""
+    - name: values
+      type:
+        list:
+          elementType:
+            scalar: string
+          elementRelationship: atomic
 - name: com.github.openshift.api.console.v1.ConsolePluginI18n
   map:
     fields:
@@ -275,7 +288,6 @@ var schemaYAML = typed.YAMLObject(`types:
     - name: basePath
       type:
         scalar: string
-      default: ""
     - name: name
       type:
         scalar: string
@@ -295,6 +307,14 @@ var schemaYAML = typed.YAMLObject(`types:
       type:
         namedType: com.github.openshift.api.console.v1.ConsolePluginBackend
       default: {}
+    - name: contentSecurityPolicy
+      type:
+        list:
+          elementType:
+            namedType: com.github.openshift.api.console.v1.ConsolePluginCSP
+          elementRelationship: associative
+          keys:
+          - directive
     - name: displayName
       type:
         scalar: string

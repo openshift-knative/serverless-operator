@@ -32,7 +32,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes"
 	corelisters "k8s.io/client-go/listers/core/v1"
-	"k8s.io/utils/pointer"
+	"k8s.io/utils/ptr"
 	"knative.dev/pkg/logging"
 	"knative.dev/pkg/tracker"
 
@@ -71,7 +71,7 @@ const (
 	ConfigFeaturesUpdatedAnnotationKey = "configFeaturesUpdatedAt"
 
 	Protobuf = "protobuf"
-	Json     = "json"
+	JSON     = "json"
 )
 
 var (
@@ -174,8 +174,8 @@ func PodOwnerReference(p *corev1.Pod) ConfigMapOption {
 		Kind:               "Pod",
 		Name:               p.Name,
 		UID:                p.UID,
-		Controller:         pointer.Bool(true),
-		BlockOwnerDeletion: pointer.Bool(true),
+		Controller:         ptr.To(true),
+		BlockOwnerDeletion: ptr.To(true),
 	}
 	return func(cm *corev1.ConfigMap) {
 		for _, or := range cm.OwnerReferences {
@@ -220,7 +220,7 @@ func GetDataPlaneConfigMapData(logger *zap.Logger, dataPlaneConfigMap *corev1.Co
 	switch format {
 	case Protobuf:
 		err = proto.Unmarshal(dataPlaneDataRaw, ct)
-	case Json:
+	case JSON:
 		err = jsonUnmarshalOptions.Unmarshal(dataPlaneDataRaw, ct)
 	}
 	if err != nil {
@@ -260,7 +260,7 @@ func (r *Reconciler) UpdateDataPlaneConfigMap(ctx context.Context, contract *con
 	switch r.ContractConfigMapFormat {
 	case Protobuf:
 		data, err = proto.Marshal(contract)
-	case Json:
+	case JSON:
 		data, err = protojson.Marshal(contract)
 	default:
 		return fmt.Errorf("unknown contract format %s", r.ContractConfigMapFormat)

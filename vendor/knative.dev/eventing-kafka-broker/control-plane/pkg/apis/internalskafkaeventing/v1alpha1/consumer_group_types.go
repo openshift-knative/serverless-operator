@@ -82,7 +82,7 @@ func (cg *ConsumerGroup) GetPlacements() []eventingduckv1alpha1.Placement {
 }
 
 func (cg *ConsumerGroup) GetResourceVersion() string {
-	return cg.ObjectMeta.ResourceVersion
+	return cg.ResourceVersion
 }
 
 type ConsumerGroupSpec struct {
@@ -166,18 +166,18 @@ type ConsumerGroupList struct {
 }
 
 // GetGroupVersionKind returns GroupVersionKind for ConsumerGroup.
-func (c *ConsumerGroup) GetGroupVersionKind() schema.GroupVersionKind {
+func (cg *ConsumerGroup) GetGroupVersionKind() schema.GroupVersionKind {
 	return SchemeGroupVersion.WithKind("ConsumerGroup")
 }
 
 // GetUntypedSpec returns the spec of the ConsumerGroup.
-func (c *ConsumerGroup) GetUntypedSpec() interface{} {
-	return c.Spec
+func (cg *ConsumerGroup) GetUntypedSpec() interface{} {
+	return cg.Spec
 }
 
 // GetStatus retrieves the status of the ConsumerGroup. Implements the KRShaped interface.
-func (c *ConsumerGroup) GetStatus() *duckv1.Status {
-	return &c.Status.Status
+func (cg *ConsumerGroup) GetStatus() *duckv1.Status {
+	return &cg.Status.Status
 }
 
 // ConsumerFromTemplate returns a Consumer from the Consumer template in the ConsumerGroup spec.
@@ -250,6 +250,6 @@ func (cg *ConsumerGroup) HasDeadLetterSink() bool {
 
 func hasDeadLetterSink(d *DeliverySpec) bool {
 	return d != nil && d.DeliverySpec != nil &&
-		d.DeliverySpec.DeadLetterSink != nil &&
-		(d.DeliverySpec.DeadLetterSink.Ref != nil || d.DeliverySpec.DeadLetterSink.URI != nil)
+		d.DeadLetterSink != nil &&
+		(d.DeadLetterSink.Ref != nil || d.DeadLetterSink.URI != nil)
 }

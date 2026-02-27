@@ -18,14 +18,15 @@ package kafka
 
 import (
 	"context"
+	"strconv"
 
 	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes"
-	"k8s.io/utils/pointer"
 	testlib "knative.dev/eventing/test/lib"
+	pointer "knative.dev/pkg/ptr"
 	pkgtest "knative.dev/pkg/test"
 )
 
@@ -39,11 +40,12 @@ type AdminConfig struct {
 	Group            string `json:"group" required:"true" split_words:"true"`
 }
 
-func VerifyCommittedOffset(
+func VerifyLagEquals(
 	client kubernetes.Interface,
 	tracker *testlib.Tracker,
 	namespacedName types.NamespacedName,
-	config *AdminConfig) error {
+	config *AdminConfig,
+	expectedLag uint64) error {
 
 	ctx := context.Background()
 
@@ -82,6 +84,10 @@ func VerifyCommittedOffset(
 									Name:  "GROUP",
 									Value: config.Group,
 								},
+								{
+									Name:  "EXPECTED_LAG",
+									Value: strconv.FormatUint(expectedLag, 10),
+								},
 							},
 						},
 					},
@@ -91,4 +97,13 @@ func VerifyCommittedOffset(
 		},
 	}
 	return verifyJobSucceeded(ctx, client, tracker, namespacedName, job)
+}
+
+func VerifyCommittedOffset(
+	client kubernetes.Interface,
+	tracker *testlib.Tracker,
+	namespacedName types.NamespacedName,
+	config *AdminConfig) error {
+
+	return VerifyLagEquals(client, tracker, namespacedName, config, 0)
 }

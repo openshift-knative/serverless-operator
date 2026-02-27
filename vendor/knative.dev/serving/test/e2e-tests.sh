@@ -28,7 +28,7 @@
 source $(dirname "$0")/e2e-common.sh
 
 # Script entry point.
-initialize --num-nodes=4 --enable-ha --cluster-version=1.30 "$@"
+initialize --num-nodes=4 --enable-ha "$@"
 
 # Run the tests
 header "Running tests"
@@ -67,7 +67,7 @@ if (( SHORT )); then
   GO_TEST_FLAGS+=("-short")
 fi
 
-go_test_e2e -timeout=30m \
+go_test_e2e -timeout=50m \
   "${GO_TEST_FLAGS[@]}" \
   ./test/conformance/api/... \
   ./test/conformance/runtime/... \
@@ -169,9 +169,5 @@ if (( HTTPS )); then
 fi
 
 (( failed )) && fail_test
-
-# Remove the kail log file if the test flow passes.
-# This is for preventing too many large log files to be uploaded to GCS in CI.
-rm "${ARTIFACTS}/k8s.log-$(basename "${E2E_SCRIPT}").txt"
 
 success

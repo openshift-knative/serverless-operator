@@ -38,6 +38,12 @@ func KnativeKafka(name, namespace string) *kafkav1alpha1.KnativeKafka {
 				Enabled:          true,
 				BootstrapServers: "my-cluster-kafka-bootstrap.kafka:9092",
 			},
+			Config: map[string]map[string]string{
+				"observability": {
+					"metrics-protocol":         "prometheus",
+					"request-metrics-protocol": "prometheus",
+				},
+			},
 		},
 	}
 }

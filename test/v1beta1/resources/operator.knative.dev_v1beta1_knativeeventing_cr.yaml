@@ -18,6 +18,9 @@ spec:
       loglevel.mt_broker_filter: "debug"
       loglevel.mt_broker_ingress: "debug"
       loglevel.pingsource-mt-adapter: "debug"
+    observability:
+      metrics-protocol: "prometheus"
+      request-metrics-protocol: "prometheus"
     sugar:
       namespace-selector: |
         matchExpressions:

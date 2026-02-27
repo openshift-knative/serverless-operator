@@ -21,13 +21,14 @@ import (
 	"fmt"
 	"os"
 
+	mf "github.com/manifestival/manifestival"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/client-go/kubernetes"
 
 	"knative.dev/pkg/logging"
 	pkgreconciler "knative.dev/pkg/reconciler"
-	mf "github.com/manifestival/manifestival"
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+
 	"knative.dev/operator/pkg/apis/operator/base"
 	"knative.dev/operator/pkg/apis/operator/v1beta1"
 	clientset "knative.dev/operator/pkg/client/clientset/versioned"
@@ -89,8 +90,10 @@ func (r *Reconciler) FinalizeKind(ctx context.Context, original *v1beta1.Knative
 	}
 
 	if manifest == nil {
+		logger.Warnf("No manifest found; no cluster-scoped resources will be finalized")
 		return nil
 	}
+
 	// we need this to apply the correct namespace to the resources otherwise it defaults to knative-serving
 	*manifest, err = manifest.Transform(overrideKourierNamespace(original))
 	if err != nil {
@@ -144,10 +147,10 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, ks *v1beta1.KnativeServi
 		},
 		r.transform,
 		manifests.Install,
-		common.CheckDeployments,
-		common.InstallWebhookConfigs,
+		manifests.SetManifestPaths,    // setting path right after applying manifests to populate paths
+		common.CheckWebhookDeployment, // Wait for webhook to be ready before creating Certificate resources
 		common.InstallWebhookDependentResources,
-		manifests.SetManifestPaths,
+		common.CheckDeployments,
 		common.MarkStatusSuccess,
 		common.DeleteObsoleteResources(ctx, ks, r.installed),
 	}

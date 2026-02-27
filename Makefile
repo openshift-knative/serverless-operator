@@ -20,7 +20,7 @@ install-operator: install-tools
 install-all: install-tools
 	UNINSTALL_STRIMZI="false" ./hack/strimzi.sh
 	./hack/tracing.sh
-	SCALE_UP=4 INSTALL_KAFKA="true" ENABLE_TRACING=true ./hack/install.sh
+	SCALE_UP=5 INSTALL_KAFKA="true" ENABLE_TRACING=true ./hack/install.sh
 
 install-release-next: install-tools generated-files-release-next
 	ON_CLUSTER_BUILDS=true TARGET_ARCH=$(TARGET_ARCH) TARGET_OS=$(TARGET_OS) ./hack/images.sh image-registry.openshift-image-registry.svc:5000/openshift-serverless-builds
@@ -124,7 +124,7 @@ test-e2e-with-kafka-testonly:
 operator-e2e: install-tools install-certmanager
 	UNINSTALL_STRIMZI="false" ./hack/strimzi.sh
 	./hack/tracing.sh
-	SCALE_UP=4 INSTALL_KAFKA="true" ENABLE_TRACING=true ./hack/install.sh
+	SCALE_UP=5 INSTALL_KAFKA="true" ENABLE_TRACING=true ./hack/install.sh
 	TEST_KNATIVE_KAFKA=true ./test/e2e-tests.sh
 	DELETE_CRD_ON_TEARDOWN="false" ./hack/teardown.sh
 
