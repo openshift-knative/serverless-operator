@@ -27,7 +27,7 @@ const (
 	EnableMonitoringEnvVar       = "ENABLE_MONITORING_BY_DEFAULT"
 	EnableMonitoringLabel        = "openshift.io/cluster-monitoring"
 	ObservabilityCMName          = "observability"
-	ObservabilityBackendKey      = "metrics.backend-destination"
+	ObservabilityBackendKey      = "metrics-protocol"
 	OpenshiftMonitoringNamespace = "openshift-monitoring"
 	prometheusRoleName           = "knative-prometheus-k8s"
 	prometheusClusterRoleName    = "rbac-proxy-metrics-prom"

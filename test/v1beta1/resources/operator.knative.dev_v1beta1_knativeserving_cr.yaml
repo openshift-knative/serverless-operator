@@ -41,8 +41,6 @@ spec:
       loglevel.hpaautoscaler: "debug"
     observability:
       logging.enable-var-log-collection: "false"
-      metrics.backend-destination: "prometheus"  # Deprecated: use metrics-protocol instead
-      # OpenTelemetry metrics configuration (Serving 1.21+)
       metrics-protocol: "prometheus"
       request-metrics-protocol: "prometheus"
       # logging.request-log-template and logging.enable-probe-request-log are necessary for TestRequestLogs.

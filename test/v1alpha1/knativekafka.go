@@ -40,9 +40,8 @@ func KnativeKafka(name, namespace string) *kafkav1alpha1.KnativeKafka {
 			},
 			Config: map[string]map[string]string{
 				"observability": {
-					"metrics.backend-destination": "prometheus", // Deprecated: use metrics-protocol instead
-					"metrics-protocol":            "prometheus",
-					"request-metrics-protocol":    "prometheus",
+					"metrics-protocol":         "prometheus",
+					"request-metrics-protocol": "prometheus",
 				},
 			},
 		},

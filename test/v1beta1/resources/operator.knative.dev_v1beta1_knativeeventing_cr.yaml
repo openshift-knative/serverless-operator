@@ -19,8 +19,6 @@ spec:
       loglevel.mt_broker_ingress: "debug"
       loglevel.pingsource-mt-adapter: "debug"
     observability:
-      metrics.backend-destination: "prometheus"  # Deprecated: use metrics-protocol instead
-      # OpenTelemetry metrics configuration (Eventing 1.21+)
       metrics-protocol: "prometheus"
       request-metrics-protocol: "prometheus"
     sugar:
