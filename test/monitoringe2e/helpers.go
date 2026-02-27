@@ -30,8 +30,7 @@ var (
 		"go_memory_allocations_total{job=\"eventing-controller-sm-service\",namespace=\"knative-eventing\"}",
 		"go_memory_allocations_total{job=\"eventing-webhook-sm-service\"}",
 		"go_memory_allocations_total{job=\"imc-controller-sm-service\"}",
-		// TODO: imc-dispatcher-sm-service removed due to upstream bug - metrics endpoint fails with duplicate metric registration
-		// "go_memory_allocations_total{job=\"imc-dispatcher-sm-service\"}",
+		"go_memory_allocations_total{job=\"imc-dispatcher-sm-service\"}",
 		"go_memory_allocations_total{job=\"mt-broker-controller-sm-service\"}",
 		"go_memory_allocations_total{job=\"mt-broker-filter-sm-service\"}",
 		"go_memory_allocations_total{job=\"mt-broker-ingress-sm-service\"}",
