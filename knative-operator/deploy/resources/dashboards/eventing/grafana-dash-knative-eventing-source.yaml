@@ -867,7 +867,7 @@ data:
              "tableColumn": "",
              "targets": [
                {
-                 "expr": "sum(rate(kn_eventing_dispatch_duration_seconds_count{job=\"kafka-source-dispatcher-sm-service\", namespace=\"knative-eventing\", kn_kafkasource_namespace=\"$namespace\"}[1m]))",
+                 "expr": "sum(rate(kn_eventing_dispatch_latency_ms_count{job=\"kafka-source-dispatcher-sm-service\", namespace=\"knative-eventing\", kn_kafkasource_namespace=\"$namespace\"}[1m]))",
                  "format": "time_series",
                  "instant": false,
                  "refId": "A"
@@ -955,7 +955,7 @@ data:
              "tableColumn": "",
              "targets": [
                {
-                 "expr": "sum(rate(kn_eventing_dispatch_duration_seconds_count{job=\"kafka-source-dispatcher-sm-service\", namespace=\"knative-eventing\", kn_kafkasource_namespace=\"$namespace\", http_response_status_code=~\"2.*\"}[1m])) / sum(rate(kn_eventing_dispatch_duration_seconds_count{job=\"kafka-source-dispatcher-sm-service\", namespace=\"knative-eventing\", kn_kafkasource_namespace=\"$namespace\"}[1m]))",
+                 "expr": "sum(rate(kn_eventing_dispatch_latency_ms_count{job=\"kafka-source-dispatcher-sm-service\", namespace=\"knative-eventing\", kn_kafkasource_namespace=\"$namespace\", http_response_status_code=~\"2.*\"}[1m])) / sum(rate(kn_eventing_dispatch_latency_ms_count{job=\"kafka-source-dispatcher-sm-service\", namespace=\"knative-eventing\", kn_kafkasource_namespace=\"$namespace\"}[1m]))",
                  "format": "time_series",
                  "instant": false,
                  "refId": "A"
@@ -1021,7 +1021,7 @@ data:
              "steppedLine": false,
              "targets": [
                {
-                 "expr": "sum(rate(kn_eventing_dispatch_duration_seconds_count{job=\"kafka-source-dispatcher-sm-service\", namespace=\"knative-eventing\", kn_kafkasource_namespace=\"$namespace\"}[1m])) by (http_response_status_code)",
+                 "expr": "sum(rate(kn_eventing_dispatch_latency_ms_count{job=\"kafka-source-dispatcher-sm-service\", namespace=\"knative-eventing\", kn_kafkasource_namespace=\"$namespace\"}[1m])) by (http_response_status_code)",
                  "format": "time_series",
                  "hide": false,
                  "instant": false,
@@ -1139,7 +1139,7 @@ data:
              "tableColumn": "",
              "targets": [
                {
-                 "expr": "sum(rate(kn_eventing_dispatch_duration_seconds_count{job=\"kafka-source-dispatcher-sm-service\", namespace=\"knative-eventing\", kn_kafkasource_namespace=\"$namespace\", http_response_status_code!~\"2.*\"}[1m])) / sum(rate(kn_eventing_dispatch_duration_seconds_count{job=\"kafka-source-dispatcher-sm-service\", namespace=\"knative-eventing\", kn_kafkasource_namespace=\"$namespace\"}[1m]))",
+                 "expr": "sum(rate(kn_eventing_dispatch_latency_ms_count{job=\"kafka-source-dispatcher-sm-service\", namespace=\"knative-eventing\", kn_kafkasource_namespace=\"$namespace\", http_response_status_code!~\"2.*\"}[1m])) / sum(rate(kn_eventing_dispatch_latency_ms_count{job=\"kafka-source-dispatcher-sm-service\", namespace=\"knative-eventing\", kn_kafkasource_namespace=\"$namespace\"}[1m]))",
                  "format": "time_series",
                  "instant": false,
                  "refId": "A"

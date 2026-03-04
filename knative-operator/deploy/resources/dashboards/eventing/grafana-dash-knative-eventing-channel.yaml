@@ -945,26 +945,26 @@ data:
             "steppedLine": false,
             "targets": [
               {
-                "expr": "histogram_quantile(0.50, sum(rate(kn_eventing_dispatch_duration_seconds_bucket{job=\"kafka-channel-receiver-sm-service\", kn_kafkachannel_namespace=~\"$namespace\"}[1m])) by (le))",
+                "expr": "histogram_quantile(0.50, sum(rate(kn_eventing_dispatch_latency_ms_bucket{job=\"kafka-channel-receiver-sm-service\", kn_kafkachannel_namespace=~\"$namespace\"}[1m])) by (le))",
                 "format": "time_series",
                 "instant": false,
                 "legendFormat": "p50",
                 "refId": "A"
               },
               {
-                "expr": "histogram_quantile(0.90, sum(rate(kn_eventing_dispatch_duration_seconds_bucket{job=\"kafka-channel-receiver-sm-service\", kn_kafkachannel_namespace=~\"$namespace\"}[1m])) by (le))",
+                "expr": "histogram_quantile(0.90, sum(rate(kn_eventing_dispatch_latency_ms_bucket{job=\"kafka-channel-receiver-sm-service\", kn_kafkachannel_namespace=~\"$namespace\"}[1m])) by (le))",
                 "format": "time_series",
                 "legendFormat": "p90",
                 "refId": "B"
               },
               {
-                "expr": "histogram_quantile(0.95, sum(rate(kn_eventing_dispatch_duration_seconds_bucket{job=\"kafka-channel-receiver-sm-service\", kn_kafkachannel_namespace=~\"$namespace\"}[1m])) by (le))",
+                "expr": "histogram_quantile(0.95, sum(rate(kn_eventing_dispatch_latency_ms_bucket{job=\"kafka-channel-receiver-sm-service\", kn_kafkachannel_namespace=~\"$namespace\"}[1m])) by (le))",
                 "format": "time_series",
                 "legendFormat": "p95",
                 "refId": "C"
               },
               {
-                "expr": "histogram_quantile(0.99, sum(rate(kn_eventing_dispatch_duration_seconds_bucket{job=\"kafka-channel-receiver-sm-service\", kn_kafkachannel_namespace=~\"$namespace\"}[1m])) by (le))",
+                "expr": "histogram_quantile(0.99, sum(rate(kn_eventing_dispatch_latency_ms_bucket{job=\"kafka-channel-receiver-sm-service\", kn_kafkachannel_namespace=~\"$namespace\"}[1m])) by (le))",
                 "format": "time_series",
                 "legendFormat": "p99",
                 "refId": "D"
