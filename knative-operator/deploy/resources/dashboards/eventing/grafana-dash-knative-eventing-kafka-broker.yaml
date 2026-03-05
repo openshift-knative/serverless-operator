@@ -786,7 +786,7 @@ data:
           "tableColumn": "",
           "targets": [
             {
-              "expr": "sum(rate(kn_eventing_dispatch_latency_ms_count{job=\"kafka-broker-dispatcher-sm-service\", http_response_status_code=\"2xx\", kn_trigger_namespace=~\"$namespace\"}[1m])) / sum(rate(kn_eventing_dispatch_latency_ms_count{job=\"kafka-broker-dispatcher-sm-service\", kn_trigger_namespace=~\"$namespace\"}[1m]))",
+              "expr": "sum(rate(kn_eventing_dispatch_latency_ms_count{job=\"kafka-broker-dispatcher-sm-service\", http_response_status_code=~\"2.*\", kn_trigger_namespace=~\"$namespace\"}[1m])) / sum(rate(kn_eventing_dispatch_latency_ms_count{job=\"kafka-broker-dispatcher-sm-service\", kn_trigger_namespace=~\"$namespace\"}[1m]))",
               "format": "time_series",
               "instant": false,
               "refId": "A"

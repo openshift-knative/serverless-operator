@@ -878,7 +878,7 @@ data:
              "tableColumn": "",
              "targets": [
                {
-                 "expr": "sum(rate(kn_eventing_dispatch_latency_ms_count{job=\"kafka-channel-receiver-sm-service\", http_response_status_code!~\"2.*\", kn_channel_namespace=~\"$namespace\"}[1m])) / sum(rate(kn_eventing_dispatch_latency_ms_count{job=\"kafka-channel-receiver-sm-service\", kn_kafkachannel_namespace=~\"$namespace\"}[1m]))",
+                 "expr": "sum(rate(kn_eventing_dispatch_latency_ms_count{job=\"kafka-channel-receiver-sm-service\", http_response_status_code!~\"2.*\", kn_kafkachannel_namespace=~\"$namespace\"}[1m])) / sum(rate(kn_eventing_dispatch_latency_ms_count{job=\"kafka-channel-receiver-sm-service\", kn_kafkachannel_namespace=~\"$namespace\"}[1m]))",
                  "format": "time_series",
                  "instant": false,
                  "refId": "A"

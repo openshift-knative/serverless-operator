@@ -558,7 +558,7 @@ data:
               "refId": "A"
             },
             {
-              "expr": "histogram_quantile(0.90, sum(rate(kn_eventing_dispatch_duration_seconds_bucket{kn_broker_namespace=~\"$namespace\"}[1m])) by (le))",
+              "expr": "histogram_quantile(0.90, sum(rate(kn_eventing_dispatch_duration_seconds_bucket{job=\"mt-broker-ingress-sm-service\", kn_broker_namespace=~\"$namespace\"}[1m])) by (le))",
               "format": "time_series",
               "legendFormat": "p90",
               "refId": "B"

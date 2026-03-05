@@ -1173,7 +1173,7 @@ data:
             "multi": false,
             "name": "namespace",
             "options": [],
-            "query": "label_values((kn_eventing_dispatch_duration_seconds_count{job=\"pingsource-mt-adapter-sm-service\"} OR kn_eventing_dispatch_duration_seconds_count{job=\"kafka-source-dispatcher-sm-service\"} OR kn_eventing_dispatch_duration_seconds_count{job=\"apiserversource-sm-service\"}), kn_source_namespace)",
+            "query": "label_values((http_client_request_duration_seconds_count{job=\"pingsource-mt-adapter-sm-service\"} OR kn_eventing_dispatch_latency_ms_count{job=\"kafka-source-dispatcher-sm-service\"} OR http_client_request_duration_seconds_count{job=\"apiserversource-sm-service\"}), kn_source_namespace)",
             "refresh": 2,
             "regex": "",
             "sort": 1,
