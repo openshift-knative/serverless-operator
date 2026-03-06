@@ -10,7 +10,7 @@ require (
 	github.com/manifestival/controller-runtime-client v0.4.0
 	github.com/manifestival/manifestival v0.7.2
 	github.com/openshift/api v3.9.0+incompatible
-	github.com/openshift/client-go v0.0.0-20240510131258-f646d5f29250
+	github.com/openshift/client-go v0.0.0-20220525160904-9e1acff93e4a
 	github.com/operator-framework/api v0.27.0
 	github.com/operator-framework/operator-lifecycle-manager v0.28.0
 	github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring v0.76.2
@@ -22,36 +22,36 @@ require (
 	go.uber.org/zap v1.27.1
 	golang.org/x/sync v0.19.0
 	google.golang.org/grpc v1.77.0
-	k8s.io/api v0.35.1
-	k8s.io/apimachinery v0.35.1
-	k8s.io/client-go v0.35.1
+	k8s.io/api v0.34.5
+	k8s.io/apimachinery v0.34.5
+	k8s.io/client-go v0.34.5
 	knative.dev/eventing v0.48.0
-	knative.dev/eventing-kafka-broker v0.37.0
+	knative.dev/eventing-kafka-broker v0.48.0
 	knative.dev/hack v0.0.0-20260120115810-bf6758cba446
 	knative.dev/networking v0.0.0-20260120131110-a7cdca238a0d
-	knative.dev/operator v0.48.0
+	knative.dev/operator v0.48.1
 	knative.dev/pkg v0.0.0-20260120122510-4a022ed9999a
-	knative.dev/serving v0.48.0
-	sigs.k8s.io/controller-runtime v0.19.0
+	knative.dev/serving v0.48.1
+	sigs.k8s.io/controller-runtime v0.22.5
 	sigs.k8s.io/yaml v1.6.0
 )
 
 require (
 	github.com/IBM/sarama v1.45.1 // indirect
 	github.com/aws/aws-msk-iam-sasl-signer-go v1.0.4 // indirect
-	github.com/aws/aws-sdk-go-v2 v1.36.1 // indirect
+	github.com/aws/aws-sdk-go-v2 v1.41.0 // indirect
 	github.com/aws/aws-sdk-go-v2/config v1.29.6 // indirect
 	github.com/aws/aws-sdk-go-v2/credentials v1.17.59 // indirect
 	github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.16.28 // indirect
-	github.com/aws/aws-sdk-go-v2/internal/configsources v1.3.32 // indirect
-	github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.6.32 // indirect
+	github.com/aws/aws-sdk-go-v2/internal/configsources v1.4.16 // indirect
+	github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.7.16 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/ini v1.8.2 // indirect
-	github.com/aws/aws-sdk-go-v2/service/internal/accept-encoding v1.12.2 // indirect
-	github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.12.13 // indirect
+	github.com/aws/aws-sdk-go-v2/service/internal/accept-encoding v1.13.4 // indirect
+	github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.13.16 // indirect
 	github.com/aws/aws-sdk-go-v2/service/sso v1.24.15 // indirect
 	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.28.14 // indirect
 	github.com/aws/aws-sdk-go-v2/service/sts v1.33.14 // indirect
-	github.com/aws/smithy-go v1.22.2 // indirect
+	github.com/aws/smithy-go v1.24.0 // indirect
 	github.com/cenkalti/backoff/v5 v5.0.3 // indirect
 	github.com/cert-manager/cert-manager v1.16.3 // indirect
 	github.com/cloudevents/conformance v0.4.1 // indirect
@@ -181,8 +181,8 @@ require (
 	gopkg.in/yaml.v3 v3.0.1
 	istio.io/api v0.0.0-20231206023236-e7cadb36da57 // indirect
 	istio.io/client-go v1.18.7 // indirect
-	k8s.io/apiserver v0.35.1 // indirect
-	k8s.io/code-generator v0.35.1 // indirect
+	k8s.io/apiserver v0.34.5 // indirect
+	k8s.io/code-generator v0.34.5 // indirect
 	k8s.io/klog/v2 v2.130.1 // indirect
 	k8s.io/kube-openapi v0.0.0-20250910181357-589584f1c912 // indirect
 	k8s.io/utils v0.0.0-20251002143259-bc988d571ff4
@@ -193,34 +193,34 @@ require (
 require (
 	github.com/go-logr/logr v1.4.3
 	go.uber.org/atomic v1.11.0 // indirect
-	k8s.io/apiextensions-apiserver v0.35.0
-	knative.dev/reconciler-test v0.0.0-20260224210419-6f2fbd71f1a3
+	k8s.io/apiextensions-apiserver v0.34.5
+	knative.dev/reconciler-test v0.0.0-20260225102520-330ffb2184a7
 )
 
 replace (
 	// Knative components
-	knative.dev/eventing => github.com/openshift-knative/eventing v0.99.1-0.20260225095816-314001a990dc
-	knative.dev/eventing-kafka-broker => github.com/openshift-knative/eventing-kafka-broker v0.25.1-0.20260216114454-c56bb0c48168
+	knative.dev/eventing => github.com/openshift-knative/eventing v0.99.1-0.20260305121436-6a52ea6c845c
+	knative.dev/eventing-kafka-broker => github.com/openshift-knative/eventing-kafka-broker v0.25.1-0.20260304102151-f9a5078d6f35
 	knative.dev/hack => knative.dev/hack v0.0.0-20260120115810-bf6758cba446
 	knative.dev/networking => knative.dev/networking v0.0.0-20260120131110-a7cdca238a0d
 	knative.dev/pkg => knative.dev/pkg v0.0.0-20260120122510-4a022ed9999a
 	knative.dev/reconciler-test => knative.dev/reconciler-test v0.0.0-20260225102520-330ffb2184a7
-	knative.dev/serving => github.com/openshift-knative/serving v0.10.1-0.20260219105213-64125b69a62a
+	knative.dev/serving => github.com/openshift-knative/serving v0.10.1-0.20260303085830-4af8dc4ecf46
 )
 
 replace (
 	// OpenShift components
-	github.com/openshift/api => github.com/openshift/api v0.0.0-20260224223200-1105fd4ecddf
-	github.com/openshift/client-go => github.com/openshift/client-go v0.0.0-20260219131751-7e63ce155298
+	github.com/openshift/api => github.com/openshift/api v0.0.0-20260304172252-b0658d22beea
+	github.com/openshift/client-go => github.com/openshift/client-go v0.0.0-20251205093018-96a6cbc1420c
 )
 
 replace (
 	// Kubernetes components
-	k8s.io/api => k8s.io/api v0.35.1
-	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.35.1
-	k8s.io/apimachinery => k8s.io/apimachinery v0.35.1
-	k8s.io/client-go => k8s.io/client-go v0.35.1
-	k8s.io/code-generator => k8s.io/code-generator v0.35.1
-	k8s.io/component-base => k8s.io/component-base v0.35.1
-	sigs.k8s.io/controller-runtime => sigs.k8s.io/controller-runtime v0.23.1
+	k8s.io/api => k8s.io/api v0.34.5
+	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.34.5
+	k8s.io/apimachinery => k8s.io/apimachinery v0.34.5
+	k8s.io/client-go => k8s.io/client-go v0.34.5
+	k8s.io/code-generator => k8s.io/code-generator v0.34.5
+	k8s.io/component-base => k8s.io/component-base v0.34.5
+	sigs.k8s.io/controller-runtime => sigs.k8s.io/controller-runtime v0.22.5
 )

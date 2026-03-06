@@ -7,8 +7,8 @@ github.com/antlr/antlr4/runtime/Go/antlr
 # github.com/aws/aws-msk-iam-sasl-signer-go v1.0.4
 ## explicit; go 1.21
 github.com/aws/aws-msk-iam-sasl-signer-go/signer
-# github.com/aws/aws-sdk-go-v2 v1.36.1
-## explicit; go 1.21
+# github.com/aws/aws-sdk-go-v2 v1.41.0
+## explicit; go 1.23
 github.com/aws/aws-sdk-go-v2/aws
 github.com/aws/aws-sdk-go-v2/aws/defaults
 github.com/aws/aws-sdk-go-v2/aws/middleware
@@ -49,20 +49,20 @@ github.com/aws/aws-sdk-go-v2/credentials/stscreds
 ## explicit; go 1.21
 github.com/aws/aws-sdk-go-v2/feature/ec2/imds
 github.com/aws/aws-sdk-go-v2/feature/ec2/imds/internal/config
-# github.com/aws/aws-sdk-go-v2/internal/configsources v1.3.32
-## explicit; go 1.21
+# github.com/aws/aws-sdk-go-v2/internal/configsources v1.4.16
+## explicit; go 1.23
 github.com/aws/aws-sdk-go-v2/internal/configsources
-# github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.6.32
-## explicit; go 1.21
+# github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.7.16
+## explicit; go 1.23
 github.com/aws/aws-sdk-go-v2/internal/endpoints/v2
 # github.com/aws/aws-sdk-go-v2/internal/ini v1.8.2
 ## explicit; go 1.21
 github.com/aws/aws-sdk-go-v2/internal/ini
-# github.com/aws/aws-sdk-go-v2/service/internal/accept-encoding v1.12.2
-## explicit; go 1.21
+# github.com/aws/aws-sdk-go-v2/service/internal/accept-encoding v1.13.4
+## explicit; go 1.23
 github.com/aws/aws-sdk-go-v2/service/internal/accept-encoding
-# github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.12.13
-## explicit; go 1.21
+# github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.13.16
+## explicit; go 1.23
 github.com/aws/aws-sdk-go-v2/service/internal/presigned-url
 # github.com/aws/aws-sdk-go-v2/service/sso v1.24.15
 ## explicit; go 1.21
@@ -79,8 +79,8 @@ github.com/aws/aws-sdk-go-v2/service/ssooidc/types
 github.com/aws/aws-sdk-go-v2/service/sts
 github.com/aws/aws-sdk-go-v2/service/sts/internal/endpoints
 github.com/aws/aws-sdk-go-v2/service/sts/types
-# github.com/aws/smithy-go v1.22.2
-## explicit; go 1.21
+# github.com/aws/smithy-go v1.24.0
+## explicit; go 1.23
 github.com/aws/smithy-go
 github.com/aws/smithy-go/auth
 github.com/aws/smithy-go/auth/bearer
@@ -409,7 +409,7 @@ github.com/munnerz/goautoneg
 # github.com/opencontainers/go-digest v1.0.0
 ## explicit; go 1.13
 github.com/opencontainers/go-digest
-# github.com/openshift/api v3.9.0+incompatible => github.com/openshift/api v0.0.0-20260224223200-1105fd4ecddf
+# github.com/openshift/api v3.9.0+incompatible => github.com/openshift/api v0.0.0-20260304172252-b0658d22beea
 ## explicit; go 1.24.0
 github.com/openshift/api/config/v1
 github.com/openshift/api/config/v1alpha1
@@ -418,7 +418,7 @@ github.com/openshift/api/console/v1
 github.com/openshift/api/machineconfiguration/v1
 github.com/openshift/api/machineconfiguration/v1alpha1
 github.com/openshift/api/route/v1
-# github.com/openshift/client-go v0.0.0-20240510131258-f646d5f29250 => github.com/openshift/client-go v0.0.0-20260219131751-7e63ce155298
+# github.com/openshift/client-go v0.0.0-20220525160904-9e1acff93e4a => github.com/openshift/client-go v0.0.0-20251205093018-96a6cbc1420c
 ## explicit; go 1.24.0
 github.com/openshift/client-go/config/applyconfigurations
 github.com/openshift/client-go/config/applyconfigurations/config/v1
@@ -982,8 +982,8 @@ istio.io/client-go/pkg/apis/security/v1
 istio.io/client-go/pkg/apis/security/v1beta1
 istio.io/client-go/pkg/apis/telemetry/v1alpha1
 istio.io/client-go/pkg/clientset/versioned/scheme
-# k8s.io/api v0.35.1 => k8s.io/api v0.35.1
-## explicit; go 1.25.0
+# k8s.io/api v0.34.5 => k8s.io/api v0.34.5
+## explicit; go 1.24.0
 k8s.io/api/admission/v1
 k8s.io/api/admission/v1beta1
 k8s.io/api/admissionregistration/v1
@@ -1043,9 +1043,9 @@ k8s.io/api/scheduling/v1beta1
 k8s.io/api/storage/v1
 k8s.io/api/storage/v1alpha1
 k8s.io/api/storage/v1beta1
-k8s.io/api/storagemigration/v1beta1
-# k8s.io/apiextensions-apiserver v0.35.0 => k8s.io/apiextensions-apiserver v0.35.1
-## explicit; go 1.25.0
+k8s.io/api/storagemigration/v1alpha1
+# k8s.io/apiextensions-apiserver v0.34.5 => k8s.io/apiextensions-apiserver v0.34.5
+## explicit; go 1.24.0
 k8s.io/apiextensions-apiserver/pkg/apis/apiextensions
 k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1
 k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1
@@ -1062,8 +1062,8 @@ k8s.io/apiextensions-apiserver/pkg/client/informers/externalversions/apiextensio
 k8s.io/apiextensions-apiserver/pkg/client/informers/externalversions/internalinterfaces
 k8s.io/apiextensions-apiserver/pkg/client/listers/apiextensions/v1
 k8s.io/apiextensions-apiserver/pkg/client/listers/apiextensions/v1beta1
-# k8s.io/apimachinery v0.35.1 => k8s.io/apimachinery v0.35.1
-## explicit; go 1.25.0
+# k8s.io/apimachinery v0.34.5 => k8s.io/apimachinery v0.34.5
+## explicit; go 1.24.0
 k8s.io/apimachinery/pkg/api/apitesting/fuzzer
 k8s.io/apimachinery/pkg/api/equality
 k8s.io/apimachinery/pkg/api/errors
@@ -1078,7 +1078,6 @@ k8s.io/apimachinery/pkg/api/validate/content
 k8s.io/apimachinery/pkg/api/validation
 k8s.io/apimachinery/pkg/apis/meta/internalversion
 k8s.io/apimachinery/pkg/apis/meta/internalversion/scheme
-k8s.io/apimachinery/pkg/apis/meta/internalversion/validation
 k8s.io/apimachinery/pkg/apis/meta/v1
 k8s.io/apimachinery/pkg/apis/meta/v1/unstructured
 k8s.io/apimachinery/pkg/apis/meta/v1/validation
@@ -1120,18 +1119,17 @@ k8s.io/apimachinery/pkg/util/strategicpatch
 k8s.io/apimachinery/pkg/util/uuid
 k8s.io/apimachinery/pkg/util/validation
 k8s.io/apimachinery/pkg/util/validation/field
-k8s.io/apimachinery/pkg/util/version
 k8s.io/apimachinery/pkg/util/wait
 k8s.io/apimachinery/pkg/util/yaml
 k8s.io/apimachinery/pkg/version
 k8s.io/apimachinery/pkg/watch
 k8s.io/apimachinery/third_party/forked/golang/json
 k8s.io/apimachinery/third_party/forked/golang/reflect
-# k8s.io/apiserver v0.35.1
-## explicit; go 1.25.0
+# k8s.io/apiserver v0.34.5
+## explicit; go 1.24.0
 k8s.io/apiserver/pkg/storage/names
-# k8s.io/client-go v0.35.1 => k8s.io/client-go v0.35.1
-## explicit; go 1.25.0
+# k8s.io/client-go v0.34.5 => k8s.io/client-go v0.34.5
+## explicit; go 1.24.0
 k8s.io/client-go/applyconfigurations
 k8s.io/client-go/applyconfigurations/admissionregistration/v1
 k8s.io/client-go/applyconfigurations/admissionregistration/v1alpha1
@@ -1185,7 +1183,7 @@ k8s.io/client-go/applyconfigurations/scheduling/v1beta1
 k8s.io/client-go/applyconfigurations/storage/v1
 k8s.io/client-go/applyconfigurations/storage/v1alpha1
 k8s.io/client-go/applyconfigurations/storage/v1beta1
-k8s.io/client-go/applyconfigurations/storagemigration/v1beta1
+k8s.io/client-go/applyconfigurations/storagemigration/v1alpha1
 k8s.io/client-go/discovery
 k8s.io/client-go/discovery/fake
 k8s.io/client-go/dynamic
@@ -1263,7 +1261,7 @@ k8s.io/client-go/informers/storage/v1
 k8s.io/client-go/informers/storage/v1alpha1
 k8s.io/client-go/informers/storage/v1beta1
 k8s.io/client-go/informers/storagemigration
-k8s.io/client-go/informers/storagemigration/v1beta1
+k8s.io/client-go/informers/storagemigration/v1alpha1
 k8s.io/client-go/kubernetes
 k8s.io/client-go/kubernetes/fake
 k8s.io/client-go/kubernetes/scheme
@@ -1375,8 +1373,8 @@ k8s.io/client-go/kubernetes/typed/storage/v1alpha1
 k8s.io/client-go/kubernetes/typed/storage/v1alpha1/fake
 k8s.io/client-go/kubernetes/typed/storage/v1beta1
 k8s.io/client-go/kubernetes/typed/storage/v1beta1/fake
-k8s.io/client-go/kubernetes/typed/storagemigration/v1beta1
-k8s.io/client-go/kubernetes/typed/storagemigration/v1beta1/fake
+k8s.io/client-go/kubernetes/typed/storagemigration/v1alpha1
+k8s.io/client-go/kubernetes/typed/storagemigration/v1alpha1/fake
 k8s.io/client-go/listers
 k8s.io/client-go/listers/admissionregistration/v1
 k8s.io/client-go/listers/admissionregistration/v1alpha1
@@ -1427,7 +1425,7 @@ k8s.io/client-go/listers/scheduling/v1beta1
 k8s.io/client-go/listers/storage/v1
 k8s.io/client-go/listers/storage/v1alpha1
 k8s.io/client-go/listers/storage/v1beta1
-k8s.io/client-go/listers/storagemigration/v1beta1
+k8s.io/client-go/listers/storagemigration/v1alpha1
 k8s.io/client-go/metadata
 k8s.io/client-go/openapi
 k8s.io/client-go/pkg/apis/clientauthentication
@@ -1450,7 +1448,6 @@ k8s.io/client-go/tools/clientcmd
 k8s.io/client-go/tools/clientcmd/api
 k8s.io/client-go/tools/clientcmd/api/latest
 k8s.io/client-go/tools/clientcmd/api/v1
-k8s.io/client-go/tools/events
 k8s.io/client-go/tools/internal/events
 k8s.io/client-go/tools/leaderelection
 k8s.io/client-go/tools/leaderelection/resourcelock
@@ -1468,10 +1465,9 @@ k8s.io/client-go/util/flowcontrol
 k8s.io/client-go/util/homedir
 k8s.io/client-go/util/keyutil
 k8s.io/client-go/util/retry
-k8s.io/client-go/util/watchlist
 k8s.io/client-go/util/workqueue
-# k8s.io/code-generator v0.35.1 => k8s.io/code-generator v0.35.1
-## explicit; go 1.25.0
+# k8s.io/code-generator v0.34.5 => k8s.io/code-generator v0.34.5
+## explicit; go 1.24.0
 k8s.io/code-generator
 k8s.io/code-generator/cmd/applyconfiguration-gen
 k8s.io/code-generator/cmd/applyconfiguration-gen/args
@@ -1555,8 +1551,8 @@ k8s.io/utils/trace
 ## explicit; go 1.24.0
 knative.dev/caching/pkg/apis/caching
 knative.dev/caching/pkg/apis/caching/v1alpha1
-# knative.dev/eventing v0.48.0 => github.com/openshift-knative/eventing v0.99.1-0.20260225095816-314001a990dc
-## explicit; go 1.24.0
+# knative.dev/eventing v0.48.0 => github.com/openshift-knative/eventing v0.99.1-0.20260305121436-6a52ea6c845c
+## explicit; go 1.25.0
 knative.dev/eventing/pkg/apis
 knative.dev/eventing/pkg/apis/common/integration/v1alpha1
 knative.dev/eventing/pkg/apis/config
@@ -1704,8 +1700,8 @@ knative.dev/eventing/test/upgrade/prober/wathola/fetcher
 knative.dev/eventing/test/upgrade/prober/wathola/forwarder
 knative.dev/eventing/test/upgrade/prober/wathola/receiver
 knative.dev/eventing/test/upgrade/prober/wathola/sender
-# knative.dev/eventing-kafka-broker v0.37.0 => github.com/openshift-knative/eventing-kafka-broker v0.25.1-0.20260216114454-c56bb0c48168
-## explicit; go 1.24.0
+# knative.dev/eventing-kafka-broker v0.48.0 => github.com/openshift-knative/eventing-kafka-broker v0.25.1-0.20260304102151-f9a5078d6f35
+## explicit; go 1.25.0
 knative.dev/eventing-kafka-broker/control-plane/pkg/apis/bindings
 knative.dev/eventing-kafka-broker/control-plane/pkg/apis/bindings/v1
 knative.dev/eventing-kafka-broker/control-plane/pkg/apis/bindings/v1beta1
@@ -1796,7 +1792,7 @@ knative.dev/networking/pkg/client/listers/networking/v1alpha1
 knative.dev/networking/pkg/config
 knative.dev/networking/pkg/http/header
 knative.dev/networking/pkg/ingress
-# knative.dev/operator v0.48.0
+# knative.dev/operator v0.48.1
 ## explicit; go 1.24.0
 knative.dev/operator/pkg/apis/operator
 knative.dev/operator/pkg/apis/operator/base
@@ -1926,7 +1922,7 @@ knative.dev/pkg/webhook/json
 knative.dev/pkg/webhook/resourcesemantics
 knative.dev/pkg/webhook/resourcesemantics/conversion
 knative.dev/pkg/webhook/resourcesemantics/defaulting
-# knative.dev/reconciler-test v0.0.0-20260224210419-6f2fbd71f1a3 => knative.dev/reconciler-test v0.0.0-20260225102520-330ffb2184a7
+# knative.dev/reconciler-test v0.0.0-20260225102520-330ffb2184a7 => knative.dev/reconciler-test v0.0.0-20260225102520-330ffb2184a7
 ## explicit; go 1.24.0
 knative.dev/reconciler-test/pkg/environment
 knative.dev/reconciler-test/pkg/eventshub
@@ -1951,7 +1947,7 @@ knative.dev/reconciler-test/pkg/resources/serviceaccount
 knative.dev/reconciler-test/pkg/state
 knative.dev/reconciler-test/resources/certificate
 knative.dev/reconciler-test/resources/svc
-# knative.dev/serving v0.48.0 => github.com/openshift-knative/serving v0.10.1-0.20260219105213-64125b69a62a
+# knative.dev/serving v0.48.1 => github.com/openshift-knative/serving v0.10.1-0.20260303085830-4af8dc4ecf46
 ## explicit; go 1.24.0
 knative.dev/serving/pkg/apis/autoscaling
 knative.dev/serving/pkg/apis/autoscaling/v1alpha1
@@ -1980,8 +1976,8 @@ knative.dev/serving/test/defaultsystem
 knative.dev/serving/test/e2e
 knative.dev/serving/test/upgrade
 knative.dev/serving/test/v1
-# sigs.k8s.io/controller-runtime v0.19.0 => sigs.k8s.io/controller-runtime v0.23.1
-## explicit; go 1.25.0
+# sigs.k8s.io/controller-runtime v0.22.5 => sigs.k8s.io/controller-runtime v0.22.5
+## explicit; go 1.24.0
 sigs.k8s.io/controller-runtime/pkg/cache
 sigs.k8s.io/controller-runtime/pkg/cache/internal
 sigs.k8s.io/controller-runtime/pkg/certwatcher
@@ -2025,8 +2021,6 @@ sigs.k8s.io/controller-runtime/pkg/source
 sigs.k8s.io/controller-runtime/pkg/webhook
 sigs.k8s.io/controller-runtime/pkg/webhook/admission
 sigs.k8s.io/controller-runtime/pkg/webhook/admission/metrics
-sigs.k8s.io/controller-runtime/pkg/webhook/conversion
-sigs.k8s.io/controller-runtime/pkg/webhook/conversion/metrics
 sigs.k8s.io/controller-runtime/pkg/webhook/internal/metrics
 # sigs.k8s.io/gateway-api v1.1.0
 ## explicit; go 1.22.0
@@ -2049,19 +2043,19 @@ sigs.k8s.io/structured-merge-diff/v6/value
 # sigs.k8s.io/yaml v1.6.0
 ## explicit; go 1.22
 sigs.k8s.io/yaml
-# knative.dev/eventing => github.com/openshift-knative/eventing v0.99.1-0.20260225095816-314001a990dc
-# knative.dev/eventing-kafka-broker => github.com/openshift-knative/eventing-kafka-broker v0.25.1-0.20260216114454-c56bb0c48168
+# knative.dev/eventing => github.com/openshift-knative/eventing v0.99.1-0.20260305121436-6a52ea6c845c
+# knative.dev/eventing-kafka-broker => github.com/openshift-knative/eventing-kafka-broker v0.25.1-0.20260304102151-f9a5078d6f35
 # knative.dev/hack => knative.dev/hack v0.0.0-20260120115810-bf6758cba446
 # knative.dev/networking => knative.dev/networking v0.0.0-20260120131110-a7cdca238a0d
 # knative.dev/pkg => knative.dev/pkg v0.0.0-20260120122510-4a022ed9999a
 # knative.dev/reconciler-test => knative.dev/reconciler-test v0.0.0-20260225102520-330ffb2184a7
-# knative.dev/serving => github.com/openshift-knative/serving v0.10.1-0.20260219105213-64125b69a62a
-# github.com/openshift/api => github.com/openshift/api v0.0.0-20260224223200-1105fd4ecddf
-# github.com/openshift/client-go => github.com/openshift/client-go v0.0.0-20260219131751-7e63ce155298
-# k8s.io/api => k8s.io/api v0.35.1
-# k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.35.1
-# k8s.io/apimachinery => k8s.io/apimachinery v0.35.1
-# k8s.io/client-go => k8s.io/client-go v0.35.1
-# k8s.io/code-generator => k8s.io/code-generator v0.35.1
-# k8s.io/component-base => k8s.io/component-base v0.35.1
-# sigs.k8s.io/controller-runtime => sigs.k8s.io/controller-runtime v0.23.1
+# knative.dev/serving => github.com/openshift-knative/serving v0.10.1-0.20260303085830-4af8dc4ecf46
+# github.com/openshift/api => github.com/openshift/api v0.0.0-20260304172252-b0658d22beea
+# github.com/openshift/client-go => github.com/openshift/client-go v0.0.0-20251205093018-96a6cbc1420c
+# k8s.io/api => k8s.io/api v0.34.5
+# k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.34.5
+# k8s.io/apimachinery => k8s.io/apimachinery v0.34.5
+# k8s.io/client-go => k8s.io/client-go v0.34.5
+# k8s.io/code-generator => k8s.io/code-generator v0.34.5
+# k8s.io/component-base => k8s.io/component-base v0.34.5
+# sigs.k8s.io/controller-runtime => sigs.k8s.io/controller-runtime v0.22.5
