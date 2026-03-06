@@ -26,7 +26,8 @@ spec:
     name: build-source-image
     type: string
   - default: "false"
-    description: 'Enable in-development package managers. WARNING: the behavior may change at any time without notice. Use at your own risk.'
+    description: 'Enable in-development package managers. WARNING: the behavior may
+      change at any time without notice. Use at your own risk.'
     name: prefetch-input-dev-package-managers
   - default: []
     description: Additional image tags
@@ -43,11 +44,13 @@ spec:
     name: output-image
     type: string
   - default: .
-    description: Path to the source code of an application's component from where to build image.
+    description: Path to the source code of an application's component from where
+      to build image.
     name: path-context
     type: string
   - default: Dockerfile
-    description: Path to the Dockerfile inside the context specified by parameter path-context
+    description: Path to the Dockerfile inside the context specified by parameter
+      path-context
     name: dockerfile
     type: string
   - default: "false"
@@ -63,11 +66,13 @@ spec:
     name: prefetch-input
     type: string
   - default: ""
-    description: Image tag expiration time, time values could be something like 1h, 2d, 3w for hours, days, and weeks, respectively.
+    description: Image tag expiration time, time values could be something like 1h,
+      2d, 3w for hours, days, and weeks, respectively.
     name: image-expires-after
     type: string
   - default: docker
-    description: The format for the resulting image's mediaType. Valid values are oci or docker.
+    description: The format for the resulting image's mediaType. Valid values are
+      oci or docker.
     name: buildah-format
     type: string
   - default: "false"
@@ -82,12 +87,14 @@ spec:
     name: build-args-file
     type: string
   - default: "false"
-    description: Whether to enable privileged mode, should be used only with remote VMs
+    description: Whether to enable privileged mode, should be used only with remote
+      VMs
     name: privileged-nested
     type: string
   - default:
     - linux/x86_64
-    description: List of platforms to build the container images on. The available set of values is determined by the configuration of the multi-platform-controller.
+    description: List of platforms to build the container images on. The available
+      set of values is determined by the configuration of the multi-platform-controller.
     name: build-platforms
     type: array
   results:
