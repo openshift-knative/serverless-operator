@@ -21,16 +21,14 @@ import (
 	corev1 "k8s.io/api/core/v1"
 )
 
-// TLSConfigApplyConfiguration represents an declarative configuration of the TLSConfig type for use
+// TLSConfigApplyConfiguration represents a declarative configuration of the TLSConfig type for use
 // with apply.
 type TLSConfigApplyConfiguration struct {
-	SafeTLSConfigApplyConfiguration `json:",inline"`
-	CAFile                          *string `json:"caFile,omitempty"`
-	CertFile                        *string `json:"certFile,omitempty"`
-	KeyFile                         *string `json:"keyFile,omitempty"`
+	SafeTLSConfigApplyConfiguration  `json:",inline"`
+	TLSFilesConfigApplyConfiguration `json:",inline"`
 }
 
-// TLSConfigApplyConfiguration constructs an declarative configuration of the TLSConfig type for use with
+// TLSConfigApplyConfiguration constructs a declarative configuration of the TLSConfig type for use with
 // apply.
 func TLSConfig() *TLSConfigApplyConfiguration {
 	return &TLSConfigApplyConfiguration{}
@@ -40,7 +38,7 @@ func TLSConfig() *TLSConfigApplyConfiguration {
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the CA field is set to the value of the last call.
 func (b *TLSConfigApplyConfiguration) WithCA(value *SecretOrConfigMapApplyConfiguration) *TLSConfigApplyConfiguration {
-	b.CA = value
+	b.SafeTLSConfigApplyConfiguration.CA = value
 	return b
 }
 
@@ -48,7 +46,7 @@ func (b *TLSConfigApplyConfiguration) WithCA(value *SecretOrConfigMapApplyConfig
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the Cert field is set to the value of the last call.
 func (b *TLSConfigApplyConfiguration) WithCert(value *SecretOrConfigMapApplyConfiguration) *TLSConfigApplyConfiguration {
-	b.Cert = value
+	b.SafeTLSConfigApplyConfiguration.Cert = value
 	return b
 }
 
@@ -56,7 +54,7 @@ func (b *TLSConfigApplyConfiguration) WithCert(value *SecretOrConfigMapApplyConf
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the KeySecret field is set to the value of the last call.
 func (b *TLSConfigApplyConfiguration) WithKeySecret(value corev1.SecretKeySelector) *TLSConfigApplyConfiguration {
-	b.KeySecret = &value
+	b.SafeTLSConfigApplyConfiguration.KeySecret = &value
 	return b
 }
 
@@ -64,7 +62,7 @@ func (b *TLSConfigApplyConfiguration) WithKeySecret(value corev1.SecretKeySelect
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the ServerName field is set to the value of the last call.
 func (b *TLSConfigApplyConfiguration) WithServerName(value string) *TLSConfigApplyConfiguration {
-	b.ServerName = &value
+	b.SafeTLSConfigApplyConfiguration.ServerName = &value
 	return b
 }
 
@@ -72,7 +70,7 @@ func (b *TLSConfigApplyConfiguration) WithServerName(value string) *TLSConfigApp
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the InsecureSkipVerify field is set to the value of the last call.
 func (b *TLSConfigApplyConfiguration) WithInsecureSkipVerify(value bool) *TLSConfigApplyConfiguration {
-	b.InsecureSkipVerify = &value
+	b.SafeTLSConfigApplyConfiguration.InsecureSkipVerify = &value
 	return b
 }
 
@@ -80,7 +78,7 @@ func (b *TLSConfigApplyConfiguration) WithInsecureSkipVerify(value bool) *TLSCon
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the MinVersion field is set to the value of the last call.
 func (b *TLSConfigApplyConfiguration) WithMinVersion(value monitoringv1.TLSVersion) *TLSConfigApplyConfiguration {
-	b.MinVersion = &value
+	b.SafeTLSConfigApplyConfiguration.MinVersion = &value
 	return b
 }
 
@@ -88,7 +86,7 @@ func (b *TLSConfigApplyConfiguration) WithMinVersion(value monitoringv1.TLSVersi
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the MaxVersion field is set to the value of the last call.
 func (b *TLSConfigApplyConfiguration) WithMaxVersion(value monitoringv1.TLSVersion) *TLSConfigApplyConfiguration {
-	b.MaxVersion = &value
+	b.SafeTLSConfigApplyConfiguration.MaxVersion = &value
 	return b
 }
 
@@ -96,7 +94,7 @@ func (b *TLSConfigApplyConfiguration) WithMaxVersion(value monitoringv1.TLSVersi
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the CAFile field is set to the value of the last call.
 func (b *TLSConfigApplyConfiguration) WithCAFile(value string) *TLSConfigApplyConfiguration {
-	b.CAFile = &value
+	b.TLSFilesConfigApplyConfiguration.CAFile = &value
 	return b
 }
 
@@ -104,7 +102,7 @@ func (b *TLSConfigApplyConfiguration) WithCAFile(value string) *TLSConfigApplyCo
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the CertFile field is set to the value of the last call.
 func (b *TLSConfigApplyConfiguration) WithCertFile(value string) *TLSConfigApplyConfiguration {
-	b.CertFile = &value
+	b.TLSFilesConfigApplyConfiguration.CertFile = &value
 	return b
 }
 
@@ -112,6 +110,6 @@ func (b *TLSConfigApplyConfiguration) WithCertFile(value string) *TLSConfigApply
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the KeyFile field is set to the value of the last call.
 func (b *TLSConfigApplyConfiguration) WithKeyFile(value string) *TLSConfigApplyConfiguration {
-	b.KeyFile = &value
+	b.TLSFilesConfigApplyConfiguration.KeyFile = &value
 	return b
 }
