@@ -39,10 +39,9 @@ func RemoveSourceServiceMonitorResources(client client.Client, instance *appsv1.
 }
 
 func sourceServiceMonitorManifest(client client.Client, instance *appsv1.Deployment) (*mf.Manifest, error) {
-	labels := instance.Spec.Selector.MatchLabels
 	clientOptions := mf.UseClient(mfclient.NewClient(client))
 	// Create service monitor resources for source
-	smManifest, err := createServiceMonitorManifest(labels, instance.Name, instance.Namespace, clientOptions)
+	smManifest, err := createServiceMonitorManifest(instance, clientOptions)
 	if err != nil {
 		return nil, err
 	}
@@ -52,7 +51,22 @@ func sourceServiceMonitorManifest(client client.Client, instance *appsv1.Deploym
 	return smManifest, nil
 }
 
-func createServiceMonitorManifest(labels map[string]string, depName string, ns string, options mf.Option) (*mf.Manifest, error) {
+func createServiceMonitorManifest(instance *appsv1.Deployment, options mf.Option) (*mf.Manifest, error) {
+	labels := instance.Spec.Selector.MatchLabels
+	depName := instance.Name
+	ns := instance.Namespace
+
+	// Find the metrics port from the deployment's container ports
+	metricsPort := int32(9090) // default fallback
+	for _, container := range instance.Spec.Template.Spec.Containers {
+		for _, port := range container.Ports {
+			if port.Name == "metrics" {
+				metricsPort = port.ContainerPort
+				break
+			}
+		}
+	}
+
 	var svU = &unstructured.Unstructured{}
 	var smU = &unstructured.Unstructured{}
 	sms := corev1.Service{
@@ -65,7 +79,7 @@ func createServiceMonitorManifest(labels map[string]string, depName string, ns s
 			Ports: []corev1.ServicePort{{
 				Name:       "http-metrics",
 				Port:       9090,
-				TargetPort: intstr.FromInt(9090),
+				TargetPort: intstr.FromInt32(metricsPort),
 				Protocol:   "TCP",
 			}},
 			Selector: kmap.Copy(labels),

@@ -81,7 +81,7 @@ data:
             "steppedLine": false,
             "targets": [
                 {
-                    "expr": "sum(autoscaler_actual_pods{namespace_name=\"$namespace\", configuration_name=\"$configuration\", revision_name=\"$revision\"})",
+                    "expr": "sum(kn_revision_pods_count{k8s_namespace_name=\"$namespace\", kn_configuration_name=\"$configuration\", kn_revision_name=\"$revision\"})",
                     "format": "time_series",
                     "instant": true,
                     "intervalFactor": 1,
@@ -166,7 +166,7 @@ data:
             "steppedLine": false,
             "targets": [
                 {
-                    "expr": "sum(autoscaler_desired_pods{namespace_name=\"$namespace\", configuration_name=\"$configuration\", revision_name=\"$revision\"})",
+                    "expr": "sum(kn_revision_pods_desired{k8s_namespace_name=\"$namespace\", kn_configuration_name=\"$configuration\", kn_revision_name=\"$revision\"})",
                     "format": "time_series",
                     "instant": true,
                     "intervalFactor": 1,
@@ -250,7 +250,7 @@ data:
             "steppedLine": false,
             "targets": [
                 {
-                    "expr": "sum(autoscaler_pending_pods{namespace_name=\"$namespace\", configuration_name=\"$configuration\", revision_name=\"$revision\"})",
+                    "expr": "sum(kn_revision_pods_pending_count{k8s_namespace_name=\"$namespace\", kn_configuration_name=\"$configuration\", kn_revision_name=\"$revision\"})",
                     "format": "time_series",
                     "instant": true,
                     "intervalFactor": 1,
@@ -334,7 +334,7 @@ data:
             "steppedLine": false,
             "targets": [
                 {
-                    "expr": "sum(autoscaler_not_ready_pods{namespace_name=\"$namespace\", configuration_name=\"$configuration\", revision_name=\"$revision\"})",
+                    "expr": "sum(kn_revision_pods_not_ready_count{k8s_namespace_name=\"$namespace\", kn_configuration_name=\"$configuration\", kn_revision_name=\"$revision\"})",
                     "format": "time_series",
                     "instant": true,
                     "intervalFactor": 1,
@@ -418,7 +418,7 @@ data:
             "steppedLine": false,
             "targets": [
                 {
-                    "expr": "sum(autoscaler_terminating_pods{namespace_name=\"$namespace\", configuration_name=\"$configuration\", revision_name=\"$revision\"})",
+                    "expr": "sum(kn_revision_pods_terminating_count{k8s_namespace_name=\"$namespace\", kn_configuration_name=\"$configuration\", kn_revision_name=\"$revision\"})",
                     "format": "time_series",
                     "instant": true,
                     "intervalFactor": 1,
@@ -502,7 +502,7 @@ data:
             "steppedLine": false,
             "targets": [
                 {
-                    "expr": "sum(autoscaler_desired_pods{namespace_name=\"$namespace\", configuration_name=\"$configuration\", revision_name=\"$revision\"})",
+                    "expr": "sum(kn_revision_pods_desired{k8s_namespace_name=\"$namespace\", kn_configuration_name=\"$configuration\", kn_revision_name=\"$revision\"})",
                     "format": "time_series",
                     "instant": true,
                     "intervalFactor": 1,
@@ -583,7 +583,7 @@ data:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(autoscaler_actual_pods{namespace_name=\"$namespace\", configuration_name=\"$configuration\", revision_name=\"$revision\"})",
+              "expr": "sum(kn_revision_pods_count{k8s_namespace_name=\"$namespace\", kn_configuration_name=\"$configuration\", kn_revision_name=\"$revision\"})",
               "format": "time_series",
               "interval": "1s",
               "intervalFactor": 1,
@@ -591,7 +591,7 @@ data:
               "refId": "A"
             },
             {
-              "expr": "sum(autoscaler_requested_pods{namespace_name=\"$namespace\", configuration_name=\"$configuration\", revision_name=\"$revision\"})",
+              "expr": "sum(kn_revision_pods_requested{k8s_namespace_name=\"$namespace\", kn_configuration_name=\"$configuration\", kn_revision_name=\"$revision\"})",
               "format": "time_series",
               "interval": "1s",
               "intervalFactor": 1,
@@ -599,7 +599,7 @@ data:
               "refId": "C"
             },
             {
-              "expr": "sum(autoscaler_pending_pods{namespace_name=\"$namespace\", configuration_name=\"$configuration\", revision_name=\"$revision\"})",
+              "expr": "sum(kn_revision_pods_pending_count{k8s_namespace_name=\"$namespace\", kn_configuration_name=\"$configuration\", kn_revision_name=\"$revision\"})",
               "format": "time_series",
               "interval": "1s",
               "intervalFactor": 1,
@@ -607,7 +607,7 @@ data:
               "refId": "P"
             },
             {
-              "expr": "sum(autoscaler_not_ready_pods{namespace_name=\"$namespace\", configuration_name=\"$configuration\", revision_name=\"$revision\"})",
+              "expr": "sum(kn_revision_pods_not_ready_count{k8s_namespace_name=\"$namespace\", kn_configuration_name=\"$configuration\", kn_revision_name=\"$revision\"})",
               "format": "time_series",
               "interval": "1s",
               "intervalFactor": 1,
@@ -615,7 +615,7 @@ data:
               "refId": "N"
             },
             {
-              "expr": "sum(autoscaler_terminating_pods{namespace_name=\"$namespace\", configuration_name=\"$configuration\", revision_name=\"$revision\"})",
+              "expr": "sum(kn_revision_pods_terminating_count{k8s_namespace_name=\"$namespace\", kn_configuration_name=\"$configuration\", kn_revision_name=\"$revision\"})",
               "format": "time_series",
               "interval": "1s",
               "intervalFactor": 1,
@@ -696,7 +696,7 @@ data:
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(autoscaler_stable_request_concurrency{namespace_name=\"$namespace\", configuration_name=\"$configuration\", revision_name=\"$revision\"})",
+          "expr": "sum(kn_revision_concurrency_stable{k8s_namespace_name=\"$namespace\", kn_configuration_name=\"$configuration\", kn_revision_name=\"$revision\"})",
           "format": "time_series",
           "interval": "1s",
           "intervalFactor": 1,
@@ -704,7 +704,7 @@ data:
           "refId": "A"
         },
         {
-          "expr": "sum(autoscaler_panic_request_concurrency{namespace_name=\"$namespace\", configuration_name=\"$configuration\", revision_name=\"$revision\"})",
+          "expr": "sum(kn_revision_concurrency_panic{k8s_namespace_name=\"$namespace\", kn_configuration_name=\"$configuration\", kn_revision_name=\"$revision\"})",
           "format": "time_series",
           "interval": "1s",
           "intervalFactor": 1,
@@ -712,7 +712,7 @@ data:
           "refId": "B"
         },
         {
-          "expr": "sum(autoscaler_target_concurrency_per_pod{namespace_name=\"$namespace\", configuration_name=\"$configuration\", revision_name=\"$revision\"})",
+          "expr": "sum(kn_revision_concurrency_target{k8s_namespace_name=\"$namespace\", kn_configuration_name=\"$configuration\", kn_revision_name=\"$revision\"})",
           "format": "time_series",
           "interval": "1s",
           "intervalFactor": 1,
@@ -720,7 +720,7 @@ data:
           "refId": "C"
         },
         {
-          "expr": "sum(autoscaler_excess_burst_capacity{namespace_name=\"$namespace\", configuration_name=\"$configuration\", revision_name=\"$revision\"})",
+          "expr": "sum(kn_revision_capacity_excess{k8s_namespace_name=\"$namespace\", kn_configuration_name=\"$configuration\", kn_revision_name=\"$revision\"})",
           "format": "time_series",
           "interval": "1s",
           "intervalFactor": 1,
@@ -801,7 +801,7 @@ data:
         "steppedLine": false,
         "targets": [
           {
-            "expr": "label_replace(histogram_quantile(0.50, sum(rate(autoscaler_scrape_time_bucket{namespace_name=\"$namespace\", configuration_name=~\"$configuration\",revision_name=~\"$revision\"}[1m])) by (revision_name, le)), \"revision_name\", \"$2\", \"revision_name\", \"$configuration(-+)(.*)\")",
+            "expr": "label_replace(histogram_quantile(0.50, sum(rate(kn_autoscaler_scrape_duration_bucket{k8s_namespace_name=\"$namespace\", kn_configuration_name=~\"$configuration\",kn_revision_name=~\"$revision\"}[1m])) by (revision_name, le)), \"revision_name\", \"$2\", \"revision_name\", \"$configuration(-+)(.*)\")",
             "format": "time_series",
             "interval": "1s",
             "intervalFactor": 1,
@@ -809,7 +809,7 @@ data:
             "refId": "A"
           },
           {
-            "expr": "label_replace(histogram_quantile(0.90, sum(rate(autoscaler_scrape_time_bucket{namespace_name=\"$namespace\", configuration_name=~\"$configuration\",revision_name=~\"$revision\"}[1m])) by (revision_name, le)), \"revision_name\", \"$2\", \"revision_name\", \"$configuration(-+)(.*)\")",
+            "expr": "label_replace(histogram_quantile(0.90, sum(rate(kn_autoscaler_scrape_duration_bucket{k8s_namespace_name=\"$namespace\", kn_configuration_name=~\"$configuration\",kn_revision_name=~\"$revision\"}[1m])) by (revision_name, le)), \"revision_name\", \"$2\", \"revision_name\", \"$configuration(-+)(.*)\")",
             "format": "time_series",
             "interval": "1s",
             "intervalFactor": 1,
@@ -817,7 +817,7 @@ data:
             "refId": "B"
           },
           {
-            "expr": "label_replace(histogram_quantile(0.95, sum(rate(autoscaler_scrape_time_bucket{namespace_name=\"$namespace\", configuration_name=~\"$configuration\",revision_name=~\"$revision\"}[1m])) by (revision_name, le)), \"revision_name\", \"$2\", \"revision_name\", \"$configuration(-+)(.*)\")",
+            "expr": "label_replace(histogram_quantile(0.95, sum(rate(kn_autoscaler_scrape_duration_bucket{k8s_namespace_name=\"$namespace\", kn_configuration_name=~\"$configuration\",kn_revision_name=~\"$revision\"}[1m])) by (revision_name, le)), \"revision_name\", \"$2\", \"revision_name\", \"$configuration(-+)(.*)\")",
             "format": "time_series",
             "interval": "1s",
             "intervalFactor": 1,
@@ -825,7 +825,7 @@ data:
             "refId": "C"
           },
           {
-            "expr": "label_replace(histogram_quantile(0.99, sum(rate(autoscaler_scrape_time_bucket{namespace_name=\"$namespace\", configuration_name=~\"$configuration\",revision_name=~\"$revision\"}[1m])) by (revision_name, le)), \"revision_name\", \"$2\", \"revision_name\", \"$configuration(-+)(.*)\")",
+            "expr": "label_replace(histogram_quantile(0.99, sum(rate(kn_autoscaler_scrape_duration_bucket{k8s_namespace_name=\"$namespace\", kn_configuration_name=~\"$configuration\",kn_revision_name=~\"$revision\"}[1m])) by (revision_name, le)), \"revision_name\", \"$2\", \"revision_name\", \"$configuration(-+)(.*)\")",
             "format": "time_series",
             "interval": "1s",
             "intervalFactor": 1,
@@ -907,7 +907,7 @@ data:
          "steppedLine": false,
          "targets": [
            {
-             "expr": "sum(autoscaler_panic_mode{namespace_name=\"$namespace\", configuration_name=\"$configuration\", revision_name=\"$revision\"} )",
+             "expr": "sum(kn_revision_panic_mode{k8s_namespace_name=\"$namespace\", kn_configuration_name=\"$configuration\", kn_revision_name=\"$revision\"} )",
              "format": "time_series",
              "interval": "1s",
              "intervalFactor": 1,
@@ -988,7 +988,7 @@ data:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(autoscaler_stable_requests_per_second{namespace_name=\"$namespace\", configuration_name=\"$configuration\", revision_name=\"$revision\"})",
+              "expr": "sum(kn_revision_rps_stable{k8s_namespace_name=\"$namespace\", kn_configuration_name=\"$configuration\", kn_revision_name=\"$revision\"})",
               "format": "time_series",
               "interval": "1s",
               "intervalFactor": 1,
@@ -996,7 +996,7 @@ data:
               "refId": "A"
             },
             {
-              "expr": "sum(autoscaler_panic_requests_per_second{namespace_name=\"$namespace\", configuration_name=\"$configuration\", revision_name=\"$revision\"})",
+              "expr": "sum(kn_revision_rps_panic{k8s_namespace_name=\"$namespace\", kn_configuration_name=\"$configuration\", kn_revision_name=\"$revision\"})",
               "format": "time_series",
               "interval": "1s",
               "intervalFactor": 1,
@@ -1004,7 +1004,7 @@ data:
               "refId": "B"
             },
             {
-              "expr": "sum(autoscaler_target_requests_per_second{namespace_name=\"$namespace\", configuration_name=\"$configuration\", revision_name=\"$revision\"})",
+              "expr": "sum(kn_revision_rps_target{k8s_namespace_name=\"$namespace\", kn_configuration_name=\"$configuration\", kn_revision_name=\"$revision\"})",
               "format": "time_series",
               "interval": "1s",
               "intervalFactor": 1,
@@ -1085,7 +1085,7 @@ data:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(activator_request_concurrency{namespace_name=\"$namespace\", configuration_name=\"$configuration\", revision_name=\"$revision\"})",
+              "expr": "sum(kn_revision_request_concurrency{k8s_namespace_name=\"$namespace\", kn_configuration_name=\"$configuration\", kn_revision_name=\"$revision\"})",
               "format": "time_series",
               "interval": "1s",
               "intervalFactor": 1,
@@ -1166,11 +1166,11 @@ data:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "round(sum(increase(activator_request_count{namespace_name=\"$namespace\", configuration_name=~\"$configuration\",revision_name=~\"$revision\"}[1m])) by (response_code))",
+              "expr": "round(sum(increase(http_server_request_duration_count{k8s_namespace_name=\"$namespace\", kn_configuration_name=~\"$configuration\",kn_revision_name=~\"$revision\"}[1m])) by (http_response_status_code))",
               "format": "time_series",
               "interval": "1s",
               "intervalFactor": 1,
-              "legendFormat": "{{response_code}}",
+              "legendFormat": "{{http_response_status_code}}",
               "refId": "A"
             }
           ],
@@ -1247,7 +1247,7 @@ data:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "label_replace(histogram_quantile(0.50, sum(rate(activator_request_latencies_bucket{namespace_name=\"$namespace\", configuration_name=~\"$configuration\",revision_name=~\"$revision\"}[1m])) by (revision_name, le)), \"revision_name\", \"$2\", \"revision_name\", \"$configuration(-+)(.*)\")",
+              "expr": "label_replace(histogram_quantile(0.50, sum(rate(http_server_request_duration_bucket{k8s_namespace_name=\"$namespace\", kn_configuration_name=~\"$configuration\",kn_revision_name=~\"$revision\"}[1m])) by (revision_name, le)), \"revision_name\", \"$2\", \"revision_name\", \"$configuration(-+)(.*)\")",
               "format": "time_series",
               "interval": "1s",
               "intervalFactor": 1,
@@ -1255,7 +1255,7 @@ data:
               "refId": "A"
             },
             {
-              "expr": "label_replace(histogram_quantile(0.90, sum(rate(activator_request_latencies_bucket{namespace_name=\"$namespace\", configuration_name=~\"$configuration\",revision_name=~\"$revision\"}[1m])) by (revision_name, le)), \"revision_name\", \"$2\", \"revision_name\", \"$configuration(-+)(.*)\")",
+              "expr": "label_replace(histogram_quantile(0.90, sum(rate(http_server_request_duration_bucket{k8s_namespace_name=\"$namespace\", kn_configuration_name=~\"$configuration\",kn_revision_name=~\"$revision\"}[1m])) by (revision_name, le)), \"revision_name\", \"$2\", \"revision_name\", \"$configuration(-+)(.*)\")",
               "format": "time_series",
               "interval": "1s",
               "intervalFactor": 1,
@@ -1263,7 +1263,7 @@ data:
               "refId": "A"
             },
             {
-              "expr": "label_replace(histogram_quantile(0.95, sum(rate(activator_request_latencies_bucket{namespace_name=\"$namespace\", configuration_name=~\"$configuration\",revision_name=~\"$revision\"}[1m])) by (revision_name, le)), \"revision_name\", \"$2\", \"revision_name\", \"$configuration(-+)(.*)\")",
+              "expr": "label_replace(histogram_quantile(0.95, sum(rate(http_server_request_duration_bucket{k8s_namespace_name=\"$namespace\", kn_configuration_name=~\"$configuration\",kn_revision_name=~\"$revision\"}[1m])) by (revision_name, le)), \"revision_name\", \"$2\", \"revision_name\", \"$configuration(-+)(.*)\")",
               "format": "time_series",
               "interval": "1s",
               "intervalFactor": 1,
@@ -1271,7 +1271,7 @@ data:
               "refId": "A"
             },
             {
-              "expr": "label_replace(histogram_quantile(0.99, sum(rate(activator_request_latencies_bucket{namespace_name=\"$namespace\", configuration_name=~\"$configuration\",revision_name=~\"$revision\"}[1m])) by (revision_name, le)), \"revision_name\", \"$2\", \"revision_name\", \"$configuration(-+)(.*)\")",
+              "expr": "label_replace(histogram_quantile(0.99, sum(rate(http_server_request_duration_bucket{k8s_namespace_name=\"$namespace\", kn_configuration_name=~\"$configuration\",kn_revision_name=~\"$revision\"}[1m])) by (revision_name, le)), \"revision_name\", \"$2\", \"revision_name\", \"$configuration(-+)(.*)\")",
               "format": "time_series",
               "interval": "1s",
               "intervalFactor": 1,
