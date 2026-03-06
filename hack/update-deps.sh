@@ -12,8 +12,6 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-set -x
-
 cd "${ROOT_DIR}"
 
 # This controls the knative release version we track.
