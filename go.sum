@@ -1479,8 +1479,8 @@ github.com/cloudevents/conformance v0.4.1 h1:MMq+jviOHHNINGWQdvr2yj4g8CdeL59M81O
 github.com/cloudevents/conformance v0.4.1/go.mod h1:bOMTKxs/Aqx4rM/dp+AYvdGTHU6tEa9+R5ORr5cJnqc=
 github.com/cloudevents/sdk-go/sql/v2 v2.15.2 h1:TNaTeWIbDaci89xgXbmmNVGccawQOvEfWYLWrr7Fk/k=
 github.com/cloudevents/sdk-go/sql/v2 v2.15.2/go.mod h1:us+PSk8OXdk8pDbRfvxy5w8ub5goKE7UP9PjKDY7TPw=
-github.com/cloudevents/sdk-go/v2 v2.16.1 h1:G91iUdqvl88BZ1GYYr9vScTj5zzXSyEuqbfE63gbu9Q=
-github.com/cloudevents/sdk-go/v2 v2.16.1/go.mod h1:v/kVOaWjNfbvc6tkhhlkhvLapj8Aa8kvXiH5GiOHCKI=
+github.com/cloudevents/sdk-go/v2 v2.16.2 h1:ZYDFrYke4FD+jM8TZTJJO6JhKHzOQl2oqpFK1D+NnQM=
+github.com/cloudevents/sdk-go/v2 v2.16.2/go.mod h1:laOcGImm4nVJEU+PHnUrKL56CKmRL65RlQF0kRmW/kg=
 github.com/cncf/udpa/go v0.0.0-20191209042840-269d4d468f6f/go.mod h1:M8M6+tZqaGXZJjfX53e64911xZQV5JYwmTeXPW+k8Sc=
 github.com/cncf/udpa/go v0.0.0-20200629203442-efcf912fb354/go.mod h1:WmhPx2Nbnhtbo57+VJT5O0JRkEi1Wbu0z5j0R8u5Hbk=
 github.com/cncf/udpa/go v0.0.0-20201120205902-5459f2c99403/go.mod h1:WmhPx2Nbnhtbo57+VJT5O0JRkEi1Wbu0z5j0R8u5Hbk=
