@@ -586,8 +586,16 @@ EOF
       --upgradeopenshift
   fi
 
-  # Delete the leftover namespace.
-  oc delete namespace serving-tests
+  # Delete metadata-webhook resources before deleting the namespace.
+  # This prevents blocking Route finalizer removal when webhook service is unavailable.
+  if [[ $MESH == "true" ]]; then
+    local rootdir
+    rootdir="$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")"
+    oc delete -f "${rootdir}/serving/metadata-webhook/config" --ignore-not-found
+  fi
+
+  # Delete the leftover namespace (may already be deleted by webhook config cleanup).
+  oc delete namespace serving-tests --ignore-not-found
 
   logger.success 'Upgrade tests passed'
 }
