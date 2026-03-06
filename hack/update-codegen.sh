@@ -34,6 +34,7 @@ OUTPUT_PKG="github.com/openshift-knative/serverless-operator/pkg/client/config/i
   --go-header-file "${REPO_ROOT}/hack/boilerplate/boilerplate.go.txt"
 
 # In future release 1.18, Knative codegen will have a new option `--plural-exceptions`. Until than we have to live with this sed.
-# https://github.com/knative/pkg/pull/3146 
+# https://github.com/knative/pkg/pull/3146
+# TODO(dsimansk): even in Serverless 1.38 the plural flag doesn't work
 echo "Fix DNS plural form"
 find pkg/client/config/injection/informers/config/v1/dns -name "*.go" -exec sed -i 's/DNSs()/DNSes()/g' {} \;
