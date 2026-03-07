@@ -171,7 +171,11 @@ function deploy_knativeserving_cr {
   fi
 
   if [[ $MESH == "true" ]]; then
-    enable_istio "$serving_cr"
+    if [[ ${MESH_VERSION} == "3" ]]; then
+      enable_istio_mesh3 "$serving_cr"
+    else
+      enable_istio "$serving_cr"
+    fi
   fi
 
   if [[ $ENABLE_TRACING == "true" ]]; then
@@ -210,6 +214,46 @@ function enable_istio {
   istio_patch="$(mktemp -t istio-XXXXX.yaml)"
   cat - << EOF > "${istio_patch}"
 spec:
+  ingress:
+    istio:
+      enabled: true
+  deployments:
+  - labels:
+      sidecar.istio.io/inject: "true"
+    annotations:
+      sidecar.istio.io/rewriteAppHTTPProbers: "true"
+    name: activator
+  - labels:
+      sidecar.istio.io/inject: "true"
+    annotations:
+      sidecar.istio.io/rewriteAppHTTPProbers: "true"
+    name: autoscaler
+EOF
+
+  yq merge --inplace --arrays append "$custom_resource" "$istio_patch"
+
+  rm -f "${istio_patch}"
+}
+
+# If ServiceMesh 3 is enabled:
+# - Set ingress.istio.enabled to "true"
+# - Set custom gateway config pointing to knative-serving-ingress namespace
+# - Set inject and rewriteAppHTTPProbers annotations for activator and autoscaler
+# - Add annotation to disable istio net policies generation
+function enable_istio_mesh3 {
+  local custom_resource istio_patch
+  custom_resource=${1:?Pass a custom resource to be patched as arg[1]}
+
+  istio_patch="$(mktemp -t istio-XXXXX.yaml)"
+  cat - << EOF > "${istio_patch}"
+metadata:
+  annotations:
+    serverless.openshift.io/disable-istio-net-policies-generation: "true"
+spec:
+  config:
+    istio:
+      gateway.knative-serving.knative-ingress-gateway: knative-istio-ingressgateway.knative-serving-ingress.svc.cluster.local
+      local-gateway.knative-serving.knative-local-gateway: knative-local-gateway.knative-serving-ingress.svc.cluster.local
   ingress:
     istio:
       enabled: true

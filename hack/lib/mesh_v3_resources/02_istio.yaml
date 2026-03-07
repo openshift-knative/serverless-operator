@@ -1,0 +1,14 @@
+apiVersion: sailoperator.io/v1
+kind: Istio
+metadata:
+  name: default
+spec:
+  values:
+    meshConfig:
+      defaultConfig:
+        terminationDrainDuration: 35s # needed to make QP stop hook work
+  updateStrategy:
+    inactiveRevisionDeletionGracePeriodSeconds: 30
+    type: InPlace
+  namespace: istio-system
+  version: MESH3_ISTIO_VERSION

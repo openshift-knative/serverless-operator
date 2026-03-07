@@ -1,0 +1,75 @@
+###########################################################
+# cluster external
+###########################################################
+apiVersion: v1
+kind: Service
+metadata:
+  name: knative-istio-ingressgateway
+  namespace: knative-serving-ingress
+spec:
+  type: ClusterIP
+  selector:
+    knative: ingressgateway
+  ports:
+    - name: http2
+      port: 80
+      targetPort: 8080
+    - name: https
+      port: 443
+      targetPort: 8443
+---
+apiVersion: networking.istio.io/v1beta1
+kind: Gateway
+metadata:
+  name: knative-ingress-gateway
+  namespace: knative-serving
+spec:
+  selector:
+    knative: ingressgateway
+  servers:
+    - hosts:
+        - '*'
+      port:
+        name: https
+        number: 443
+        protocol: HTTPS
+      tls:
+        credentialName: wildcard-certs
+        mode: SIMPLE
+---
+###########################################################
+# cluster local
+###########################################################
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    experimental.istio.io/disable-gateway-port-translation: "true"
+  name: knative-local-gateway
+  namespace: knative-serving-ingress
+spec:
+  ports:
+    - name: http2
+      port: 80
+      protocol: TCP
+      targetPort: 8081
+  selector:
+    knative: ingressgateway
+  type: ClusterIP
+---
+apiVersion: networking.istio.io/v1beta1
+kind: Gateway
+metadata:
+  name: knative-local-gateway
+  namespace: knative-serving
+spec:
+  selector:
+    knative: ingressgateway
+  servers:
+    - hosts:
+        - '*'
+      port:
+        name: http
+        number: 8081
+        protocol: HTTP
+---
