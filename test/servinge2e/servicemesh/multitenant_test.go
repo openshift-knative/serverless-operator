@@ -3,6 +3,7 @@ package servicemesh
 import (
 	"context"
 	"fmt"
+	"os"
 	"testing"
 
 	"github.com/openshift-knative/serverless-operator/test"
@@ -16,10 +17,11 @@ import (
 )
 
 const (
-	Tenant1          = "tenant-1"
-	Tenant2          = "tenant-2"
-	LocalGatewayHost = "knative-local-gateway.istio-system.svc.cluster.local"
+	Tenant1 = "tenant-1"
+	Tenant2 = "tenant-2"
 )
+
+var LocalGatewayHost = "knative-local-gateway.istio-system.svc.cluster.local"
 
 var ExpectStatusForbidden = func(resp *spoof.Response) (bool, error) {
 	if resp.StatusCode != 403 {
@@ -30,6 +32,9 @@ var ExpectStatusForbidden = func(resp *spoof.Response) (bool, error) {
 }
 
 func TestMultiTenancyWithServiceMesh(t *testing.T) {
+	if os.Getenv("MESH_VERSION") == "3" {
+		LocalGatewayHost = "knative-local-gateway.knative-serving-ingress..svc.cluster.local"
+	}
 	tests := []testCase{
 		{
 			name: "same-tenant-directly",
@@ -117,7 +122,6 @@ func TestMultiTenancyWithServiceMesh(t *testing.T) {
 	for _, tc := range tests {
 		tc := tc
 
-		tc.annotations[IstioInjectKey] = "true"
 		tc.annotations[IstioRewriteProbersKey] = "true"
 
 		// Always use cluster-local service.
@@ -135,6 +139,9 @@ func TestMultiTenancyWithServiceMesh(t *testing.T) {
 				ServingEnablePassthroughKey: "true",
 			}, tc.annotations)
 			service.ObjectMeta.Labels = tc.labels
+			service.Spec.Template.Labels = map[string]string{
+				IstioInjectKey: "true",
+			}
 
 			service = test.WithServiceReadyOrFail(ctx, service)
 

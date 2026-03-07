@@ -23,6 +23,6 @@ create_namespaces "${SYSTEM_NAMESPACES[@]}"
 if [[ $INSTALL_CERTMANAGER == "true" ]]; then
   install_certmanager
 fi
-ensure_content_source_policy
+#ensure_content_source_policy
 ensure_catalog_installed
 ensure_serverless_installed
