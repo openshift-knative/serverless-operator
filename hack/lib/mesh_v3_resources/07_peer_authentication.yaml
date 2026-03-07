@@ -1,0 +1,8 @@
+apiVersion: "security.istio.io/v1"
+kind: "PeerAuthentication"
+metadata:
+  name: mesh-mtls
+  namespace: istio-system
+spec:
+  mtls:
+    mode: STRICT

@@ -12,8 +12,8 @@ fi
 debugging.setup # both install and test
 dump_state.setup # test
 
-if [[ $MESH == "true" ]]; then
-  # net-istio does not use knative-serving-ingress namespace.
+if [[ $MESH == "true" && ${MESH_VERSION:-2} != "3" ]]; then
+  # SM2 net-istio does not use knative-serving-ingress namespace.
   export INGRESS_NAMESPACE="knative-serving"
 fi
 
