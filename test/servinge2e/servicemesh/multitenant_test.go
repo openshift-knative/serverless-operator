@@ -33,7 +33,7 @@ var ExpectStatusForbidden = func(resp *spoof.Response) (bool, error) {
 
 func TestMultiTenancyWithServiceMesh(t *testing.T) {
 	if os.Getenv("MESH_VERSION") == "3" {
-		LocalGatewayHost = "knative-local-gateway.knative-serving-ingress..svc.cluster.local"
+		LocalGatewayHost = "knative-local-gateway.knative-serving-ingress.svc.cluster.local"
 	}
 	tests := []testCase{
 		{
