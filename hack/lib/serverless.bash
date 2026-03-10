@@ -337,20 +337,17 @@ spec:
       sidecar.istio.io/rewriteAppHTTPProbers: "true"
     name: job-sink
   - labels:
-       sidecar.istio.io/inject: "false"
-     name: eventing-controller
+      sidecar.istio.io/inject: "false"
+    name: eventing-controller
   - labels:
-       sidecar.istio.io/inject: "false"
-     name: eventing-istio-controller
+      sidecar.istio.io/inject: "false"
+    name: eventing-istio-controller
   - labels:
       sidecar.istio.io/inject: "false"
     name: eventing-webhook
   - labels:
       sidecar.istio.io/inject: "false"
     name: imc-controller
-  - labels:
-      sidecar.istio.io/inject: "false"
-    name: job-sink
   - labels:
       sidecar.istio.io/inject: "false"
     name: mt-broker-controller
