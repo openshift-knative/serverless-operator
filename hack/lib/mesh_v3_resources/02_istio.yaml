@@ -4,6 +4,9 @@ metadata:
   name: default
 spec:
   values:
+    global:
+      proxy:
+        excludeInboundPorts: "8444,8022"
     meshConfig:
       defaultConfig:
         terminationDrainDuration: 35s # needed to make QP stop hook work
