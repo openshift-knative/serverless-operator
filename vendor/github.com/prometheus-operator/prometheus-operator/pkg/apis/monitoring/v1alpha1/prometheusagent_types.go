@@ -57,14 +57,19 @@ func (l *PrometheusAgent) GetStatus() monitoringv1.PrometheusStatus {
 //
 // The CRD is very similar to the `Prometheus` CRD except for features which aren't available in agent mode like rule evaluation, persistent storage and Thanos sidecar.
 type PrometheusAgent struct {
-	metav1.TypeMeta   `json:",inline"`
+	// TypeMeta defines the versioned schema of this representation of an object.
+	metav1.TypeMeta `json:",inline"`
+	// metadata defines ObjectMeta as the metadata that all persisted resources.
+	// +optional
 	metav1.ObjectMeta `json:"metadata,omitempty"`
-	// Specification of the desired behavior of the Prometheus agent. More info:
+	// spec defines the specification of the desired behavior of the Prometheus agent. More info:
 	// https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/api-conventions.md#spec-and-status
+	// +required
 	Spec PrometheusAgentSpec `json:"spec"`
-	// Most recent observed status of the Prometheus cluster. Read-only.
+	// status defines the most recent observed status of the Prometheus cluster. Read-only.
 	// More info:
 	// https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/api-conventions.md#spec-and-status
+	// +optional
 	Status monitoringv1.PrometheusStatus `json:"status,omitempty"`
 }
 
@@ -76,12 +81,12 @@ func (l *PrometheusAgent) DeepCopyObject() runtime.Object {
 // PrometheusAgentList is a list of Prometheus agents.
 // +k8s:openapi-gen=true
 type PrometheusAgentList struct {
+	// TypeMeta defines the versioned schema of this representation of an object.
 	metav1.TypeMeta `json:",inline"`
-	// Standard list metadata
-	// More info: https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/api-conventions.md#metadata
+	// metadata defines ListMeta as metadata for collection responses.
 	metav1.ListMeta `json:"metadata,omitempty"`
 	// List of Prometheus agents
-	Items []*PrometheusAgent `json:"items"`
+	Items []PrometheusAgent `json:"items"`
 }
 
 // DeepCopyObject implements the runtime.Object interface.
@@ -92,15 +97,35 @@ func (l *PrometheusAgentList) DeepCopyObject() runtime.Object {
 // PrometheusAgentSpec is a specification of the desired behavior of the Prometheus agent. More info:
 // https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/api-conventions.md#spec-and-status
 // +k8s:openapi-gen=true
+// +kubebuilder:validation:XValidation:rule="!(has(self.mode) && self.mode == 'DaemonSet' && has(self.replicas))",message="replicas cannot be set when mode is DaemonSet"
+// +kubebuilder:validation:XValidation:rule="!(has(self.mode) && self.mode == 'DaemonSet' && has(self.storage))",message="storage cannot be set when mode is DaemonSet"
+// +kubebuilder:validation:XValidation:rule="!(has(self.mode) && self.mode == 'DaemonSet' && has(self.shards) && self.shards > 1)",message="shards cannot be greater than 1 when mode is DaemonSet"
+// +kubebuilder:validation:XValidation:rule="!(has(self.mode) && self.mode == 'DaemonSet' && has(self.persistentVolumeClaimRetentionPolicy))",message="persistentVolumeClaimRetentionPolicy cannot be set when mode is DaemonSet"
+// +kubebuilder:validation:XValidation:rule="!(has(self.mode) && self.mode == 'DaemonSet' && has(self.scrapeConfigSelector))",message="scrapeConfigSelector cannot be set when mode is DaemonSet"
+// +kubebuilder:validation:XValidation:rule="!(has(self.mode) && self.mode == 'DaemonSet' && has(self.probeSelector))",message="probeSelector cannot be set when mode is DaemonSet"
+// +kubebuilder:validation:XValidation:rule="!(has(self.mode) && self.mode == 'DaemonSet' && has(self.scrapeConfigNamespaceSelector))",message="scrapeConfigNamespaceSelector cannot be set when mode is DaemonSet"
+// +kubebuilder:validation:XValidation:rule="!(has(self.mode) && self.mode == 'DaemonSet' && has(self.probeNamespaceSelector))",message="probeNamespaceSelector cannot be set when mode is DaemonSet"
+// +kubebuilder:validation:XValidation:rule="!(has(self.mode) && self.mode == 'DaemonSet' && has(self.serviceMonitorSelector))",message="serviceMonitorSelector cannot be set when mode is DaemonSet"
+// +kubebuilder:validation:XValidation:rule="!(has(self.mode) && self.mode == 'DaemonSet' && has(self.serviceMonitorNamespaceSelector))",message="serviceMonitorNamespaceSelector cannot be set when mode is DaemonSet"
+// +kubebuilder:validation:XValidation:rule="!(has(self.mode) && self.mode == 'DaemonSet' && has(self.additionalScrapeConfigs))",message="additionalScrapeConfigs cannot be set when mode is DaemonSet"
 type PrometheusAgentSpec struct {
-	// Mode defines how the Prometheus operator deploys the PrometheusAgent pod(s).
-	// For now this field has no effect.
+	// mode defines how the Prometheus operator deploys the PrometheusAgent pod(s).
 	//
 	// (Alpha) Using this field requires the `PrometheusAgentDaemonSet` feature gate to be enabled.
 	//
-	// +kubebuilder:validation:Enum=StatefulSet;DaemonSet
 	// +optional
-	Mode *string `json:"mode,omitempty"`
+	Mode *PrometheusAgentMode `json:"mode,omitempty"`
 
 	monitoringv1.CommonPrometheusFields `json:",inline"`
 }
+
+// +kubebuilder:validation:Enum=StatefulSet;DaemonSet
+type PrometheusAgentMode string
+
+const (
+	// Deploys PrometheusAgent as DaemonSet.
+	DaemonSetPrometheusAgentMode PrometheusAgentMode = "DaemonSet"
+
+	// Deploys PrometheusAgent as StatefulSet.
+	StatefulSetPrometheusAgentMode PrometheusAgentMode = "StatefulSet"
+)
