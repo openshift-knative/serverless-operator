@@ -1,0 +1,17 @@
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-traffic-to-ingress-gateway
+  namespace: knative-serving-ingress
+spec:
+  selector:
+    matchLabels:
+      istio: ingressgateway
+  action: ALLOW
+  rules:
+    - from:
+        - source:
+            namespaces: [ "knative-serving", "knative-serving-ingress", "istio-system" ]
+    - to:
+        - operation:
+            ports: [ "8081", "8443", "8444" ]
