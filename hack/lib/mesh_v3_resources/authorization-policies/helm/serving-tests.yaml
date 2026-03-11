@@ -1,6 +1,6 @@
 ---
 # Source: redhat-knative-istio-authz/templates/common-allow-knative-to-ns.yaml
-# Allow namespace serving-tests to receive requests from Knative system components, from istio-system and from all namespaces of the tenant.
+# Allow namespace serving-tests to receive requests from Knative system components and from all namespaces of the tenant.
 apiVersion: security.istio.io/v1beta1
 kind: AuthorizationPolicy
 metadata:
@@ -15,7 +15,6 @@ spec:
               - "serving-tests"
               - "knative-serving"
               - "knative-serving-ingress"
-              - "istio-system"
 
     - from:
         - source:
