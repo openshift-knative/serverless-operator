@@ -11,4 +11,4 @@ spec:
   rules:
     - from:
         - source:
-            namespaces: [ "knative-serving", "knative-serving-ingress", "istio-system" ]
+            namespaces: [ "knative-serving", "knative-serving-ingress" ]

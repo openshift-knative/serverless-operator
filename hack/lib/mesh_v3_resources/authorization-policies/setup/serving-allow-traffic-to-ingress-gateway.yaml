@@ -6,12 +6,12 @@ metadata:
 spec:
   selector:
     matchLabels:
-      istio: ingressgateway
+      knative: ingressgateway
   action: ALLOW
   rules:
     - from:
         - source:
-            namespaces: [ "knative-serving", "knative-serving-ingress", "istio-system" ]
+            namespaces: [ "knative-serving", "knative-serving-ingress" ]
     - to:
         - operation:
             ports: [ "8081", "8443", "8444" ]
