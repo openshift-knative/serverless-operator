@@ -1,4 +1,4 @@
-apiVersion: security.istio.io/v1beta1
+apiVersion: security.istio.io/v1
 kind: AuthorizationPolicy
 metadata:
   name: allow-mt-channel-based-broker-ingress-to-imc-dispatcher
@@ -17,7 +17,7 @@ spec:
         - operation:
             methods: [ "POST" ]
 ---
-apiVersion: security.istio.io/v1beta1
+apiVersion: security.istio.io/v1
 kind: AuthorizationPolicy
 metadata:
   name: allow-mt-channel-based-broker-ingress-to-kafka-channel
@@ -36,7 +36,7 @@ spec:
         - operation:
             methods: [ "POST" ]
 ---
-apiVersion: security.istio.io/v1beta1
+apiVersion: security.istio.io/v1
 kind: AuthorizationPolicy
 metadata:
   name: allow-kafka-channel-to-mt-channel-based-broker-filter
@@ -55,7 +55,7 @@ spec:
         - operation:
             methods: [ "POST" ]
 ---
-apiVersion: security.istio.io/v1beta1
+apiVersion: security.istio.io/v1
 kind: AuthorizationPolicy
 metadata:
   name: allow-imc-to-mt-channel-based-broker-filter

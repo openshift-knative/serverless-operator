@@ -18,7 +18,7 @@ spec:
       port: 443
       targetPort: 8443
 ---
-apiVersion: networking.istio.io/v1beta1
+apiVersion: networking.istio.io/v1
 kind: Gateway
 metadata:
   name: knative-ingress-gateway
@@ -57,7 +57,7 @@ spec:
     knative: ingressgateway
   type: ClusterIP
 ---
-apiVersion: networking.istio.io/v1beta1
+apiVersion: networking.istio.io/v1
 kind: Gateway
 metadata:
   name: knative-local-gateway
