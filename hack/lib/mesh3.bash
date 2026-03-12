@@ -128,9 +128,20 @@ function deploy_mesh3_gateways {
 
   oc apply -f "${mesh_v3_resources_dir}"/authorization-policies/setup || return $?
   oc apply -f "${mesh_v3_resources_dir}"/authorization-policies/helm || return $?
+
+  oc apply -n "${EVENTING_NAMESPACE}" -f "${mesh_v3_resources_dir}"/kafka-service-entry.yaml || return $?
+  for ns in serverless-tests eventing-e2e0 eventing-e2e1 eventing-e2e2 eventing-e2e3 eventing-e2e4; do
+    oc apply -n "$ns" -f "${mesh_v3_resources_dir}"/kafka-service-entry.yaml || return $?
+  done
+  oc apply -n "serverless-tests" -f "${mesh_v3_resources_dir}"/network-policy-monitoring.yaml || return $?
 }
 
 function undeploy_mesh3_gateways {
+  oc delete -n serverless-tests -f "${mesh_v3_resources_dir}"/network-policy-monitoring.yaml --ignore-not-found || return $?
+  for ns in serverless-tests eventing-e2e0 eventing-e2e1 eventing-e2e2 eventing-e2e3 eventing-e2e4; do
+    oc delete -n "$ns" -f "${mesh_v3_resources_dir}"/kafka-service-entry.yaml --ignore-not-found || return $?
+  done
+  oc delete -n "${EVENTING_NAMESPACE}" -f "${mesh_v3_resources_dir}"/kafka-service-entry.yaml --ignore-not-found || return $?
   oc delete -f "${mesh_v3_resources_dir}"/authorization-policies/helm --ignore-not-found || return $?
   oc delete -f "${mesh_v3_resources_dir}"/authorization-policies/setup --ignore-not-found || return $?
   oc delete -f "${mesh_v3_resources_dir}"/07_peer_authentication.yaml --ignore-not-found || return $?

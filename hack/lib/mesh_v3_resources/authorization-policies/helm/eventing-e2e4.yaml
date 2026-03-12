@@ -1,7 +1,7 @@
 ---
 # Source: redhat-knative-istio-authz/templates/common-allow-knative-to-ns.yaml
 # Allow namespace eventing-e2e4 to receive requests from Knative system components and from all namespaces of the tenant.
-apiVersion: security.istio.io/v1beta1
+apiVersion: security.istio.io/v1
 kind: AuthorizationPolicy
 metadata:
   name: allow-from-knative-and-istio
@@ -27,7 +27,7 @@ spec:
 ---
 # Source: redhat-knative-istio-authz/templates/common-allow-via-knative-serving.yaml
 # Allow activator to receive requests from workloads and resources in eventing-e2e4.
-apiVersion: security.istio.io/v1beta1
+apiVersion: security.istio.io/v1
 kind: AuthorizationPolicy
 metadata:
   name: allow-eventing-e2e4-to-activator
@@ -79,7 +79,7 @@ spec:
           - "eventing-e2e4"
 ---
 # Source: redhat-knative-istio-authz/templates/eventing-allow-ns-to-kafka-broker-reply.yaml
-apiVersion: security.istio.io/v1beta1
+apiVersion: security.istio.io/v1
 kind: AuthorizationPolicy
 metadata:
   name: allow-eventing-e2e4-kafka-broker-reply
@@ -106,7 +106,7 @@ spec:
           - "eventing-e2e4"
 ---
 # Source: redhat-knative-istio-authz/templates/eventing-allow-ns-to-mt-channel-based-broker-reply.yaml
-apiVersion: security.istio.io/v1beta1
+apiVersion: security.istio.io/v1
 kind: AuthorizationPolicy
 metadata:
   name: allow-eventing-e2e4-mt-channel-based-broker-reply
@@ -136,7 +136,7 @@ spec:
 ---
 # Source: redhat-knative-istio-authz/templates/eventing-allow-to-knative-eventing-receiver.yaml
 # Allow imc-dispatcher to receive requests from workloads and resources in eventing-e2e4.
-apiVersion: security.istio.io/v1beta1
+apiVersion: security.istio.io/v1
 kind: AuthorizationPolicy
 metadata:
   name: allow-eventing-e2e4-to-imc
@@ -215,7 +215,7 @@ spec:
 # Source: redhat-knative-istio-authz/templates/eventing-allow-to-knative-eventing-receiver.yaml
 ---
 # Allow kafka-broker-receiver to receive requests from workloads and resources in eventing-e2e4.
-apiVersion: security.istio.io/v1beta1
+apiVersion: security.istio.io/v1
 kind: AuthorizationPolicy
 metadata:
   name: allow-eventing-e2e4-to-ekb
@@ -294,7 +294,7 @@ spec:
 # Source: redhat-knative-istio-authz/templates/eventing-allow-to-knative-eventing-receiver.yaml
 ---
 # Allow kafka-channel-receiver to receive requests from workloads and resources in eventing-e2e4.
-apiVersion: security.istio.io/v1beta1
+apiVersion: security.istio.io/v1
 kind: AuthorizationPolicy
 metadata:
   name: allow-eventing-e2e4-to-ekc
@@ -373,7 +373,7 @@ spec:
 # Source: redhat-knative-istio-authz/templates/eventing-allow-to-knative-eventing-receiver.yaml
 ---
 # Allow kafka-sink-receiver to receive requests from workloads and resources in eventing-e2e4.
-apiVersion: security.istio.io/v1beta1
+apiVersion: security.istio.io/v1
 kind: AuthorizationPolicy
 metadata:
   name: allow-eventing-e2e4-to-eks
@@ -452,7 +452,7 @@ spec:
 # Source: redhat-knative-istio-authz/templates/eventing-allow-to-knative-eventing-receiver.yaml
 ---
 # Allow broker-ingress to receive requests from workloads and resources in eventing-e2e4.
-apiVersion: security.istio.io/v1beta1
+apiVersion: security.istio.io/v1
 kind: AuthorizationPolicy
 metadata:
   name: allow-eventing-e2e4-to-broker-ingress
@@ -531,7 +531,7 @@ spec:
 # Source: redhat-knative-istio-authz/templates/eventing-allow-to-knative-eventing-receiver.yaml
 ---
 # Allow job-sink to receive requests from workloads and resources in eventing-e2e4.
-apiVersion: security.istio.io/v1beta1
+apiVersion: security.istio.io/v1
 kind: AuthorizationPolicy
 metadata:
   name: allow-eventing-e2e4-to-job-sink
@@ -609,7 +609,7 @@ spec:
 ---
 # Source: redhat-knative-istio-authz/templates/serving-allow-wait-for-drain.yaml
 # Allow kubernetes to call the PreStopHook to wait for draining on port 8022 in eventing-e2e4
-apiVersion: security.istio.io/v1beta1
+apiVersion: security.istio.io/v1
 kind: AuthorizationPolicy
 metadata:
   name: "allow-wait-for-drain"
