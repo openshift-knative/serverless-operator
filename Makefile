@@ -36,6 +36,10 @@ install-serving-with-mesh: install-tools
 	UNINSTALL_MESH="false" ./hack/mesh.sh
 	MESH=true SCALE_UP=4 INSTALL_SERVING=true INSTALL_EVENTING="false" ./hack/install.sh
 
+install-serving-with-mesh3: install-tools
+	UNINSTALL_MESH="false" MESH_VERSION=3 ./hack/mesh.sh
+	MESH=true MESH_VERSION=3 SCALE_UP=4 INSTALL_SERVING=true INSTALL_EVENTING="false" ./hack/install.sh
+
 install-eventing: install-tools
 	INSTALL_SERVING="false" ./hack/install.sh
 
@@ -81,6 +85,12 @@ install-mesh:
 
 uninstall-mesh:
 	UNINSTALL_MESH="true" ./hack/mesh.sh
+
+install-mesh3:
+	UNINSTALL_MESH="false" MESH_VERSION=3 ./hack/mesh.sh
+
+uninstall-mesh3:
+	UNINSTALL_MESH="true" MESH_VERSION=3 ./hack/mesh.sh
 
 install-tracing-zipkin:
 	TRACING_BACKEND=zipkin ./hack/tracing.sh
@@ -150,6 +160,17 @@ test-e2e-with-mesh: install-tools
 	MESH=true SCALE_UP=4 INSTALL_KAFKA="true" ENABLE_TRACING=true ./hack/install.sh
 	MESH=true TEST_KNATIVE_KAFKA=true ./test/e2e-tests.sh
 
+# Run E2E tests from the current repo for serving+eventing+mesh3
+test-e2e-with-mesh3-testonly:
+	MESH=true MESH_VERSION=3 ./test/e2e-tests.sh
+
+test-e2e-with-mesh3: install-tools
+	UNINSTALL_MESH="false" MESH_VERSION=3 ./hack/mesh.sh
+	./hack/tracing.sh
+	UNINSTALL_STRIMZI="false" ./hack/strimzi.sh
+	MESH=true MESH_VERSION=3 SCALE_UP=4 INSTALL_KAFKA="true" ENABLE_TRACING=true ./hack/install.sh
+	MESH=true MESH_VERSION=3 TEST_KNATIVE_KAFKA=true ./test/e2e-tests.sh
+
 # Run both unit and E2E tests from the current repo.
 test-operator: test-unit test-e2e
 
@@ -208,8 +229,8 @@ mesh-upgrade: install-tools
 	UNINSTALL_MESH=false ./hack/mesh.sh
 	TRACING_BACKEND=zipkin ./hack/tracing.sh
 	UNINSTALL_STRIMZI=false ./hack/strimzi.sh
-	MESH=true INSTALL_PREVIOUS_VERSION=true INSTALL_KAFKA=true TRACING_BACKEND=zipkin ENABLE_TRACING=true SCALE_UP=6 ./hack/install.sh
-	MESH=true TEST_KNATIVE_KAFKA=true TEST_KNATIVE_E2E=false TEST_KNATIVE_UPGRADE=true ./test/upstream-e2e-tests.sh
+	MESH=true MESH_VERSION=2 INSTALL_PREVIOUS_VERSION=true INSTALL_KAFKA=true TRACING_BACKEND=zipkin ENABLE_TRACING=true SCALE_UP=6 ./hack/install.sh
+	MESH=true MESH_VERSION=2 TEST_KNATIVE_KAFKA=true TEST_KNATIVE_E2E=false TEST_KNATIVE_UPGRADE=true ./test/upstream-e2e-tests.sh
 
 test-upgrade-with-mesh: mesh-upgrade
 

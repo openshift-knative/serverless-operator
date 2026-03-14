@@ -16,7 +16,7 @@ import (
 
 const (
 	routeTimeout = "800"
-	sleepTime    = 630000
+	sleepTime    = 610000
 )
 
 func TestTimeoutForLongRunningRequests(t *testing.T) {
@@ -27,7 +27,10 @@ func TestTimeoutForLongRunningRequests(t *testing.T) {
 	service := test.Service("longrunning", test.Namespace, pkgTest.ImagePath(test.AutoscaleImg), map[string]string{
 		servicemesh.ServingEnablePassthroughKey: "true",
 		resources.SetRouteTimeoutAnnotation:     routeTimeout,
-	}, nil)
+	}, map[string]string{servicemesh.IstioRewriteProbersKey: "true"})
+	service.Spec.Template.Labels = map[string]string{
+		servicemesh.IstioInjectKey: "true",
+	}
 	service = test.WithServiceReadyOrFail(ctx, service)
 	serviceURL := service.Status.URL.URL()
 	serviceURL.RawQuery = fmt.Sprintf("sleep=%d", sleepTime)
