@@ -125,6 +125,7 @@ function deploy_mesh3_gateways {
   oc apply -f "${mesh_v3_resources_dir}"/05_gateway_deploy.yaml || return $?
   oc apply -f "${mesh_v3_resources_dir}"/06_serving_gateways.yaml || return $?
   oc apply -f "${mesh_v3_resources_dir}"/07_peer_authentication.yaml || return $?
+  oc apply -f "${mesh_v3_resources_dir}"/08_envoy_filter.yaml || return $?
 
   oc apply -f "${mesh_v3_resources_dir}"/authorization-policies/setup || return $?
   oc apply -f "${mesh_v3_resources_dir}"/authorization-policies/helm || return $?
@@ -144,6 +145,7 @@ function undeploy_mesh3_gateways {
   oc delete -n "${EVENTING_NAMESPACE}" -f "${mesh_v3_resources_dir}"/kafka-service-entry.yaml --ignore-not-found || return $?
   oc delete -f "${mesh_v3_resources_dir}"/authorization-policies/helm --ignore-not-found || return $?
   oc delete -f "${mesh_v3_resources_dir}"/authorization-policies/setup --ignore-not-found || return $?
+  oc delete -f "${mesh_v3_resources_dir}"/08_envoy_filter.yaml --ignore-not-found || return $?
   oc delete -f "${mesh_v3_resources_dir}"/07_peer_authentication.yaml --ignore-not-found || return $?
   oc delete -f "${mesh_v3_resources_dir}"/06_serving_gateways.yaml --ignore-not-found || return $?
   oc delete -f "${mesh_v3_resources_dir}"/05_gateway_deploy.yaml --ignore-not-found || return $?

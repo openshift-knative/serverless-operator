@@ -1,0 +1,24 @@
+# Disable stream_idle_timeout for long-running requests.
+# Default Envoy stream_idle_timeout is 300s which kills connections
+# where no data is exchanged (e.g. server sleeping before sending response).
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: disable-stream-idle-timeout
+  namespace: knative-serving-ingress
+spec:
+  configPatches:
+    - applyTo: NETWORK_FILTER
+      match:
+        listener:
+          filterChain:
+            filter:
+              name: envoy.filters.network.http_connection_manager
+      patch:
+        operation: MERGE
+        value:
+          typed_config:
+            "@type": type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager
+            stream_idle_timeout: 0s
+            common_http_protocol_options:
+              max_stream_duration: 0s
