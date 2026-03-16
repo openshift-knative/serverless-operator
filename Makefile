@@ -226,7 +226,7 @@ test-upgrade: install-tools
 	TEST_KNATIVE_KAFKA=true TEST_KNATIVE_E2E=false TEST_KNATIVE_UPGRADE=true ./test/upstream-e2e-tests.sh
 
 mesh-upgrade: install-tools
-	UNINSTALL_MESH=false ./hack/mesh.sh
+	UNINSTALL_MESH=false MESH_VERSION=2 ./hack/mesh.sh
 	TRACING_BACKEND=zipkin ./hack/tracing.sh
 	UNINSTALL_STRIMZI=false ./hack/strimzi.sh
 	MESH=true MESH_VERSION=2 INSTALL_PREVIOUS_VERSION=true INSTALL_KAFKA=true TRACING_BACKEND=zipkin ENABLE_TRACING=true SCALE_UP=6 ./hack/install.sh
