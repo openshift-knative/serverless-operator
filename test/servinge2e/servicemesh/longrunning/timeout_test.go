@@ -9,16 +9,14 @@ import (
 	"github.com/openshift-knative/serverless-operator/serving/ingress/pkg/reconciler/ingress/resources"
 	"github.com/openshift-knative/serverless-operator/test"
 	"github.com/openshift-knative/serverless-operator/test/servinge2e/servicemesh"
-	"knative.dev/pkg/ptr"
 	pkgTest "knative.dev/pkg/test"
 	"knative.dev/pkg/test/spoof"
 	servingTest "knative.dev/serving/test"
 )
 
 const (
-	routeTimeout   = "800"
-	requestTimeout = 800
-	sleepTime      = 610000
+	routeTimeout = "800"
+	sleepTime    = 610000
 )
 
 func TestTimeoutForLongRunningRequests(t *testing.T) {
@@ -29,11 +27,7 @@ func TestTimeoutForLongRunningRequests(t *testing.T) {
 	service := test.Service("longrunning", test.Namespace, pkgTest.ImagePath(test.AutoscaleImg), map[string]string{
 		servicemesh.ServingEnablePassthroughKey: "true",
 		resources.SetRouteTimeoutAnnotation:     routeTimeout,
-	}, map[string]string{servicemesh.IstioRewriteProbersKey: "true"})
-	service.Spec.Template.Labels = map[string]string{
-		servicemesh.IstioInjectKey: "true",
-	}
-	service.Spec.Template.Spec.ResponseStartTimeoutSeconds = ptr.Int64(requestTimeout)
+	}, nil)
 	service = test.WithServiceReadyOrFail(ctx, service)
 	serviceURL := service.Status.URL.URL()
 	serviceURL.RawQuery = fmt.Sprintf("sleep=%d", sleepTime)
