@@ -5,7 +5,7 @@ apiVersion: networking.istio.io/v1alpha3
 kind: EnvoyFilter
 metadata:
   name: disable-stream-idle-timeout
-  namespace: knative-serving-ingress
+  namespace: istio-system
 spec:
   configPatches:
     - applyTo: NETWORK_FILTER
