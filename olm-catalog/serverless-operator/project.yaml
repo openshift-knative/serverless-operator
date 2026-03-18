@@ -89,7 +89,7 @@ dependencies:
   # backstage-plugins midstream branch or commit
   backstage_plugins_artifacts_branch: release-v1.21
   cli: knative-v1.21
-  kube_rbac_proxy: registry.redhat.io/openshift4/ose-kube-rbac-proxy-rhel9@sha256:45473f284541518a20890e3840859731ed78027ca66364b8de2fad5ad21b9939
+  kube_rbac_proxy: registry.redhat.io/openshift4/ose-kube-rbac-proxy-rhel9@sha256:e212e18b843e5182952d297d6571f32676d6b9c1c6f8a4722e6c6bbfdb8f2b09
   func:
     promotion_tag: knative-v1.21
     # if additional image is added amend the list in hack/generate/catalog.sh
