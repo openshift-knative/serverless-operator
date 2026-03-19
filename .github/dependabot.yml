@@ -5,10 +5,6 @@ updates:
         - /
       schedule:
         interval: weekly
-      target-branch: main
-      commit-message:
-        prefix: '[main][github-actions]'
-      open-pull-requests-limit: 0
     - package-ecosystem: gomod
       directories:
         - /
@@ -55,15 +51,6 @@ updates:
       commit-message:
         prefix: '[main][gomod]'
       open-pull-requests-limit: 10
-    - package-ecosystem: github-actions
-      directories:
-        - /
-      schedule:
-        interval: weekly
-      target-branch: release-1.35
-      commit-message:
-        prefix: '[release-1.35][github-actions]'
-      open-pull-requests-limit: 0
     - package-ecosystem: gomod
       directories:
         - /
@@ -110,15 +97,6 @@ updates:
       commit-message:
         prefix: '[release-1.35][gomod]'
       open-pull-requests-limit: 10
-    - package-ecosystem: github-actions
-      directories:
-        - /
-      schedule:
-        interval: weekly
-      target-branch: release-1.36
-      commit-message:
-        prefix: '[release-1.36][github-actions]'
-      open-pull-requests-limit: 0
     - package-ecosystem: gomod
       directories:
         - /
@@ -165,15 +143,6 @@ updates:
       commit-message:
         prefix: '[release-1.36][gomod]'
       open-pull-requests-limit: 10
-    - package-ecosystem: github-actions
-      directories:
-        - /
-      schedule:
-        interval: weekly
-      target-branch: release-1.37
-      commit-message:
-        prefix: '[release-1.37][github-actions]'
-      open-pull-requests-limit: 0
     - package-ecosystem: gomod
       directories:
         - /
