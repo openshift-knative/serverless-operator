@@ -47,7 +47,7 @@ jobs:
           go install github.com/operator-framework/operator-registry/cmd/opm@v1.47.0
 
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           path: ./src/github.com/${{ github.repository }}
           fetch-depth: 0
@@ -134,7 +134,7 @@ jobs:
         uses: openshift-knative/hack/actions/setup-go@main
 
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           path: ./src/github.com/${{ github.repository }}
 

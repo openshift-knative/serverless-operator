@@ -31,7 +31,7 @@ jobs:
           go install github.com/operator-framework/operator-registry/cmd/opm@v1.47.0
 
       - name: Checkout openshift-knative/serverless-operator
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           # Always checkout main, we don't support bumping for patch releases (for now)
           ref: main
@@ -39,7 +39,7 @@ jobs:
           fetch-depth: 0
 
       - name: Checkout openshift-knative/knative-istio-authz-chart
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           repository: 'openshift-knative/knative-istio-authz-chart'
           path: ./src/github.com/openshift-knative/knative-istio-authz-chart

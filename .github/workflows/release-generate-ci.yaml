@@ -25,7 +25,7 @@ jobs:
         uses: openshift-knative/hack/actions/setup-go@main
 
       - name: Checkout openshift-knative/serverless-operator
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           path: ./src/github.com/openshift-knative/serverless-operator
 
@@ -34,14 +34,14 @@ jobs:
           go install github.com/mikefarah/yq/v3@latest
 
       - name: Checkout openshift-knative/hack
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           repository: 'openshift-knative/hack'
           ref: 'main'
           path: ./src/github.com/openshift-knative/hack
 
       - name: Checkout openshift/release
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           branch: 'master'
           repository: 'openshift/release'
