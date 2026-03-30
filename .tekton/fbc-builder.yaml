@@ -30,6 +30,14 @@ spec:
     description: Additional image tags
     name: additional-tags
     type: array
+  - default: []
+    description: Array of opm command arguments
+    name: opm-args
+    type: array
+  - default: ""
+    description: OPM output path
+    name: opm-output-path
+    type: string
   - description: Source Repository URL
     name: git-url
     type: string
@@ -115,6 +123,32 @@ spec:
       - name: kind
         value: task
       resolver: bundles
+  - name: run-opm-command
+    params:
+    - name: OPM_ARGS
+      value:
+      - $(params.opm-args[*])
+    - name: OPM_OUTPUT_PATH
+      value: $(params.opm-output-path)
+    - name: SOURCE_ARTIFACT
+      value: $(tasks.clone-repository.results.SOURCE_ARTIFACT)
+    - name: ociStorage
+      value: $(params.output-image).opm
+    - name: ociArtifactExpiresAfter
+      value: $(params.image-expires-after)
+    - name: IDMS_PATH
+      value: ""
+    runAfter:
+    - clone-repository
+    taskRef:
+      params:
+      - name: name
+        value: run-opm-command-oci-ta
+      - name: bundle
+        value: quay.io/konflux-ci/tekton-catalog/task-run-opm-command-oci-ta:0.1@sha256:c79858b867713e44927438f6193c49004bf40bfd9248682f20c5a83ea2a9d2f1
+      - name: kind
+        value: task
+      resolver: bundles
   - name: init
     params:
     - name: enable-cache-proxy
@@ -152,31 +186,6 @@ spec:
     workspaces:
     - name: basic-auth
       workspace: git-auth
-  - name: run-opm-command
-    params:
-    - name: SOURCE_ARTIFACT
-      value: $(tasks.clone-repository.results.SOURCE_ARTIFACT)
-    - name: ociStorage
-      value: $(params.output-image).opm
-    - name: ociArtifactExpiresAfter
-      value: $(params.image-expires-after)
-    - name: OPM_ARGS
-      value: []
-    - name: OPM_OUTPUT_PATH
-      value: ""
-    - name: IDMS_PATH
-      value: ""
-    runAfter:
-    - clone-repository
-    taskRef:
-      params:
-      - name: name
-        value: run-opm-command-oci-ta
-      - name: bundle
-        value: quay.io/konflux-ci/tekton-catalog/task-run-opm-command-oci-ta:0.1@sha256:c79858b867713e44927438f6193c49004bf40bfd9248682f20c5a83ea2a9d2f1
-      - name: kind
-        value: task
-      resolver: bundles
   - name: prefetch-dependencies
     params:
     - name: input
