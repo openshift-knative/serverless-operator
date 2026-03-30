@@ -27,10 +27,6 @@ spec:
     name: build-source-image
     type: string
   - default: []
-    description: Additional image tags
-    name: additional-tags
-    type: array
-  - default: []
     description: Array of opm command arguments
     name: opm-args
     type: array
@@ -38,6 +34,10 @@ spec:
     description: OPM output path
     name: opm-output-path
     type: string
+  - default: []
+    description: Additional image tags
+    name: additional-tags
+    type: array
   - description: Source Repository URL
     name: git-url
     type: string
@@ -104,25 +104,6 @@ spec:
     name: CHAINS-GIT_COMMIT
     value: $(tasks.clone-repository.results.commit)
   tasks:
-  - name: apply-tags
-    params:
-    - name: ADDITIONAL_TAGS
-      value: $(params.additional-tags[*])
-    - name: IMAGE_URL
-      value: $(tasks.build-image-index.results.IMAGE_URL)
-    - name: IMAGE_DIGEST
-      value: $(tasks.build-image-index.results.IMAGE_DIGEST)
-    runAfter:
-    - build-image-index
-    taskRef:
-      params:
-      - name: name
-        value: apply-tags
-      - name: bundle
-        value: quay.io/konflux-ci/tekton-catalog/task-apply-tags:0.3@sha256:aa62b41861c09e2e59c69cc6e9a1f740bf0c81e6a1eb03f57f59dfda0f65840e
-      - name: kind
-        value: task
-      resolver: bundles
   - name: run-opm-command
     params:
     - name: OPM_ARGS
@@ -146,6 +127,25 @@ spec:
         value: run-opm-command-oci-ta
       - name: bundle
         value: quay.io/konflux-ci/tekton-catalog/task-run-opm-command-oci-ta:0.1@sha256:c79858b867713e44927438f6193c49004bf40bfd9248682f20c5a83ea2a9d2f1
+      - name: kind
+        value: task
+      resolver: bundles
+  - name: apply-tags
+    params:
+    - name: ADDITIONAL_TAGS
+      value: $(params.additional-tags[*])
+    - name: IMAGE_URL
+      value: $(tasks.build-image-index.results.IMAGE_URL)
+    - name: IMAGE_DIGEST
+      value: $(tasks.build-image-index.results.IMAGE_DIGEST)
+    runAfter:
+    - build-image-index
+    taskRef:
+      params:
+      - name: name
+        value: apply-tags
+      - name: bundle
+        value: quay.io/konflux-ci/tekton-catalog/task-apply-tags:0.3@sha256:aa62b41861c09e2e59c69cc6e9a1f740bf0c81e6a1eb03f57f59dfda0f65840e
       - name: kind
         value: task
       resolver: bundles
