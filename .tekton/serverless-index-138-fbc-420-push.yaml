@@ -45,6 +45,15 @@ spec:
         - $(context.pipelineRun.uid)-{{revision}}
         - 1.38.0
         - latest
+    - name: opm-args
+      value:
+        - alpha
+        - render-template
+        - basic
+        - "olm-catalog/serverless-operator-index/v4.20/catalog-template.yaml"
+        - --migrate-level=bundle-object-to-csv-metadata
+    - name: opm-output-path
+      value: olm-catalog/serverless-operator-index/v4.20/catalog/serverless-operator/catalog.yaml
   pipelineRef:
     name: fbc-builder
   taskRunTemplate:
