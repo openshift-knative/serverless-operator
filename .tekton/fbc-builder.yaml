@@ -34,6 +34,15 @@ spec:
     description: OPM output path
     name: opm-output-path
     type: string
+  - default: ""
+    description: Optional. Relative path to a file (e.g., catalog-template.yml) in
+      which pullspecs should be updated before running opm.
+    name: file-to-update-pullspec
+    type: string
+  - default: .tekton/images-mirror-set.yaml
+    description: Optional, path for ImageDigestMirrorSet file. It defaults to '.tekton/images-mirror-set.yaml'.
+    name: idms-path
+    type: string
   - default: []
     description: Additional image tags
     name: additional-tags
@@ -111,14 +120,16 @@ spec:
       - $(params.opm-args[*])
     - name: OPM_OUTPUT_PATH
       value: $(params.opm-output-path)
+    - name: FILE_TO_UPDATE_PULLSPEC
+      value: $(params.file-to-update-pullspec)
+    - name: IDMS_PATH
+      value: $(params.idms-path)
     - name: SOURCE_ARTIFACT
       value: $(tasks.clone-repository.results.SOURCE_ARTIFACT)
     - name: ociStorage
       value: $(params.output-image).opm
     - name: ociArtifactExpiresAfter
       value: $(params.image-expires-after)
-    - name: IDMS_PATH
-      value: ""
     runAfter:
     - clone-repository
     taskRef:
