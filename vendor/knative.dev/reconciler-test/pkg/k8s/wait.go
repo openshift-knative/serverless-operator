@@ -348,8 +348,7 @@ func WaitForServiceReady(ctx context.Context, t feature.T, name string, readines
 
 	if cfg := environment.GetIstioConfig(ctx); cfg.Enabled {
 		job.Spec.Template.Annotations = map[string]string{
-			"sidecar.istio.io/inject":                "true",
-			"sidecar.istio.io/exitOnMainTermination": "true",
+			"sidecar.istio.io/nativeSidecar": "true",
 			"sidecar.istio.io/rewriteAppHTTPProbers": "true",
 		}
 	}
