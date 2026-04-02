@@ -325,8 +325,8 @@ func WaitForServiceReady(ctx context.Context, t feature.T, name string, readines
 	curl := fmt.Sprintf("curl --max-time 2 "+
 		"--trace-ascii %% --trace-time "+
 		"--retry 6 --retry-connrefused %s", sinkURI)
-	//maybeQuitIstio := fmt.Sprintf("(curl -fsI -X POST http://localhost:15020/quitquitquit || echo no-istio)")
-	curl = fmt.Sprintf("%s", curl)
+	maybeQuitIstio := fmt.Sprintf("(curl -fsI -X POST http://localhost:15020/quitquitquit || echo no-istio)")
+	curl = fmt.Sprintf("%s && %s", curl, maybeQuitIstio)
 	var one int32 = 1
 	job := &batchv1.Job{
 		ObjectMeta: metav1.ObjectMeta{Name: jobName, Namespace: ns},
@@ -348,7 +348,8 @@ func WaitForServiceReady(ctx context.Context, t feature.T, name string, readines
 
 	if cfg := environment.GetIstioConfig(ctx); cfg.Enabled {
 		job.Spec.Template.Annotations = map[string]string{
-			"sidecar.istio.io/nativeSidecar": "true",
+			"sidecar.istio.io/inject":                "true",
+			"sidecar.istio.io/exitOnMainTermination": "true",
 			"sidecar.istio.io/rewriteAppHTTPProbers": "true",
 		}
 	}
