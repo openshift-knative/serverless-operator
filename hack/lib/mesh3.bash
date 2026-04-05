@@ -133,7 +133,7 @@ function deploy_mesh3_gateways {
   for ns in serverless-tests eventing-e2e0 eventing-e2e1 eventing-e2e2 eventing-e2e3 eventing-e2e4; do
     oc apply -n "$ns" -f "${mesh_v3_resources_dir}"/kafka-service-entry.yaml || return $?
   done
-  oc apply -n "serverless-tests" -f "${mesh_v3_resources_dir}"/network-policy-monitoring.yaml || return $?
+  #oc apply -n "serverless-tests" -f "${mesh_v3_resources_dir}"/network-policy-monitoring.yaml || return $?
 }
 
 function undeploy_mesh3_gateways {
