@@ -11,4 +11,4 @@ spec:
   name: servicemeshoperator3
   source: redhat-operators
   sourceNamespace: openshift-marketplace
-  startingCSV: servicemeshoperator3.v3.2.2
+  startingCSV: servicemeshoperator3.v3.3.1

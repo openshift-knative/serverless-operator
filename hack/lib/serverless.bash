@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 
 function ensure_content_source_policy {
+    if [[ $(oc get infrastructure cluster -ojsonpath='{.status.platformStatus.aws.resourceTags[?(@.key=="red-hat-clustertype")].value}') = rosa ]]; then
+      logger.debug "Skipping content source policy on ROSA cluster"
+      return
+    fi
     rootdir="$(dirname "$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")")"
     oc apply -f "$rootdir/olm-catalog/serverless-operator-index/image_content_source_policy.yaml"
 }
