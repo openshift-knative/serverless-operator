@@ -269,7 +269,7 @@ spec:
   ingress:
     istio:
       enabled: true
-  deployments:
+  workloads:
   - labels:
       sidecar.istio.io/inject: "true"
     annotations:
@@ -470,6 +470,9 @@ function deploy_knativeeventing_cr {
   fi
   if [[ $MESH == "true" ]]; then
     enable_istio_eventing "$eventing_cr"
+    if [[ ${MESH_VERSION:-2} == "3" ]]; then
+      yq write --inplace --tag '!!str' "$eventing_cr" 'metadata.annotations."serverless.openshift.io/disable-istio-net-policies-generation"' "true"
+    fi
   fi
 
   if [[ $HA == "false" ]]; then

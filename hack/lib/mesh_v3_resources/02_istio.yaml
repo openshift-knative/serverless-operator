@@ -4,9 +4,6 @@ metadata:
   name: default
 spec:
   values:
-    pilot:
-      env:
-        ENABLE_NATIVE_SIDECARS: "true"
     global:
       proxy:
         excludeInboundPorts: "8444,8022"
