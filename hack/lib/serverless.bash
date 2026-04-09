@@ -264,29 +264,10 @@ spec:
   workloads:
   - labels:
       sidecar.istio.io/inject: "true"
-    annotations:
-      sidecar.istio.io/rewriteAppHTTPProbers: "true"
     name: activator
   - labels:
       sidecar.istio.io/inject: "true"
-    annotations:
-      sidecar.istio.io/rewriteAppHTTPProbers: "true"
     name: autoscaler
-  - labels:
-      sidecar.istio.io/inject: "false"
-    name: autoscaler-hpa
-  - labels:
-      sidecar.istio.io/inject: "false"
-    name: controller
-  - labels:
-      sidecar.istio.io/inject: "false"
-    name: net-istio-controller
-  - labels:
-      sidecar.istio.io/inject: "false"
-    name: net-istio-webhook
-  - labels:
-      sidecar.istio.io/inject: "false"
-    name: webhook
 EOF
 
   yq merge --inplace --arrays append "$custom_resource" "$istio_patch"
