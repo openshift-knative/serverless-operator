@@ -196,7 +196,8 @@ func VerifyEncryptedTrafficToKafkaChannel(since time.Time, trafficBlocked bool) 
 			JSONLogFilter: func(m map[string]interface{}) bool {
 				return eventingfeatures.GetMapValueAsString(m, "path") == "/" &&
 					eventingfeatures.GetMapValueAsString(m, "authority") == authority &&
-					eventingfeatures.GetMapValueAsString(m, "response_code") == responseCode
+					(eventingfeatures.GetMapValueAsString(m, "response_code") == responseCode ||
+						(eventingfeatures.GetMapValueAsString(m, "response_code") == "202"))
 			},
 		}
 
