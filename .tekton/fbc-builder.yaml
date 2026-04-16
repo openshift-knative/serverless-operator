@@ -15,9 +15,9 @@ spec:
   params:
   - default:
     - linux/x86_64
-    # - linux/arm64
-    # - linux/ppc64le
-    # - linux/s390x
+    - linux/arm64
+    - linux/ppc64le
+    - linux/s390x
     description: List of platforms to build the container images on. The available
       set of values is determined by the configuration of the multi-platform-controller.
     name: build-platforms
@@ -25,6 +25,23 @@ spec:
   - default: "true"
     description: Build a source image.
     name: build-source-image
+    type: string
+  - default: []
+    description: Array of opm command arguments
+    name: opm-args
+    type: array
+  - default: ""
+    description: OPM output path
+    name: opm-output-path
+    type: string
+  - default: ""
+    description: Optional. Relative path to a file (e.g., catalog-template.yml) in
+      which pullspecs should be updated before running opm.
+    name: file-to-update-pullspec
+    type: string
+  - default: .tekton/images-mirror-set.yaml
+    description: Optional, path for ImageDigestMirrorSet file. It defaults to '.tekton/images-mirror-set.yaml'.
+    name: idms-path
     type: string
   - default: []
     description: Additional image tags
@@ -96,6 +113,34 @@ spec:
     name: CHAINS-GIT_COMMIT
     value: $(tasks.clone-repository.results.commit)
   tasks:
+  - name: run-opm-command
+    params:
+    - name: OPM_ARGS
+      value:
+      - $(params.opm-args[*])
+    - name: OPM_OUTPUT_PATH
+      value: $(params.opm-output-path)
+    - name: FILE_TO_UPDATE_PULLSPEC
+      value: $(params.file-to-update-pullspec)
+    - name: IDMS_PATH
+      value: $(params.idms-path)
+    - name: SOURCE_ARTIFACT
+      value: $(tasks.clone-repository.results.SOURCE_ARTIFACT)
+    - name: ociStorage
+      value: $(params.output-image).opm
+    - name: ociArtifactExpiresAfter
+      value: $(params.image-expires-after)
+    runAfter:
+    - clone-repository
+    taskRef:
+      params:
+      - name: name
+        value: run-opm-command-oci-ta
+      - name: bundle
+        value: quay.io/konflux-ci/tekton-catalog/task-run-opm-command-oci-ta:0.1@sha256:c79858b867713e44927438f6193c49004bf40bfd9248682f20c5a83ea2a9d2f1
+      - name: kind
+        value: task
+      resolver: bundles
   - name: apply-tags
     params:
     - name: ADDITIONAL_TAGS
@@ -152,31 +197,6 @@ spec:
     workspaces:
     - name: basic-auth
       workspace: git-auth
-  - name: run-opm-command
-    params:
-    - name: SOURCE_ARTIFACT
-      value: $(tasks.clone-repository.results.SOURCE_ARTIFACT)
-    - name: ociStorage
-      value: $(params.output-image).opm
-    - name: ociArtifactExpiresAfter
-      value: $(params.image-expires-after)
-    - name: OPM_ARGS
-      value: []
-    - name: OPM_OUTPUT_PATH
-      value: ""
-    - name: IDMS_PATH
-      value: ""
-    runAfter:
-    - clone-repository
-    taskRef:
-      params:
-      - name: name
-        value: run-opm-command-oci-ta
-      - name: bundle
-        value: quay.io/konflux-ci/tekton-catalog/task-run-opm-command-oci-ta:0.1@sha256:c79858b867713e44927438f6193c49004bf40bfd9248682f20c5a83ea2a9d2f1
-      - name: kind
-        value: task
-      resolver: bundles
   - name: prefetch-dependencies
     params:
     - name: input
@@ -256,10 +276,6 @@ spec:
     params:
     - name: IMAGE
       value: $(params.output-image)
-    - name: COMMIT_SHA
-      value: $(tasks.clone-repository.results.commit)
-    - name: IMAGE_EXPIRES_AFTER
-      value: $(params.image-expires-after)
     - name: ALWAYS_BUILD_INDEX
       value: $(params.build-image-index)
     - name: IMAGES
