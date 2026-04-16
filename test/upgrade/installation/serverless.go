@@ -16,6 +16,10 @@ const (
 )
 
 func UpgradeServerlessTo(ctx *test.Context, csv, source string, timeout time.Duration) error {
+	ctx.T.Logf("🔄 Starting Serverless upgrade to CSV: %s (source: %s, channel: %s)", csv, source, test.Flags.UpgradeChannel)
+	ctx.T.Logf("   Target versions - Serving: %s, Eventing: %s, Kafka: %s",
+		test.Flags.ServingVersion, test.Flags.EventingVersion, test.Flags.KafkaVersion)
+
 	if _, err := test.UpdateSubscriptionChannelSource(ctx, test.Flags.Subscription, test.Flags.UpgradeChannel, source); err != nil {
 		return err
 	}
@@ -39,18 +43,23 @@ func UpgradeServerlessTo(ctx *test.Context, csv, source string, timeout time.Dur
 		}
 	}
 
+	ctx.T.Logf("   Approving InstallPlan: %s", installPlan.Name)
 	if err := test.ApproveInstallPlan(ctx, installPlan.Name); err != nil {
 		return err
 	}
 	if _, err := test.WaitForClusterServiceVersionState(ctx, csv, test.OperatorsNamespace, test.IsCSVSucceeded); err != nil {
 		return err
 	}
+	ctx.T.Logf("✅ CSV %s is now in Succeeded state", csv)
 
-	servingInStateFunc := v1beta1.IsKnativeServingWithVersionReady(strings.TrimPrefix(test.Flags.ServingVersion, "v"))
+	servingVersion := strings.TrimPrefix(test.Flags.ServingVersion, "v")
+	servingInStateFunc := v1beta1.IsKnativeServingWithVersionReady(servingVersion)
 	if len(test.Flags.ServingVersion) == 0 {
 		servingInStateFunc = v1beta1.IsKnativeServingReady
+		servingVersion = "<latest>"
 	}
 	knativeServing := test.ServingNamespace
+	ctx.T.Logf("   Waiting for KnativeServing to reach version: %s", servingVersion)
 	if _, err := v1beta1.WaitForKnativeServingState(ctx,
 		knativeServing,
 		knativeServing,
@@ -58,12 +67,16 @@ func UpgradeServerlessTo(ctx *test.Context, csv, source string, timeout time.Dur
 	); err != nil {
 		return fmt.Errorf("serving upgrade failed: %w", err)
 	}
+	ctx.T.Logf("✅ KnativeServing is now at version: %s", servingVersion)
 
-	eventingInStateFunc := v1beta1.IsKnativeEventingWithVersionReady(strings.TrimPrefix(test.Flags.EventingVersion, "v"))
+	eventingVersion := strings.TrimPrefix(test.Flags.EventingVersion, "v")
+	eventingInStateFunc := v1beta1.IsKnativeEventingWithVersionReady(eventingVersion)
 	if len(test.Flags.EventingVersion) == 0 {
 		eventingInStateFunc = v1beta1.IsKnativeEventingReady
+		eventingVersion = "<latest>"
 	}
 	knativeEventing := test.EventingNamespace
+	ctx.T.Logf("   Waiting for KnativeEventing to reach version: %s", eventingVersion)
 	if _, err := v1beta1.WaitForKnativeEventingState(ctx,
 		knativeEventing,
 		knativeEventing,
@@ -71,11 +84,15 @@ func UpgradeServerlessTo(ctx *test.Context, csv, source string, timeout time.Dur
 	); err != nil {
 		return fmt.Errorf("eventing upgrade failed: %w", err)
 	}
+	ctx.T.Logf("✅ KnativeEventing is now at version: %s", eventingVersion)
 
-	kafkaInStateFunc := v1alpha1.IsKnativeKafkaWithVersionReady(strings.TrimPrefix(test.Flags.KafkaVersion, "v"))
+	kafkaVersion := strings.TrimPrefix(test.Flags.KafkaVersion, "v")
+	kafkaInStateFunc := v1alpha1.IsKnativeKafkaWithVersionReady(kafkaVersion)
 	if len(test.Flags.KafkaVersion) == 0 {
 		kafkaInStateFunc = v1alpha1.IsKnativeKafkaReady
+		kafkaVersion = "<latest>"
 	}
+	ctx.T.Logf("   Waiting for KnativeKafka to reach version: %s", kafkaVersion)
 	if _, err := v1alpha1.WaitForKnativeKafkaState(ctx,
 		"knative-kafka",
 		knativeEventing,
@@ -83,7 +100,9 @@ func UpgradeServerlessTo(ctx *test.Context, csv, source string, timeout time.Dur
 	); err != nil {
 		return fmt.Errorf("knative kafka upgrade failed: %w", err)
 	}
+	ctx.T.Logf("✅ KnativeKafka is now at version: %s", kafkaVersion)
 
+	ctx.T.Logf("✅ Serverless upgrade completed successfully to CSV: %s", csv)
 	return nil
 }
 
@@ -93,6 +112,10 @@ func UpgradeServerless(ctx *test.Context) error {
 
 func DowngradeServerless(ctx *test.Context) error {
 	const subscription = "serverless-operator"
+
+	ctx.T.Logf("🔄 Starting Serverless downgrade to CSV: %s", test.Flags.CSVPrevious)
+	ctx.T.Logf("   Target versions - Serving: %s, Eventing: %s, Kafka: %s",
+		test.Flags.ServingVersionPrevious, test.Flags.EventingVersionPrevious, test.Flags.KafkaVersionPrevious)
 
 	if err := test.DeleteSubscription(ctx, subscription, test.OperatorsNamespace); err != nil {
 		return err
@@ -128,6 +151,7 @@ func DowngradeServerless(ctx *test.Context) error {
 		return err
 	}
 
+	ctx.T.Logf("   Approving InstallPlan: %s", installPlan.Name)
 	if err := test.ApproveInstallPlan(ctx, installPlan.Name); err != nil {
 		return err
 	}
@@ -135,10 +159,12 @@ func DowngradeServerless(ctx *test.Context) error {
 	if _, err := test.WaitForClusterServiceVersionState(ctx, test.Flags.CSVPrevious, test.OperatorsNamespace, test.IsCSVSucceeded); err != nil {
 		return err
 	}
+	ctx.T.Logf("✅ CSV %s is now in Succeeded state", test.Flags.CSVPrevious)
 
 	knativeServing := test.ServingNamespace
 	servingVersion := strings.TrimPrefix(test.Flags.ServingVersionPrevious, "v")
 	servingInStateFunc := v1beta1.IsKnativeServingWithVersionReady(servingVersion)
+	ctx.T.Logf("   Waiting for KnativeServing to reach version: %s", servingVersion)
 	if _, err := v1beta1.WaitForKnativeServingState(ctx,
 		knativeServing,
 		knativeServing,
@@ -146,10 +172,12 @@ func DowngradeServerless(ctx *test.Context) error {
 	); err != nil {
 		return fmt.Errorf("expected ready KnativeServing at version %s: %w", servingVersion, err)
 	}
+	ctx.T.Logf("✅ KnativeServing is now at version: %s", servingVersion)
 
 	knativeEventing := test.EventingNamespace
 	eventingVersion := strings.TrimPrefix(test.Flags.EventingVersionPrevious, "v")
 	eventingInStateFunc := v1beta1.IsKnativeEventingWithVersionReady(eventingVersion)
+	ctx.T.Logf("   Waiting for KnativeEventing to reach version: %s", eventingVersion)
 	if _, err := v1beta1.WaitForKnativeEventingState(ctx,
 		knativeEventing,
 		knativeEventing,
@@ -157,9 +185,11 @@ func DowngradeServerless(ctx *test.Context) error {
 	); err != nil {
 		return fmt.Errorf("expected ready KnativeEventing at version %s: %w", eventingVersion, err)
 	}
+	ctx.T.Logf("✅ KnativeEventing is now at version: %s", eventingVersion)
 
 	knativeKafkaVersion := strings.TrimPrefix(test.Flags.KafkaVersionPrevious, "v")
 	kafkaInStateFunc := v1alpha1.IsKnativeKafkaWithVersionReady(knativeKafkaVersion)
+	ctx.T.Logf("   Waiting for KnativeKafka to reach version: %s", knativeKafkaVersion)
 	if _, err := v1alpha1.WaitForKnativeKafkaState(ctx,
 		"knative-kafka",
 		knativeEventing,
@@ -167,6 +197,8 @@ func DowngradeServerless(ctx *test.Context) error {
 	); err != nil {
 		return fmt.Errorf("expected ready KnativeKafka at version %s: %w", knativeKafkaVersion, err)
 	}
+	ctx.T.Logf("✅ KnativeKafka is now at version: %s", knativeKafkaVersion)
 
+	ctx.T.Logf("✅ Serverless downgrade completed successfully to CSV: %s", test.Flags.CSVPrevious)
 	return nil
 }
