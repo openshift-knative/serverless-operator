@@ -425,6 +425,11 @@ func ke(mods ...func(*operatorv1beta1.KnativeEventing)) *operatorv1beta1.Knative
 		Spec: operatorv1beta1.KnativeEventingSpec{
 			SinkBindingSelectionMode: "inclusion",
 			CommonSpec: base.CommonSpec{
+				Config: base.ConfigMapData{
+					monitoring.ObservabilityCMName: {
+						monitoring.ObservabilityBackendKey: "prometheus",
+					},
+				},
 				HighAvailability: &base.HighAvailability{
 					Replicas: ptr.To(int32(2)),
 				},
