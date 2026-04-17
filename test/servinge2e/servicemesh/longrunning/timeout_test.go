@@ -16,7 +16,7 @@ import (
 
 const (
 	routeTimeout = "800"
-	sleepTime    = 120000
+	sleepTime    = 630000
 )
 
 func TestTimeoutForLongRunningRequests(t *testing.T) {
