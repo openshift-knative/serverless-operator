@@ -65,6 +65,9 @@ func injectNamespaceWithSubject(resourceNamespace string, subjectNamespace strin
 
 func reconcileMonitoring(ctx context.Context, api kubernetes.Interface, spec *base.CommonSpec, ns string) error {
 	if ShouldEnableMonitoring(spec.GetConfig()) {
+		// Set default metrics protocol to prometheus for backward compatibility with pre-OTEL Knative
+		common.ConfigureIfUnset(spec, ObservabilityCMName, ObservabilityBackendKey, "prometheus")
+
 		if err := reconcileMonitoringLabelOnNamespace(ctx, ns, api, true); err != nil {
 			return fmt.Errorf("failed to enable monitoring %w ", err)
 		}
