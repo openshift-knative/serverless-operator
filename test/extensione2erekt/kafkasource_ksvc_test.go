@@ -11,6 +11,7 @@ import (
 	kafkafeatures "github.com/openshift-knative/serverless-operator/test/extensione2erekt/features"
 )
 
+
 func TestKafkaSourceBinaryEvent(t *testing.T) {
 	t.Parallel()
 
@@ -31,7 +32,13 @@ func TestKafkaSourceTLS(t *testing.T) {
 
 	since := time.Now()
 
-	env.Test(ctx, t, features.KafkaSourceTLS(kafkaSource, kafkaSink, topic))
+	f := features.KafkaSourceTLS(kafkaSource, kafkaSink, topic)
+	// Gate event send until the dispatcher has active consumers with
+	// partition assignments — IsReady alone only checks control-plane
+	// conditions, not data-plane readiness.
+	f.Requirement("kafka source has active consumers",
+		kafkafeatures.WaitForKafkaSourceConsuming(kafkaSource))
+	env.Test(ctx, t, f)
 
 	if ic := environment.GetIstioConfig(ctx); ic.Enabled {
 		env.Test(ctx, t, kafkafeatures.VerifyEncryptedTrafficForKafkaSource(kafkaSink, since))

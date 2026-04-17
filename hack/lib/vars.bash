@@ -101,6 +101,8 @@ export INSTALL_SERVING="${INSTALL_SERVING:-true}"
 export INSTALL_EVENTING="${INSTALL_EVENTING:-true}"
 export INSTALL_KAFKA="${INSTALL_KAFKA:-false}"
 export MESH="${MESH:-false}"
+export MESH_VERSION="${MESH_VERSION:-3}"
+export MESH3_ISTIO_VERSION="${MESH3_ISTIO_VERSION:-v1.27-latest}"
 export ENABLE_TRACING="${ENABLE_TRACING:-false}"
 export ENABLE_KEDA="${ENABLE_KEDA:-false}"
 # Define sample-rate for tracing.
