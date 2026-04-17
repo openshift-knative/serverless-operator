@@ -179,6 +179,9 @@ func (e *extension) Reconcile(ctx context.Context, comp base.KComponent) error {
 	// independent from upstream default changes.
 	common.ConfigureIfUnset(&ks.Spec.CommonSpec, "network", "autocreateClusterDomainClaims", "true")
 
+	// Set default request-metrics-protocol to prometheus for backward compatibility with pre-OTEL Knative
+	common.ConfigureIfUnset(&ks.Spec.CommonSpec, monitoring.ObservabilityCMName, "request-metrics-protocol", "prometheus")
+
 	// Temporary fix for SRVKS-743
 	if ks.Spec.Ingress.Istio.Enabled {
 		common.ConfigureIfUnset(&ks.Spec.CommonSpec, monitoring.ObservabilityCMName, monitoring.ObservabilityBackendKey, "none")
