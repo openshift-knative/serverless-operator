@@ -36,7 +36,7 @@ requirements:
     # is ignored as it is overridden by fake version via KUBERNETES_MIN_VERSION.
     # This value is used for CSV's min version validation.
     minVersion: 1.25.0
-  golang: '1.23'
+  golang: '1.25'
   nodejs: 20.x
   ocpVersion:
     list:
@@ -51,9 +51,9 @@ requirements:
       - "4.22"
     min: '4.14'
     # Version to use for OCP docs links (in CSV or Quickstarts)
-    doc: '4.20'
+    doc: '4.21'
     # deprecated, use requirements.ocpVersion.list[-1]
-    max: '4.20'
+    max: '4.21'
     label: 'v4.14'
     # OCP stream for kube-rbac-proxy image.
     kube-rbac-proxy: "4.17"
