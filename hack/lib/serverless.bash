@@ -124,6 +124,14 @@ function delete_catalog {
   fi
 }
 
+function ensure_serverless_version {
+  if [[ "${OLM_VERSION}" == "v1" ]]; then
+    upgrade_serverless_olmv1 "$1"
+  else
+    approve_csv "$@"
+  fi
+}
+
 function install_knative_resources {
   local serverless_version
   serverless_version=${1:?Pass serverless version as arg[1]}
