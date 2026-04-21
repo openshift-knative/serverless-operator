@@ -8,164 +8,60 @@ import (
 	"github.com/openshift-knative/serverless-operator/test"
 	"github.com/openshift-knative/serverless-operator/test/v1alpha1"
 	"github.com/openshift-knative/serverless-operator/test/v1beta1"
-	"k8s.io/apimachinery/pkg/util/wait"
 )
 
 const (
 	DefaultInstallPlanTimeout = 15 * time.Minute
 )
 
-func UpgradeServerlessTo(ctx *test.Context, csv, source string, timeout time.Duration) error {
-	if _, err := test.UpdateSubscriptionChannelSource(ctx, test.Flags.Subscription, test.Flags.UpgradeChannel, source); err != nil {
-		return err
-	}
+type ServerlessLifecycle interface {
+	Upgrade(ctx *test.Context) error
+	UpgradeTo(ctx *test.Context, version string, timeout time.Duration) error
+	Downgrade(ctx *test.Context) error
+}
 
-	installPlan, err := test.WaitForInstallPlan(ctx, test.OperatorsNamespace, csv, source, timeout)
-	if err != nil {
-		if !wait.Interrupted(err) {
-			return err
-		}
-		if source != test.ServerlessOperatorPackage {
-			// InstallPlan not found in the original catalog source, try the one that was just built.
-			if _, err := test.UpdateSubscriptionChannelSource(ctx,
-				test.Flags.Subscription, test.Flags.UpgradeChannel, test.ServerlessOperatorPackage); err != nil {
-				return err
-			}
-			installPlan, err = test.WaitForInstallPlan(ctx,
-				test.OperatorsNamespace, csv, test.ServerlessOperatorPackage, timeout)
-		}
-		if err != nil {
-			return err
-		}
+func NewServerlessLifecycle(olmVersion string) ServerlessLifecycle {
+	if olmVersion == "v1" {
+		return &clusterExtensionLifecycle{}
 	}
+	return &subscriptionLifecycle{}
+}
 
-	if err := test.ApproveInstallPlan(ctx, installPlan.Name); err != nil {
-		return err
-	}
-	if _, err := test.WaitForClusterServiceVersionState(ctx, csv, test.OperatorsNamespace, test.IsCSVSucceeded); err != nil {
-		return err
-	}
-
-	servingInStateFunc := v1beta1.IsKnativeServingWithVersionReady(strings.TrimPrefix(test.Flags.ServingVersion, "v"))
-	if len(test.Flags.ServingVersion) == 0 {
+func WaitForKnativeComponentsReady(ctx *test.Context, servingVersion, eventingVersion, kafkaVersion string) error {
+	servingInStateFunc := v1beta1.IsKnativeServingWithVersionReady(strings.TrimPrefix(servingVersion, "v"))
+	if len(servingVersion) == 0 {
 		servingInStateFunc = v1beta1.IsKnativeServingReady
 	}
-	knativeServing := test.ServingNamespace
 	if _, err := v1beta1.WaitForKnativeServingState(ctx,
-		knativeServing,
-		knativeServing,
-		servingInStateFunc,
-	); err != nil {
-		return fmt.Errorf("serving upgrade failed: %w", err)
-	}
-
-	eventingInStateFunc := v1beta1.IsKnativeEventingWithVersionReady(strings.TrimPrefix(test.Flags.EventingVersion, "v"))
-	if len(test.Flags.EventingVersion) == 0 {
-		eventingInStateFunc = v1beta1.IsKnativeEventingReady
-	}
-	knativeEventing := test.EventingNamespace
-	if _, err := v1beta1.WaitForKnativeEventingState(ctx,
-		knativeEventing,
-		knativeEventing,
-		eventingInStateFunc,
-	); err != nil {
-		return fmt.Errorf("eventing upgrade failed: %w", err)
-	}
-
-	kafkaInStateFunc := v1alpha1.IsKnativeKafkaWithVersionReady(strings.TrimPrefix(test.Flags.KafkaVersion, "v"))
-	if len(test.Flags.KafkaVersion) == 0 {
-		kafkaInStateFunc = v1alpha1.IsKnativeKafkaReady
-	}
-	if _, err := v1alpha1.WaitForKnativeKafkaState(ctx,
-		"knative-kafka",
-		knativeEventing,
-		kafkaInStateFunc,
-	); err != nil {
-		return fmt.Errorf("knative kafka upgrade failed: %w", err)
-	}
-
-	return nil
-}
-
-func UpgradeServerless(ctx *test.Context) error {
-	return UpgradeServerlessTo(ctx, test.Flags.CSV, test.Flags.CatalogSource, DefaultInstallPlanTimeout)
-}
-
-func DowngradeServerless(ctx *test.Context) error {
-	const subscription = "serverless-operator"
-
-	if err := test.DeleteSubscription(ctx, subscription, test.OperatorsNamespace); err != nil {
-		return err
-	}
-
-	if err := test.DeleteClusterServiceVersion(ctx, test.Flags.CSV, test.OperatorsNamespace); err != nil {
-		return err
-	}
-
-	if err := test.WaitForServerlessOperatorsDeleted(ctx); err != nil {
-		return err
-	}
-
-	// Ensure complete clean up to prevent https://issues.redhat.com/browse/SRVCOM-2203
-	if err := test.DeleteNamespace(ctx, test.OperatorsNamespace); err != nil {
-		return err
-	}
-
-	if _, err := test.CreateNamespace(ctx, test.OperatorsNamespace); err != nil {
-		return err
-	}
-
-	if _, err := test.CreateOperatorGroup(ctx, "serverless", test.OperatorsNamespace); err != nil {
-		return err
-	}
-
-	if _, err := test.CreateSubscription(ctx, subscription, test.Flags.CSVPrevious); err != nil {
-		return err
-	}
-
-	installPlan, err := test.WaitForInstallPlan(ctx, test.OperatorsNamespace, test.Flags.CSVPrevious, test.Flags.CatalogSource, DefaultInstallPlanTimeout)
-	if err != nil {
-		return err
-	}
-
-	if err := test.ApproveInstallPlan(ctx, installPlan.Name); err != nil {
-		return err
-	}
-
-	if _, err := test.WaitForClusterServiceVersionState(ctx, test.Flags.CSVPrevious, test.OperatorsNamespace, test.IsCSVSucceeded); err != nil {
-		return err
-	}
-
-	knativeServing := test.ServingNamespace
-	servingVersion := strings.TrimPrefix(test.Flags.ServingVersionPrevious, "v")
-	servingInStateFunc := v1beta1.IsKnativeServingWithVersionReady(servingVersion)
-	if _, err := v1beta1.WaitForKnativeServingState(ctx,
-		knativeServing,
-		knativeServing,
+		test.ServingNamespace,
+		test.ServingNamespace,
 		servingInStateFunc,
 	); err != nil {
 		return fmt.Errorf("expected ready KnativeServing at version %s: %w", servingVersion, err)
 	}
 
-	knativeEventing := test.EventingNamespace
-	eventingVersion := strings.TrimPrefix(test.Flags.EventingVersionPrevious, "v")
-	eventingInStateFunc := v1beta1.IsKnativeEventingWithVersionReady(eventingVersion)
+	eventingInStateFunc := v1beta1.IsKnativeEventingWithVersionReady(strings.TrimPrefix(eventingVersion, "v"))
+	if len(eventingVersion) == 0 {
+		eventingInStateFunc = v1beta1.IsKnativeEventingReady
+	}
 	if _, err := v1beta1.WaitForKnativeEventingState(ctx,
-		knativeEventing,
-		knativeEventing,
+		test.EventingNamespace,
+		test.EventingNamespace,
 		eventingInStateFunc,
 	); err != nil {
 		return fmt.Errorf("expected ready KnativeEventing at version %s: %w", eventingVersion, err)
 	}
 
-	knativeKafkaVersion := strings.TrimPrefix(test.Flags.KafkaVersionPrevious, "v")
-	kafkaInStateFunc := v1alpha1.IsKnativeKafkaWithVersionReady(knativeKafkaVersion)
+	kafkaInStateFunc := v1alpha1.IsKnativeKafkaWithVersionReady(strings.TrimPrefix(kafkaVersion, "v"))
+	if len(kafkaVersion) == 0 {
+		kafkaInStateFunc = v1alpha1.IsKnativeKafkaReady
+	}
 	if _, err := v1alpha1.WaitForKnativeKafkaState(ctx,
 		"knative-kafka",
-		knativeEventing,
+		test.EventingNamespace,
 		kafkaInStateFunc,
 	); err != nil {
-		return fmt.Errorf("expected ready KnativeKafka at version %s: %w", knativeKafkaVersion, err)
+		return fmt.Errorf("expected ready KnativeKafka at version %s: %w", kafkaVersion, err)
 	}
 
 	return nil
