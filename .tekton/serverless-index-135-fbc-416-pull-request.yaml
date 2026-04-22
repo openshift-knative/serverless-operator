@@ -23,13 +23,13 @@ spec:
       value: ./olm-catalog/serverless-operator-index/v4.16
     - name: build-args
       value:
-        - VERSION=1.35.1
-        - CLI_ARTIFACTS=registry.redhat.io/openshift4/ose-cli-artifacts:v4.14
-        - GO_BUILDER=brew.registry.redhat.io/rh-osbs/openshift-golang-builder:rhel_8_golang_1.22
+        - VERSION=1.35.2
+        - GO_BUILDER=brew.registry.redhat.io/rh-osbs/openshift-golang-builder:rhel_8_golang_1.25
         - GO_RUNTIME=registry.access.redhat.com/ubi8/ubi-minimal
         - JAVA_BUILDER=registry.access.redhat.com/ubi8/openjdk-21
         - JAVA_RUNTIME=registry.access.redhat.com/ubi8/openjdk-21-runtime
-        - OPM_IMAGE=brew.registry.redhat.io/rh-osbs/openshift-ose-operator-registry-rhel9:v4.16
+        - CLI_ARTIFACTS=registry.redhat.io/openshift4/ose-cli-artifacts:v4.14
+        - OPM_IMAGE=registry.redhat.io/openshift4/ose-operator-registry-rhel9:v4.16
     - name: git-url
       value: '{{source_url}}'
     - name: hermetic
@@ -43,6 +43,16 @@ spec:
         - linux/x86_64
     - name: revision
       value: '{{revision}}'
+    - name: opm-args
+      value:
+        - alpha
+        - render-template
+        - basic
+        - "olm-catalog/serverless-operator-index/v4.16/catalog-template.yaml"
+    - name: opm-output-path
+      value: olm-catalog/serverless-operator-index/v4.16/catalog/serverless-operator/catalog.yaml
+    - name: file-to-update-pullspec
+      value: olm-catalog/serverless-operator-index/v4.16/catalog/serverless-operator/catalog.yaml
   pipelineRef:
     name: fbc-builder
   taskRunTemplate:
