@@ -3,7 +3,8 @@
   "enabledManagers": ["tekton"],
   "commitMessagePrefix": "[{{baseBranch}}]",
   "ignorePaths": [
-    ".konflux-release/**",
+    "**/.konflux-release/**",
+    "**/override-snapshot.yaml",
     "third_party/**",
     "vendor/**",
     "**/images-rekt.yaml"
