@@ -801,35 +801,35 @@ data:
         "steppedLine": false,
         "targets": [
           {
-            "expr": "label_replace(histogram_quantile(0.50, sum(rate(kn_autoscaler_scrape_duration_bucket{k8s_namespace_name=\"$namespace\", kn_configuration_name=~\"$configuration\",kn_revision_name=~\"$revision\"}[1m])) by (revision_name, le)), \"revision_name\", \"$2\", \"revision_name\", \"$configuration(-+)(.*)\")",
+            "expr": "histogram_quantile(0.50, sum(rate(kn_autoscaler_scrape_duration_seconds_bucket{k8s_namespace_name=\"$namespace\", kn_configuration_name=~\"$configuration\"}[1m])) by (le))",
             "format": "time_series",
             "interval": "1s",
             "intervalFactor": 1,
-            "legendFormat": "{{revision_name}} (p50)",
+            "legendFormat": "p50",
             "refId": "A"
           },
           {
-            "expr": "label_replace(histogram_quantile(0.90, sum(rate(kn_autoscaler_scrape_duration_bucket{k8s_namespace_name=\"$namespace\", kn_configuration_name=~\"$configuration\",kn_revision_name=~\"$revision\"}[1m])) by (revision_name, le)), \"revision_name\", \"$2\", \"revision_name\", \"$configuration(-+)(.*)\")",
+            "expr": "histogram_quantile(0.90, sum(rate(kn_autoscaler_scrape_duration_seconds_bucket{k8s_namespace_name=\"$namespace\", kn_configuration_name=~\"$configuration\"}[1m])) by (le))",
             "format": "time_series",
             "interval": "1s",
             "intervalFactor": 1,
-            "legendFormat": "{{revision_name}} (p90)",
+            "legendFormat": "p90",
             "refId": "B"
           },
           {
-            "expr": "label_replace(histogram_quantile(0.95, sum(rate(kn_autoscaler_scrape_duration_bucket{k8s_namespace_name=\"$namespace\", kn_configuration_name=~\"$configuration\",kn_revision_name=~\"$revision\"}[1m])) by (revision_name, le)), \"revision_name\", \"$2\", \"revision_name\", \"$configuration(-+)(.*)\")",
+            "expr": "histogram_quantile(0.95, sum(rate(kn_autoscaler_scrape_duration_seconds_bucket{k8s_namespace_name=\"$namespace\", kn_configuration_name=~\"$configuration\"}[1m])) by (le))",
             "format": "time_series",
             "interval": "1s",
             "intervalFactor": 1,
-            "legendFormat": "{{revision_name}} (p95)",
+            "legendFormat": "p95",
             "refId": "C"
           },
           {
-            "expr": "label_replace(histogram_quantile(0.99, sum(rate(kn_autoscaler_scrape_duration_bucket{k8s_namespace_name=\"$namespace\", kn_configuration_name=~\"$configuration\",kn_revision_name=~\"$revision\"}[1m])) by (revision_name, le)), \"revision_name\", \"$2\", \"revision_name\", \"$configuration(-+)(.*)\")",
+            "expr": "histogram_quantile(0.99, sum(rate(kn_autoscaler_scrape_duration_seconds_bucket{k8s_namespace_name=\"$namespace\", kn_configuration_name=~\"$configuration\"}[1m])) by (le))",
             "format": "time_series",
             "interval": "1s",
             "intervalFactor": 1,
-            "legendFormat": "{{revision_name}} (p99)",
+            "legendFormat": "p99",
             "refId": "D"
           }
         ],
@@ -988,7 +988,7 @@ data:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(kn_revision_rps_stable{k8s_namespace_name=\"$namespace\", kn_configuration_name=\"$configuration\", kn_revision_name=\"$revision\"})",
+              "expr": "sum(kn_revision_rps_stable_per_second{k8s_namespace_name=\"$namespace\", kn_configuration_name=\"$configuration\", kn_revision_name=\"$revision\"})",
               "format": "time_series",
               "interval": "1s",
               "intervalFactor": 1,
@@ -996,7 +996,7 @@ data:
               "refId": "A"
             },
             {
-              "expr": "sum(kn_revision_rps_panic{k8s_namespace_name=\"$namespace\", kn_configuration_name=\"$configuration\", kn_revision_name=\"$revision\"})",
+              "expr": "sum(kn_revision_rps_panic_per_second{k8s_namespace_name=\"$namespace\", kn_configuration_name=\"$configuration\", kn_revision_name=\"$revision\"})",
               "format": "time_series",
               "interval": "1s",
               "intervalFactor": 1,
@@ -1004,7 +1004,7 @@ data:
               "refId": "B"
             },
             {
-              "expr": "sum(kn_revision_rps_target{k8s_namespace_name=\"$namespace\", kn_configuration_name=\"$configuration\", kn_revision_name=\"$revision\"})",
+              "expr": "sum(kn_revision_rps_target_per_second{k8s_namespace_name=\"$namespace\", kn_configuration_name=\"$configuration\", kn_revision_name=\"$revision\"})",
               "format": "time_series",
               "interval": "1s",
               "intervalFactor": 1,
@@ -1166,7 +1166,7 @@ data:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "round(sum(increase(http_server_request_duration_count{k8s_namespace_name=\"$namespace\", kn_configuration_name=~\"$configuration\",kn_revision_name=~\"$revision\"}[1m])) by (http_response_status_code))",
+              "expr": "round(sum(increase(http_server_request_duration_seconds_count{k8s_namespace_name=\"$namespace\", kn_configuration_name=~\"$configuration\",kn_revision_name=~\"$revision\"}[1m])) by (http_response_status_code))",
               "format": "time_series",
               "interval": "1s",
               "intervalFactor": 1,
@@ -1247,7 +1247,7 @@ data:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "label_replace(histogram_quantile(0.50, sum(rate(http_server_request_duration_bucket{k8s_namespace_name=\"$namespace\", kn_configuration_name=~\"$configuration\",kn_revision_name=~\"$revision\"}[1m])) by (revision_name, le)), \"revision_name\", \"$2\", \"revision_name\", \"$configuration(-+)(.*)\")",
+              "expr": "label_replace(histogram_quantile(0.50, sum(rate(http_server_request_duration_seconds_bucket{k8s_namespace_name=\"$namespace\", kn_configuration_name=~\"$configuration\",kn_revision_name=~\"$revision\"}[1m])) by (revision_name, le)), \"revision_name\", \"$2\", \"revision_name\", \"$configuration(-+)(.*)\")",
               "format": "time_series",
               "interval": "1s",
               "intervalFactor": 1,
@@ -1255,7 +1255,7 @@ data:
               "refId": "A"
             },
             {
-              "expr": "label_replace(histogram_quantile(0.90, sum(rate(http_server_request_duration_bucket{k8s_namespace_name=\"$namespace\", kn_configuration_name=~\"$configuration\",kn_revision_name=~\"$revision\"}[1m])) by (revision_name, le)), \"revision_name\", \"$2\", \"revision_name\", \"$configuration(-+)(.*)\")",
+              "expr": "label_replace(histogram_quantile(0.90, sum(rate(http_server_request_duration_seconds_bucket{k8s_namespace_name=\"$namespace\", kn_configuration_name=~\"$configuration\",kn_revision_name=~\"$revision\"}[1m])) by (revision_name, le)), \"revision_name\", \"$2\", \"revision_name\", \"$configuration(-+)(.*)\")",
               "format": "time_series",
               "interval": "1s",
               "intervalFactor": 1,
@@ -1263,7 +1263,7 @@ data:
               "refId": "A"
             },
             {
-              "expr": "label_replace(histogram_quantile(0.95, sum(rate(http_server_request_duration_bucket{k8s_namespace_name=\"$namespace\", kn_configuration_name=~\"$configuration\",kn_revision_name=~\"$revision\"}[1m])) by (revision_name, le)), \"revision_name\", \"$2\", \"revision_name\", \"$configuration(-+)(.*)\")",
+              "expr": "label_replace(histogram_quantile(0.95, sum(rate(http_server_request_duration_seconds_bucket{k8s_namespace_name=\"$namespace\", kn_configuration_name=~\"$configuration\",kn_revision_name=~\"$revision\"}[1m])) by (revision_name, le)), \"revision_name\", \"$2\", \"revision_name\", \"$configuration(-+)(.*)\")",
               "format": "time_series",
               "interval": "1s",
               "intervalFactor": 1,
@@ -1271,7 +1271,7 @@ data:
               "refId": "A"
             },
             {
-              "expr": "label_replace(histogram_quantile(0.99, sum(rate(http_server_request_duration_bucket{k8s_namespace_name=\"$namespace\", kn_configuration_name=~\"$configuration\",kn_revision_name=~\"$revision\"}[1m])) by (revision_name, le)), \"revision_name\", \"$2\", \"revision_name\", \"$configuration(-+)(.*)\")",
+              "expr": "label_replace(histogram_quantile(0.99, sum(rate(http_server_request_duration_seconds_bucket{k8s_namespace_name=\"$namespace\", kn_configuration_name=~\"$configuration\",kn_revision_name=~\"$revision\"}[1m])) by (revision_name, le)), \"revision_name\", \"$2\", \"revision_name\", \"$configuration(-+)(.*)\")",
               "format": "time_series",
               "interval": "1s",
               "intervalFactor": 1,
