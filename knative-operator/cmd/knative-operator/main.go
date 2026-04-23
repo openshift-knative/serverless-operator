@@ -40,6 +40,13 @@ import (
 	"github.com/openshift-knative/serverless-operator/knative-operator/pkg/controller/knativeserving/consoleutil"
 )
 
+// Leader election default values
+var (
+	defaultLeaseDuration time.Duration = 137 * time.Second
+	defaultRenewDeadline time.Duration = 107 * time.Second
+	defaultRetryPeriod   time.Duration = 26 * time.Second
+)
+
 // Change below variables to serve metrics on different host or port.
 var (
 	metricsHost       = "0.0.0.0"
@@ -95,6 +102,9 @@ func main() {
 	mgr, err := manager.New(cfg, manager.Options{
 		LeaderElection:   true,
 		LeaderElectionID: "knative-serving-openshift-lock",
+		LeaseDuration:    &defaultLeaseDuration,
+		RenewDeadline:    &defaultRenewDeadline,
+		RetryPeriod:      &defaultRetryPeriod,
 		Metrics: metricsserver.Options{
 			BindAddress: fmt.Sprintf("%s:%d", metricsHost, metricsPort),
 		},
