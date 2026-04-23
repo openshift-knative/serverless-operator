@@ -30,6 +30,9 @@ olm:
     - version: 1.36.0
       replaces: 1.35.0
       skipRange: ">=1.35.0 <1.36.0"
+    - version: 1.35.0
+      replaces: 1.34.0
+      skipRange: ">=1.34.0 <1.35.0"
 requirements:
   kube:
     # The min version validation in `vendor/knative.dev/pkg/version/version.go`
@@ -46,6 +49,7 @@ requirements:
       - "4.19"
       - "4.20"
       - "4.21"
+      - "4.22"
     min: '4.16'
     # Version to use for OCP docs links (in CSV or Quickstarts)
     doc: '4.20'
@@ -64,7 +68,7 @@ dependencies:
   net_istio: knative-v1.21
   net_istio_artifacts_branch: release-v1.21
   redhat-knative-istio-authz-chart: 1.37.0
-  service_mesh_proxy: registry.redhat.io/openshift-service-mesh/proxyv2-rhel9@sha256:b79868dacf1e42a6daed9ea9d1cf05142cee185061bf3cb91d191e8f50885edf
+  service_mesh_proxy: registry.redhat.io/openshift-service-mesh/proxyv2-rhel9@sha256:d99177ece0e27ee6be71eb73ac4c31b837cafb850efd74043d2b3d03189e662d
   eventing: knative-v1.21
   # eventing core midstream branch name
   eventing_artifacts_branch: release-v1.21
@@ -85,14 +89,14 @@ dependencies:
   # backstage-plugins midstream branch or commit
   backstage_plugins_artifacts_branch: release-v1.21
   cli: knative-v1.21
-  kube_rbac_proxy: registry.redhat.io/openshift4/ose-kube-rbac-proxy-rhel9@sha256:f550296753e9898c67d563b7deb16ba540ca1367944c905415f35537b6b949d4
+  kube_rbac_proxy: registry.redhat.io/openshift4/ose-kube-rbac-proxy-rhel9@sha256:e212e18b843e5182952d297d6571f32676d6b9c1c6f8a4722e6c6bbfdb8f2b09
   func:
     promotion_tag: knative-v1.21
     # if additional image is added amend the list in hack/generate/catalog.sh
-    tekton_buildah: registry.redhat.io/rhel9/buildah@sha256:c011d25b3b0ca55e54118957a824c69dc6542060ba7f083df9d708347b9be79d
-    nodejs_20_minimal: registry.access.redhat.com/ubi9/nodejs-20-minimal@sha256:106ce430764e40e96f07fd085c77a3e8855f8183578d0651e762a51e13648cf3
-    openjdk_21: registry.access.redhat.com/ubi9/openjdk-21@sha256:5a58d6a421b113a937a284f6661b26147ce98e3d924a87d40e48897862979ebb
-    python-39: registry.access.redhat.com/ubi9/python-39@sha256:c871688f22d2ac783a37703b1944fd94d8d2707aac8a3363fd1a039141b365f6
+    tekton_buildah: registry.redhat.io/rhel9/buildah@sha256:a6f8842c45cf0c821c6e7055415ad035a41dbde8597c26a58e032b7cbcee595c
+    nodejs_20_minimal: registry.access.redhat.com/ubi9/nodejs-20-minimal@sha256:714ca1c5e1350d28c0fa896675323d9d4f7c133420c699bb95b3326783b769fb
+    openjdk_21: registry.access.redhat.com/ubi9/openjdk-21@sha256:78b159c0db6eb947775ad682a04dbe5cea07c16d8f5635ddd94b6cf468ab8577
+    python-39: registry.access.redhat.com/ubi9/python-39@sha256:6858f39fd97263227a10d0b79f098c22204b2f94a6062de465c0a31cc4040c0f
   operator: 1.21.0
   # Previous versions required for downgrade testing
   previous:

@@ -31,7 +31,7 @@ jobs:
           go install github.com/operator-framework/operator-registry/cmd/opm@v1.47.0
 
       - name: Checkout openshift-knative/serverless-operator
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           # Always checkout main, we don't support bumping for patch releases (for now)
           ref: main
@@ -39,7 +39,7 @@ jobs:
           fetch-depth: 0
 
       - name: Checkout openshift-knative/knative-istio-authz-chart
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           repository: 'openshift-knative/knative-istio-authz-chart'
           path: ./src/github.com/openshift-knative/knative-istio-authz-chart
@@ -109,7 +109,7 @@ jobs:
         run: make generate-catalog
 
       - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v7
+        uses: peter-evans/create-pull-request@v8
         with:
           path: ./src/github.com/${{ github.repository }}
           branch: auto/bump-so-version-${{ github.ref_name }}
@@ -121,7 +121,7 @@ jobs:
             
       - name: Trigger Konflux and CI discovery
         if: ${{ always() }}
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         with:
           github-token: ${{ secrets.SERVERLESS_QE_ROBOT }}
           script: |

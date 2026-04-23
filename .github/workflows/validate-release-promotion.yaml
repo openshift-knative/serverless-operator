@@ -22,7 +22,7 @@ jobs:
           go install github.com/mikefarah/yq/v3@latest
 
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           path: ./src/github.com/openshift-knative/serverless-operator
           fetch-depth: 0
@@ -42,7 +42,7 @@ jobs:
         shell: bash
 
       - name: Checkout openshift/release
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           branch: 'master'
           repository: 'openshift/release'

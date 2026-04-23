@@ -558,6 +558,10 @@ func ks(mods ...func(*operatorv1beta1.KnativeServing)) *operatorv1beta1.KnativeS
 						"autocreateClusterDomainClaims": "true",
 						"defaultExternalScheme":         "https",
 					},
+					monitoring.ObservabilityCMName: {
+						monitoring.ObservabilityBackendKey: "prometheus",
+						"request-metrics-protocol":         "prometheus",
+					},
 				},
 				Registry: base.Registry{
 					Default: "bar2",

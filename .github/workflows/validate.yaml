@@ -47,7 +47,7 @@ jobs:
           go install github.com/operator-framework/operator-registry/cmd/opm@v1.47.0
 
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           path: ./src/github.com/${{ github.repository }}
           fetch-depth: 0
@@ -78,14 +78,7 @@ jobs:
         working-directory: ./src/github.com/${{ github.repository }}
         run: make generated-files
 
-      # Generate catalog only if not triggered by a pull request. Credentials are not available in pre-submit phase.
-      - name: Regenerate file-based catalog
-        if: github.event_name == 'workflow_dispatch' || github.event_name == 'schedule' || ( github.event_name == 'push' && !contains(github.ref_name, 'dependabot/') )
-        working-directory: ./src/github.com/${{ github.repository }}
-        env:
-          REGISTRY_REDHAT_IO_USERNAME: ${{ secrets.REGISTRY_REDHAT_IO_USERNAME }}
-          REGISTRY_REDHAT_IO_PASSWORD: ${{ secrets.REGISTRY_REDHAT_IO_PASSWORD }}
-        run: make generate-catalog
+      # FBC catalog generation was moved to Konflux driven pipeline
 
       - name: Regenerate override-snapshot
         if: ( github.event_name == 'workflow_dispatch' && github.event.inputs.skip-override-snapshot-gen == 'false' ) || github.event_name == 'schedule' || ( github.event_name == 'push' && !contains(github.ref_name, 'dependabot/') )
@@ -99,7 +92,7 @@ jobs:
       #   when it's manually triggered or a scheduled run.
       - name: Create Pull Request
         if: github.event_name == 'workflow_dispatch' || github.event_name == 'schedule' || ( github.event_name == 'push' && !contains(github.ref_name, 'dependabot/') )
-        uses: peter-evans/create-pull-request@v7
+        uses: peter-evans/create-pull-request@v8
         with:
           token: ${{ secrets.SERVERLESS_QE_ROBOT }}
           path: ./src/github.com/${{ github.repository }}
@@ -134,7 +127,7 @@ jobs:
         uses: openshift-knative/hack/actions/setup-go@main
 
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           path: ./src/github.com/${{ github.repository }}
 
@@ -224,7 +217,7 @@ jobs:
                 -level="error"
 
       - name: Prettify code
-        uses: creyD/prettier_action@v4.3
+        uses: creyD/prettier_action@v4.6
         with:
           dry: true
           prettier_options: --check src/github.com/${{ github.repository }}/templates/*.yaml

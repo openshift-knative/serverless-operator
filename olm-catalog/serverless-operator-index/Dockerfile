@@ -1,4 +1,4 @@
-FROM registry.ci.openshift.org/origin/scos-4.21:operator-registry AS opm
+FROM registry.ci.openshift.org/origin/scos-4.22:operator-registry AS opm
 
 FROM registry.access.redhat.com/ubi9/ubi-minimal as builder
 
@@ -16,11 +16,11 @@ COPY olm-catalog/serverless-operator-index/index-bundles.yaml /index-bundles.yam
 RUN /bin/opm init serverless-operator --default-channel=stable --output yaml >> /configs/index.yaml
 RUN cat /index-bundles.yaml >> /configs/index.yaml
 RUN /bin/opm render --skip-tls-verify -o yaml \
-      quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-138/serverless-bundle@sha256:bd2941797302a10b5440d5c4df915035a916e34ba81db1ef41f8e6f42f89881e >> /configs/index.yaml
+      quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-138/serverless-bundle@sha256:9a90dd197e7c3a91b09725a9d851dd03d61fdd402eb7d1c60990a4bfd2cd8e10 >> /configs/index.yaml
 
 # The base image is expected to contain
 # /bin/opm (with a serve subcommand) and /bin/grpc_health_probe
-FROM registry.ci.openshift.org/origin/scos-4.21:operator-registry
+FROM registry.ci.openshift.org/origin/scos-4.22:operator-registry
 
 # Copy declarative config root into image at /configs
 COPY --from=builder /configs /configs
