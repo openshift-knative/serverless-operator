@@ -272,11 +272,11 @@ data:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(rate(kn_eventing_dispatch_latency_ms_count{job=\"kafka-sink-receiver-sm-service\", kn_kafkasink_namespace=~\"$namespace\"}[1m])) by (event_type)",
+              "expr": "sum(rate(kn_eventing_dispatch_latency_ms_count{job=\"kafka-sink-receiver-sm-service\", kn_kafkasink_namespace=~\"$namespace\"}[1m])) by (cloudevents_type)",
               "format": "time_series",
               "hide": false,
               "instant": false,
-              "legendFormat": "{{event_type}}",
+              "legendFormat": "{{cloudevents_type}}",
               "refId": "A"
             }
           ],
