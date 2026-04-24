@@ -26,6 +26,9 @@ function upstream_knative_eventing_kafka_broker_e2e {
 
   cd "$KNATIVE_EVENTING_KAFKA_BROKER_HOME"
 
+  # TODO: Try to hack gotestsum version until we fix it in midstream EKB
+  patch -p1 < "${root_dir}/hack/patches/024-gotestsum-version.patch" || true
+
   export FIRST_EVENT_DELAY_ENABLED=false # Disable very slow test since it's already running in ekb CI
 
   export TEST_IMAGE_TEMPLATE="registry.ci.openshift.org/openshift/knative-eventing-kafka-broker-test-{{.Name}}:${KNATIVE_EVENTING_KAFKA_BROKER_VERSION}"
