@@ -32,6 +32,11 @@ function upstream_knative_eventing_e2e {
 function upstream_knative_eventing_e2e_mesh() {
   pushd "${KNATIVE_EVENTING_ISTIO_HOME}" || return $?
 
+  # TODO: Try to hack gotestsum version until we fix it in midstream EKB
+  local root_dir
+  root_dir="$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")"
+  patch -p1 < "${root_dir}/hack/patches/024-gotestsum-version.patch" || true
+
   ./openshift/e2e-tests.sh || return $?
 
   popd || return $?
