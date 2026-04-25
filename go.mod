@@ -20,17 +20,17 @@ require (
 	github.com/spf13/pflag v1.0.10
 	github.com/stretchr/testify v1.11.1
 	go.uber.org/zap v1.27.1
-	golang.org/x/sync v0.19.0
+	golang.org/x/sync v0.20.0
 	google.golang.org/grpc v1.77.0
-	k8s.io/api v0.34.5
-	k8s.io/apimachinery v0.34.5
-	k8s.io/client-go v0.34.5
+	k8s.io/api v0.34.6
+	k8s.io/apimachinery v0.34.6
+	k8s.io/client-go v0.34.6
 	knative.dev/eventing v0.48.0
 	knative.dev/eventing-kafka-broker v0.48.0
-	knative.dev/hack v0.0.0-20260120115810-bf6758cba446
+	knative.dev/hack v0.0.0-20260420222011-c985ed3cefe8
 	knative.dev/networking v0.0.0-20260120131110-a7cdca238a0d
 	knative.dev/operator v0.48.1
-	knative.dev/pkg v0.0.0-20260120122510-4a022ed9999a
+	knative.dev/pkg v0.0.0-20260319144603-18c5d580ae64
 	knative.dev/serving v0.48.1
 	sigs.k8s.io/controller-runtime v0.22.5
 	sigs.k8s.io/yaml v1.6.0
@@ -39,19 +39,19 @@ require (
 require (
 	github.com/IBM/sarama v1.45.1 // indirect
 	github.com/aws/aws-msk-iam-sasl-signer-go v1.0.4 // indirect
-	github.com/aws/aws-sdk-go-v2 v1.41.0 // indirect
+	github.com/aws/aws-sdk-go-v2 v1.41.5 // indirect
 	github.com/aws/aws-sdk-go-v2/config v1.29.6 // indirect
 	github.com/aws/aws-sdk-go-v2/credentials v1.17.59 // indirect
 	github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.16.28 // indirect
-	github.com/aws/aws-sdk-go-v2/internal/configsources v1.4.16 // indirect
-	github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.7.16 // indirect
+	github.com/aws/aws-sdk-go-v2/internal/configsources v1.4.21 // indirect
+	github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.7.21 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/ini v1.8.2 // indirect
 	github.com/aws/aws-sdk-go-v2/service/internal/accept-encoding v1.13.4 // indirect
 	github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.13.16 // indirect
 	github.com/aws/aws-sdk-go-v2/service/sso v1.24.15 // indirect
 	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.28.14 // indirect
 	github.com/aws/aws-sdk-go-v2/service/sts v1.33.14 // indirect
-	github.com/aws/smithy-go v1.24.0 // indirect
+	github.com/aws/smithy-go v1.24.2 // indirect
 	github.com/cenkalti/backoff/v5 v5.0.3 // indirect
 	github.com/cert-manager/cert-manager v1.16.3 // indirect
 	github.com/cloudevents/conformance v0.4.1 // indirect
@@ -165,13 +165,13 @@ require (
 	github.com/xdg-go/stringprep v1.0.4 // indirect
 	go.uber.org/automaxprocs v1.6.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
-	golang.org/x/crypto v0.48.0 // indirect
+	golang.org/x/crypto v0.49.0 // indirect
 	golang.org/x/mod v0.33.0 // indirect
-	golang.org/x/net v0.50.0 // indirect
+	golang.org/x/net v0.51.0 // indirect
 	golang.org/x/oauth2 v0.34.0 // indirect
-	golang.org/x/sys v0.41.0 // indirect
-	golang.org/x/term v0.40.0 // indirect
-	golang.org/x/text v0.34.0 // indirect
+	golang.org/x/sys v0.42.0 // indirect
+	golang.org/x/term v0.41.0 // indirect
+	golang.org/x/text v0.35.0 // indirect
 	golang.org/x/time v0.12.0 // indirect
 	golang.org/x/tools v0.42.0 // indirect
 	gomodules.xyz/jsonpatch/v2 v2.5.0 // indirect
@@ -181,8 +181,8 @@ require (
 	gopkg.in/yaml.v3 v3.0.1
 	istio.io/api v0.0.0-20231206023236-e7cadb36da57 // indirect
 	istio.io/client-go v1.18.7 // indirect
-	k8s.io/apiserver v0.34.5 // indirect
-	k8s.io/code-generator v0.34.5 // indirect
+	k8s.io/apiserver v0.34.6 // indirect
+	k8s.io/code-generator v0.34.6 // indirect
 	k8s.io/klog/v2 v2.130.1 // indirect
 	k8s.io/kube-openapi v0.0.0-20250910181357-589584f1c912 // indirect
 	k8s.io/utils v0.0.0-20251002143259-bc988d571ff4
@@ -193,24 +193,24 @@ require (
 require (
 	github.com/go-logr/logr v1.4.3
 	go.uber.org/atomic v1.11.0 // indirect
-	k8s.io/apiextensions-apiserver v0.34.5
+	k8s.io/apiextensions-apiserver v0.34.6
 	knative.dev/reconciler-test v0.0.0-20260225102520-330ffb2184a7
 )
 
 replace (
 	// Knative components
-	knative.dev/eventing => github.com/openshift-knative/eventing v0.99.1-0.20260305121436-6a52ea6c845c
-	knative.dev/eventing-kafka-broker => github.com/openshift-knative/eventing-kafka-broker v0.25.1-0.20260304102151-f9a5078d6f35
-	knative.dev/hack => knative.dev/hack v0.0.0-20260120115810-bf6758cba446
+	knative.dev/eventing => github.com/openshift-knative/eventing v0.99.1-0.20260423111951-796a7bcdba85
+	knative.dev/eventing-kafka-broker => github.com/openshift-knative/eventing-kafka-broker v0.25.1-0.20260414101542-ffc4ad326b70
+	knative.dev/hack => knative.dev/hack v0.0.0-20260420222011-c985ed3cefe8
 	knative.dev/networking => knative.dev/networking v0.0.0-20260120131110-a7cdca238a0d
-	knative.dev/pkg => knative.dev/pkg v0.0.0-20260120122510-4a022ed9999a
-	knative.dev/reconciler-test => knative.dev/reconciler-test v0.0.0-20260225102520-330ffb2184a7
-	knative.dev/serving => github.com/openshift-knative/serving v0.10.1-0.20260303085830-4af8dc4ecf46
+	knative.dev/pkg => knative.dev/pkg v0.0.0-20260319144603-18c5d580ae64
+	knative.dev/reconciler-test => knative.dev/reconciler-test v0.0.0-20260424102515-75d476349613
+	knative.dev/serving => github.com/openshift-knative/serving v0.10.1-0.20260422113946-e2c2c25952e6
 )
 
 replace (
 	// OpenShift components
-	github.com/openshift/api => github.com/openshift/api v0.0.0-20260304172252-b0658d22beea
+	github.com/openshift/api => github.com/openshift/api v0.0.0-20260420133342-d6cd61231721
 	github.com/openshift/client-go => github.com/openshift/client-go v0.0.0-20251205093018-96a6cbc1420c
 )
 
