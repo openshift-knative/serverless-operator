@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 
 function ensure_content_source_policy {
+    if [[ $(oc get infrastructure cluster -ojsonpath='{.status.platformStatus.aws.resourceTags[?(@.key=="red-hat-clustertype")].value}') = rosa ]]; then
+      logger.debug "Skipping content source policy on ROSA cluster"
+      return
+    fi
     rootdir="$(dirname "$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")")"
     oc apply -f "$rootdir/olm-catalog/serverless-operator-index/image_content_source_policy.yaml"
 }
@@ -171,7 +175,11 @@ function deploy_knativeserving_cr {
   fi
 
   if [[ $MESH == "true" ]]; then
-    enable_istio "$serving_cr"
+    if [[ ${MESH_VERSION} == "3" ]]; then
+      enable_istio_mesh3 "$serving_cr"
+    else
+      enable_istio "$serving_cr"
+    fi
   fi
 
   if [[ $ENABLE_TRACING == "true" ]]; then
@@ -231,6 +239,42 @@ EOF
   rm -f "${istio_patch}"
 }
 
+# If ServiceMesh 3 is enabled:
+# - Set ingress.istio.enabled to "true"
+# - Set custom gateway config pointing to knative-serving-ingress namespace
+# - Set inject and rewriteAppHTTPProbers annotations for activator and autoscaler
+# - Add annotation to disable istio net policies generation
+function enable_istio_mesh3 {
+  local custom_resource istio_patch
+  custom_resource=${1:?Pass a custom resource to be patched as arg[1]}
+
+  istio_patch="$(mktemp -t istio-XXXXX.yaml)"
+  cat - << EOF > "${istio_patch}"
+metadata:
+  annotations:
+    serverless.openshift.io/disable-istio-net-policies-generation: "true"
+spec:
+  config:
+    istio:
+      gateway.knative-serving.knative-ingress-gateway: knative-istio-ingressgateway.knative-serving-ingress.svc.cluster.local
+      local-gateway.knative-serving.knative-local-gateway: knative-local-gateway.knative-serving-ingress.svc.cluster.local
+  ingress:
+    istio:
+      enabled: true
+  workloads:
+  - labels:
+      sidecar.istio.io/inject: "true"
+    name: activator
+  - labels:
+      sidecar.istio.io/inject: "true"
+    name: autoscaler
+EOF
+
+  yq merge --inplace --arrays append "$custom_resource" "$istio_patch"
+
+  rm -f "${istio_patch}"
+}
+
 # If ServiceMesh is enabled:
 # - Set ingress.istio.enabled to "true"
 # - Set inject and rewriteAppHTTPProbers annotations for activator and autoscaler
@@ -249,34 +293,34 @@ spec:
   workloads:
   - labels:
       sidecar.istio.io/inject: "true"
-    annotations:
-      sidecar.istio.io/logLevel: "debug"
-      sidecar.istio.io/rewriteAppHTTPProbers: "true"
     name: pingsource-mt-adapter
   - labels:
       sidecar.istio.io/inject: "true"
-    annotations:
-      sidecar.istio.io/logLevel: "debug"
-      sidecar.istio.io/rewriteAppHTTPProbers: "true"
     name: mt-broker-ingress
   - labels:
       sidecar.istio.io/inject: "true"
-    annotations:
-      sidecar.istio.io/logLevel: "debug"
-      sidecar.istio.io/rewriteAppHTTPProbers: "true"
     name: mt-broker-filter
   - labels:
       sidecar.istio.io/inject: "true"
-    annotations:
-      sidecar.istio.io/logLevel: "debug"
-      sidecar.istio.io/rewriteAppHTTPProbers: "true"
     name: imc-dispatcher
   - labels:
       sidecar.istio.io/inject: "true"
-    annotations:
-      sidecar.istio.io/logLevel: "debug"
-      sidecar.istio.io/rewriteAppHTTPProbers: "true"
     name: job-sink
+  - labels:
+      sidecar.istio.io/inject: "false"
+    name: eventing-controller
+  - labels:
+      sidecar.istio.io/inject: "false"
+    name: eventing-istio-controller
+  - labels:
+      sidecar.istio.io/inject: "false"
+    name: eventing-webhook
+  - labels:
+      sidecar.istio.io/inject: "false"
+    name: imc-controller
+  - labels:
+      sidecar.istio.io/inject: "false"
+    name: mt-broker-controller
 EOF
 
   yq merge --inplace --arrays append "$custom_resource" "$istio_patch"
@@ -318,46 +362,28 @@ spec:
   workloads:
   - labels:
       sidecar.istio.io/inject: "true"
-    annotations:
-      sidecar.istio.io/logLevel: "debug"
-      sidecar.istio.io/rewriteAppHTTPProbers: "true"
     name: kafka-broker-receiver
   - labels:
       sidecar.istio.io/inject: "true"
-    annotations:
-      sidecar.istio.io/logLevel: "debug"
-      sidecar.istio.io/rewriteAppHTTPProbers: "true"
     name: kafka-broker-dispatcher
   - labels:
       sidecar.istio.io/inject: "true"
-    annotations:
-      sidecar.istio.io/logLevel: "debug"
-      sidecar.istio.io/rewriteAppHTTPProbers: "true"
     name: kafka-channel-receiver
   - labels:
       sidecar.istio.io/inject: "true"
-    annotations:
-      sidecar.istio.io/logLevel: "debug"
-      sidecar.istio.io/rewriteAppHTTPProbers: "true"
     name: kafka-channel-dispatcher
   - labels:
       sidecar.istio.io/inject: "true"
-    annotations:
-      sidecar.istio.io/logLevel: "debug"
-      sidecar.istio.io/rewriteAppHTTPProbers: "true"
     name: kafka-sink-receiver
   - labels:
-      sidecar.istio.io/inject: "true"
-    annotations:
-      sidecar.istio.io/logLevel: "debug"
-      sidecar.istio.io/rewriteAppHTTPProbers: "true"
+      sidecar.istio.io/inject: "false"
     name: kafka-source-dispatcher
   - labels:
       sidecar.istio.io/inject: "true"
-    annotations:
-      sidecar.istio.io/logLevel: "debug"
-      sidecar.istio.io/rewriteAppHTTPProbers: "true"
     name: kafka-controller
+  - labels:
+      sidecar.istio.io/inject: "false"
+    name: kafka-webhook-eventing
 EOF
 
   yq merge --inplace --arrays append "$custom_resource" "$istio_patch"
@@ -381,6 +407,9 @@ function deploy_knativeeventing_cr {
   fi
   if [[ $MESH == "true" ]]; then
     enable_istio_eventing "$eventing_cr"
+    if [[ ${MESH_VERSION:-2} == "3" ]]; then
+      yq write --inplace --tag '!!str' "$eventing_cr" 'metadata.annotations."serverless.openshift.io/disable-istio-net-policies-generation"' "true"
+    fi
   fi
 
   if [[ $HA == "false" ]]; then

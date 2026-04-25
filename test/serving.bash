@@ -22,7 +22,7 @@ function prepare_knative_serving_tests {
   # Create test resources (namespaces, configMaps, secrets)
   oc apply -f test/config/cluster-resources.yaml
   # Workaround for https://issues.redhat.com/browse/OSSM-1397
-  if [[ $MESH == "true" ]]; then
+  if [[ $MESH == "true" && $MESH_VERSION == "2" ]]; then
     oc label namespace serving-tests maistra.io/member-of=istio-system --overwrite
   fi
   oc apply -f test/config/test-resources.yaml
@@ -32,8 +32,8 @@ function prepare_knative_serving_tests {
   add_networkpolicy "serving-tests"
   add_networkpolicy "serving-tests-alt"
 
-    export GATEWAY_OVERRIDE="kourier"
-    export GATEWAY_NAMESPACE_OVERRIDE="${INGRESS_NAMESPACE}"
+  export GATEWAY_OVERRIDE="kourier"
+  export GATEWAY_NAMESPACE_OVERRIDE="${INGRESS_NAMESPACE}"
 }
 
 function upstream_knative_serving_e2e_and_conformance_tests {

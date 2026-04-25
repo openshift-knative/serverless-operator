@@ -14,7 +14,15 @@ set -Eeuo pipefail
 debugging.setup
 
 if [[ ${UNINSTALL_MESH:-} == "true" ]]; then
-  uninstall_mesh
+  if [[ ${MESH_VERSION:-2} == "3" ]]; then
+    uninstall_mesh3
+  else
+    uninstall_mesh
+  fi
 else
-  install_mesh
+  if [[ ${MESH_VERSION:-2} == "3" ]]; then
+    install_mesh3
+  else
+    install_mesh
+  fi
 fi
