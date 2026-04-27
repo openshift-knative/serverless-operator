@@ -284,7 +284,7 @@ sum(kn_revision_pods_count{k8s_namespace_name="default", kn_revision_name="hello
 histogram_quantile(0.99, sum(rate(autoscaler_scrape_time_bucket{namespace_name="default"}[1m])) by (le))
 
 # New scrape time query (SECONDS - unit changed!)
-histogram_quantile(0.99, sum(rate(kn_autoscaler_scrape_duration_bucket{k8s_namespace_name="default"}[1m])) by (le))
+histogram_quantile(0.99, sum(rate(kn_autoscaler_scrape_duration_seconds_bucket{k8s_namespace_name="default"}[1m])) by (le))
 ```
 
 ## Label Name Changes
