@@ -233,11 +233,11 @@ histogram_quantile(0.99, sum(rate(kn_serving_invocation_duration_seconds_bucket{
 
 ### Activator Metrics
 
-| Old Metric Name | New Metric Name | Notes |
-|----------------|-----------------|-------|
-| `activator_request_count` | `http_server_request_duration_seconds_count` | Standard OTel HTTP metric, **changed to seconds** |
-| `activator_request_latencies_bucket` | `http_server_request_duration_seconds_bucket` | **Changed from ms to seconds** |
-| `request_concurrency` | `kn_revision_request_concurrency` | Concurrent requests |
+| Old Metric Name | New Metric Name | Notes                                                                             |
+|----------------|-----------------|-----------------------------------------------------------------------------------|
+| `activator_request_count` | `http_server_request_duration_seconds_count` | Add `job="activator-sm-service"`, Standard OTel HTTP metric, **changed to seconds** |
+| `activator_request_latencies_bucket` | `http_server_request_duration_seconds_bucket` | Add `job="activator-sm-service"`, **Changed from ms to seconds**                    |
+| `request_concurrency` | `kn_revision_request_concurrency` | Concurrent requests                               |
 
 **Example Migration:**
 ```promql
@@ -580,7 +580,7 @@ To avoid confusion, here's a quick reference showing the exact namespace label t
 kn_serving_invocation_duration_seconds_count{k8s_namespace_name="default", kn_revision_name="..."}
 
 # Serving - Activator (seconds)
-http_server_request_duration_seconds_count{k8s_namespace_name="default", kn_revision_name="..."}
+http_server_request_duration_seconds_count{k8s_namespace_name="default", job="activator-sm-service", kn_revision_name="..."}
 
 # Serving - Autoscaler
 kn_revision_pods_count{k8s_namespace_name="default", kn_revision_name="..."}
