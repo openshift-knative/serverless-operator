@@ -265,7 +265,7 @@ All autoscaler metrics have been renamed with the `kn_revision_*` or `kn_autosca
 | `autoscaler_target_concurrency_per_pod` | `kn_revision_concurrency_target` |
 | `autoscaler_excess_burst_capacity` | `kn_revision_capacity_excess` |
 | `autoscaler_panic_mode` | `kn_revision_panic_mode` |
-| `autoscaler_stable_requests_per_second` | `kn_revision_rps_stable` |
+| `autoscaler_stable_requests_per_second` | `kn_revision_rps_stable_per_second` |
 | `autoscaler_panic_requests_per_second` | `kn_revision_rps_panic` |
 | `autoscaler_target_requests_per_second` | `kn_revision_rps_target` |
 | `autoscaler_scrape_time_bucket` | `kn_autoscaler_scrape_duration_bucket` |
