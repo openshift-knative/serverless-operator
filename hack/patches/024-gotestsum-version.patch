@@ -1,0 +1,12 @@
+diff --git a/vendor/knative.dev/hack/library.sh b/vendor/knative.dev/hack/library.sh
+--- a/vendor/knative.dev/hack/library.sh
++++ b/vendor/knative.dev/hack/library.sh
+@@ -588,7 +588,7 @@
+   logfile="${logfile/.xml/.jsonl}"
+   echo "Running go test with args: ${go_test_args[*]}"
+   local gotest_retcode=0
+-  go_run gotest.tools/gotestsum@v1.11.0 \
++  go_run gotest.tools/gotestsum@v1.13.0 \
+     --format "${GO_TEST_VERBOSITY:-testname}" \
+     --junitfile "${xml}" \
+     --junitfile-testsuite-name relative \
