@@ -245,7 +245,7 @@ histogram_quantile(0.99, sum(rate(kn_serving_invocation_duration_seconds_bucket{
 sum(rate(activator_request_count{namespace="default"}[1m]))
 
 # New query - uses standard HTTP server metric
-sum(rate(http_server_request_duration_seconds_count{k8s_namespace_name="default"}[1m]))
+sum(rate(http_server_request_duration_seconds_count{job="activator-sm-service", k8s_namespace_name="default"}[1m]))
 ```
 
 ### Autoscaler Metrics
