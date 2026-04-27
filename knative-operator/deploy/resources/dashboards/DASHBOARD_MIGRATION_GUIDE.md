@@ -268,7 +268,7 @@ All autoscaler metrics have been renamed with the `kn_revision_*` or `kn_autosca
 | `autoscaler_stable_requests_per_second` | `kn_revision_rps_stable_per_second` |
 | `autoscaler_panic_requests_per_second` | `kn_revision_rps_panic_per_second` |
 | `autoscaler_target_requests_per_second` | `kn_revision_rps_target_per_second` |
-| `autoscaler_scrape_time_bucket` | `kn_autoscaler_scrape_duration_bucket` |
+| `autoscaler_scrape_time_bucket` | `kn_autoscaler_scrape_duration_seconds_bucket` |
 
 **Example Migration:**
 ```promql
