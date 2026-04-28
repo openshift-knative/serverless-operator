@@ -302,9 +302,11 @@ Label names have been updated to follow OpenTelemetry semantic conventions. **No
 | `response_code_class` | `http_response_status_code` |
 | `response_code` | `http_response_status_code` |
 
-### Eventing Components - Namespace Labels
+### Eventing Components - Namespace and Name Labels
 
-**Critical: Different Eventing components use different namespace labels:**
+**Critical: Different Eventing components use different namespace and name labels. The Kafka Broker Dispatcher is particularly notable — it uses per-trigger labels (`kn_trigger_namespace`, `kn_trigger_name`) instead of per-broker labels:**
+
+#### Namespace Labels
 
 | Component | Old Label | New Label |
 |-----------|-----------|-----------|
@@ -318,6 +320,18 @@ Label names have been updated to follow OpenTelemetry semantic conventions. **No
 | PingSource | `namespace_name` | `kn_source_namespace` (generic) |
 | KafkaSource | `namespace_name` | `kn_kafkasource_namespace` |
 | Kafka Sink | `namespace_name` | `kn_kafkasink_namespace` |
+
+#### Name Labels
+
+| Component | Old Label | New Label |
+|-----------|-----------|-----------|
+| MT Broker Ingress | `broker_name` | `kn_broker_name` |
+| MT Broker Filter | `broker_name` | `kn_broker_name` |
+| InMemoryChannel | `channel_name` | `kn_channel_name` |
+| Kafka Broker Receiver | `broker_name` | `kn_broker_name` |
+| **Kafka Broker Dispatcher** | `broker_name` | **`kn_trigger_name`** ⚠️ Per-trigger, not per-broker! |
+| KafkaSource | `source_name` | `kn_kafkasource_name` |
+| Kafka Sink | `sink_name` | `kn_kafkasink_name` |
 
 ### Other Common Label Changes
 
@@ -356,16 +370,16 @@ When migrating your custom dashboards:
 
 - [ ] Update metric names following the tables above
 - [ ] **Check if metric uses seconds or milliseconds** - Kafka components still use `_ms`!
-- [ ] Update label names - **pay special attention to namespace labels** which vary by component type:
+- [ ] Update label names - **pay special attention to namespace and name labels** which vary by component type:
   - [ ] Serving metrics: use `k8s_namespace_name`
-  - [ ] MT Broker: use `kn_broker_namespace`
-  - [ ] **Kafka Broker Receiver: use `kn_broker_namespace`**
-  - [ ] **Kafka Broker Dispatcher: use `kn_trigger_namespace`** ⚠️ Different!
-  - [ ] InMemoryChannel: use `kn_channel_namespace`
+  - [ ] MT Broker: use `kn_broker_namespace`, `kn_broker_name`
+  - [ ] **Kafka Broker Receiver: use `kn_broker_namespace`, `kn_broker_name`**
+  - [ ] **Kafka Broker Dispatcher: use `kn_trigger_namespace`, `kn_trigger_name`** ⚠️ Per-trigger, not per-broker!
+  - [ ] InMemoryChannel: use `kn_channel_namespace`, `kn_channel_name`
   - [ ] **KafkaChannel: use `kn_kafkachannel_namespace`** (component-specific)
   - [ ] **ApiServerSource/PingSource: use `kn_source_namespace`** (generic, not component-specific)
-  - [ ] KafkaSource: use `kn_kafkasource_namespace`
-  - [ ] Kafka Sink: use `kn_kafkasink_namespace`
+  - [ ] KafkaSource: use `kn_kafkasource_namespace`, `kn_kafkasource_name`
+  - [ ] Kafka Sink: use `kn_kafkasink_namespace`, `kn_kafkasink_name`
 - [ ] Update resource-specific labels (`revision_name` → `kn_revision_name`, `configuration_name` → `kn_configuration_name`)
 - [ ] Add appropriate `job` label filters for Eventing metrics
   - [ ] **ApiServerSource uses regex pattern `job=~"apiserversource-.*"`**
