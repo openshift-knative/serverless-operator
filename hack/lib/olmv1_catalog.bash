@@ -158,20 +158,12 @@ function wait_for_clusterextension_ready {
 
   logger.info "Wait for ClusterExtension to be ready"
 
-  # Wait for Progressing condition with Succeeded reason
-  if ! timeout 600 "[[ \$(oc get clusterextension ${OLMV1_CLUSTEREXTENSION_NAME} -o jsonpath='{.status.conditions[?(@.type==\"Progressing\")].reason}') != Succeeded ]]" ; then
+  # Loop while either version doesn't match OR Progressing reason isn't Succeeded.
+  # timeout stops when the expression returns non-zero (i.e. both conditions are met).
+  if ! timeout 600 "[[ \$(oc get clusterextension ${OLMV1_CLUSTEREXTENSION_NAME} -o jsonpath='{.status.install.bundle.version}') != ${version} || \$(oc get clusterextension ${OLMV1_CLUSTEREXTENSION_NAME} -o jsonpath='{.status.conditions[?(@.type==\"Progressing\")].reason}') != Succeeded ]]"; then
     oc get clusterextension "${OLMV1_CLUSTEREXTENSION_NAME}" -o yaml || true
-    logger.error "ClusterExtension failed to become ready"
+    logger.error "ClusterExtension failed to reach version ${version}"
     return 105
-  fi
-
-  # Verify installed bundle version matches requested version
-  local installed_version
-  installed_version=$(oc get clusterextension "${OLMV1_CLUSTEREXTENSION_NAME}" -o jsonpath='{.status.install.bundle.version}')
-
-  if [[ "$installed_version" != "$version" ]]; then
-    logger.error "Installed version ($installed_version) does not match requested version ($version)"
-    return 106
   fi
 
   logger.success "ClusterExtension is ready with version ${version}"
