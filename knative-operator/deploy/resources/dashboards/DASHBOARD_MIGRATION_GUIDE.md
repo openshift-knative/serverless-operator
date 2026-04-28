@@ -329,18 +329,8 @@ Label names have been updated to follow OpenTelemetry semantic conventions. **No
 
 ### Response Code Pattern Changes
 
-**Important**: Response code regex patterns differ between Serving and Eventing:
+All components use the same regex pattern for response code matching:
 
-**Eventing** (MT Broker, Kafka Broker, Channels, Sources):
-```promql
-# Success: 2xx
-http_response_status_code=~"2.*"
-
-# Error: non-2xx
-http_response_status_code!~"2.*"
-```
-
-**Serving** (Queue Proxy, Activator):
 ```promql
 # Success: 2xx
 http_response_status_code=~"2.."
@@ -351,21 +341,13 @@ http_response_status_code!~"2.."
 
 **Example:**
 ```promql
-# Old query (success rate) - Eventing
+# Old query (success rate)
 sum(rate(mt_broker_ingress_event_count{response_code_class="2xx"}[1m])) /
 sum(rate(mt_broker_ingress_event_count[1m]))
 
-# New query (success rate) - Eventing uses "2.*"
-sum(rate(kn_eventing_dispatch_duration_seconds_count{http_response_status_code=~"2.*"}[1m])) /
+# New query (success rate)
+sum(rate(kn_eventing_dispatch_duration_seconds_count{http_response_status_code=~"2.."}[1m])) /
 sum(rate(kn_eventing_dispatch_duration_seconds_count[1m]))
-```
-
-```promql
-# Old query (success rate) - Serving
-sum(rate(revision_app_request_count{response_code_class="2xx"}[1m]))
-
-# New query (success rate) - Serving uses "2.."
-sum(rate(kn_serving_invocation_duration_seconds_count{http_response_status_code=~"2.."}[1m]))
 ```
 
 ## Migration Checklist
@@ -387,12 +369,8 @@ When migrating your custom dashboards:
 - [ ] Update resource-specific labels (`revision_name` → `kn_revision_name`, `configuration_name` → `kn_configuration_name`)
 - [ ] Add appropriate `job` label filters for Eventing metrics
   - [ ] **ApiServerSource uses regex pattern `job=~"apiserversource-.*"`**
-- [ ] Change `response_code_class` filters:
-  - [ ] Eventing: `="2xx"` → `=~"2.*"`
-  - [ ] Serving: `="2xx"` → `=~"2.."`
-- [ ] Change `response_code_class` error filters:
-  - [ ] Eventing: `!="2xx"` → `!~"2.*"`
-  - [ ] Serving: `!="2xx"` → `!~"2.."`
+- [ ] Change `response_code_class` filters: `="2xx"` → `=~"2.."`
+- [ ] Change `response_code_class` error filters: `!="2xx"` → `!~"2.."`
 - [ ] Update legend formats to use new label names
 - [ ] **Check event type labels**: `event_type` → `cloudevents_type`
 - [ ] Verify histogram buckets:
@@ -458,8 +436,8 @@ sum(rate(kn_eventing_dispatch_latency_ms_count{job="kafka-broker-dispatcher-sm-s
 sum(rate(mt_broker_ingress_event_count{response_code_class="2xx", namespace_name="default"}[1m])) /
 sum(rate(mt_broker_ingress_event_count{namespace_name="default"}[1m]))
 
-# NEW - uses "2.*" pattern for eventing
-sum(rate(kn_eventing_dispatch_duration_seconds_count{http_response_status_code=~"2.*", job="mt-broker-ingress-sm-service", kn_broker_namespace="default"}[1m])) /
+# NEW
+sum(rate(kn_eventing_dispatch_duration_seconds_count{http_response_status_code=~"2..", job="mt-broker-ingress-sm-service", kn_broker_namespace="default"}[1m])) /
 sum(rate(kn_eventing_dispatch_duration_seconds_count{job="mt-broker-ingress-sm-service", kn_broker_namespace="default"}[1m]))
 ```
 
@@ -469,7 +447,7 @@ sum(rate(kn_eventing_dispatch_duration_seconds_count{job="mt-broker-ingress-sm-s
 # OLD
 sum(rate(revision_app_request_count{response_code_class="2xx", namespace="default"}[1m]))
 
-# NEW - uses "2.." pattern for serving (different from eventing!)
+# NEW
 sum(rate(kn_serving_invocation_duration_seconds_count{http_response_status_code=~"2..", k8s_namespace_name="default"}[1m]))
 ```
 
