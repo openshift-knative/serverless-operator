@@ -92,10 +92,10 @@ dependencies:
   func:
     promotion_tag: knative-v1.17
     # if additional image is added amend the list in hack/generate/catalog.sh
-    tekton_buildah: registry.redhat.io/rhel9/buildah@sha256:f302f8dd45f1790f018c94249e28151c8b825a49bbb142d816cfdb1c8498190f
-    nodejs_20_minimal: registry.access.redhat.com/ubi9/nodejs-20-minimal@sha256:6da2643c2d15d70034a6f5d2f432504ed090c2c5a8e19e847142b8abf2b9e59d
-    openjdk_21: registry.access.redhat.com/ubi9/openjdk-21@sha256:253d78f68108c9188e810c6d534071dc16b437ddae185541c4292e2236c09d0a
-    python-39: registry.access.redhat.com/ubi9/python-39@sha256:c6e6e1f8b06d8691c832aa6bc6ab48ff1558f0d6f8bd02c4c426b9646322178d
+    tekton_buildah: registry.redhat.io/rhel9/buildah@sha256:34c16f3559212cbb1a0fea3312d8099a5c5482c511d7591e4f5054af08d22db0
+    nodejs_20_minimal: registry.access.redhat.com/ubi9/nodejs-20-minimal@sha256:a22d96776233a2830007c406874935ace3244abf0581515fbd797d5b1f7b00d5
+    openjdk_21: registry.access.redhat.com/ubi9/openjdk-21@sha256:deccede6872a85ad264b6ca0a9794480bff8ec398eacf9b74e75208ad61ff306
+    python-39: registry.access.redhat.com/ubi9/python-39@sha256:48cf1809a792009e8195155456088a8e7055be1f903cb15c9bfae55b422c4cca
   operator: 1.17.8
   # Previous versions required for downgrade testing
   previous:
