@@ -1,0 +1,11 @@
+apiVersion: security.istio.io/v1
+kind: PeerAuthentication
+metadata:
+  name: autoscaler-permissive
+  namespace: knative-serving
+spec:
+  selector:
+    matchLabels:
+      app: autoscaler
+  mtls:
+    mode: PERMISSIVE
