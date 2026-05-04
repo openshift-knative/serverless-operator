@@ -137,7 +137,8 @@ func TestKitchensink(t *testing.T) {
 				Installations: pkgupgrade.Installations{
 					UpgradeWith: []pkgupgrade.Operation{
 						pkgupgrade.NewOperation("UpgradeServerless", func(c pkgupgrade.Context) {
-							if err := installation.UpgradeServerlessTo(ctx, csv, test.Flags.CatalogSource, installation.DefaultInstallPlanTimeout); err != nil {
+							lifecycle := installation.NewServerlessLifecycle(test.Flags.OLMVersion)
+							if err := lifecycle.UpgradeTo(ctx, csv, installation.DefaultInstallPlanTimeout); err != nil {
 								c.T.Error("Serverless upgrade failed:", err)
 							}
 						}),

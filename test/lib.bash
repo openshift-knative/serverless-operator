@@ -543,6 +543,7 @@ EOF
     "--upgradechannel=${OLM_UPGRADE_CHANNEL}" \
     "--csv=${CURRENT_CSV}" \
     "--csvprevious=${PREVIOUS_CSV}" \
+    "--olmversion=${OLM_VERSION}" \
     "--servingversion=${KNATIVE_SERVING_VERSION/knative-v/}" \
     "--eventingversion=${KNATIVE_EVENTING_VERSION/knative-v/}" \
     "--kafkaversion=${KNATIVE_EVENTING_KAFKA_BROKER_VERSION/knative-v/}" \
@@ -580,7 +581,7 @@ EOF
     oc create namespace serving-tests
     # Make sure the cluster upgrade is run with latest version of Serverless as
     # the Serverless upgrade tests leave the product at the previous version (after downgrade).
-    approve_csv "$CURRENT_CSV" "$OLM_UPGRADE_CHANNEL"
+    ensure_serverless_version "$CURRENT_CSV" "$OLM_UPGRADE_CHANNEL"
     go_test_e2e -run=TestClusterUpgrade -timeout="${CLUSTER_UPGRADE_TIMEOUT:-300m}" "${common_opts[@]}" \
       --openshiftimage="${UPGRADE_OCP_IMAGE}" \
       --upgradeopenshift
@@ -643,7 +644,8 @@ function kitchensink_upgrade_tests {
      --images.producer.file="${images_file}" \
      --imagetemplate="${IMAGE_TEMPLATE}" \
      --csv="$(kitchensink_csvs)" \
-     --upgradechannel="${OLM_UPGRADE_CHANNEL}"
+     --upgradechannel="${OLM_UPGRADE_CHANNEL}" \
+     --olmversion="${OLM_VERSION}"
 
   logger.success 'Kitchensink upgrade tests passed'
 }
@@ -665,6 +667,7 @@ function kitchensink_upgrade_stress_tests {
      --catalogsource="${OLM_SOURCE}" \
      --upgradechannel="${OLM_UPGRADE_CHANNEL}" \
      --csv="${CURRENT_CSV}" \
+     --olmversion="${OLM_VERSION}" \
      --servingversion="${KNATIVE_SERVING_VERSION/knative-v/}" \
      --eventingversion="${KNATIVE_EVENTING_VERSION/knative-v/}" \
      --kafkaversion="${KNATIVE_EVENTING_KAFKA_BROKER_VERSION/knative-v/}"

@@ -8,9 +8,10 @@ import (
 )
 
 func ServerlessUpgradeOperations(ctx *test.Context) []pkgupgrade.Operation {
+	lifecycle := installation.NewServerlessLifecycle(test.Flags.OLMVersion)
 	return []pkgupgrade.Operation{
 		pkgupgrade.NewOperation("UpgradeServerless", func(c pkgupgrade.Context) {
-			if err := installation.UpgradeServerless(ctx); err != nil {
+			if err := lifecycle.Upgrade(ctx); err != nil {
 				c.T.Error("Serverless upgrade failed:", err)
 			}
 		}),
@@ -18,9 +19,10 @@ func ServerlessUpgradeOperations(ctx *test.Context) []pkgupgrade.Operation {
 }
 
 func ServerlessDowngradeOperations(ctx *test.Context) []pkgupgrade.Operation {
+	lifecycle := installation.NewServerlessLifecycle(test.Flags.OLMVersion)
 	return []pkgupgrade.Operation{
 		pkgupgrade.NewOperation("DowngradeServerless", func(c pkgupgrade.Context) {
-			if err := installation.DowngradeServerless(ctx); err != nil {
+			if err := lifecycle.Downgrade(ctx); err != nil {
 				c.T.Error("Serverless downgrade failed:", err)
 			}
 		}),
