@@ -67,7 +67,7 @@ dependencies:
   net_istio: knative-v1.17
   net_istio_artifacts_branch: release-v1.17
   redhat-knative-istio-authz-chart: 1.37.0
-  service_mesh_proxy: registry.redhat.io/openshift-service-mesh/proxyv2-rhel9@sha256:d99177ece0e27ee6be71eb73ac4c31b837cafb850efd74043d2b3d03189e662d
+  service_mesh_proxy: registry.redhat.io/openshift-service-mesh/proxyv2-rhel9@sha256:eb88ac9c5a93b78d9cb0853c0d4f395d750b29b20fe40162f2d928216cce6703
   eventing: knative-v1.17
   # eventing core midstream branch name
   eventing_artifacts_branch: release-v1.17
@@ -92,10 +92,10 @@ dependencies:
   func:
     promotion_tag: knative-v1.17
     # if additional image is added amend the list in hack/generate/catalog.sh
-    tekton_buildah: registry.redhat.io/rhel9/buildah@sha256:f302f8dd45f1790f018c94249e28151c8b825a49bbb142d816cfdb1c8498190f
-    nodejs_20_minimal: registry.access.redhat.com/ubi9/nodejs-20-minimal@sha256:6da2643c2d15d70034a6f5d2f432504ed090c2c5a8e19e847142b8abf2b9e59d
-    openjdk_21: registry.access.redhat.com/ubi9/openjdk-21@sha256:253d78f68108c9188e810c6d534071dc16b437ddae185541c4292e2236c09d0a
-    python-39: registry.access.redhat.com/ubi9/python-39@sha256:c6e6e1f8b06d8691c832aa6bc6ab48ff1558f0d6f8bd02c4c426b9646322178d
+    tekton_buildah: registry.redhat.io/rhel9/buildah@sha256:a8766de8b78ad23c9ca4faa8c69c9fdb644282c035b02a3f3f1c21debafa474f
+    nodejs_20_minimal: registry.access.redhat.com/ubi9/nodejs-20-minimal@sha256:caeced5fbc93a7d7deba75ee995e5bc5cede0b353d81b7f25ed9f2ad5c408852
+    openjdk_21: registry.access.redhat.com/ubi9/openjdk-21@sha256:8260d7b4fecd59f92fe678ea803a206bba3c42afd9265b7a66c2bf167b86ca1c
+    python-39: registry.access.redhat.com/ubi9/python-39@sha256:9fcef5d9cdb9af6544c4cdfded701fa85c9ac394a128e85b5cfce62d4393fac9
   operator: 1.17.8
   # Previous versions required for downgrade testing
   previous:

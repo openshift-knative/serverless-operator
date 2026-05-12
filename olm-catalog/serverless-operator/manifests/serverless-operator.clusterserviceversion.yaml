@@ -78,7 +78,7 @@ metadata:
     repository: https://github.com/openshift-knative/serverless-operator
     support: Red Hat
     olm.skipRange: '>1.37.0 <1.37.1'
-    operators.openshift.io/must-gather-image: registry.redhat.io/openshift-serverless-1/serverless-must-gather-rhel9@sha256:5fb40ab0a0b9ef5b8aec2c37c7cfc6f4a8a7c55d453568c5fbe17d5853cfde43
+    operators.openshift.io/must-gather-image: registry.redhat.io/openshift-serverless-1/serverless-must-gather-rhel9@sha256:279c644a59f8849261408c24ffdbe88d325401fbfe29048d3d6ec216c25ed80a
   labels:
     operatorframework.io/arch.amd64: supported
     operatorframework.io/arch.ppc64le: supported
@@ -1476,7 +1476,7 @@ spec:
     - name: "KAFKA_IMAGE_knative-kafka-storage-version-migrator__migrate"
       image: "registry.redhat.io/openshift-serverless-1/kn-eventing-migrate-rhel9@sha256:e61de9ec7a5101dc46bc1e98c645c66ccd7dec0b2a1b182faa126481a250d823"
     - name: "IMAGE_MUST_GATHER"
-      image: "registry.redhat.io/openshift-serverless-1/serverless-must-gather-rhel9@sha256:5fb40ab0a0b9ef5b8aec2c37c7cfc6f4a8a7c55d453568c5fbe17d5853cfde43"
+      image: "registry.redhat.io/openshift-serverless-1/serverless-must-gather-rhel9@sha256:279c644a59f8849261408c24ffdbe88d325401fbfe29048d3d6ec216c25ed80a"
     - name: "IMAGE_KN_CLIENT_CLI_ARTIFACTS"
       image: "registry.redhat.io/openshift-serverless-1/kn-client-cli-artifacts-rhel9@sha256:79c73ccbd37010101f14a3b684e1351e3503ec3b507c24f933e75b9ad4a4f1ba"
   replaces: serverless-operator.v1.37.0
