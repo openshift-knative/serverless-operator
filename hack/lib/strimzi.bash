@@ -128,48 +128,22 @@ spec:
   authorization:
     type: simple
     acls:
-      # Example ACL rules for consuming from a topic.
       - resource:
           type: topic
           name: "*"
-        operation: Read
-        host: "*"
-      - resource:
-          type: topic
-          name: "*"
-        operation: Describe
+        operations:
+          - Read
+          - Describe
+          - Write
+          - Create
+          - Delete
         host: "*"
       - resource:
           type: group
           name: "*"
-        operation: Read
-        host: "*"
-      - resource:
-          type: group
-          name: "*"
-        operation: Delete
-        host: "*"
-      # Example ACL rules for producing to a topic.
-      - resource:
-          type: topic
-          name: "*"
-        operation: Write
-        host: "*"
-      - resource:
-          type: topic
-          name: "*"
-        operation: Create
-        host: "*"
-      - resource:
-          type: topic
-          name: "*"
-        operation: Describe
-        host: "*"
-      # Required ACL rule to be able to delete topics
-      - resource:
-          type: topic
-          name: "*"
-        operation: Delete
+        operations:
+          - Read
+          - Delete
         host: "*"
 EOF
 
@@ -188,48 +162,22 @@ spec:
   authorization:
     type: simple
     acls:
-      # Example ACL rules for consuming from knative-messaging-kafka using consumer group my-group
       - resource:
           type: topic
           name: "*"
-        operation: Read
-        host: "*"
-      - resource:
-          type: topic
-          name: "*"
-        operation: Describe
+        operations:
+          - Read
+          - Describe
+          - Write
+          - Create
+          - Delete
         host: "*"
       - resource:
           type: group
           name: "*"
-        operation: Read
-        host: "*"
-      - resource:
-          type: group
-          name: "*"
-        operation: Delete
-        host: "*"
-      # Example ACL rules for producing to topic knative-messaging-kafka
-      - resource:
-          type: topic
-          name: "*"
-        operation: Write
-        host: "*"
-      - resource:
-          type: topic
-          name: "*"
-        operation: Create
-        host: "*"
-      - resource:
-          type: topic
-          name: "*"
-        operation: Describe
-        host: "*"
-      # Required ACL rule to be able to delete topics
-      - resource:
-          type: topic
-          name: "*"
-        operation: Delete
+        operations:
+          - Read
+          - Delete
         host: "*"
 EOF
 
