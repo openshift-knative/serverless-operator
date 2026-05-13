@@ -137,7 +137,7 @@ make images test-operator
 - **`make install-mesh test-e2e`**: Run E2E tests with Service Mesh integration
 
 #### Upstream Integration Tests
-- **`make test-upstream-upgrade`**: Install previous version and run Knative Serving upgrade tests
+- **`make test-upgrade`**: Install previous version and run Knative Serving upgrade tests
   - Requires: Running OCP cluster, Knative Serving images published to CI registry, `${GOPATH}/src/knative.dev/serving` checked out
 - **`make test-upstream-e2e-no-upgrade`**: Run Knative Serving and Eventing E2E tests without upgrades
   - Requires: Both Serving and Eventing sources in GOPATH
@@ -226,42 +226,9 @@ See [DCO](DCO) for details.
 
 ### Creating a New Version
 
-Follow this process when creating a new version (usually after a release branch cut):
-
-#### 1. Update Version Metadata
-
-Edit `olm-catalog/serverless-operator/project.yaml`:
-- Bump `project.version` (e.g., 1.12 → 1.13)
-- Update `olm.replaces`
-- Adjust `olm.skipRange`
-
-Add old version to CatalogSource in `hack/lib/catalogsource.bash`.
-
-```bash
-# After changes, regenerate files
-make generated-files
-```
-
-#### 2. Update Component Dependencies
-
-Edit `olm-catalog/serverless-operator/project.yaml`:
-- Update versions in `dependencies` section
-- Review and update manifest downloads in `openshift-knative-operator/hack/update-manifests.sh`
-- Review patches in `update-manifests.sh` (some may be removable or need adjustment)
-
-```bash
-make generated-files
-```
-
-#### 3. Update Go Dependencies
-
-Edit `hack/update-deps.sh`:
-- Update `KN_VERSION` for new Knative release
-- Update `OCP_VERSION` if bumping minimum OpenShift version
-
-```bash
-./hack/update-deps.sh --upgrade
-```
+To create a new version of the serverless-operator, follow the
+[Release Checklist](./.github/ISSUE_TEMPLATE/release.md) issue template which contains
+the full step-by-step process.
 
 ### Commit Strategy
 
@@ -384,8 +351,8 @@ export DOCKER_REPO_OVERRIDE=quay.io/username
 make images dev
 
 # 3. Install Knative components as needed
-oc apply -f config/knativeserving.yaml
-oc apply -f config/knativeeventing.yaml
+make install-serving
+make install-eventing
 
 # 4. Run tests
 make test-unit
