@@ -262,7 +262,10 @@ for name in "${!yaml_keys[@]}"; do
   yq write --inplace "$target" "$name" "${yaml_keys[$name]}"
 done
 
+yq write --inplace --style=double "$target" "metadata.annotations.createdAt" "$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+
 for name in "${!vars[@]}"; do
   echo "Value: ${name} -> ${vars[$name]}"
   sed --in-place "s/__${name}__/${vars[${name}]}/" "$target"
 done
+echo "CSV generated successfully"
