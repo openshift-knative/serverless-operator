@@ -114,3 +114,7 @@ repository.
 To create a new version of the serverless-operator, follow the
 [Release Checklist](./.github/ISSUE_TEMPLATE/release.md) issue template which contains
 the full step-by-step process.
+
+## Release
+
+To release a new version of the serverless-operator, see the information in [Confluence](https://redhat.atlassian.net/wiki/spaces/SRVLS/pages/406752775/Release+Process).
