@@ -117,4 +117,4 @@ the full step-by-step process.
 
 ## Release
 
-To release a new version of the serverless-operator, see the information in [RELEASE.md](./RELEASE.md).
+To release a new version of the serverless-operator, see the information in [Confluence](https://redhat.atlassian.net/wiki/spaces/SRVLS/pages/406752775/Release+Process).
