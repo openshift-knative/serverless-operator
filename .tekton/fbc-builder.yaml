@@ -91,6 +91,14 @@ spec:
   - default: "false"
     description: Enable cache proxy configuration
     name: enable-cache-proxy
+  - default: "true"
+    description: Use the package registry proxy when prefetching dependencies
+    name: enable-package-registry-proxy
+  - default: .
+    description: Target directories in component's source code to scan with SAST tools.
+      Multiple values should be separated with commas.
+    name: sast-target-dirs
+    type: string
   - default: []
     description: Array of --build-arg values ("arg=value" strings) for buildah
     name: build-args
@@ -98,10 +106,6 @@ spec:
   - default: ""
     description: Path to a file with build arguments for buildah, see https://www.mankier.com/1/buildah-build#--build-arg-file
     name: build-args-file
-    type: string
-  - name: enable-package-registry-proxy
-    default: 'true'
-    description: Use the package registry proxy when prefetching dependencies
     type: string
   results:
   - description: ""
@@ -205,14 +209,14 @@ spec:
     params:
     - name: input
       value: $(params.prefetch-input)
+    - name: enable-package-registry-proxy
+      value: $(params.enable-package-registry-proxy)
     - name: SOURCE_ARTIFACT
       value: $(tasks.run-opm-command.results.SOURCE_ARTIFACT)
     - name: ociStorage
       value: $(params.output-image).prefetch
     - name: ociArtifactExpiresAfter
       value: $(params.image-expires-after)
-    - name: enable-package-registry-proxy
-      value: $(params.enable-package-registry-proxy)
     runAfter:
     - run-opm-command
     taskRef:
