@@ -384,7 +384,7 @@ spec:
       sidecar.istio.io/inject: "true"
     name: kafka-sink-receiver
   - labels:
-      sidecar.istio.io/inject: "false"
+      sidecar.istio.io/inject: "true"
     name: kafka-source-dispatcher
   - labels:
       sidecar.istio.io/inject: "true"
