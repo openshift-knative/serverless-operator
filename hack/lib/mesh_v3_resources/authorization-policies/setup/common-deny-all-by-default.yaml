@@ -12,10 +12,3 @@ metadata:
   name: deny-all-by-default
   namespace: knative-serving
 spec: { }
----
-apiVersion: security.istio.io/v1
-kind: AuthorizationPolicy
-metadata:
-  name: deny-all-by-default
-  namespace: knative-serving-ingress
-spec: { }
