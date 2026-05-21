@@ -14,6 +14,8 @@ spec:
         inject.istio.io/templates: gateway
       labels:
         knative: ingressgateway
+        knative-ingress-gateway: ingressgateway
+        knative-local-gateway: ingressgateway
         sidecar.istio.io/inject: "true"
     spec:
       containers:

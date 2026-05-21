@@ -9,7 +9,7 @@ metadata:
 spec:
   type: ClusterIP
   selector:
-    knative: ingressgateway
+    knative-ingress-gateway: ingressgateway
   ports:
     - name: http2
       port: 80
@@ -25,7 +25,7 @@ metadata:
   namespace: knative-serving
 spec:
   selector:
-    knative: ingressgateway
+    knative-ingress-gateway: ingressgateway
   servers:
     - hosts:
         - '*'
@@ -52,7 +52,7 @@ spec:
     - name: http2
       port: 80
       protocol: TCP
-      targetPort: 8081
+      targetPort: 8080
   selector:
     knative: ingressgateway
   type: ClusterIP
@@ -64,12 +64,12 @@ metadata:
   namespace: knative-serving
 spec:
   selector:
-    knative: ingressgateway
+    knative-local-gateway: ingressgateway
   servers:
     - hosts:
         - '*'
       port:
         name: http
-        number: 8081
+        number: 80
         protocol: HTTP
 ---
