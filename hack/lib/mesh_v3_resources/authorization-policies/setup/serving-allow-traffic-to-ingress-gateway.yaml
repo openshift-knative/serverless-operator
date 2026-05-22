@@ -14,4 +14,4 @@ spec:
             namespaces: [ "knative-serving", "knative-serving-ingress" ]
     - to:
         - operation:
-            ports: [ "8081", "8443", "8444" ]
+            ports: [ "8080", "8443" ]
