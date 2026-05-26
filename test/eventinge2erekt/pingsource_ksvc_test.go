@@ -21,7 +21,14 @@ func TestPingSourceToKsvc(t *testing.T) {
 
 	since := time.Now()
 
-	env.Test(ctx, t, pingsource.SendsEventsWithSinkRef())
+	if ic := environment.GetIstioConfig(ctx); ic.Enabled {
+		// With Service Mesh, the eventshub forwarder Knative Service may scale
+		// to zero before the PingSource starts sending. The Envoy sidecar then
+		// fails to reroute traffic to the activator, hanging event delivery.
+		env.Test(ctx, t, features.PingSourceSendsEventsWithSinkRef())
+	} else {
+		env.Test(ctx, t, pingsource.SendsEventsWithSinkRef())
+	}
 	env.Test(ctx, t, VerifyPingSourceMetrics())
 
 	if ic := environment.GetIstioConfig(ctx); ic.Enabled {
