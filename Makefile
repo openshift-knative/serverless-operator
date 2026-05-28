@@ -39,6 +39,7 @@ install-serving-with-mesh: install-tools
 install-serving-with-mesh3: install-tools
 	UNINSTALL_MESH="false" MESH_VERSION=3 ./hack/mesh.sh
 	MESH=true MESH_VERSION=3 SCALE_UP=4 INSTALL_SERVING=true INSTALL_EVENTING="false" ./hack/install.sh
+	MESH_VERSION=3 ./hack/mesh-authz.sh
 
 install-eventing: install-tools
 	INSTALL_SERVING="false" ./hack/install.sh
@@ -185,6 +186,7 @@ install-for-mesh-e2e: install-tools
 	TRACING_BACKEND=zipkin TRACING_NAMESPACE=knative-eventing ./hack/tracing.sh
 	UNINSTALL_STRIMZI="false" ./hack/strimzi.sh
 	MESH=true SCALE_UP=6 INSTALL_SERVING=true INSTALL_EVENTING=true INSTALL_KAFKA=true TRACING_BACKEND=zipkin TRACING_NAMESPACE=knative-eventing ENABLE_TRACING=true ./hack/install.sh
+	./hack/mesh-authz.sh
 
 mesh-e2e: install-for-mesh-e2e
 	MESH=true TEST_KNATIVE_KAFKA=true ./test/e2e-tests.sh

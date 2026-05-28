@@ -7,9 +7,14 @@ function install_mesh3 {
   deploy_sail_operator
   deploy_istio
   deploy_mesh3_gateways
+  # AuthorizationPolicies are applied separately after KnativeServing is ready
+  # to avoid a race where the activator→autoscaler websocket is blocked by
+  # deny-all-by-default before ALLOW policies are loaded by the sidecars.
+  # See deploy_mesh3_authorization_policies called from Makefile/install flow.
 }
 
 function uninstall_mesh3 {
+  undeploy_mesh3_authorization_policies
   undeploy_mesh3_gateways
   undeploy_istio
   undeploy_sail_operator
@@ -128,14 +133,22 @@ function deploy_mesh3_gateways {
   oc apply -f "${mesh_v3_resources_dir}"/07b_autoscaler_peer_authentication.yaml || return $?
   oc apply -f "${mesh_v3_resources_dir}"/08_envoy_filter.yaml || return $?
 
-  oc apply -f "${mesh_v3_resources_dir}"/authorization-policies/setup || return $?
-  oc apply -f "${mesh_v3_resources_dir}"/authorization-policies/helm || return $?
-
   oc apply -n "${EVENTING_NAMESPACE}" -f "${mesh_v3_resources_dir}"/kafka-service-entry.yaml || return $?
   for ns in serverless-tests eventing-e2e0 eventing-e2e1 eventing-e2e2 eventing-e2e3 eventing-e2e4; do
     oc apply -n "$ns" -f "${mesh_v3_resources_dir}"/kafka-service-entry.yaml || return $?
   done
   #oc apply -n "serverless-tests" -f "${mesh_v3_resources_dir}"/network-policy-monitoring.yaml || return $?
+}
+
+function deploy_mesh3_authorization_policies {
+  logger.info "Applying AuthorizationPolicies (after KnativeServing is ready)"
+  oc apply -f "${mesh_v3_resources_dir}"/authorization-policies/setup || return $?
+  oc apply -f "${mesh_v3_resources_dir}"/authorization-policies/helm || return $?
+}
+
+function undeploy_mesh3_authorization_policies {
+  oc delete -f "${mesh_v3_resources_dir}"/authorization-policies/helm --ignore-not-found || return $?
+  oc delete -f "${mesh_v3_resources_dir}"/authorization-policies/setup --ignore-not-found || return $?
 }
 
 function undeploy_mesh3_gateways {
@@ -144,8 +157,6 @@ function undeploy_mesh3_gateways {
     oc delete -n "$ns" -f "${mesh_v3_resources_dir}"/kafka-service-entry.yaml --ignore-not-found || return $?
   done
   oc delete -n "${EVENTING_NAMESPACE}" -f "${mesh_v3_resources_dir}"/kafka-service-entry.yaml --ignore-not-found || return $?
-  oc delete -f "${mesh_v3_resources_dir}"/authorization-policies/helm --ignore-not-found || return $?
-  oc delete -f "${mesh_v3_resources_dir}"/authorization-policies/setup --ignore-not-found || return $?
   oc delete -f "${mesh_v3_resources_dir}"/08_envoy_filter.yaml --ignore-not-found || return $?
   oc delete -f "${mesh_v3_resources_dir}"/07b_autoscaler_peer_authentication.yaml --ignore-not-found || return $?
   oc delete -f "${mesh_v3_resources_dir}"/07_peer_authentication.yaml --ignore-not-found || return $?
