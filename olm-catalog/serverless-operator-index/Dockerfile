@@ -16,7 +16,7 @@ COPY olm-catalog/serverless-operator-index/index-bundles.yaml /index-bundles.yam
 RUN /bin/opm init serverless-operator --default-channel=stable --output yaml >> /configs/index.yaml
 RUN cat /index-bundles.yaml >> /configs/index.yaml
 RUN /bin/opm render --skip-tls-verify -o yaml \
-      quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-137/serverless-bundle@sha256:1b8eb401fd426a6fc129a24ce340b0425f79bfcbda17baffae618f3a1fbdbb87 >> /configs/index.yaml
+      quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-137/serverless-bundle@sha256:eaeebb5ac1af8570cea05a29bc2ccd6f5f9e8b2756b1e387cef93d6d220df963 >> /configs/index.yaml
 
 # The base image is expected to contain
 # /bin/opm (with a serve subcommand) and /bin/grpc_health_probe
