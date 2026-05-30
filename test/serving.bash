@@ -65,12 +65,16 @@ function upstream_knative_serving_e2e_and_conformance_tests {
   subdomain=$(oc get ingresses.config.openshift.io cluster  -o jsonpath="{.spec.domain}")
   OPENSHIFT_TEST_OPTIONS="--kubeconfig $KUBECONFIG --enable-beta --enable-alpha --resolvabledomain --customdomain=$subdomain --https --skip-cleanup-on-fail"
 
+  local mesh_skip=""
   if [[ $MESH == "true" ]]; then
     # TODO: SRVKS-211: Can not run grpc and http2 tests.
     rm ./test/e2e/grpc_test.go
     rm ./test/e2e/http2_test.go
     # Remove h2c test
     sed -ie '47,51d' ./test/conformance/runtime/protocol_test.go
+    # Skip TestServiceWithTrafficSplit - flaky with mesh due to Istio proxy
+    # configuration propagation race during traffic splitting.
+    mesh_skip="-skip TestServiceWithTrafficSplit"
   fi
 
   local parallel=16
@@ -90,6 +94,7 @@ function upstream_knative_serving_e2e_and_conformance_tests {
   mv ./test/e2e/autoscale_test.go ./test/e2e/autoscale_test.backup
 
   SYSTEM_NAMESPACE="$SERVING_NAMESPACE" go_test_e2e -tags="e2e" -timeout=30m -parallel=$parallel \
+    ${mesh_skip} \
     ./test/e2e ./test/conformance/api/... ./test/conformance/runtime/... \
     ./test/e2e/domainmapping \
     ./test/e2e/initcontainers \
