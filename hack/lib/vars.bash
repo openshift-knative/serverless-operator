@@ -46,6 +46,7 @@ export KUBECONFIG="${KUBECONFIG:-$(realpath ~/.kube/config)}"
 export OPENSHIFT_CI="${OPENSHIFT_CI:-}"
 export OPERATOR="${OPERATOR:-serverless-operator}"
 export SCALE_UP="${SCALE_UP:--1}"
+export SKIP_SPOT_INSTANCES="${SKIP_SPOT_INSTANCES:-false}"
 
 export OLM_NAMESPACE="${OLM_NAMESPACE:-openshift-marketplace}"
 export ON_CLUSTER_BUILDS_NAMESPACE="${ON_CLUSTER_BUILDS_NAMESPACE:-openshift-serverless-builds}"
