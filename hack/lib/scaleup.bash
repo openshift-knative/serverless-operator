@@ -26,8 +26,8 @@ function scale_up_workers {
 
   logger.debug "ready machine count: ${current_total}, number of available zones: ${az_total}"
 
-  if [[ "${SCALE_UP}" == "${current_total}" ]]; then
-    logger.success "Cluster is already scaled up to ${SCALE_UP} replicas"
+  if [[ "${current_total}" -ge "${SCALE_UP}" ]]; then
+    logger.success "Cluster already has ${current_total} replicas (requested ${SCALE_UP}), no scaling needed"
     return 0
   fi
 
@@ -68,6 +68,11 @@ function cluster_scalable {
 
 # Convert existing machinesets to spot instances
 function use_spot_instances {
+  if [[ "${SKIP_SPOT_INSTANCES}" == "true" ]]; then
+    logger.info 'Skipping spot instances, SKIP_SPOT_INSTANCES is set to true.'
+    return
+  fi
+
   if ! cluster_scalable; then
     logger.info 'Skipping spot instances, the cluster is not scalable.'
     return
