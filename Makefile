@@ -267,6 +267,18 @@ kitchensink-e2e: install-tools
 
 test-kitchensink-e2e: kitchensink-e2e
 
+test-kitchensink-reinstall-testonly:
+	./test/kitchensink-e2e-tests.sh --tags=reinstall -run TestServerlessReinstall
+
+test-kitchensink-reinstall: install-tools
+	UNINSTALL_STRIMZI="false" ./hack/strimzi.sh
+	SCALE_UP=5 INSTALL_KAFKA="true" ./hack/install.sh
+	./test/kitchensink-e2e-tests.sh --tags=reinstall -run TestServerlessReinstallWithBrokerFeatures
+	./test/kitchensink-e2e-tests.sh --tags=reinstall -run TestServerlessReinstallWithChannelFeatures
+	./test/kitchensink-e2e-tests.sh --tags=reinstall -run TestServerlessReinstallWithSequenceFeatures
+	./test/kitchensink-e2e-tests.sh --tags=reinstall -run TestServerlessReinstallWithSourceFeatures
+	./test/kitchensink-e2e-tests.sh --tags=reinstall -run TestServerlessReinstallWithEventTransformFeatures
+
 # Soak tests
 test-soak-testonly:
 	./test/soak-tests.sh
