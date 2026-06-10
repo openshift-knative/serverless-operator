@@ -18,7 +18,8 @@ spec:
     - linux/arm64
     - linux/ppc64le
     - linux/s390x
-    description: List of platforms to build the container images on. The available set of values is determined by the configuration of the multi-platform-controller.
+    description: List of platforms to build the container images on. The available
+      set of values is determined by the configuration of the multi-platform-controller.
     name: build-platforms
     type: array
   - default: --all-projects --org=3e1a4cca-ebfb-495f-b64c-3cc960d566b4 --exclude=test*,vendor,third_party
@@ -30,7 +31,8 @@ spec:
     name: build-source-image
     type: string
   - default: "false"
-    description: 'Enable in-development package managers. WARNING: the behavior may change at any time without notice. Use at your own risk.'
+    description: 'Enable in-development package managers. WARNING: the behavior may
+      change at any time without notice. Use at your own risk.'
     name: prefetch-input-dev-package-managers
   - default: []
     description: Additional image tags
@@ -47,11 +49,13 @@ spec:
     name: output-image
     type: string
   - default: .
-    description: Path to the source code of an application's component from where to build image.
+    description: Path to the source code of an application's component from where
+      to build image.
     name: path-context
     type: string
   - default: Dockerfile
-    description: Path to the Dockerfile inside the context specified by parameter path-context
+    description: Path to the Dockerfile inside the context specified by parameter
+      path-context
     name: dockerfile
     type: string
   - default: "false"
@@ -67,7 +71,8 @@ spec:
     name: prefetch-input
     type: string
   - default: ""
-    description: Image tag expiration time, time values could be something like 1h, 2d, 3w for hours, days, and weeks, respectively.
+    description: Image tag expiration time, time values could be something like 1h,
+      2d, 3w for hours, days, and weeks, respectively.
     name: image-expires-after
     type: string
   - default: "true"
@@ -75,12 +80,21 @@ spec:
     name: build-image-index
     type: string
   - default: docker
-    description: The format for the resulting image's mediaType. Valid values are oci or docker.
+    description: The format for the resulting image's mediaType. Valid values are
+      oci or docker.
     name: buildah-format
     type: string
   - default: "false"
     description: Enable cache proxy configuration
     name: enable-cache-proxy
+  - default: "true"
+    description: Use the package registry proxy when prefetching dependencies
+    name: enable-package-registry-proxy
+  - default: .
+    description: Target directories in component's source code to scan with SAST tools.
+      Multiple values should be separated with commas.
+    name: sast-target-dirs
+    type: string
   - default: []
     description: Array of --build-arg values ("arg=value" strings) for buildah
     name: build-args
@@ -90,16 +104,9 @@ spec:
     name: build-args-file
     type: string
   - default: "false"
-    description: Whether to enable privileged mode, should be used only with remote VMs
+    description: Whether to enable privileged mode, should be used only with remote
+      VMs
     name: privileged-nested
-    type: string
-  - name: sast-target-dirs
-    type: string
-    default: .
-    description: Target directories to scan with SAST tools. Multiple values should be separated with commas.
-  - name: enable-package-registry-proxy
-    default: 'true'
-    description: Use the package registry proxy when prefetching dependencies
     type: string
   results:
   - description: ""
@@ -123,12 +130,12 @@ spec:
       value: $(tasks.build-image-index.results.IMAGE_DIGEST)
     - name: image-url
       value: $(tasks.build-image-index.results.IMAGE_URL)
+    - name: TARGET_DIRS
+      value: $(params.sast-target-dirs)
     - name: SOURCE_ARTIFACT
       value: $(tasks.prefetch-dependencies.results.SOURCE_ARTIFACT)
     - name: CACHI2_ARTIFACT
       value: $(tasks.prefetch-dependencies.results.CACHI2_ARTIFACT)
-    - name: TARGET_DIRS
-      value: $(params.sast-target-dirs)
     runAfter:
     - build-image-index
     taskRef:
@@ -151,14 +158,14 @@ spec:
       value: $(params.prefetch-input-dev-package-managers)
     - name: input
       value: $(params.prefetch-input)
+    - name: enable-package-registry-proxy
+      value: $(params.enable-package-registry-proxy)
     - name: SOURCE_ARTIFACT
       value: $(tasks.clone-repository.results.SOURCE_ARTIFACT)
     - name: ociStorage
       value: $(params.output-image).prefetch
     - name: ociArtifactExpiresAfter
       value: $(params.image-expires-after)
-    - name: enable-package-registry-proxy
-      value: $(params.enable-package-registry-proxy)
     runAfter:
     - clone-repository
     taskRef:
@@ -439,12 +446,12 @@ spec:
       value: $(tasks.build-image-index.results.IMAGE_DIGEST)
     - name: image-url
       value: $(tasks.build-image-index.results.IMAGE_URL)
+    - name: TARGET_DIRS
+      value: $(params.sast-target-dirs)
     - name: SOURCE_ARTIFACT
       value: $(tasks.prefetch-dependencies.results.SOURCE_ARTIFACT)
     - name: CACHI2_ARTIFACT
       value: $(tasks.prefetch-dependencies.results.CACHI2_ARTIFACT)
-    - name: TARGET_DIRS
-      value: $(params.sast-target-dirs)
     runAfter:
     - build-image-index
     taskRef:
@@ -467,12 +474,12 @@ spec:
       value: $(tasks.build-image-index.results.IMAGE_DIGEST)
     - name: image-url
       value: $(tasks.build-image-index.results.IMAGE_URL)
+    - name: TARGET_DIRS
+      value: $(params.sast-target-dirs)
     - name: SOURCE_ARTIFACT
       value: $(tasks.prefetch-dependencies.results.SOURCE_ARTIFACT)
     - name: CACHI2_ARTIFACT
       value: $(tasks.prefetch-dependencies.results.CACHI2_ARTIFACT)
-    - name: TARGET_DIRS
-      value: $(params.sast-target-dirs)
     runAfter:
     - build-image-index
     taskRef:
