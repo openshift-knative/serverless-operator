@@ -69,3 +69,6 @@ done
 
 NAMESPACE=$(${BIN} get pods --all-namespaces -l name=knative-openshift -o jsonpath="{.items[0].metadata.namespace}")
 ${BIN} adm inspect namespace ${NAMESPACE} --dest-dir=${LOGS_DIR}
+
+# Collect CRDs for use with omc
+${BIN} adm inspect customresourcedefinition.apiextensions.k8s.io --dest-dir=${LOGS_DIR}
