@@ -48,7 +48,7 @@ func kafkaChannelChain(length int, createSubscriberFn func(ref *duckv1.KReferenc
 	// Wait for the channel to be addressable and give the kafka-controller time
 	// to update the dispatcher's contract ConfigMap with the egress entry.
 	f.Requirement("channel is addressable", channel_impl.IsAddressable(ch))
-	f.Requirement("wait for dispatcher contract propagation", func(ctx context.Context, t feature.T) {
+	f.Requirement("wait for dispatcher contract propagation", func(_ context.Context, _ feature.T) {
 		time.Sleep(10 * time.Second)
 	})
 

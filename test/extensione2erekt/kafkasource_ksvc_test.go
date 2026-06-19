@@ -11,7 +11,6 @@ import (
 	kafkafeatures "github.com/openshift-knative/serverless-operator/test/extensione2erekt/features"
 )
 
-
 func TestKafkaSourceBinaryEvent(t *testing.T) {
 	t.Parallel()
 
