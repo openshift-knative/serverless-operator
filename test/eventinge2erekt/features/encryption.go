@@ -164,6 +164,14 @@ func VerifyPodLogsEncryptedRequestToHost(ctx context.Context, logFilter LogFilte
 	if pollErr := wait.PollUntilContextTimeout(ctx, interval, timeout, true, func(_ context.Context) (bool, error) {
 		encrypted, unencrypted, err = getMatchingRequestsToHost(ctx, logFilter)
 		if err != nil {
+			// Treat PodInitializing/ContainerCreating as transient errors and retry.
+			// This can happen when pods are being recreated (e.g. scale-to-zero/scale-up)
+			// and the istio-proxy sidecar hasn't finished initializing yet.
+			if strings.Contains(err.Error(), "PodInitializing") ||
+				strings.Contains(err.Error(), "ContainerCreating") {
+				logging.FromContext(ctx).Infof("Retrying due to transient pod state: %v", err)
+				return false, nil
+			}
 			return false, err
 		}
 		// Keep trying until we find matching lines.
