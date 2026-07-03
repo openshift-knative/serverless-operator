@@ -22,6 +22,9 @@ import (
 	"go.uber.org/zap"
 	"k8s.io/client-go/tools/cache"
 
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	namespaceinformer "knative.dev/pkg/client/injection/kube/informers/core/v1/namespace"
+
 	"knative.dev/operator/pkg/apis/operator/v1beta1"
 	operatorclient "knative.dev/operator/pkg/client/injection/client"
 	knativeEventinginformer "knative.dev/operator/pkg/client/injection/informers/operator/v1beta1/knativeeventing"
@@ -78,6 +81,23 @@ func NewExtendedController(generator common.ExtensionGenerator) injection.Contro
 		logger.Info("Setting up event handlers")
 
 		knativeEventingInformer.Informer().AddEventHandler(controller.HandleAll(impl.Enqueue))
+
+		namespaceinformer.Get(ctx).Informer().AddEventHandler(cache.FilteringResourceEventHandler{
+			FilterFunc: func(obj interface{}) bool {
+				ns, ok := obj.(metav1.Object)
+				if !ok {
+					return false
+				}
+				v, ok := ns.GetLabels()["kubernetes.io/metadata.name"]
+				if !ok {
+					return false
+				}
+				return v == "knative-eventing"
+			},
+			Handler: controller.HandleAll(func(i interface{}) {
+				impl.GlobalResync(knativeEventingInformer.Informer())
+			}),
+		})
 
 		deploymentInformer.Informer().AddEventHandler(cache.FilteringResourceEventHandler{
 			FilterFunc: controller.FilterControllerGVK(v1beta1.SchemeGroupVersion.WithKind("KnativeEventing")),
