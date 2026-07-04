@@ -20,3 +20,14 @@ func RouteInconsistencyRetryChecker(resp *Response) (bool, error) {
 	}
 	return false, nil
 }
+
+// isMeshProxyResponse returns true when the response was served by an Istio
+// Envoy sidecar proxy. After route/traffic updates, Envoy may briefly serve
+// stale content until the new configuration propagates from istiod.
+func isMeshProxyResponse(resp *Response) bool {
+	if resp == nil || resp.StatusCode != http.StatusOK {
+		return false
+	}
+	server := resp.Header.Get("Server")
+	return server == "istio-envoy" || strings.HasPrefix(server, "istio-envoy")
+}

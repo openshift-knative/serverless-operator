@@ -1,0 +1,37 @@
+diff --git a/vendor/knative.dev/pkg/test/spoof/openshift_checks.go b/vendor/knative.dev/pkg/test/spoof/openshift_checks.go
+index f7ba08f82..5b552f735 100644
+--- a/vendor/knative.dev/pkg/test/spoof/openshift_checks.go
++++ b/vendor/knative.dev/pkg/test/spoof/openshift_checks.go
+@@ -20,3 +20,14 @@ func RouteInconsistencyRetryChecker(resp *Response) (bool, error) {
+ 	}
+ 	return false, nil
+ }
++
++// isMeshProxyResponse returns true when the response was served by an Istio
++// Envoy sidecar proxy. After route/traffic updates, Envoy may briefly serve
++// stale content until the new configuration propagates from istiod.
++func isMeshProxyResponse(resp *Response) bool {
++	if resp == nil || resp.StatusCode != http.StatusOK {
++		return false
++	}
++	server := resp.Header.Get("Server")
++	return server == "istio-envoy" || strings.HasPrefix(server, "istio-envoy")
++}
+diff --git a/vendor/knative.dev/pkg/test/spoof/spoof.go b/vendor/knative.dev/pkg/test/spoof/spoof.go
+index d417b3204..7bfeeab7c 100644
+--- a/vendor/knative.dev/pkg/test/spoof/spoof.go
++++ b/vendor/knative.dev/pkg/test/spoof/spoof.go
+@@ -214,7 +214,12 @@ func (sc *SpoofingClient) Poll(req *http.Request, inState ResponseChecker, check
+ 			}
+ 		}
+ 
+-		return inState(resp)
++		done, inStateErr := inState(resp)
++		if !done && inStateErr != nil && isMeshProxyResponse(resp) {
++			sc.Logf("Retrying %s: mesh proxy may be serving stale content: %v", req.URL.String(), inStateErr)
++			return false, nil
++		}
++		return done, inStateErr
+ 	})
+ 	if err != nil {
+ 		return resp, fmt.Errorf("response: %s did not pass checks: %w", resp, err)

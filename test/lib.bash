@@ -166,6 +166,8 @@ function downstream_serving_e2e_tests {
          --type 'merge' \
          --patch '{"spec": {"config": {"defaults": {"max-revision-timeout-seconds": "900", "revision-response-start-timeout-seconds": "700", "revision-timeout-seconds": "800"} }}}'
 
+      oc wait --timeout=60s --for=condition=Available deployment -n "${SERVING_NAMESPACE}" activator
+
       go_test_e2e "${RUN_FLAGS[@]}" ./test/servinge2e/servicemesh/longrunning \
         --kubeconfigs "${kubeconfigs_str}" \
         --imagetemplate "${IMAGE_TEMPLATE}" \

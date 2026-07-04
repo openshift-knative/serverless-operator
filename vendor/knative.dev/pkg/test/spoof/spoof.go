@@ -214,7 +214,12 @@ func (sc *SpoofingClient) Poll(req *http.Request, inState ResponseChecker, check
 			}
 		}
 
-		return inState(resp)
+		done, inStateErr := inState(resp)
+		if !done && inStateErr != nil && isMeshProxyResponse(resp) {
+			sc.Logf("Retrying %s: mesh proxy may be serving stale content: %v", req.URL.String(), inStateErr)
+			return false, nil
+		}
+		return done, inStateErr
 	})
 	if err != nil {
 		return resp, fmt.Errorf("response: %s did not pass checks: %w", resp, err)
