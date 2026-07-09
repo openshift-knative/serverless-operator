@@ -59,6 +59,8 @@ requirements:
     doc: '4.22'
     # deprecated, use requirements.ocpVersion.list[-1]
     max: '4.22'
+    # version to use in Dockerfiles
+    build: '4.22'
     label: 'v4.14'
     # OCP stream for kube-rbac-proxy image.
     kube-rbac-proxy: "4.17"

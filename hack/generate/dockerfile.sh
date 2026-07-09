@@ -25,6 +25,7 @@ values[GOLANG_VERSION]="$(metadata.get requirements.golang)"
 values[NODEJS_VERSION]="$(metadata.get requirements.nodejs)"
 values[OCP_TARGET_VLIST]="$(metadata.get 'requirements.ocpVersion.label')"
 values[OCP_MAX_VERSION]="$(metadata.get 'requirements.ocpVersion.list[-1]')"
+values[OCP_BUILD_VERSION]="$(metadata.get 'requirements.ocpVersion.build')"
 values[PREVIOUS_VERSION]="$(metadata.get olm.replaces)"
 values[BUNDLE]="${SERVERLESS_BUNDLE}"
 
