@@ -301,10 +301,11 @@ var jobSink = genericComponent{
 }
 
 var eventTransformSink = genericComponent{
-	shortLabel: "evtr",
-	label:      "EventTransform",
-	kind:       "EventTransform",
-	gvr:        eventtransform.GVR(),
+	shortLabel:   "evtr",
+	label:        "EventTransform",
+	kind:         "EventTransform",
+	gvr:          eventtransform.GVR(),
+	sinceVersion: "1.36.0",
 	install: func(name string, _ ...manifest.CfgFn) feature.StepFn {
 		return func(ctx context.Context, t feature.T) {
 			eventtransform.Install(name,
@@ -316,10 +317,11 @@ var eventTransformSink = genericComponent{
 }
 
 var eventTransformGeneric = genericComponent{
-	shortLabel: "gevtr",
-	label:      "EventTransform",
-	kind:       "EventTransform",
-	gvr:        eventtransform.GVR(),
+	shortLabel:   "gevtr",
+	label:        "EventTransform",
+	kind:         "EventTransform",
+	gvr:          eventtransform.GVR(),
+	sinceVersion: "1.36.0",
 	install: func(name string, opts ...manifest.CfgFn) feature.StepFn {
 		return func(ctx context.Context, t feature.T) {
 			eventtransform.Install(name,

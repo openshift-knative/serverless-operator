@@ -7,5 +7,5 @@ import (
 )
 
 func TestSourceReadiness(t *testing.T) {
-	testFeatureSet(t, features.SourceFeatureSet())
+	testFeatureSet(t, features.SourceFeatureSet(""))
 }
