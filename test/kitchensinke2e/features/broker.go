@@ -23,7 +23,8 @@ var sinksAll = []component{
 	ksvc,
 	kafkaSink,
 	jobSink,
-	eventTransformSink,
+	// Ignore eventTransform, as we need to run upgrade tests since 1.35, which don't have it
+	// eventTransformSink,
 }
 
 var sinksShort = []component{
