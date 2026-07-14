@@ -50,13 +50,3 @@ func parseVersion(v string) [3]int {
 	}
 	return result
 }
-
-// ParseVersionFromCSV extracts the version from a CSV name like
-// "serverless-operator.v1.36.0" -> "1.36.0".
-func ParseVersionFromCSV(csv string) string {
-	_, after, ok := strings.Cut(csv, ".v")
-	if !ok {
-		return ""
-	}
-	return after
-}
