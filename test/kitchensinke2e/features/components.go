@@ -300,7 +300,6 @@ var jobSink = genericComponent{
 	},
 }
 
-/*
 var eventTransformSink = genericComponent{
 	shortLabel: "evtr",
 	label:      "EventTransform",
@@ -315,7 +314,6 @@ var eventTransformSink = genericComponent{
 		}
 	},
 }
-*/
 
 var eventTransformGeneric = genericComponent{
 	shortLabel: "gevtr",

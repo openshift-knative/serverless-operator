@@ -27,6 +27,10 @@ var sinksAll = []component{
 	// eventTransformSink,
 }
 
+var EventTransformSinks = []component{
+	eventTransformSink,
+}
+
 var sinksShort = []component{
 	ksvc,
 }
