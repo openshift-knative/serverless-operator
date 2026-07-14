@@ -115,6 +115,9 @@ func TestKitchensink(t *testing.T) {
 	// Split features across upgrades.
 	groups := featureGroup.Split(len(csvs))
 
+	// The oldest version is already installed, skip it.
+	csvs = csvs[1:]
+
 	for i, csv := range csvs {
 		_, toVersion, _ := strings.Cut(csv, ".")
 
