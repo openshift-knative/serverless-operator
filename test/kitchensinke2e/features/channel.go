@@ -66,19 +66,19 @@ func ChannelReadiness(index int, channel component, subscriber, reply, dls compo
 	return f
 }
 
-func ChannelFeatureSet() feature.FeatureSet {
-	return channelFeatureSet(false, 1)
+func ChannelFeatureSet(version string) feature.FeatureSet {
+	return channelFeatureSet(false, 1, version)
 }
 
-func ChannelFeatureSetShort() feature.FeatureSet {
-	return channelFeatureSet(true, 1)
+func ChannelFeatureSetShort(version string) feature.FeatureSet {
+	return channelFeatureSet(true, 1, version)
 }
 
-func ChannelFeatureSetStress() feature.FeatureSet {
-	return channelFeatureSet(true, NumDeployments)
+func ChannelFeatureSetStress(version string) feature.FeatureSet {
+	return channelFeatureSet(true, NumDeployments, version)
 }
 
-func channelFeatureSet(short bool, times int) feature.FeatureSet {
+func channelFeatureSet(short bool, times int, version string) feature.FeatureSet {
 	dls := deadLetterSinks
 	rep := replies
 	subscr := subscribers
@@ -87,6 +87,10 @@ func channelFeatureSet(short bool, times int) feature.FeatureSet {
 		rep = repliesShort
 		subscr = subscribersShort
 	}
+	chs := filterByVersion(channels, version)
+	dls = filterByVersion(dls, version)
+	rep = filterByVersion(rep, version)
+	subscr = filterByVersion(subscr, version)
 
 	type testCombination struct {
 		channel        component
@@ -98,21 +102,21 @@ func channelFeatureSet(short bool, times int) feature.FeatureSet {
 	testCombinations := make([]testCombination, 0)
 
 	// Test all combinations of Channel X Subscriber, with no replies or DLS
-	for _, channel := range channels {
+	for _, channel := range chs {
 		for _, subscriber := range subscr {
 			testCombinations = append(testCombinations, testCombination{channel: channel, subscriber: subscriber})
 		}
 	}
 
 	// Test all combinations of Channel X Reply, with any subscriber (we'll use the same subscriber Kind as the reply)
-	for _, channel := range channels {
+	for _, channel := range chs {
 		for _, reply := range rep {
 			testCombinations = append(testCombinations, testCombination{channel, reply, reply, nil})
 		}
 	}
 
 	// Test all combinations of Channel X DLS, with any subscriber (we'll use the same subscriber Kind as the DLS)
-	for _, channel := range channels {
+	for _, channel := range chs {
 		for _, deadLetterSink := range dls {
 			testCombinations = append(testCombinations, testCombination{channel, deadLetterSink, nil, deadLetterSink})
 		}
