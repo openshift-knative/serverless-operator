@@ -600,79 +600,20 @@ EOF
   logger.success 'Upgrade tests passed'
 }
 
-function version_in_skiprange {
-  local version="$1" range="$2"
-  [[ -n "$range" && "$range" != "null" ]] || return 1
-
-  local lower upper
-  read -r lower upper <<< "$range"
-
-  local lower_ver="${lower#>=}"
-  local lower_op=">="
-  if [[ "$lower_ver" == "$lower" ]]; then
-    lower_ver="${lower#>}"
-    lower_op=">"
-  fi
-
-  local upper_ver="${upper#<}"
-
-  if [[ "$lower_op" == ">=" ]]; then
-    versions.ge "$version" "$lower_ver" || return 1
-  else
-    versions.ge "$version" "$lower_ver" && [[ "$version" != "$lower_ver" ]] || return 1
-  fi
-
-  versions.le "$version" "$upper_ver" && [[ "$version" != "$upper_ver" ]] || return 1
-
-  return 0
-}
-
 function kitchensink_csvs {
-  local index_file num_entries i j
+  local index_file
   index_file="$rootdir/olm-catalog/serverless-operator-index/configs/index.yaml"
 
-  local -a all_names all_skipranges
+  local -a all_names
   # shellcheck disable=SC2034,SC2207
   all_names=( $(yq read --doc 0 "$index_file" 'entries[*].name') )
-  num_entries=${#all_names[@]}
 
-  for (( i = 0; i < num_entries; i++ )); do
-    all_skipranges+=("$(yq read --doc 0 "$index_file" "entries[$i].skipRange")")
-  done
-
-  # Reverse to oldest-first order
   # shellcheck disable=SC2034
-  local -a names skipranges
+  local -a names
   array.reverse all_names names
-  array.reverse all_skipranges skipranges
 
-  # Index 0 is the oldest entry (already installed). Process entries 1..n-1
-  # from newest to oldest: for each non-skipped entry, skip all earlier
-  # entries whose version falls in its skipRange. A skipped entry's own
-  # skipRange is not applied, preventing cascading skips.
-  declare -A skipped
-  for (( i = ${#names[@]} - 1; i >= 1; i-- )); do
-    [[ -z "${skipped[$i]:-}" ]] || continue
-
-    local sr="${skipranges[$i]}"
-    [[ -n "$sr" && "$sr" != "null" ]] || continue
-
-    for (( j = i - 1; j >= 1; j-- )); do
-      [[ -z "${skipped[$j]:-}" ]] || continue
-      local ver="${names[$j]#serverless-operator.v}"
-      if version_in_skiprange "$ver" "$sr"; then
-        skipped[$j]=1
-      fi
-    done
-  done
-
-  declare -a path
-  for (( i = 1; i < ${#names[@]}; i++ )); do
-    [[ -z "${skipped[$i]:-}" ]] || continue
-    path+=("${names[$i]}")
-  done
-
-  echo "${path[*]}" | tr ' ' ','
+  # Index 0 is the oldest entry (already installed). Return entries 1..n-1.
+  echo "${names[*]:1}" | tr ' ' ','
 }
 
 function kitchensink_upgrade_tests {
