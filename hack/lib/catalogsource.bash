@@ -76,6 +76,7 @@ function install_catalogsource {
     # Replace bundle reference with previously built bundle
     export SERVERLESS_BUNDLE="${bundle_image}"
 	  "${rootdir}/hack/generate/dockerfile.sh" "${rootdir}/templates/index.Dockerfile" "${index_dorkerfile_path}"
+    sed -i "s|/bin/opm render -o yaml /bundle|/bin/opm render --skip-tls-verify -o yaml ${SERVERLESS_BUNDLE}|" "${index_dorkerfile_path}"
 
     build_image "serverless-index" "${rootdir}" "${index_dorkerfile_path}"
 

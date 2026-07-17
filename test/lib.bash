@@ -601,30 +601,19 @@ EOF
 }
 
 function kitchensink_csvs {
-  local csvs csvs_rev csv_last csv_prefix csv
+  local index_file
+  index_file="$rootdir/olm-catalog/serverless-operator-index/configs/index.yaml"
+
+  local -a all_names
   # shellcheck disable=SC2034,SC2207
-  csvs=( $(yq read --doc 0 "$rootdir/olm-catalog/serverless-operator-index/configs/index.yaml" 'entries[*].name') )
+  all_names=( $(yq read --doc 0 "$index_file" 'entries[*].name') )
 
-  array.reverse csvs csvs_rev
-  # Remove first CSV as this is already installed.
-  unset 'csvs_rev[0]'
+  # shellcheck disable=SC2034
+  local -a names
+  array.reverse all_names names
 
-  # Filter out .micro releases between .0 and the last .x, as they would be skipped due to skipVersion
-  declare -a csvs_filtered
-  csv_last="${csvs_rev[-1]}"
-  csv_prefix=$(echo "$csv_last" | sed -E 's/\.[0-9]+$/./')
-  for csv in "${csvs_rev[@]}"
-  do
-    if [ "${csv#"$csv_prefix"}" != "${csv}" ]
-    then
-      if [ "$csv" != "$csv_last" ] && [ "${csv#"$csv_prefix"}" != "0" ]; then
-        continue
-      fi
-    fi
-    csvs_filtered+=("$csv")
-  done
-
-  echo "${csvs_filtered[@]}" | tr ' ' ','
+  # Index 0 is the oldest entry (already installed). Return entries 1..n-1.
+  echo "${names[*]:1}" | tr ' ' ','
 }
 
 function kitchensink_upgrade_tests {
