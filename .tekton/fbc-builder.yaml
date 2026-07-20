@@ -15,9 +15,9 @@ spec:
   params:
   - default:
     - linux/x86_64
-    # - linux/arm64
-    # - linux/ppc64le
-    # - linux/s390x
+    - linux/arm64
+    - linux/ppc64le
+    - linux/s390x
     description: List of platforms to build the container images on. The available
       set of values is determined by the configuration of the multi-platform-controller.
     name: build-platforms
@@ -25,6 +25,23 @@ spec:
   - default: "true"
     description: Build a source image.
     name: build-source-image
+    type: string
+  - default: []
+    description: Array of opm command arguments
+    name: opm-args
+    type: array
+  - default: ""
+    description: OPM output path
+    name: opm-output-path
+    type: string
+  - default: ""
+    description: Optional. Relative path to a file (e.g., catalog-template.yml) in
+      which pullspecs should be updated before running opm.
+    name: file-to-update-pullspec
+    type: string
+  - default: .tekton/images-mirror-set.yaml
+    description: Optional, path for ImageDigestMirrorSet file. It defaults to '.tekton/images-mirror-set.yaml'.
+    name: idms-path
     type: string
   - default: []
     description: Additional image tags
@@ -74,6 +91,14 @@ spec:
   - default: "false"
     description: Enable cache proxy configuration
     name: enable-cache-proxy
+  - default: "true"
+    description: Use the package registry proxy when prefetching dependencies
+    name: enable-package-registry-proxy
+  - default: .
+    description: Target directories in component's source code to scan with SAST tools.
+      Multiple values should be separated with commas.
+    name: sast-target-dirs
+    type: string
   - default: []
     description: Array of --build-arg values ("arg=value" strings) for buildah
     name: build-args
@@ -82,9 +107,21 @@ spec:
     description: Path to a file with build arguments for buildah, see https://www.mankier.com/1/buildah-build#--build-arg-file
     name: build-args-file
     type: string
-  - name: enable-package-registry-proxy
-    default: 'true'
-    description: Use the package registry proxy when prefetching dependencies
+  - default: ""
+    description: Sets the image created time and the SOURCE_DATE_EPOCH build argument.
+      On its own, it does not change file timestamps inside the layers (set rewrite-timestamp
+      to "true" for that). Leave empty to keep the actual build time.
+    name: source-date-epoch
+    type: string
+  - default: "false"
+    description: When "true", clamp file modification times in the image layers to
+      at most source-date-epoch. Does nothing unless source-date-epoch is set.
+    name: rewrite-timestamp
+    type: string
+  - default: "false"
+    description: When "true", omit the build history (history timestamps, layer metadata,
+      etc.) from the resulting image.
+    name: omit-history
     type: string
   results:
   - description: ""
@@ -100,6 +137,34 @@ spec:
     name: CHAINS-GIT_COMMIT
     value: $(tasks.clone-repository.results.commit)
   tasks:
+  - name: run-opm-command
+    params:
+    - name: OPM_ARGS
+      value:
+      - $(params.opm-args[*])
+    - name: OPM_OUTPUT_PATH
+      value: $(params.opm-output-path)
+    - name: FILE_TO_UPDATE_PULLSPEC
+      value: $(params.file-to-update-pullspec)
+    - name: IDMS_PATH
+      value: $(params.idms-path)
+    - name: SOURCE_ARTIFACT
+      value: $(tasks.clone-repository.results.SOURCE_ARTIFACT)
+    - name: ociStorage
+      value: $(params.output-image).opm
+    - name: ociArtifactExpiresAfter
+      value: $(params.image-expires-after)
+    runAfter:
+    - clone-repository
+    taskRef:
+      params:
+      - name: name
+        value: run-opm-command-oci-ta
+      - name: bundle
+        value: quay.io/konflux-ci/tekton-catalog/task-run-opm-command-oci-ta:0.1@sha256:6a7c758802fd253735b15174c4e7ffffb6e271969adfddb3a083935986845166
+      - name: kind
+        value: task
+      resolver: bundles
   - name: apply-tags
     params:
     - name: ADDITIONAL_TAGS
@@ -156,43 +221,18 @@ spec:
     workspaces:
     - name: basic-auth
       workspace: git-auth
-  - name: run-opm-command
-    params:
-    - name: SOURCE_ARTIFACT
-      value: $(tasks.clone-repository.results.SOURCE_ARTIFACT)
-    - name: ociStorage
-      value: $(params.output-image).opm
-    - name: ociArtifactExpiresAfter
-      value: $(params.image-expires-after)
-    - name: OPM_ARGS
-      value: []
-    - name: OPM_OUTPUT_PATH
-      value: ""
-    - name: IDMS_PATH
-      value: ""
-    runAfter:
-    - clone-repository
-    taskRef:
-      params:
-      - name: name
-        value: run-opm-command-oci-ta
-      - name: bundle
-        value: quay.io/konflux-ci/tekton-catalog/task-run-opm-command-oci-ta:0.1@sha256:6a7c758802fd253735b15174c4e7ffffb6e271969adfddb3a083935986845166
-      - name: kind
-        value: task
-      resolver: bundles
   - name: prefetch-dependencies
     params:
     - name: input
       value: $(params.prefetch-input)
+    - name: enable-package-registry-proxy
+      value: $(params.enable-package-registry-proxy)
     - name: SOURCE_ARTIFACT
       value: $(tasks.run-opm-command.results.SOURCE_ARTIFACT)
     - name: ociStorage
       value: $(params.output-image).prefetch
     - name: ociArtifactExpiresAfter
       value: $(params.image-expires-after)
-    - name: enable-package-registry-proxy
-      value: $(params.enable-package-registry-proxy)
     runAfter:
     - run-opm-command
     taskRef:
@@ -241,6 +281,12 @@ spec:
       value: $(tasks.init.results.http-proxy)
     - name: NO_PROXY
       value: $(tasks.init.results.no-proxy)
+    - name: SOURCE_DATE_EPOCH
+      value: $(params.source-date-epoch)
+    - name: REWRITE_TIMESTAMP
+      value: $(params.rewrite-timestamp)
+    - name: OMIT_HISTORY
+      value: $(params.omit-history)
     - name: SOURCE_ARTIFACT
       value: $(tasks.prefetch-dependencies.results.SOURCE_ARTIFACT)
     - name: CACHI2_ARTIFACT
