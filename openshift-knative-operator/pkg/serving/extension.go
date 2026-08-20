@@ -27,6 +27,7 @@ import (
 	kubeclient "knative.dev/pkg/client/injection/kube/client"
 	deploymentinformer "knative.dev/pkg/client/injection/kube/informers/apps/v1/deployment"
 	"knative.dev/pkg/controller"
+	"knative.dev/pkg/logging"
 	"knative.dev/pkg/ptr"
 	"knative.dev/pkg/reconciler"
 
@@ -139,6 +140,15 @@ func (e *extension) Reconcile(ctx context.Context, comp base.KComponent) error {
 	ks.Spec.Registry.Override = images
 	ks.Spec.Registry.Default = images["default"]
 	common.Configure(&ks.Spec.CommonSpec, "deployment", "queue-sidecar-image", images["queue-proxy"])
+
+	// spec.manifests/spec.additionalManifests are unsupported; clear them, as we force Registry
+	// above. Keep only local paths in status.manifests.
+	if common.SanitizeManifestSpec(&ks.Spec.CommonSpec) {
+		logging.FromContext(ctx).Warnw("Ignoring unsupported spec.manifests/spec.additionalManifests")
+	}
+	if common.SanitizeManifestStatus(ks.GetStatus()) {
+		logging.FromContext(ctx).Warnw("Dropping non-local status.manifests entries")
+	}
 
 	// Default to 2 replicas.
 	if ks.Spec.HighAvailability == nil {
