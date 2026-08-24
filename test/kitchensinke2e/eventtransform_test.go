@@ -7,5 +7,5 @@ import (
 )
 
 func TestEventTransformReadiness(t *testing.T) {
-	testFeatureSet(t, features.EventTransformFeatureSet())
+	testFeatureSet(t, features.EventTransformFeatureSet(""))
 }

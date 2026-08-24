@@ -104,29 +104,32 @@ func BrokerReadiness(index int, broker component, brokerDls component, triggers 
 	return f
 }
 
-func BrokerFeatureSetWithBrokerDLS() feature.FeatureSet {
-	return brokerFeatureSetWithBrokerDLS(false, 1)
+func BrokerFeatureSetWithBrokerDLS(version string) feature.FeatureSet {
+	return brokerFeatureSetWithBrokerDLS(false, 1, version)
 }
 
-func BrokerFeatureSetWithBrokerDLSShort() feature.FeatureSet {
-	return brokerFeatureSetWithBrokerDLS(true, 1)
+func BrokerFeatureSetWithBrokerDLSShort(version string) feature.FeatureSet {
+	return brokerFeatureSetWithBrokerDLS(true, 1, version)
 }
 
-func BrokerFeatureSetWithBrokerDLSStress() feature.FeatureSet {
-	return brokerFeatureSetWithBrokerDLS(true, NumDeployments)
+func BrokerFeatureSetWithBrokerDLSStress(version string) feature.FeatureSet {
+	return brokerFeatureSetWithBrokerDLS(true, NumDeployments, version)
 }
 
 // BrokerFeatureSetWithBrokerDLS returns all combinations of Broker X DeadLetterSinks,
 // each broker with all possible Triggers with the DeadLetterSink set on the Broker.
-func brokerFeatureSetWithBrokerDLS(short bool, times int) feature.FeatureSet {
+func brokerFeatureSetWithBrokerDLS(short bool, times int, version string) feature.FeatureSet {
 	dls := deadLetterSinks
 	trgs := triggers
 	if short {
 		dls = deadLetterSinksShort
 		trgs = triggersShort
 	}
-	features := make([]*feature.Feature, 0, len(brokers)*len(dls))
-	for _, broker := range brokers {
+	brks := filterByVersion(brokers, version)
+	dls = filterByVersion(dls, version)
+	trgs = filterByVersion(trgs, version)
+	features := make([]*feature.Feature, 0, len(brks)*len(dls))
+	for _, broker := range brks {
 		for _, deadLetterSink := range dls {
 			for i := 0; i < times; i++ {
 				features = append(features, BrokerReadiness(i, broker, deadLetterSink, trgs, nil))
@@ -139,29 +142,32 @@ func brokerFeatureSetWithBrokerDLS(short bool, times int) feature.FeatureSet {
 	}
 }
 
-func BrokerFeatureSetWithTriggerDLS() feature.FeatureSet {
-	return brokerFeatureSetWithTriggerDLS(false, 1)
+func BrokerFeatureSetWithTriggerDLS(version string) feature.FeatureSet {
+	return brokerFeatureSetWithTriggerDLS(false, 1, version)
 }
 
-func BrokerFeatureSetWithTriggerDLSShort() feature.FeatureSet {
-	return brokerFeatureSetWithTriggerDLS(true, 1)
+func BrokerFeatureSetWithTriggerDLSShort(version string) feature.FeatureSet {
+	return brokerFeatureSetWithTriggerDLS(true, 1, version)
 }
 
-func BrokerFeatureSetWithTriggerDLSStress() feature.FeatureSet {
-	return brokerFeatureSetWithTriggerDLS(true, NumDeployments)
+func BrokerFeatureSetWithTriggerDLSStress(version string) feature.FeatureSet {
+	return brokerFeatureSetWithTriggerDLS(true, NumDeployments, version)
 }
 
 // BrokerFeatureSetWithTriggerDLS returns all combinations of Broker X DeadLetterSinks,
 // each broker with all possible Triggers with the DeadLetterSink set on the Trigger.
-func brokerFeatureSetWithTriggerDLS(short bool, times int) feature.FeatureSet {
+func brokerFeatureSetWithTriggerDLS(short bool, times int, version string) feature.FeatureSet {
 	dls := deadLetterSinks
 	trgs := triggers
 	if short {
 		dls = deadLetterSinksShort
 		trgs = triggersShort
 	}
-	features := make([]*feature.Feature, 0, len(brokers)*len(dls))
-	for _, broker := range brokers {
+	brks := filterByVersion(brokers, version)
+	dls = filterByVersion(dls, version)
+	trgs = filterByVersion(trgs, version)
+	features := make([]*feature.Feature, 0, len(brks)*len(dls))
+	for _, broker := range brks {
 		for _, deadLetterSink := range dls {
 			for i := 0; i < times; i++ {
 				features = append(features, BrokerReadiness(i, broker, nil, trgs, deadLetterSink))

@@ -61,6 +61,16 @@ func TestMain(m *testing.M) {
 	os.Exit(m.Run())
 }
 
+// ParseVersionFromCSV extracts the version from a CSV name like
+// "serverless-operator.v1.36.0" -> "1.36.0".
+func ParseVersionFromCSV(csv string) string {
+	_, after, ok := strings.Cut(csv, ".v")
+	if !ok {
+		return ""
+	}
+	return after
+}
+
 // TestKitchensink tests as many Knative resources as possible during upgrades.
 // It does a series of upgrades according to CSVs passed via test flags. For each
 // upgrade it takes a random subset of features from the whole group, installs them
@@ -73,16 +83,19 @@ func TestKitchensink(t *testing.T) {
 	ctx := test.SetupClusterAdmin(t)
 	test.CleanupOnInterrupt(t, func() { test.CleanupAll(t, ctx) })
 
+	csvs := strings.Split(strings.Trim(test.Flags.CSV, ","), ",")
+	oldestVersion := ParseVersionFromCSV(csvs[0])
+
 	// Add feature sets to be tested during upgrades.
 	featureSets := []feature.FeatureSet{
-		features.BrokerFeatureSetWithBrokerDLSShort(),
-		features.BrokerFeatureSetWithTriggerDLSShort(),
-		features.ChannelFeatureSetShort(),
-		features.SequenceNoReplyFeatureSetShort(),
-		features.SequenceGlobalReplyFeatureSetShort(),
-		features.ParallelNoReplyFeatureSetShort(),
-		features.ParallelGlobalReplyFeatureSetShort(),
-		features.SourceFeatureSetShort(),
+		features.BrokerFeatureSetWithBrokerDLSShort(oldestVersion),
+		features.BrokerFeatureSetWithTriggerDLSShort(oldestVersion),
+		features.ChannelFeatureSetShort(oldestVersion),
+		features.SequenceNoReplyFeatureSetShort(oldestVersion),
+		features.SequenceGlobalReplyFeatureSetShort(oldestVersion),
+		features.ParallelNoReplyFeatureSetShort(oldestVersion),
+		features.ParallelGlobalReplyFeatureSetShort(oldestVersion),
+		features.SourceFeatureSetShort(oldestVersion),
 	}
 
 	var featureGroup FeatureWithEnvironmentGroup
@@ -99,10 +112,11 @@ func TestKitchensink(t *testing.T) {
 	rnd := rand.New(source)
 	rnd.Shuffle(len(featureGroup), func(i, j int) { featureGroup[i], featureGroup[j] = featureGroup[j], featureGroup[i] })
 
-	csvs := strings.Split(strings.Trim(test.Flags.CSV, ","), ",")
-
 	// Split features across upgrades.
 	groups := featureGroup.Split(len(csvs))
+
+	// The oldest version is already installed, skip it.
+	csvs = csvs[1:]
 
 	for i, csv := range csvs {
 		_, toVersion, _ := strings.Cut(csv, ".")
@@ -166,14 +180,14 @@ func TestUpgradeStress(t *testing.T) {
 
 	// Add feature sets to be tested during upgrades.
 	featureSets := []feature.FeatureSet{
-		features.BrokerFeatureSetWithBrokerDLSStress(),
-		features.BrokerFeatureSetWithTriggerDLSStress(),
-		features.ChannelFeatureSetStress(),
-		features.SequenceNoReplyFeatureSetStress(),
-		features.SequenceGlobalReplyFeatureSetStress(),
-		features.ParallelNoReplyFeatureSetStress(),
-		features.ParallelGlobalReplyFeatureSetStress(),
-		features.SourceFeatureSetStress(),
+		features.BrokerFeatureSetWithBrokerDLSStress(""),
+		features.BrokerFeatureSetWithTriggerDLSStress(""),
+		features.ChannelFeatureSetStress(""),
+		features.SequenceNoReplyFeatureSetStress(""),
+		features.SequenceGlobalReplyFeatureSetStress(""),
+		features.ParallelNoReplyFeatureSetStress(""),
+		features.ParallelGlobalReplyFeatureSetStress(""),
+		features.SourceFeatureSetStress(""),
 	}
 
 	var featureGroup FeatureWithEnvironmentGroup

@@ -609,8 +609,6 @@ function kitchensink_csvs {
   csvs=( $(yq read --doc 0 "$rootdir/olm-catalog/serverless-operator-index/configs/index.yaml" 'entries[*].name') )
 
   array.reverse csvs csvs_rev
-  # Remove first CSV as this is already installed.
-  unset 'csvs_rev[0]'
 
   # Filter out .micro releases between .0 and the last .x, as they would be skipped due to skipVersion
   declare -a csvs_filtered

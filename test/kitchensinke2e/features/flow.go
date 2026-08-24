@@ -171,25 +171,26 @@ func ParallelReadiness(testLabel string, flowTestConfiguration flowTestConfigura
 	return f
 }
 
-func SequenceNoReplyFeatureSet() feature.FeatureSet {
-	return sequenceNoReplyFeatureSet(false, 1)
+func SequenceNoReplyFeatureSet(version string) feature.FeatureSet {
+	return sequenceNoReplyFeatureSet(false, 1, version)
 }
 
-func SequenceNoReplyFeatureSetShort() feature.FeatureSet {
-	return sequenceNoReplyFeatureSet(true, 1)
+func SequenceNoReplyFeatureSetShort(version string) feature.FeatureSet {
+	return sequenceNoReplyFeatureSet(true, 1, version)
 }
 
-func SequenceNoReplyFeatureSetStress() feature.FeatureSet {
-	return sequenceNoReplyFeatureSet(true, NumDeployments)
+func SequenceNoReplyFeatureSetStress(version string) feature.FeatureSet {
+	return sequenceNoReplyFeatureSet(true, NumDeployments, version)
 }
 
 // SequenceNoReplyFeatureSet returns sequences with all possible Kinds as steps, with no reply
-func sequenceNoReplyFeatureSet(short bool, times int) feature.FeatureSet {
+func sequenceNoReplyFeatureSet(short bool, times int, version string) feature.FeatureSet {
 	features := make([]*feature.Feature, 0, len(flowTestConfigurations))
 	steps := sinksAll
 	if short {
 		steps = sinksShort
 	}
+	steps = filterByVersion(steps, version)
 	for _, flowTestConfiguration := range flowTestConfigurations {
 		for i := 0; i < times; i++ {
 			features = append(features, SequenceReadiness(
@@ -203,16 +204,16 @@ func sequenceNoReplyFeatureSet(short bool, times int) feature.FeatureSet {
 	}
 }
 
-func ParallelNoReplyFeatureSet() feature.FeatureSet {
-	return parallelNoReplyFeatureSet(false, 1)
+func ParallelNoReplyFeatureSet(version string) feature.FeatureSet {
+	return parallelNoReplyFeatureSet(false, 1, version)
 }
 
-func ParallelNoReplyFeatureSetShort() feature.FeatureSet {
-	return parallelNoReplyFeatureSet(true, 1)
+func ParallelNoReplyFeatureSetShort(version string) feature.FeatureSet {
+	return parallelNoReplyFeatureSet(true, 1, version)
 }
 
-func ParallelNoReplyFeatureSetStress() feature.FeatureSet {
-	return parallelNoReplyFeatureSet(true, NumDeployments)
+func ParallelNoReplyFeatureSetStress(version string) feature.FeatureSet {
+	return parallelNoReplyFeatureSet(true, NumDeployments, version)
 }
 
 // ParallelNoReplyFeatureSet returns parallels with
@@ -220,7 +221,7 @@ func ParallelNoReplyFeatureSetStress() feature.FeatureSet {
 // * all possible kinds of replies (with a random subscriber each)
 // * all possible kind of filters (with a random subscriber each)
 // with no global reply
-func parallelNoReplyFeatureSet(short bool, times int) feature.FeatureSet {
+func parallelNoReplyFeatureSet(short bool, times int, version string) feature.FeatureSet {
 	fltrs := filters
 	rpls := replies
 	subscr := subscribers
@@ -229,6 +230,9 @@ func parallelNoReplyFeatureSet(short bool, times int) feature.FeatureSet {
 		rpls = repliesShort
 		subscr = subscribersShort
 	}
+	fltrs = filterByVersion(fltrs, version)
+	rpls = filterByVersion(rpls, version)
+	subscr = filterByVersion(subscr, version)
 	features := make([]*feature.Feature, 0, len(flowTestConfigurations))
 	for _, flowTestConfiguration := range flowTestConfigurations {
 		for i := 0; i < times; i++ {
@@ -243,29 +247,30 @@ func parallelNoReplyFeatureSet(short bool, times int) feature.FeatureSet {
 	}
 }
 
-func SequenceGlobalReplyFeatureSet() feature.FeatureSet {
-	return sequenceGlobalReplyFeatureSet(false, 1)
+func SequenceGlobalReplyFeatureSet(version string) feature.FeatureSet {
+	return sequenceGlobalReplyFeatureSet(false, 1, version)
 }
 
-func SequenceGlobalReplyFeatureSetShort() feature.FeatureSet {
-	return sequenceGlobalReplyFeatureSet(true, 1)
+func SequenceGlobalReplyFeatureSetShort(version string) feature.FeatureSet {
+	return sequenceGlobalReplyFeatureSet(true, 1, version)
 }
 
-func SequenceGlobalReplyFeatureSetStress() feature.FeatureSet {
-	return sequenceGlobalReplyFeatureSet(true, NumDeployments)
+func SequenceGlobalReplyFeatureSetStress(version string) feature.FeatureSet {
+	return sequenceGlobalReplyFeatureSet(true, NumDeployments, version)
 }
 
 // SequenceGlobalReplyFeatureSet returns sequences with a global reply (with a single random Step)
-func sequenceGlobalReplyFeatureSet(short bool, times int) feature.FeatureSet {
+func sequenceGlobalReplyFeatureSet(short bool, times int, version string) feature.FeatureSet {
 	rpls := replies
 	if short {
 		rpls = repliesShort
 	}
+	rpls = filterByVersion(rpls, version)
+	steps := filterByVersion(sinksAll, version)
 	// We're using random to choose a random subscriber for a given reply Kind
 	source := rand.NewSource(time.Now().UnixNano())
 	rnd := rand.New(source)
 	features := make([]*feature.Feature, 0, len(flowTestConfigurations)*len(rpls))
-	steps := sinksAll
 	for _, flowTestConfiguration := range flowTestConfigurations {
 		for _, reply := range rpls {
 			// We've already tested all possible step kinds above,
@@ -282,24 +287,26 @@ func sequenceGlobalReplyFeatureSet(short bool, times int) feature.FeatureSet {
 	}
 }
 
-func ParallelGlobalReplyFeatureSet() feature.FeatureSet {
-	return parallelGlobalReplyFeatureSet(false, 1)
+func ParallelGlobalReplyFeatureSet(version string) feature.FeatureSet {
+	return parallelGlobalReplyFeatureSet(false, 1, version)
 }
 
-func ParallelGlobalReplyFeatureSetShort() feature.FeatureSet {
-	return parallelGlobalReplyFeatureSet(true, 1)
+func ParallelGlobalReplyFeatureSetShort(version string) feature.FeatureSet {
+	return parallelGlobalReplyFeatureSet(true, 1, version)
 }
 
-func ParallelGlobalReplyFeatureSetStress() feature.FeatureSet {
-	return parallelGlobalReplyFeatureSet(true, NumDeployments)
+func ParallelGlobalReplyFeatureSetStress(version string) feature.FeatureSet {
+	return parallelGlobalReplyFeatureSet(true, NumDeployments, version)
 }
 
 // ParallelGlobalReplyFeatureSet returns parallels with a global reply (with a single Branch of a random subscriber)
-func parallelGlobalReplyFeatureSet(short bool, times int) feature.FeatureSet {
+func parallelGlobalReplyFeatureSet(short bool, times int, version string) feature.FeatureSet {
 	rpls := replies
 	if short {
 		rpls = repliesShort
 	}
+	rpls = filterByVersion(rpls, version)
+	subscr := filterByVersion(subscribers, version)
 	// We're using random to choose a random subscriber for a given reply Kind
 	source := rand.NewSource(time.Now().UnixNano())
 	rnd := rand.New(source)
@@ -310,7 +317,7 @@ func parallelGlobalReplyFeatureSet(short bool, times int) feature.FeatureSet {
 				label := fmt.Sprintf("%s-par-%s-rep-%d", flowTestConfiguration.shortLabel, shortLabel(reply), i)
 				// We've already tested all possible branches kinds above,
 				// so just use a single branch (with a random subscriber) in the sequence for the "with-reply" test
-				features = append(features, ParallelReadiness(label, flowTestConfiguration, []component{subscribers[rnd.Intn(len(subscribers))]}, []component{}, []component{}, reply))
+				features = append(features, ParallelReadiness(label, flowTestConfiguration, []component{subscr[rnd.Intn(len(subscr))]}, []component{}, []component{}, reply))
 			}
 		}
 	}
