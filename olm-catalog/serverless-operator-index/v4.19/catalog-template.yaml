@@ -606,5 +606,5 @@ entries:
   - image: registry.redhat.io/openshift-serverless-1/serverless-operator-bundle@sha256:6684c8ed063f2691d745f3a1739e2ef0821db77b625b43d519d691b5ff35d16b
     schema: olm.bundle
   - schema: "olm.bundle"
-    image: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-137/serverless-bundle@sha256:a63c477f99326dd3472fbb4182b1d10be6ef4816db1f375cadbae99b250473d1"
+    image: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-137/serverless-bundle@sha256:6b455028e1c2bc65e988719c6e507c1bdd4d2e1e02f3fb093b139a4b0bf561bf"
 schema: olm.template.basic
