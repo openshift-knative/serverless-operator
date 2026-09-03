@@ -108,6 +108,22 @@ spec:
       VMs
     name: privileged-nested
     type: string
+  - default: ""
+    description: Sets the image created time and the SOURCE_DATE_EPOCH build argument.
+      On its own, it does not change file timestamps inside the layers (set rewrite-timestamp
+      to "true" for that). Leave empty to keep the actual build time.
+    name: source-date-epoch
+    type: string
+  - default: "false"
+    description: When "true", clamp file modification times in the image layers to
+      at most source-date-epoch. Does nothing unless source-date-epoch is set.
+    name: rewrite-timestamp
+    type: string
+  - default: "false"
+    description: When "true", omit the build history (history timestamps, layer metadata,
+      etc.) from the resulting image.
+    name: omit-history
+    type: string
   results:
   - description: ""
     name: IMAGE_URL
@@ -274,6 +290,12 @@ spec:
       value: $(tasks.init.results.http-proxy)
     - name: NO_PROXY
       value: $(tasks.init.results.no-proxy)
+    - name: SOURCE_DATE_EPOCH
+      value: $(params.source-date-epoch)
+    - name: REWRITE_TIMESTAMP
+      value: $(params.rewrite-timestamp)
+    - name: OMIT_HISTORY
+      value: $(params.omit-history)
     - name: SOURCE_ARTIFACT
       value: $(tasks.prefetch-dependencies.results.SOURCE_ARTIFACT)
     - name: CACHI2_ARTIFACT
@@ -366,7 +388,7 @@ spec:
       - name: image-platform
         value:
         - $(params.build-platforms)
-    name: clair-scan
+    name: roxctl-scan
     params:
     - name: image-digest
       value: $(tasks.build-image-index.results.IMAGE_DIGEST)
@@ -377,12 +399,13 @@ spec:
     taskRef:
       params:
       - name: name
-        value: clair-scan
+        value: roxctl-scan
       - name: bundle
-        value: quay.io/konflux-ci/tekton-catalog/task-clair-scan:0.3@sha256:8fad4c2e2f470f82ee43d6b2ac72327b4d9c6e9cb514a678911c1c9359c29894
+        value: quay.io/konflux-ci/tekton-catalog/task-roxctl-scan:0.1@sha256:97e2b2cdca9110fdc8a93ba585a1a1a743f989f2fd85f4073f6e5ea9ad2ce828
       - name: kind
         value: task
       resolver: bundles
+    timeout: 20m
     when:
     - input: $(params.skip-checks)
       operator: in
