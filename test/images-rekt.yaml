@@ -1,2 +1,2 @@
-knative.dev/reconciler-test/cmd/eventshub: quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-137/kn-eventing-test-eventshub@sha256:370ce6fa71b7f5d638c624f3ee33b503535d8e551b2d966d02766b6519eff73b
-knative.dev/eventing/cmd/heartbeats: quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-137/kn-eventing-heartbeats@sha256:02bede2613c8336076be53596847995e1ab9c1e0b12b3dbb4e0ffe301aa60353
+knative.dev/reconciler-test/cmd/eventshub: quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-137/kn-eventing-test-eventshub@sha256:dcd6f04fef4eefdfbbf0bb324dbd57d43a2288d928b5dfc877c37b3451a66267
+knative.dev/eventing/cmd/heartbeats: quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-137/kn-eventing-heartbeats@sha256:8ff867e518021b0bc26d75d25d1c58623a1de7af6647893dc766b95cb8442558
