@@ -127,19 +127,14 @@ jobs:
   lint:
     name: Lint
     runs-on: ubuntu-latest
-    env:
-      GOPATH: ${{ github.workspace }}
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
       - name: Setup Golang
         uses: openshift-knative/hack/actions/setup-go@main
 
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          path: ./src/github.com/${{ github.repository }}
-
       - name: Install Tools
-        working-directory: ./src/github.com/${{ github.repository }}
         env:
           WOKE_VERSION: v0.13.0
           OSDK_VERSION: v1.12.0
@@ -166,7 +161,6 @@ jobs:
           echo "${TEMP_PATH}" >> $GITHUB_PATH
 
       - name: Shellcheck
-        working-directory: ./src/github.com/${{ github.repository }}
         env:
           REVIEWDOG_GITHUB_API_TOKEN: ${{ github.token }}
         run: |
@@ -181,17 +175,15 @@ jobs:
                 -level="error"
 
       - name: Go Lint - knative-operator
-        uses: golangci/golangci-lint-action@v6
+        uses: golangci/golangci-lint-action@v9
         with:
           version: v1.64.8
-          args: --timeout=10m0s --verbose 
-          working-directory: ./src/github.com/${{ github.repository }}
+          args: --timeout=10m0s --verbose
 
       # This is mostly copied from https://github.com/get-woke/woke-action-reviewdog/blob/main/entrypoint.sh
       # since their action is not yet released under a stable version.
       - name: Language
         if: ${{ always() && github.event_name == 'pull_request' }}
-        working-directory: ./src/github.com/${{ github.repository }}
         env:
           REVIEWDOG_GITHUB_API_TOKEN: ${{ github.token }}
         run: |
@@ -204,12 +196,10 @@ jobs:
                 -level="error"
 
       - name: OLM Bundle
-        working-directory: ./src/github.com/${{ github.repository }}
         run: |
           operator-sdk bundle validate ./olm-catalog/serverless-operator --select-optional suite=operatorframework --optional-values=k8s-version=1.22
 
       - name: Spelling
-        working-directory: ./src/github.com/${{ github.repository }}
         env:
           REVIEWDOG_GITHUB_API_TOKEN: ${{ github.token }}
         run: |
@@ -224,7 +214,7 @@ jobs:
                 -level="error"
 
       - name: Prettify code
-        uses: creyD/prettier_action@v4.3
+        uses: creyD/prettier_action@v4.6
         with:
           dry: true
-          prettier_options: --check src/github.com/${{ github.repository }}/templates/*.yaml
+          prettier_options: --check templates/*.yaml
