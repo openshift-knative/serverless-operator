@@ -177,7 +177,7 @@ jobs:
       - name: Go Lint - knative-operator
         uses: golangci/golangci-lint-action@v9
         with:
-          version: v1.64.8
+          version: v2.13.2
           args: --timeout=10m0s --verbose
 
       # This is mostly copied from https://github.com/get-woke/woke-action-reviewdog/blob/main/entrypoint.sh
