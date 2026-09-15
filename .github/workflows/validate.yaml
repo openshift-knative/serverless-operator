@@ -175,9 +175,12 @@ jobs:
                 -level="error"
 
       - name: Go Lint - knative-operator
-        uses: golangci/golangci-lint-action@v9
+        uses: golangci/golangci-lint-action@v6
+        env:
+          ACTIONS_RUNNER_FORCE_ACTIONS_NODE_VERSION: node24
+          ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
         with:
-          version: v2.13.2
+          version: v1.64.8
           args: --timeout=10m0s --verbose
 
       # This is mostly copied from https://github.com/get-woke/woke-action-reviewdog/blob/main/entrypoint.sh
