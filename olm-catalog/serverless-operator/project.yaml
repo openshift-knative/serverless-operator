@@ -95,14 +95,14 @@ dependencies:
   # backstage-plugins midstream branch or commit
   backstage_plugins_artifacts_branch: release-v1.17
   cli: knative-v1.17
-  kube_rbac_proxy: registry.redhat.io/openshift4/ose-kube-rbac-proxy-rhel9@sha256:49f5d53fa7ee0eb34c18c9708eeefdf8317d0f3524b545ba2e05df1322ad5275
+  kube_rbac_proxy: registry.redhat.io/openshift4/ose-kube-rbac-proxy-rhel9@sha256:7e9af19d232194c75ac8953c02266b67a49824fabfb54a4f7ad2e8a876c5a80f
   func:
     promotion_tag: knative-v1.17
     # if additional image is added amend the list in hack/generate/catalog.sh
-    tekton_buildah: registry.redhat.io/rhel9/buildah@sha256:91757d2dd609be57de95a82e52336f71e5db45c736972a81635532860c6dc6da
+    tekton_buildah: registry.redhat.io/rhel9/buildah@sha256:42ff9cfa5fa1840fe8871e0352ae5649289d2db0a9313b701b92edfb9164ecba
     nodejs_20_minimal: registry.access.redhat.com/ubi9/nodejs-20-minimal@sha256:87f2eb0ce06e922a7629fa94fad62ed4e6be05931852b779269e0692282a099e
-    openjdk_21: registry.access.redhat.com/ubi9/openjdk-21@sha256:26fea73c6d66b0c8191bd2a9b8bba67c22d650a60fcd365be30ed56d8c631a8d
-    python-39: registry.access.redhat.com/ubi9/python-39@sha256:4fe5765cae5036deffcb2ce946690c052274152e80994d444263b52ff0b0733f
+    openjdk_21: registry.access.redhat.com/ubi9/openjdk-21@sha256:cc8a30e9181b0135e6657ca3b824d7b32e4c7f6a664769ef641d4f7031339564
+    python-39: registry.access.redhat.com/ubi9/python-39@sha256:190322d8321ff0e339db49726dd04a54992b24357710a1bff43b48b50832c6b9
   operator: 1.17.8
   # Previous versions required for downgrade testing
   previous:
