@@ -8071,7 +8071,7 @@ relatedImages:
   name: IMAGE_KN_PLUGIN_FUNC_PYTHON_39
 schema: olm.bundle
 ---
-image: registry.redhat.io/openshift-serverless-1/serverless-operator-bundle@sha256:bee0823219e71d4a79cdf370360b6282786540bcd338446abc7ed52f438f9109
+image: registry.redhat.io/openshift-serverless-1/serverless-operator-bundle@sha256:0128df56bdd2012c1f360e125bbe440094149d8d4d446ef525a9abe507376448
 name: serverless-operator.v1.37.2
 package: serverless-operator
 properties:
@@ -8163,7 +8163,7 @@ properties:
       features.operators.openshift.io/token-auth-gcp: "false"
       olm.skipRange: '>1.37.1 <1.37.2'
       operatorframework.io/suggested-namespace: openshift-serverless
-      operators.openshift.io/must-gather-image: registry.redhat.io/openshift-serverless-1/serverless-must-gather-rhel9@sha256:edc019f331391c8bcde5e6e63106fa1f72a045e0599e207ebb0b151a57ecff4f
+      operators.openshift.io/must-gather-image: registry.redhat.io/openshift-serverless-1/serverless-must-gather-rhel9@sha256:91a79f1f89f30b277d059ceaccae41ae160393b49f7e968d1664589c595a4ec6
       operators.openshift.io/valid-subscription: '["OpenShift Container Platform",
         "OpenShift Platform Plus"]'
       repository: https://github.com/openshift-knative/serverless-operator
@@ -8324,7 +8324,7 @@ properties:
     provider:
       name: Red Hat
 relatedImages:
-- image: registry.redhat.io/openshift-serverless-1/serverless-operator-bundle@sha256:bee0823219e71d4a79cdf370360b6282786540bcd338446abc7ed52f438f9109
+- image: registry.redhat.io/openshift-serverless-1/serverless-operator-bundle@sha256:0128df56bdd2012c1f360e125bbe440094149d8d4d446ef525a9abe507376448
   name: ""
 - image: registry.access.redhat.com/ubi9/nodejs-20-minimal@sha256:87f2eb0ce06e922a7629fa94fad62ed4e6be05931852b779269e0692282a099e
   name: IMAGE_KN_PLUGIN_FUNC_NODEJS_20_MINIMAL
@@ -8426,18 +8426,18 @@ relatedImages:
   name: IMAGE_net-istio-webhook__webhook
 - image: registry.redhat.io/openshift-serverless-1/net-kourier-kourier-rhel9@sha256:b9c918e7c3402cc3f2830812d834f2850f4cc26654688a168df2974b39bc68ae
   name: IMAGE_net-kourier-controller__controller
-- image: registry.redhat.io/openshift-serverless-1/serverless-ingress-rhel9@sha256:f6e4f1d31b8810cc6100746a315bf5173bb8f5320b0222dd8f6f25b4b9e1c831
+- image: registry.redhat.io/openshift-serverless-1/serverless-ingress-rhel9@sha256:0bbaa02e1ff17092b8afb484e49d75996eed83217ce79aa903d94ed07271ad17
   name: knative-openshift-ingress
-- image: registry.redhat.io/openshift-serverless-1/serverless-kn-operator-rhel9@sha256:aac75263080f17c980b7af4ac161c1e7a2824a02c6c21dad6f9b8d5c171b1c43
+- image: registry.redhat.io/openshift-serverless-1/serverless-kn-operator-rhel9@sha256:40fdc56047d781c641430f0630241936ec79aaf0f877a3e2bd0a13a03e16413a
   name: knative-openshift
-- image: registry.redhat.io/openshift-serverless-1/serverless-must-gather-rhel9@sha256:edc019f331391c8bcde5e6e63106fa1f72a045e0599e207ebb0b151a57ecff4f
+- image: registry.redhat.io/openshift-serverless-1/serverless-must-gather-rhel9@sha256:91a79f1f89f30b277d059ceaccae41ae160393b49f7e968d1664589c595a4ec6
   name: IMAGE_MUST_GATHER
-- image: registry.redhat.io/openshift-serverless-1/serverless-openshift-kn-rhel9-operator@sha256:e75b828bb35890cb1921d263815afc277853c3e205bd3b3e64a2f5c7092d634c
+- image: registry.redhat.io/openshift-serverless-1/serverless-openshift-kn-rhel9-operator@sha256:7bd902a155fae2f4faaa190824b94a236351bd332850624e9810f46fb9bb6e58
   name: knative-operator
 - image: registry.redhat.io/openshift-service-mesh/proxyv2-rhel9@sha256:f342f06f4ebdbad82d5bcd8c287f0edaf627703442dbda7238adde13349bb893
   name: IMAGE_kourier-gateway
 - image: registry.redhat.io/openshift4/ose-kube-rbac-proxy-rhel9@sha256:7e9af19d232194c75ac8953c02266b67a49824fabfb54a4f7ad2e8a876c5a80f
   name: IMAGE_KUBE_RBAC_PROXY
-- image: registry.redhat.io/rhel9/buildah@sha256:42ff9cfa5fa1840fe8871e0352ae5649289d2db0a9313b701b92edfb9164ecba
+- image: registry.redhat.io/rhel9/buildah@sha256:53e5d29f2cfb764a6ada229506939a55030dd747e30b71bde30ce04a1248925f
   name: IMAGE_KN_PLUGIN_FUNC_TEKTON_BUILDAH
 schema: olm.bundle
