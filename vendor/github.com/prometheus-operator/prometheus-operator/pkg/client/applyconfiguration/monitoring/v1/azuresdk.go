@@ -16,13 +16,16 @@
 
 package v1
 
-// AzureSDKApplyConfiguration represents an declarative configuration of the AzureSDK type for use
+// AzureSDKApplyConfiguration represents a declarative configuration of the AzureSDK type for use
 // with apply.
+//
+// AzureSDK is used to store azure SDK config values.
 type AzureSDKApplyConfiguration struct {
+	// tenantId defines the tenant ID of the azure active directory application that is being used to authenticate.
 	TenantID *string `json:"tenantId,omitempty"`
 }
 
-// AzureSDKApplyConfiguration constructs an declarative configuration of the AzureSDK type for use with
+// AzureSDKApplyConfiguration constructs a declarative configuration of the AzureSDK type for use with
 // apply.
 func AzureSDK() *AzureSDKApplyConfiguration {
 	return &AzureSDKApplyConfiguration{}

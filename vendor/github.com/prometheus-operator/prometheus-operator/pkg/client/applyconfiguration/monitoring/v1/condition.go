@@ -17,22 +17,35 @@
 package v1
 
 import (
-	v1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
+	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// ConditionApplyConfiguration represents an declarative configuration of the Condition type for use
+// ConditionApplyConfiguration represents a declarative configuration of the Condition type for use
 // with apply.
+//
+// Condition represents the state of the resources associated with the
+// Prometheus, Alertmanager or ThanosRuler resource.
 type ConditionApplyConfiguration struct {
-	Type               *v1.ConditionType   `json:"type,omitempty"`
-	Status             *v1.ConditionStatus `json:"status,omitempty"`
-	LastTransitionTime *metav1.Time        `json:"lastTransitionTime,omitempty"`
-	Reason             *string             `json:"reason,omitempty"`
-	Message            *string             `json:"message,omitempty"`
-	ObservedGeneration *int64              `json:"observedGeneration,omitempty"`
+	// type of the condition being reported.
+	Type *monitoringv1.ConditionType `json:"type,omitempty"`
+	// status of the condition.
+	Status *monitoringv1.ConditionStatus `json:"status,omitempty"`
+	// lastTransitionTime is the time of the last update to the current status property.
+	LastTransitionTime *metav1.Time `json:"lastTransitionTime,omitempty"`
+	// reason for the condition's last transition.
+	Reason *string `json:"reason,omitempty"`
+	// message defines human-readable message indicating details for the condition's last transition.
+	Message *string `json:"message,omitempty"`
+	// observedGeneration defines the .metadata.generation that the
+	// condition was set based upon. For instance, if `.metadata.generation` is
+	// currently 12, but the `.status.conditions[].observedGeneration` is 9, the
+	// condition is out of date with respect to the current state of the
+	// instance.
+	ObservedGeneration *int64 `json:"observedGeneration,omitempty"`
 }
 
-// ConditionApplyConfiguration constructs an declarative configuration of the Condition type for use with
+// ConditionApplyConfiguration constructs a declarative configuration of the Condition type for use with
 // apply.
 func Condition() *ConditionApplyConfiguration {
 	return &ConditionApplyConfiguration{}
@@ -41,7 +54,7 @@ func Condition() *ConditionApplyConfiguration {
 // WithType sets the Type field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the Type field is set to the value of the last call.
-func (b *ConditionApplyConfiguration) WithType(value v1.ConditionType) *ConditionApplyConfiguration {
+func (b *ConditionApplyConfiguration) WithType(value monitoringv1.ConditionType) *ConditionApplyConfiguration {
 	b.Type = &value
 	return b
 }
@@ -49,7 +62,7 @@ func (b *ConditionApplyConfiguration) WithType(value v1.ConditionType) *Conditio
 // WithStatus sets the Status field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the Status field is set to the value of the last call.
-func (b *ConditionApplyConfiguration) WithStatus(value v1.ConditionStatus) *ConditionApplyConfiguration {
+func (b *ConditionApplyConfiguration) WithStatus(value monitoringv1.ConditionStatus) *ConditionApplyConfiguration {
 	b.Status = &value
 	return b
 }

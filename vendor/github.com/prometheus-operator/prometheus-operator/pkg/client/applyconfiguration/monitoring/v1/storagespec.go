@@ -17,19 +17,38 @@
 package v1
 
 import (
-	v1 "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 )
 
-// StorageSpecApplyConfiguration represents an declarative configuration of the StorageSpec type for use
+// StorageSpecApplyConfiguration represents a declarative configuration of the StorageSpec type for use
 // with apply.
+//
+// StorageSpec defines the configured storage for a group Prometheus servers.
+// If no storage option is specified, then by default an [EmptyDir](https://kubernetes.io/docs/concepts/storage/volumes/#emptydir) will be used.
+//
+// If multiple storage options are specified, priority will be given as follows:
+// 1. emptyDir
+// 2. ephemeral
+// 3. volumeClaimTemplate
 type StorageSpecApplyConfiguration struct {
-	DisableMountSubPath *bool                                            `json:"disableMountSubPath,omitempty"`
-	EmptyDir            *v1.EmptyDirVolumeSource                         `json:"emptyDir,omitempty"`
-	Ephemeral           *v1.EphemeralVolumeSource                        `json:"ephemeral,omitempty"`
+	// disableMountSubPath deprecated: subPath usage will be removed in a future release.
+	DisableMountSubPath *bool `json:"disableMountSubPath,omitempty"`
+	// emptyDir to be used by the StatefulSet.
+	// If specified, it takes precedence over `ephemeral` and `volumeClaimTemplate`.
+	// More info: https://kubernetes.io/docs/concepts/storage/volumes/#emptydir
+	EmptyDir *corev1.EmptyDirVolumeSource `json:"emptyDir,omitempty"`
+	// ephemeral to be used by the StatefulSet.
+	// This is a beta field in k8s 1.21 and GA in 1.15.
+	// For lower versions, starting with k8s 1.19, it requires enabling the GenericEphemeralVolume feature gate.
+	// More info: https://kubernetes.io/docs/concepts/storage/ephemeral-volumes/#generic-ephemeral-volumes
+	Ephemeral *corev1.EphemeralVolumeSource `json:"ephemeral,omitempty"`
+	// volumeClaimTemplate defines the PVC spec to be used by the Prometheus StatefulSets.
+	// The easiest way to use a volume that cannot be automatically provisioned
+	// is to use a label selector alongside manually created PersistentVolumes.
 	VolumeClaimTemplate *EmbeddedPersistentVolumeClaimApplyConfiguration `json:"volumeClaimTemplate,omitempty"`
 }
 
-// StorageSpecApplyConfiguration constructs an declarative configuration of the StorageSpec type for use with
+// StorageSpecApplyConfiguration constructs a declarative configuration of the StorageSpec type for use with
 // apply.
 func StorageSpec() *StorageSpecApplyConfiguration {
 	return &StorageSpecApplyConfiguration{}
@@ -46,7 +65,7 @@ func (b *StorageSpecApplyConfiguration) WithDisableMountSubPath(value bool) *Sto
 // WithEmptyDir sets the EmptyDir field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the EmptyDir field is set to the value of the last call.
-func (b *StorageSpecApplyConfiguration) WithEmptyDir(value v1.EmptyDirVolumeSource) *StorageSpecApplyConfiguration {
+func (b *StorageSpecApplyConfiguration) WithEmptyDir(value corev1.EmptyDirVolumeSource) *StorageSpecApplyConfiguration {
 	b.EmptyDir = &value
 	return b
 }
@@ -54,7 +73,7 @@ func (b *StorageSpecApplyConfiguration) WithEmptyDir(value v1.EmptyDirVolumeSour
 // WithEphemeral sets the Ephemeral field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the Ephemeral field is set to the value of the last call.
-func (b *StorageSpecApplyConfiguration) WithEphemeral(value v1.EphemeralVolumeSource) *StorageSpecApplyConfiguration {
+func (b *StorageSpecApplyConfiguration) WithEphemeral(value corev1.EphemeralVolumeSource) *StorageSpecApplyConfiguration {
 	b.Ephemeral = &value
 	return b
 }
