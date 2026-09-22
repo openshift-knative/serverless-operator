@@ -26,7 +26,7 @@ spec:
         - TAG=v1.17.0
         - CLI_ARTIFACTS=registry.redhat.io/openshift4/ose-cli-artifacts-rhel9:v4.16
         - GO_BUILDER=brew.registry.redhat.io/rh-osbs/openshift-golang-builder:rhel_9_golang_1.26
-        - GO_RUNTIME=registry.access.redhat.com/ubi9/ubi-minimal
+        - GO_RUNTIME=registry.access.redhat.com/ubi9/ubi-minimal@sha256:984df0a2b8d9011d419b0ad260b25f6b74b7ce69ab0595b75522e30f8849f27f
         - JAVA_BUILDER=registry.access.redhat.com/ubi9/openjdk-21
         - JAVA_RUNTIME=registry.access.redhat.com/ubi9/openjdk-21-runtime
         - NODE_BUILDER=registry.access.redhat.com/ubi9/nodejs-20
