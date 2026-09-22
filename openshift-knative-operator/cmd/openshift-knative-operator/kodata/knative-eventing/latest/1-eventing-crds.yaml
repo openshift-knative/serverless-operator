@@ -2299,6 +2299,9 @@ spec:
                                 name:
                                   description: 'Secret name'
                                   type: string
+                        serviceAccountName:
+                          description: 'Optional ServiceAccount to assign to pod. This enables the pod default credentials to be used instead of the auth secret.'
+                          type: string
             status:
               description: Status represents the current state of the IntegrationSink. This data may be out of date.
               type: object
@@ -2724,6 +2727,9 @@ spec:
                                 name:
                                   description: 'Secret name'
                                   type: string
+                        serviceAccountName:
+                          description: 'Optional ServiceAccount to assign to pod. This enables the pod default credentials to be used instead of the auth secret.'
+                          type: string
             status:
               type: object
               properties:
