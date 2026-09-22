@@ -17,35 +17,81 @@
 package v1
 
 import (
-	v1 "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 )
 
-// WebTLSConfigApplyConfiguration represents an declarative configuration of the WebTLSConfig type for use
+// WebTLSConfigApplyConfiguration represents a declarative configuration of the WebTLSConfig type for use
 // with apply.
+//
+// WebTLSConfig defines the TLS parameters for HTTPS.
 type WebTLSConfigApplyConfiguration struct {
-	KeySecret                *v1.SecretKeySelector                `json:"keySecret,omitempty"`
-	Cert                     *SecretOrConfigMapApplyConfiguration `json:"cert,omitempty"`
-	ClientAuthType           *string                              `json:"clientAuthType,omitempty"`
-	ClientCA                 *SecretOrConfigMapApplyConfiguration `json:"client_ca,omitempty"`
-	MinVersion               *string                              `json:"minVersion,omitempty"`
-	MaxVersion               *string                              `json:"maxVersion,omitempty"`
-	CipherSuites             []string                             `json:"cipherSuites,omitempty"`
-	PreferServerCipherSuites *bool                                `json:"preferServerCipherSuites,omitempty"`
-	CurvePreferences         []string                             `json:"curvePreferences,omitempty"`
+	// cert defines the Secret or ConfigMap containing the TLS certificate for the web server.
+	//
+	// Either `keySecret` or `keyFile` must be defined.
+	//
+	// It is mutually exclusive with `certFile`.
+	Cert *SecretOrConfigMapApplyConfiguration `json:"cert,omitempty"`
+	// certFile defines the path to the TLS certificate file in the container for the web server.
+	//
+	// Either `keySecret` or `keyFile` must be defined.
+	//
+	// It is mutually exclusive with `cert`.
+	CertFile *string `json:"certFile,omitempty"`
+	// keySecret defines the secret containing the TLS private key for the web server.
+	//
+	// Either `cert` or `certFile` must be defined.
+	//
+	// It is mutually exclusive with `keyFile`.
+	KeySecret *corev1.SecretKeySelector `json:"keySecret,omitempty"`
+	// keyFile defines the path to the TLS private key file in the container for the web server.
+	//
+	// If defined, either `cert` or `certFile` must be defined.
+	//
+	// It is mutually exclusive with `keySecret`.
+	KeyFile *string `json:"keyFile,omitempty"`
+	// client_ca defines the Secret or ConfigMap containing the CA certificate for client certificate
+	// authentication to the server.
+	//
+	// It is mutually exclusive with `clientCAFile`.
+	ClientCA *SecretOrConfigMapApplyConfiguration `json:"client_ca,omitempty"`
+	// clientCAFile defines the path to the CA certificate file for client certificate authentication to
+	// the server.
+	//
+	// It is mutually exclusive with `client_ca`.
+	ClientCAFile *string `json:"clientCAFile,omitempty"`
+	// clientAuthType defines the server policy for client TLS authentication.
+	//
+	// For more detail on clientAuth options:
+	// https://golang.org/pkg/crypto/tls/#ClientAuthType
+	ClientAuthType *string `json:"clientAuthType,omitempty"`
+	// minVersion defines the minimum TLS version that is acceptable.
+	MinVersion *string `json:"minVersion,omitempty"`
+	// maxVersion defines the Maximum TLS version that is acceptable.
+	MaxVersion *string `json:"maxVersion,omitempty"`
+	// cipherSuites defines the list of supported cipher suites for TLS versions up to TLS 1.2.
+	//
+	// If not defined, the Go default cipher suites are used.
+	// Available cipher suites are documented in the Go documentation:
+	// https://golang.org/pkg/crypto/tls/#pkg-constants
+	CipherSuites []string `json:"cipherSuites,omitempty"`
+	// preferServerCipherSuites defines whether the server selects the client's most preferred cipher
+	// suite, or the server's most preferred cipher suite.
+	//
+	// If true then the server's preference, as expressed in
+	// the order of elements in cipherSuites, is used.
+	PreferServerCipherSuites *bool `json:"preferServerCipherSuites,omitempty"`
+	// curvePreferences defines elliptic curves that will be used in an ECDHE handshake, in preference
+	// order.
+	//
+	// Available curves are documented in the Go documentation:
+	// https://golang.org/pkg/crypto/tls/#CurveID
+	CurvePreferences []string `json:"curvePreferences,omitempty"`
 }
 
-// WebTLSConfigApplyConfiguration constructs an declarative configuration of the WebTLSConfig type for use with
+// WebTLSConfigApplyConfiguration constructs a declarative configuration of the WebTLSConfig type for use with
 // apply.
 func WebTLSConfig() *WebTLSConfigApplyConfiguration {
 	return &WebTLSConfigApplyConfiguration{}
-}
-
-// WithKeySecret sets the KeySecret field in the declarative configuration to the given value
-// and returns the receiver, so that objects can be built by chaining "With" function invocations.
-// If called multiple times, the KeySecret field is set to the value of the last call.
-func (b *WebTLSConfigApplyConfiguration) WithKeySecret(value v1.SecretKeySelector) *WebTLSConfigApplyConfiguration {
-	b.KeySecret = &value
-	return b
 }
 
 // WithCert sets the Cert field in the declarative configuration to the given value
@@ -56,11 +102,27 @@ func (b *WebTLSConfigApplyConfiguration) WithCert(value *SecretOrConfigMapApplyC
 	return b
 }
 
-// WithClientAuthType sets the ClientAuthType field in the declarative configuration to the given value
+// WithCertFile sets the CertFile field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
-// If called multiple times, the ClientAuthType field is set to the value of the last call.
-func (b *WebTLSConfigApplyConfiguration) WithClientAuthType(value string) *WebTLSConfigApplyConfiguration {
-	b.ClientAuthType = &value
+// If called multiple times, the CertFile field is set to the value of the last call.
+func (b *WebTLSConfigApplyConfiguration) WithCertFile(value string) *WebTLSConfigApplyConfiguration {
+	b.CertFile = &value
+	return b
+}
+
+// WithKeySecret sets the KeySecret field in the declarative configuration to the given value
+// and returns the receiver, so that objects can be built by chaining "With" function invocations.
+// If called multiple times, the KeySecret field is set to the value of the last call.
+func (b *WebTLSConfigApplyConfiguration) WithKeySecret(value corev1.SecretKeySelector) *WebTLSConfigApplyConfiguration {
+	b.KeySecret = &value
+	return b
+}
+
+// WithKeyFile sets the KeyFile field in the declarative configuration to the given value
+// and returns the receiver, so that objects can be built by chaining "With" function invocations.
+// If called multiple times, the KeyFile field is set to the value of the last call.
+func (b *WebTLSConfigApplyConfiguration) WithKeyFile(value string) *WebTLSConfigApplyConfiguration {
+	b.KeyFile = &value
 	return b
 }
 
@@ -69,6 +131,22 @@ func (b *WebTLSConfigApplyConfiguration) WithClientAuthType(value string) *WebTL
 // If called multiple times, the ClientCA field is set to the value of the last call.
 func (b *WebTLSConfigApplyConfiguration) WithClientCA(value *SecretOrConfigMapApplyConfiguration) *WebTLSConfigApplyConfiguration {
 	b.ClientCA = value
+	return b
+}
+
+// WithClientCAFile sets the ClientCAFile field in the declarative configuration to the given value
+// and returns the receiver, so that objects can be built by chaining "With" function invocations.
+// If called multiple times, the ClientCAFile field is set to the value of the last call.
+func (b *WebTLSConfigApplyConfiguration) WithClientCAFile(value string) *WebTLSConfigApplyConfiguration {
+	b.ClientCAFile = &value
+	return b
+}
+
+// WithClientAuthType sets the ClientAuthType field in the declarative configuration to the given value
+// and returns the receiver, so that objects can be built by chaining "With" function invocations.
+// If called multiple times, the ClientAuthType field is set to the value of the last call.
+func (b *WebTLSConfigApplyConfiguration) WithClientAuthType(value string) *WebTLSConfigApplyConfiguration {
+	b.ClientAuthType = &value
 	return b
 }
 

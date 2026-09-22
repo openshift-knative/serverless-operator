@@ -18,30 +18,69 @@ package v1
 
 import (
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
+	corev1 "k8s.io/api/core/v1"
 	intstr "k8s.io/apimachinery/pkg/util/intstr"
 )
 
-// AlertmanagerEndpointsApplyConfiguration represents an declarative configuration of the AlertmanagerEndpoints type for use
+// AlertmanagerEndpointsApplyConfiguration represents a declarative configuration of the AlertmanagerEndpoints type for use
 // with apply.
+//
+// AlertmanagerEndpoints defines a selection of a single Endpoints object
+// containing Alertmanager IPs to fire alerts against.
 type AlertmanagerEndpointsApplyConfiguration struct {
-	Namespace           *string                              `json:"namespace,omitempty"`
-	Name                *string                              `json:"name,omitempty"`
-	Port                *intstr.IntOrString                  `json:"port,omitempty"`
-	Scheme              *string                              `json:"scheme,omitempty"`
-	PathPrefix          *string                              `json:"pathPrefix,omitempty"`
-	TLSConfig           *TLSConfigApplyConfiguration         `json:"tlsConfig,omitempty"`
-	BasicAuth           *BasicAuthApplyConfiguration         `json:"basicAuth,omitempty"`
-	BearerTokenFile     *string                              `json:"bearerTokenFile,omitempty"`
-	Authorization       *SafeAuthorizationApplyConfiguration `json:"authorization,omitempty"`
-	Sigv4               *Sigv4ApplyConfiguration             `json:"sigv4,omitempty"`
-	APIVersion          *string                              `json:"apiVersion,omitempty"`
-	Timeout             *monitoringv1.Duration               `json:"timeout,omitempty"`
-	EnableHttp2         *bool                                `json:"enableHttp2,omitempty"`
-	RelabelConfigs      []RelabelConfigApplyConfiguration    `json:"relabelings,omitempty"`
-	AlertRelabelConfigs []RelabelConfigApplyConfiguration    `json:"alertRelabelings,omitempty"`
+	// namespace of the Endpoints object.
+	//
+	// If not set, the object will be discovered in the namespace of the
+	// Prometheus object.
+	Namespace *string `json:"namespace,omitempty"`
+	// name of the Endpoints object in the namespace.
+	Name *string `json:"name,omitempty"`
+	// port on which the Alertmanager API is exposed.
+	Port *intstr.IntOrString `json:"port,omitempty"`
+	// scheme defines the HTTP scheme to use when sending alerts.
+	Scheme *monitoringv1.Scheme `json:"scheme,omitempty"`
+	// pathPrefix defines the prefix for the HTTP path alerts are pushed to.
+	PathPrefix *string `json:"pathPrefix,omitempty"`
+	// tlsConfig to use for Alertmanager.
+	TLSConfig *TLSConfigApplyConfiguration `json:"tlsConfig,omitempty"`
+	// basicAuth configuration for Alertmanager.
+	//
+	// Cannot be set at the same time as `bearerTokenFile`, `authorization` or `sigv4`.
+	BasicAuth *BasicAuthApplyConfiguration `json:"basicAuth,omitempty"`
+	// bearerTokenFile defines the file to read bearer token for Alertmanager.
+	//
+	// Cannot be set at the same time as `basicAuth`, `authorization`, or `sigv4`.
+	//
+	// Deprecated: this will be removed in a future release. Prefer using `authorization`.
+	BearerTokenFile *string `json:"bearerTokenFile,omitempty"`
+	// authorization section for Alertmanager.
+	//
+	// Cannot be set at the same time as `basicAuth`, `bearerTokenFile` or `sigv4`.
+	Authorization *SafeAuthorizationApplyConfiguration `json:"authorization,omitempty"`
+	// sigv4 defines AWS's Signature Verification 4 for the URL.
+	//
+	// It requires Prometheus >= v2.48.0.
+	//
+	// Cannot be set at the same time as `basicAuth`, `bearerTokenFile` or `authorization`.
+	Sigv4 *Sigv4ApplyConfiguration `json:"sigv4,omitempty"`
+	// ProxyConfig
+	ProxyConfigApplyConfiguration `json:""`
+	// apiVersion defines the version of the Alertmanager API that Prometheus uses to send alerts.
+	// It can be "V1" or "V2".
+	// The field has no effect for Prometheus >= v3.0.0 because only the v2 API is supported.
+	APIVersion *monitoringv1.AlertmanagerAPIVersion `json:"apiVersion,omitempty"`
+	// timeout defines a per-target Alertmanager timeout when pushing alerts.
+	Timeout *monitoringv1.Duration `json:"timeout,omitempty"`
+	// enableHttp2 defines whether to enable HTTP2.
+	EnableHttp2 *bool `json:"enableHttp2,omitempty"`
+	// relabelings defines the relabel configuration applied to the discovered Alertmanagers.
+	RelabelConfigs []RelabelConfigApplyConfiguration `json:"relabelings,omitempty"`
+	// alertRelabelings defines the relabeling configs applied before sending alerts to a specific Alertmanager.
+	// It requires Prometheus >= v2.51.0.
+	AlertRelabelConfigs []RelabelConfigApplyConfiguration `json:"alertRelabelings,omitempty"`
 }
 
-// AlertmanagerEndpointsApplyConfiguration constructs an declarative configuration of the AlertmanagerEndpoints type for use with
+// AlertmanagerEndpointsApplyConfiguration constructs a declarative configuration of the AlertmanagerEndpoints type for use with
 // apply.
 func AlertmanagerEndpoints() *AlertmanagerEndpointsApplyConfiguration {
 	return &AlertmanagerEndpointsApplyConfiguration{}
@@ -74,7 +113,7 @@ func (b *AlertmanagerEndpointsApplyConfiguration) WithPort(value intstr.IntOrStr
 // WithScheme sets the Scheme field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the Scheme field is set to the value of the last call.
-func (b *AlertmanagerEndpointsApplyConfiguration) WithScheme(value string) *AlertmanagerEndpointsApplyConfiguration {
+func (b *AlertmanagerEndpointsApplyConfiguration) WithScheme(value monitoringv1.Scheme) *AlertmanagerEndpointsApplyConfiguration {
 	b.Scheme = &value
 	return b
 }
@@ -127,10 +166,48 @@ func (b *AlertmanagerEndpointsApplyConfiguration) WithSigv4(value *Sigv4ApplyCon
 	return b
 }
 
+// WithProxyURL sets the ProxyURL field in the declarative configuration to the given value
+// and returns the receiver, so that objects can be built by chaining "With" function invocations.
+// If called multiple times, the ProxyURL field is set to the value of the last call.
+func (b *AlertmanagerEndpointsApplyConfiguration) WithProxyURL(value string) *AlertmanagerEndpointsApplyConfiguration {
+	b.ProxyConfigApplyConfiguration.ProxyURL = &value
+	return b
+}
+
+// WithNoProxy sets the NoProxy field in the declarative configuration to the given value
+// and returns the receiver, so that objects can be built by chaining "With" function invocations.
+// If called multiple times, the NoProxy field is set to the value of the last call.
+func (b *AlertmanagerEndpointsApplyConfiguration) WithNoProxy(value string) *AlertmanagerEndpointsApplyConfiguration {
+	b.ProxyConfigApplyConfiguration.NoProxy = &value
+	return b
+}
+
+// WithProxyFromEnvironment sets the ProxyFromEnvironment field in the declarative configuration to the given value
+// and returns the receiver, so that objects can be built by chaining "With" function invocations.
+// If called multiple times, the ProxyFromEnvironment field is set to the value of the last call.
+func (b *AlertmanagerEndpointsApplyConfiguration) WithProxyFromEnvironment(value bool) *AlertmanagerEndpointsApplyConfiguration {
+	b.ProxyConfigApplyConfiguration.ProxyFromEnvironment = &value
+	return b
+}
+
+// WithProxyConnectHeader puts the entries into the ProxyConnectHeader field in the declarative configuration
+// and returns the receiver, so that objects can be build by chaining "With" function invocations.
+// If called multiple times, the entries provided by each call will be put on the ProxyConnectHeader field,
+// overwriting an existing map entries in ProxyConnectHeader field with the same key.
+func (b *AlertmanagerEndpointsApplyConfiguration) WithProxyConnectHeader(entries map[string][]corev1.SecretKeySelector) *AlertmanagerEndpointsApplyConfiguration {
+	if b.ProxyConfigApplyConfiguration.ProxyConnectHeader == nil && len(entries) > 0 {
+		b.ProxyConfigApplyConfiguration.ProxyConnectHeader = make(map[string][]corev1.SecretKeySelector, len(entries))
+	}
+	for k, v := range entries {
+		b.ProxyConfigApplyConfiguration.ProxyConnectHeader[k] = v
+	}
+	return b
+}
+
 // WithAPIVersion sets the APIVersion field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the APIVersion field is set to the value of the last call.
-func (b *AlertmanagerEndpointsApplyConfiguration) WithAPIVersion(value string) *AlertmanagerEndpointsApplyConfiguration {
+func (b *AlertmanagerEndpointsApplyConfiguration) WithAPIVersion(value monitoringv1.AlertmanagerAPIVersion) *AlertmanagerEndpointsApplyConfiguration {
 	b.APIVersion = &value
 	return b
 }

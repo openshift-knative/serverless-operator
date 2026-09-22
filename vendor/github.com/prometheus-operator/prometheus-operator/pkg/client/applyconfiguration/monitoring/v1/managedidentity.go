@@ -16,13 +16,18 @@
 
 package v1
 
-// ManagedIdentityApplyConfiguration represents an declarative configuration of the ManagedIdentity type for use
+// ManagedIdentityApplyConfiguration represents a declarative configuration of the ManagedIdentity type for use
 // with apply.
+//
+// ManagedIdentity defines the Azure User-assigned Managed identity.
 type ManagedIdentityApplyConfiguration struct {
+	// clientId defines the Azure User-assigned Managed identity.
+	//
+	// For Prometheus >= 3.5.0 and Thanos >= 0.40.0, this field is allowed to be empty to support system-assigned managed identities.
 	ClientID *string `json:"clientId,omitempty"`
 }
 
-// ManagedIdentityApplyConfiguration constructs an declarative configuration of the ManagedIdentity type for use with
+// ManagedIdentityApplyConfiguration constructs a declarative configuration of the ManagedIdentity type for use with
 // apply.
 func ManagedIdentity() *ManagedIdentityApplyConfiguration {
 	return &ManagedIdentityApplyConfiguration{}

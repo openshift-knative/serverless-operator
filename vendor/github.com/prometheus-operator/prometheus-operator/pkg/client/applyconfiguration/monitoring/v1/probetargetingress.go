@@ -17,18 +17,30 @@
 package v1
 
 import (
-	v1 "k8s.io/client-go/applyconfigurations/meta/v1"
+	metav1 "k8s.io/client-go/applyconfigurations/meta/v1"
 )
 
-// ProbeTargetIngressApplyConfiguration represents an declarative configuration of the ProbeTargetIngress type for use
+// ProbeTargetIngressApplyConfiguration represents a declarative configuration of the ProbeTargetIngress type for use
 // with apply.
+//
+// ProbeTargetIngress defines the set of Ingress objects considered for probing.
+// The operator configures a target for each host/path combination of each ingress object.
 type ProbeTargetIngressApplyConfiguration struct {
-	Selector          *v1.LabelSelectorApplyConfiguration  `json:"selector,omitempty"`
+	// selector to select the Ingress objects.
+	Selector *metav1.LabelSelectorApplyConfiguration `json:"selector,omitempty"`
+	// namespaceSelector defines from which namespaces to select Ingress objects.
 	NamespaceSelector *NamespaceSelectorApplyConfiguration `json:"namespaceSelector,omitempty"`
-	RelabelConfigs    []RelabelConfigApplyConfiguration    `json:"relabelingConfigs,omitempty"`
+	// relabelingConfigs to apply to the label set of the target before it gets
+	// scraped.
+	// The original ingress address is available via the
+	// `__tmp_prometheus_ingress_address` label. It can be used to customize the
+	// probed URL.
+	// The original scrape job's name is available via the `__tmp_prometheus_job_name` label.
+	// More info: https://prometheus.io/docs/prometheus/latest/configuration/configuration/#relabel_config
+	RelabelConfigs []RelabelConfigApplyConfiguration `json:"relabelingConfigs,omitempty"`
 }
 
-// ProbeTargetIngressApplyConfiguration constructs an declarative configuration of the ProbeTargetIngress type for use with
+// ProbeTargetIngressApplyConfiguration constructs a declarative configuration of the ProbeTargetIngress type for use with
 // apply.
 func ProbeTargetIngress() *ProbeTargetIngressApplyConfiguration {
 	return &ProbeTargetIngressApplyConfiguration{}
@@ -37,7 +49,7 @@ func ProbeTargetIngress() *ProbeTargetIngressApplyConfiguration {
 // WithSelector sets the Selector field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the Selector field is set to the value of the last call.
-func (b *ProbeTargetIngressApplyConfiguration) WithSelector(value *v1.LabelSelectorApplyConfiguration) *ProbeTargetIngressApplyConfiguration {
+func (b *ProbeTargetIngressApplyConfiguration) WithSelector(value *metav1.LabelSelectorApplyConfiguration) *ProbeTargetIngressApplyConfiguration {
 	b.Selector = value
 	return b
 }

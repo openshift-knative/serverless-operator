@@ -17,18 +17,23 @@
 package v1
 
 import (
-	v1 "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 )
 
-// AzureOAuthApplyConfiguration represents an declarative configuration of the AzureOAuth type for use
+// AzureOAuthApplyConfiguration represents a declarative configuration of the AzureOAuth type for use
 // with apply.
+//
+// AzureOAuth defines the Azure OAuth settings.
 type AzureOAuthApplyConfiguration struct {
-	ClientID     *string               `json:"clientId,omitempty"`
-	ClientSecret *v1.SecretKeySelector `json:"clientSecret,omitempty"`
-	TenantID     *string               `json:"tenantId,omitempty"`
+	// clientId defines the clientId of the Azure Active Directory application that is being used to authenticate.
+	ClientID *string `json:"clientId,omitempty"`
+	// clientSecret specifies a key of a Secret containing the client secret of the Azure Active Directory application that is being used to authenticate.
+	ClientSecret *corev1.SecretKeySelector `json:"clientSecret,omitempty"`
+	// tenantId is the tenant ID of the Azure Active Directory application that is being used to authenticate.
+	TenantID *string `json:"tenantId,omitempty"`
 }
 
-// AzureOAuthApplyConfiguration constructs an declarative configuration of the AzureOAuth type for use with
+// AzureOAuthApplyConfiguration constructs a declarative configuration of the AzureOAuth type for use with
 // apply.
 func AzureOAuth() *AzureOAuthApplyConfiguration {
 	return &AzureOAuthApplyConfiguration{}
@@ -45,7 +50,7 @@ func (b *AzureOAuthApplyConfiguration) WithClientID(value string) *AzureOAuthApp
 // WithClientSecret sets the ClientSecret field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the ClientSecret field is set to the value of the last call.
-func (b *AzureOAuthApplyConfiguration) WithClientSecret(value v1.SecretKeySelector) *AzureOAuthApplyConfiguration {
+func (b *AzureOAuthApplyConfiguration) WithClientSecret(value corev1.SecretKeySelector) *AzureOAuthApplyConfiguration {
 	b.ClientSecret = &value
 	return b
 }

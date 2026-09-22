@@ -17,19 +17,27 @@
 package v1
 
 import (
-	v1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
+	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 )
 
-// QuerySpecApplyConfiguration represents an declarative configuration of the QuerySpec type for use
+// QuerySpecApplyConfiguration represents a declarative configuration of the QuerySpec type for use
 // with apply.
+//
+// QuerySpec defines the query command line flags when starting Prometheus.
 type QuerySpecApplyConfiguration struct {
-	LookbackDelta  *string      `json:"lookbackDelta,omitempty"`
-	MaxConcurrency *int32       `json:"maxConcurrency,omitempty"`
-	MaxSamples     *int32       `json:"maxSamples,omitempty"`
-	Timeout        *v1.Duration `json:"timeout,omitempty"`
+	// lookbackDelta defines the delta difference allowed for retrieving metrics during expression evaluations.
+	LookbackDelta *string `json:"lookbackDelta,omitempty"`
+	// maxConcurrency defines the number of concurrent queries that can be run at once.
+	MaxConcurrency *int32 `json:"maxConcurrency,omitempty"`
+	// maxSamples defines the maximum number of samples a single query can load into memory. Note that
+	// queries will fail if they would load more samples than this into memory,
+	// so this also limits the number of samples a query can return.
+	MaxSamples *int32 `json:"maxSamples,omitempty"`
+	// timeout defines the maximum time a query may take before being aborted.
+	Timeout *monitoringv1.Duration `json:"timeout,omitempty"`
 }
 
-// QuerySpecApplyConfiguration constructs an declarative configuration of the QuerySpec type for use with
+// QuerySpecApplyConfiguration constructs a declarative configuration of the QuerySpec type for use with
 // apply.
 func QuerySpec() *QuerySpecApplyConfiguration {
 	return &QuerySpecApplyConfiguration{}
@@ -62,7 +70,7 @@ func (b *QuerySpecApplyConfiguration) WithMaxSamples(value int32) *QuerySpecAppl
 // WithTimeout sets the Timeout field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the Timeout field is set to the value of the last call.
-func (b *QuerySpecApplyConfiguration) WithTimeout(value v1.Duration) *QuerySpecApplyConfiguration {
+func (b *QuerySpecApplyConfiguration) WithTimeout(value monitoringv1.Duration) *QuerySpecApplyConfiguration {
 	b.Timeout = &value
 	return b
 }
