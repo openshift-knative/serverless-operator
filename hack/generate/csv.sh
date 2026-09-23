@@ -47,16 +47,31 @@ declare -A operator_images_addresses
 
 declare -a images
 declare -A images_addresses
+declare -A images_categories
 
 declare -a kafka_images
 declare -A kafka_images_addresses
 
+# Feature groups are emitted as boolean labels (`<feature>: "true"`) on each
+# `spec.relatedImages` entry, following the OPRUN-4725 proposal. Consumers such
+# as `oc mirror` select images with Kubernetes label selectors, e.g.
+# `matchLabels: {kafka: "true"}`. Each image carries exactly one feature; a
+# feature that also needs another feature's images (e.g. Kafka needs Eventing)
+# is handled consumer-side by passing the union of the relevant selectors, as
+# documented for mirroring - features are intentionally not cross-labelled here.
+# To add a new group, pass a new category string as the 3rd argument to `image`
+# below. Images passed without a category are left unlabeled and are therefore
+# always mirrored; use this for images required for the operator to run
+# regardless of which features are enabled. Known groups: serving, eventing,
+# kafka, functions.
 function image {
-  local name address
+  local name address category
   name="${1:?Pass a image name as arg[1]}"
   address="${2:?Pass a image address as arg[2]}"
+  category="${3:-}"
   images+=("${name}")
   images_addresses["${name}"]="${address}"
+  images_categories["${name}"]="${category}"
 }
 
 function kafka_image {
@@ -82,51 +97,51 @@ operator_image "knative-openshift-ingress" "${SERVERLESS_INGRESS}"
 serving_version=$(metadata.get dependencies.serving)
 serving_version=${serving_version/knative-v/}
 
-image "queue-proxy"    "${KNATIVE_SERVING_QUEUE}"
-image "activator"      "${KNATIVE_SERVING_ACTIVATOR}"
-image "autoscaler"     "${KNATIVE_SERVING_AUTOSCALER}"
-image "autoscaler-hpa" "${KNATIVE_SERVING_AUTOSCALER_HPA}"
-image "controller__controller"     "${KNATIVE_SERVING_CONTROLLER}"
-image "webhook__webhook" "${KNATIVE_SERVING_WEBHOOK}"
-image "storage-version-migration-serving-__migrate" "${KNATIVE_SERVING_STORAGE_VERSION_MIGRATION}"
+image "queue-proxy"    "${KNATIVE_SERVING_QUEUE}" "serving"
+image "activator"      "${KNATIVE_SERVING_ACTIVATOR}" "serving"
+image "autoscaler"     "${KNATIVE_SERVING_AUTOSCALER}" "serving"
+image "autoscaler-hpa" "${KNATIVE_SERVING_AUTOSCALER_HPA}" "serving"
+image "controller__controller"     "${KNATIVE_SERVING_CONTROLLER}" "serving"
+image "webhook__webhook" "${KNATIVE_SERVING_WEBHOOK}" "serving"
+image "storage-version-migration-serving-__migrate" "${KNATIVE_SERVING_STORAGE_VERSION_MIGRATION}" "serving"
 
-image "kourier-gateway" "${KNATIVE_KOURIER_GATEWAY}"
-image "net-kourier-controller__controller" "${KNATIVE_KOURIER_CONTROL}"
+image "kourier-gateway" "${KNATIVE_KOURIER_GATEWAY}" "serving"
+image "net-kourier-controller__controller" "${KNATIVE_KOURIER_CONTROL}" "serving"
 
-image "net-istio-controller__controller" "${KNATIVE_ISTIO_CONTROLLER}"
-image "net-istio-webhook__webhook" "${KNATIVE_ISTIO_WEBHOOK}"
+image "net-istio-controller__controller" "${KNATIVE_ISTIO_CONTROLLER}" "serving"
+image "net-istio-webhook__webhook" "${KNATIVE_ISTIO_WEBHOOK}" "serving"
 
 eventing_version=$(metadata.get dependencies.eventing)
 eventing_version=${eventing_version/knative-v/}
 
-image "eventing-controller__eventing-controller"                                 "${KNATIVE_EVENTING_CONTROLLER}"
-image "eventing-istio-controller__eventing-istio-controller"                     "${KNATIVE_EVENTING_ISTIO_CONTROLLER}"
-image "eventing-webhook__eventing-webhook"                                       "${KNATIVE_EVENTING_WEBHOOK}"
-image "storage-version-migration-eventing-__migrate"                             "${KNATIVE_EVENTING_STORAGE_VERSION_MIGRATION}"
-image "mt-broker-controller__mt-broker-controller"                               "${KNATIVE_EVENTING_MTCHANNEL_BROKER}"
-image "mt-broker-filter__filter"                                                 "${KNATIVE_EVENTING_FILTER}"
-image "mt-broker-ingress__ingress"                                               "${KNATIVE_EVENTING_INGRESS}"
-image "imc-controller__controller"                                               "${KNATIVE_EVENTING_CHANNEL_CONTROLLER}"
-image "imc-dispatcher__dispatcher"                                               "${KNATIVE_EVENTING_CHANNEL_DISPATCHER}"
-image "pingsource-mt-adapter__dispatcher"                                        "${KNATIVE_EVENTING_MTPING}"
-image "job-sink__job-sink"                                                       "${KNATIVE_EVENTING_JOBSINK}"
-image "request-reply__request-reply"                                             "${KNATIVE_EVENTING_REQUEST_REPLY}"
+image "eventing-controller__eventing-controller"                                 "${KNATIVE_EVENTING_CONTROLLER}" "eventing"
+image "eventing-istio-controller__eventing-istio-controller"                     "${KNATIVE_EVENTING_ISTIO_CONTROLLER}" "eventing"
+image "eventing-webhook__eventing-webhook"                                       "${KNATIVE_EVENTING_WEBHOOK}" "eventing"
+image "storage-version-migration-eventing-__migrate"                             "${KNATIVE_EVENTING_STORAGE_VERSION_MIGRATION}" "eventing"
+image "mt-broker-controller__mt-broker-controller"                               "${KNATIVE_EVENTING_MTCHANNEL_BROKER}" "eventing"
+image "mt-broker-filter__filter"                                                 "${KNATIVE_EVENTING_FILTER}" "eventing"
+image "mt-broker-ingress__ingress"                                               "${KNATIVE_EVENTING_INGRESS}" "eventing"
+image "imc-controller__controller"                                               "${KNATIVE_EVENTING_CHANNEL_CONTROLLER}" "eventing"
+image "imc-dispatcher__dispatcher"                                               "${KNATIVE_EVENTING_CHANNEL_DISPATCHER}" "eventing"
+image "pingsource-mt-adapter__dispatcher"                                        "${KNATIVE_EVENTING_MTPING}" "eventing"
+image "job-sink__job-sink"                                                       "${KNATIVE_EVENTING_JOBSINK}" "eventing"
+image "request-reply__request-reply"                                             "${KNATIVE_EVENTING_REQUEST_REPLY}" "eventing"
 
 # The first param need to match the env variable name expected by the controllers, the second param is defined in `images.bash`.
-image "APISERVER_RA_IMAGE"                                                       "${KNATIVE_EVENTING_APISERVER_RECEIVE_ADAPTER}"
-image "AUTH_PROXY_IMAGE"                                                         "${KNATIVE_EVENTING_AUTH_PROXY}"
-image "DISPATCHER_IMAGE"                                                         "${KNATIVE_EVENTING_CHANNEL_DISPATCHER}"
-image "EVENT_TRANSFORM_JSONATA_IMAGE"                                            "${KNATIVE_EVENTING_INTEGRATIONS_TRANSFORM_JSONATA}"
-image "INTEGRATION_SOURCE_TIMER_IMAGE"                                           "${KNATIVE_EVENTING_INTEGRATIONS_TIMER_SOURCE}"
-image "INTEGRATION_SOURCE_AWS_S3_IMAGE"                                          "${KNATIVE_EVENTING_INTEGRATIONS_AWS_S3_SOURCE}"
-image "INTEGRATION_SOURCE_AWS_SQS_IMAGE"                                         "${KNATIVE_EVENTING_INTEGRATIONS_AWS_SQS_SOURCE}"
-image "INTEGRATION_SOURCE_AWS_DDB_STREAMS_IMAGE"                                 "${KNATIVE_EVENTING_INTEGRATIONS_AWS_DDB_STREAMS_SOURCE}"
-image "INTEGRATION_SINK_LOG_IMAGE"                                               "${KNATIVE_EVENTING_INTEGRATIONS_LOG_SINK}"
-image "INTEGRATION_SINK_AWS_S3_IMAGE"                                            "${KNATIVE_EVENTING_INTEGRATIONS_AWS_S3_SINK}"
-image "INTEGRATION_SINK_AWS_SQS_IMAGE"                                           "${KNATIVE_EVENTING_INTEGRATIONS_AWS_SQS_SINK}"
-image "INTEGRATION_SINK_AWS_SNS_IMAGE"                                           "${KNATIVE_EVENTING_INTEGRATIONS_AWS_SNS_SINK}"
+image "APISERVER_RA_IMAGE"                                                       "${KNATIVE_EVENTING_APISERVER_RECEIVE_ADAPTER}" "eventing"
+image "AUTH_PROXY_IMAGE"                                                         "${KNATIVE_EVENTING_AUTH_PROXY}" "eventing"
+image "DISPATCHER_IMAGE"                                                         "${KNATIVE_EVENTING_CHANNEL_DISPATCHER}" "eventing"
+image "EVENT_TRANSFORM_JSONATA_IMAGE"                                            "${KNATIVE_EVENTING_INTEGRATIONS_TRANSFORM_JSONATA}" "eventing"
+image "INTEGRATION_SOURCE_TIMER_IMAGE"                                           "${KNATIVE_EVENTING_INTEGRATIONS_TIMER_SOURCE}" "eventing"
+image "INTEGRATION_SOURCE_AWS_S3_IMAGE"                                          "${KNATIVE_EVENTING_INTEGRATIONS_AWS_S3_SOURCE}" "eventing"
+image "INTEGRATION_SOURCE_AWS_SQS_IMAGE"                                         "${KNATIVE_EVENTING_INTEGRATIONS_AWS_SQS_SOURCE}" "eventing"
+image "INTEGRATION_SOURCE_AWS_DDB_STREAMS_IMAGE"                                 "${KNATIVE_EVENTING_INTEGRATIONS_AWS_DDB_STREAMS_SOURCE}" "eventing"
+image "INTEGRATION_SINK_LOG_IMAGE"                                               "${KNATIVE_EVENTING_INTEGRATIONS_LOG_SINK}" "eventing"
+image "INTEGRATION_SINK_AWS_S3_IMAGE"                                            "${KNATIVE_EVENTING_INTEGRATIONS_AWS_S3_SINK}" "eventing"
+image "INTEGRATION_SINK_AWS_SQS_IMAGE"                                           "${KNATIVE_EVENTING_INTEGRATIONS_AWS_SQS_SINK}" "eventing"
+image "INTEGRATION_SINK_AWS_SNS_IMAGE"                                           "${KNATIVE_EVENTING_INTEGRATIONS_AWS_SNS_SINK}" "eventing"
 
-image "eventmesh-backend__controller" "${KNATIVE_BACKSTAGE_PLUGINS_EVENTMESH}"
+image "eventmesh-backend__controller" "${KNATIVE_BACKSTAGE_PLUGINS_EVENTMESH}" "eventing"
 
 kafka_image "kafka-broker-receiver__kafka-broker-receiver"       "${KNATIVE_EVENTING_KAFKA_BROKER_RECEIVER}"
 kafka_image "kafka-broker-dispatcher__kafka-broker-dispatcher"   "${KNATIVE_EVENTING_KAFKA_BROKER_DISPATCHER}"
@@ -143,11 +158,11 @@ image 'KUBE_RBAC_PROXY'          "${rbac_proxy}"
 image 'KN_PLUGIN_EVENT_SENDER'   "${KNATIVE_KN_PLUGIN_EVENT_SENDER}"
 image 'KN_CLIENT'                "${KNATIVE_KN_CLIENT}"
 
-image "KN_PLUGIN_FUNC_UTIL"               "${KNATIVE_KN_PLUGIN_FUNC_FUNC_UTIL}"
-image "KN_PLUGIN_FUNC_TEKTON_BUILDAH"     "${KNATIVE_KN_PLUGIN_FUNC_TEKTON_BUILDAH}"
-image "KN_PLUGIN_FUNC_NODEJS_20_MINIMAL"  "${KNATIVE_KN_PLUGIN_FUNC_NODEJS_20_MINIMAL}"
-image "KN_PLUGIN_FUNC_OPENJDK_21"         "${KNATIVE_KN_PLUGIN_FUNC_OPENJDK_21}"
-image "KN_PLUGIN_FUNC_PYTHON_39"          "${KNATIVE_KN_PLUGIN_FUNC_PYTHON_39}"
+image "KN_PLUGIN_FUNC_UTIL"               "${KNATIVE_KN_PLUGIN_FUNC_FUNC_UTIL}" "functions"
+image "KN_PLUGIN_FUNC_TEKTON_BUILDAH"     "${KNATIVE_KN_PLUGIN_FUNC_TEKTON_BUILDAH}" "functions"
+image "KN_PLUGIN_FUNC_NODEJS_20_MINIMAL"  "${KNATIVE_KN_PLUGIN_FUNC_NODEJS_20_MINIMAL}" "functions"
+image "KN_PLUGIN_FUNC_OPENJDK_21"         "${KNATIVE_KN_PLUGIN_FUNC_OPENJDK_21}" "functions"
+image "KN_PLUGIN_FUNC_PYTHON_39"          "${KNATIVE_KN_PLUGIN_FUNC_PYTHON_39}" "functions"
 
 declare -A yaml_keys
 yaml_keys[spec.version]="$(metadata.get project.version)"
@@ -162,14 +177,32 @@ vars[OCP_TARGET]="$(metadata.get 'requirements.ocpVersion.doc')"
 vars[VERSION_MAJOR_MINOR]="$(versions.major_minor $(metadata.get 'project.version'))"
 
 function add_related_image {
-  echo "Add related image to '${1}' - $2 = $3"
-  cat << EOF | yq write --inplace --script - "$1"
+  local target name address category
+  target="${1:?Pass a target CSV file as arg[1]}"
+  name="${2:?Pass a image name as arg[2]}"
+  address="${3:?Pass a image address as arg[3]}"
+  category="${4:-}" # feature label; empty means unlabeled (always mirrored)
+  if [[ -n "${category}" ]]; then
+    echo "Add related image to '${target}' - ${name} = ${address} (feature=${category})"
+    cat << EOF | yq write --inplace --script - "$target"
 - command: update
   path: spec.relatedImages[+]
   value:
-    name: "${2}"
-    image: "${3}"
+    name: "${name}"
+    image: "${address}"
+    labels:
+      ${category}: "true"
 EOF
+  else
+    echo "Add related image to '${target}' - ${name} = ${address}"
+    cat << EOF | yq write --inplace --script - "$target"
+- command: update
+  path: spec.relatedImages[+]
+  value:
+    name: "${name}"
+    image: "${address}"
+EOF
+  fi
 }
 
 function add_downstream_operator_deployment_env {
@@ -224,7 +257,7 @@ done
 
 for name in "${images[@]}"; do
   echo "Image: ${name} -> ${images_addresses[$name]}"
-  add_related_image "$target" "IMAGE_${name}" "${images_addresses[$name]}"
+  add_related_image "$target" "IMAGE_${name}" "${images_addresses[$name]}" "${images_categories[$name]}"
   add_downstream_operator_deployment_env "$target" "IMAGE_${name}" "${images_addresses[$name]}"
   add_upstream_operator_deployment_env "$target" "IMAGE_${name}" "${images_addresses[$name]}"
 done
@@ -232,7 +265,7 @@ done
 # don't add Kafka image overrides to upstream operator
 for name in "${kafka_images[@]}"; do
   echo "kafka Image: ${name} -> ${kafka_images_addresses[$name]}"
-  add_related_image "$target" "KAFKA_IMAGE_${name}" "${kafka_images_addresses[$name]}"
+  add_related_image "$target" "KAFKA_IMAGE_${name}" "${kafka_images_addresses[$name]}" "kafka"
   add_downstream_operator_deployment_env "$target" "KAFKA_IMAGE_${name}" "${kafka_images_addresses[$name]}"
 done
 
