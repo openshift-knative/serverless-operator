@@ -8071,7 +8071,7 @@ relatedImages:
   name: IMAGE_KN_PLUGIN_FUNC_PYTHON_39
 schema: olm.bundle
 ---
-image: registry.redhat.io/openshift-serverless-1/serverless-operator-bundle@sha256:737cd39f2ddcc4bfe345968765aa5b115127226eb8f7c3061a3f9d9721d69b38
+image: registry.redhat.io/openshift-serverless-1/serverless-operator-bundle@sha256:2e8599e6745336290a91d7d54ddcd13e5bf71bd749263b46e8ca15332c29e6cb
 name: serverless-operator.v1.37.2
 package: serverless-operator
 properties:
@@ -8324,7 +8324,7 @@ properties:
     provider:
       name: Red Hat
 relatedImages:
-- image: registry.redhat.io/openshift-serverless-1/serverless-operator-bundle@sha256:737cd39f2ddcc4bfe345968765aa5b115127226eb8f7c3061a3f9d9721d69b38
+- image: registry.redhat.io/openshift-serverless-1/serverless-operator-bundle@sha256:2e8599e6745336290a91d7d54ddcd13e5bf71bd749263b46e8ca15332c29e6cb
   name: ""
 - image: registry.access.redhat.com/ubi9/nodejs-20-minimal@sha256:87f2eb0ce06e922a7629fa94fad62ed4e6be05931852b779269e0692282a099e
   name: IMAGE_KN_PLUGIN_FUNC_NODEJS_20_MINIMAL
