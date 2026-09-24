@@ -99,7 +99,7 @@ dependencies:
   func:
     promotion_tag: knative-v1.17
     # if additional image is added amend the list in hack/generate/catalog.sh
-    tekton_buildah: registry.redhat.io/rhel9/buildah@sha256:1619ad51fd537d93e13230b2c138a253394cf2ba1b87158b7c1aee05bf997010
+    tekton_buildah: registry.redhat.io/rhel9/buildah@sha256:72f7f3d58894b7c22f73855f53480e0fbd921fc73bf9b84f200c61aacdf8d886
     nodejs_20_minimal: registry.access.redhat.com/ubi9/nodejs-20-minimal@sha256:87f2eb0ce06e922a7629fa94fad62ed4e6be05931852b779269e0692282a099e
     openjdk_21: registry.access.redhat.com/ubi9/openjdk-21@sha256:645710be17ff582b0f2eb5d52f572556a2b73f4367290548bbc89431213e3ece
     python-39: registry.access.redhat.com/ubi9/python-39@sha256:c2e6814ba5dc4519e66c8c4d322526756808e36d947376a79e5e5432e7166008
