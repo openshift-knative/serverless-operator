@@ -8071,7 +8071,7 @@ relatedImages:
   name: IMAGE_KN_PLUGIN_FUNC_PYTHON_39
 schema: olm.bundle
 ---
-image: registry.redhat.io/openshift-serverless-1/serverless-operator-bundle@sha256:c900da9ac27c9960f1c7ca6023d0370b24beeacd08f5590ed0069f99151dbae0
+image: registry.redhat.io/openshift-serverless-1/serverless-operator-bundle@sha256:c43f3a1457f1e07c7edc61d63fcdb03be222ba7f425373b83bcb4d13b76c30e4
 name: serverless-operator.v1.37.2
 package: serverless-operator
 properties:
@@ -8324,7 +8324,7 @@ properties:
     provider:
       name: Red Hat
 relatedImages:
-- image: registry.redhat.io/openshift-serverless-1/serverless-operator-bundle@sha256:c900da9ac27c9960f1c7ca6023d0370b24beeacd08f5590ed0069f99151dbae0
+- image: registry.redhat.io/openshift-serverless-1/serverless-operator-bundle@sha256:c43f3a1457f1e07c7edc61d63fcdb03be222ba7f425373b83bcb4d13b76c30e4
   name: ""
 - image: registry.access.redhat.com/ubi9/nodejs-20-minimal@sha256:87f2eb0ce06e922a7629fa94fad62ed4e6be05931852b779269e0692282a099e
   name: IMAGE_KN_PLUGIN_FUNC_NODEJS_20_MINIMAL
@@ -8438,6 +8438,6 @@ relatedImages:
   name: IMAGE_kourier-gateway
 - image: registry.redhat.io/openshift4/ose-kube-rbac-proxy-rhel9@sha256:7e9af19d232194c75ac8953c02266b67a49824fabfb54a4f7ad2e8a876c5a80f
   name: IMAGE_KUBE_RBAC_PROXY
-- image: registry.redhat.io/rhel9/buildah@sha256:f2ee079da81e8558324d687db93e9d241ac09cdb085c37392554e03ae5ed986a
+- image: registry.redhat.io/rhel9/buildah@sha256:1619ad51fd537d93e13230b2c138a253394cf2ba1b87158b7c1aee05bf997010
   name: IMAGE_KN_PLUGIN_FUNC_TEKTON_BUILDAH
 schema: olm.bundle
