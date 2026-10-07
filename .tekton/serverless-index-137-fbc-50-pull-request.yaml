@@ -16,7 +16,7 @@ metadata:
   name: serverless-index-137-fbc-50-on-pull-request
   namespace: ocp-serverless-tenant
 spec:
-  params:
+  params: 
     - name: dockerfile
       value: Dockerfile
     - name: path-context
@@ -51,6 +51,7 @@ spec:
         - alpha
         - render-template
         - basic
+        - --migrate-level=bundle-object-to-csv-metadata
         - "olm-catalog/serverless-operator-index/v5.0/catalog-template.yaml"
     - name: opm-output-path
       value: olm-catalog/serverless-operator-index/v5.0/catalog/serverless-operator/catalog.yaml
