@@ -234,8 +234,7 @@ spec:
     - name: DOCKERFILE
       value: $(params.dockerfile)
     - name: BUILD_ARGS
-      value:
-      - $(params.build-args[*])
+      value: $(params.build-args[*])
     runAfter:
     - clone-repository
     taskRef:
