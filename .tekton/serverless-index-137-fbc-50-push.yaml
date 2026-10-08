@@ -50,7 +50,6 @@ spec:
         - alpha
         - render-template
         - basic
-        - --migrate-level=bundle-object-to-csv-metadata
         - "olm-catalog/serverless-operator-index/v5.0/catalog-template.yaml"
     - name: opm-output-path
       value: olm-catalog/serverless-operator-index/v5.0/catalog/serverless-operator/catalog.yaml
