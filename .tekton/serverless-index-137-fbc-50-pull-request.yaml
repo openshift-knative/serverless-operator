@@ -16,7 +16,7 @@ metadata:
   name: serverless-index-137-fbc-50-on-pull-request
   namespace: ocp-serverless-tenant
 spec:
-  params: 
+  params:
     - name: dockerfile
       value: Dockerfile
     - name: path-context
