@@ -1,5 +1,5 @@
 # DO NOT EDIT! Generated Dockerfile for openshift-knative-operator/cmd/openshift-knative-operator.
-ARG GO_BUILDER=registry.ci.openshift.org/openshift/release:rhel-8-release-golang-1.23-openshift-4.19
+ARG GO_BUILDER=registry.ci.openshift.org/openshift/release:rhel-8-release-golang-1.25-openshift-4.21
 ARG GO_RUNTIME=registry.access.redhat.com/ubi8/ubi-minimal
 
 FROM $GO_BUILDER as builder
@@ -25,14 +25,17 @@ COPY openshift-knative-operator/cmd/openshift-knative-operator/kodata $KO_DATA_P
 USER 65532
 
 LABEL \
-      com.redhat.component="openshift-serverless-1-openshift-knative-operator-rhel8-container" \
-      name="openshift-serverless-1/openshift-knative-operator-rhel8" \
+      com.redhat.component="openshift-serverless-1-serverless-openshift-kn-rhel8-operator-container" \
+      name="openshift-serverless-1/serverless-openshift-kn-rhel8-operator" \
       version=$VERSION \
       summary="Red Hat OpenShift Serverless 1 Openshift Knative Operator" \
       maintainer="serverless-support@redhat.com" \
       description="Red Hat OpenShift Serverless 1 Openshift Knative Operator" \
       io.k8s.display-name="Red Hat OpenShift Serverless 1 Openshift Knative Operator" \
       io.k8s.description="Red Hat OpenShift Serverless Openshift Knative Operator" \
-      io.openshift.tags="openshift-knative-operator"
-
+      io.openshift.tags="openshift-knative-operator" \
+      vendor="Red Hat, Inc." \
+      release=$VERSION \
+      cpe="cpe:/a:redhat:openshift_serverless:1.36::el8"
+      
 ENTRYPOINT ["/usr/bin/openshift-knative-operator"]
