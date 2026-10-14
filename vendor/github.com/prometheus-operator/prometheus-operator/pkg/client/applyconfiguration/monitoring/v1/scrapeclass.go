@@ -16,18 +16,58 @@
 
 package v1
 
-// ScrapeClassApplyConfiguration represents an declarative configuration of the ScrapeClass type for use
+import (
+	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
+)
+
+// ScrapeClassApplyConfiguration represents a declarative configuration of the ScrapeClass type for use
 // with apply.
 type ScrapeClassApplyConfiguration struct {
-	Name              *string                           `json:"name,omitempty"`
-	Default           *bool                             `json:"default,omitempty"`
-	TLSConfig         *TLSConfigApplyConfiguration      `json:"tlsConfig,omitempty"`
-	Relabelings       []RelabelConfigApplyConfiguration `json:"relabelings,omitempty"`
+	// name of the scrape class.
+	Name *string `json:"name,omitempty"`
+	// default defines that the scrape applies to all scrape objects that
+	// don't configure an explicit scrape class name.
+	//
+	// Only one scrape class can be set as the default.
+	Default *bool `json:"default,omitempty"`
+	// fallbackScrapeProtocol defines the protocol to use if a scrape returns blank, unparseable, or otherwise invalid Content-Type.
+	// It will only apply if the scrape resource doesn't specify any FallbackScrapeProtocol
+	//
+	// It requires Prometheus >= v3.0.0.
+	FallbackScrapeProtocol *monitoringv1.ScrapeProtocol `json:"fallbackScrapeProtocol,omitempty"`
+	// tlsConfig defines the TLS settings to use for the scrape. When the
+	// scrape objects define their own CA, certificate and/or key, they take
+	// precedence over the corresponding scrape class fields.
+	//
+	// For now only the `caFile`, `certFile` and `keyFile` fields are supported.
+	TLSConfig *TLSConfigApplyConfiguration `json:"tlsConfig,omitempty"`
+	// authorization section for the ScrapeClass.
+	// It will only apply if the scrape resource doesn't specify any Authorization.
+	Authorization *AuthorizationApplyConfiguration `json:"authorization,omitempty"`
+	// relabelings defines the relabeling rules to apply to all scrape targets.
+	//
+	// The Operator automatically adds relabelings for a few standard Kubernetes fields
+	// like `__meta_kubernetes_namespace` and `__meta_kubernetes_service_name`.
+	// Then the Operator adds the scrape class relabelings defined here.
+	// Then the Operator adds the target-specific relabelings defined in the scrape object.
+	//
+	// More info: https://prometheus.io/docs/prometheus/latest/configuration/configuration/#relabel_config
+	Relabelings []RelabelConfigApplyConfiguration `json:"relabelings,omitempty"`
+	// metricRelabelings defines the relabeling rules to apply to all samples before ingestion.
+	//
+	// The Operator adds the scrape class metric relabelings defined here.
+	// Then the Operator adds the target-specific metric relabelings defined in ServiceMonitors, PodMonitors, Probes and ScrapeConfigs.
+	// Then the Operator adds namespace enforcement relabeling rule, specified in '.spec.enforcedNamespaceLabel'.
+	//
+	// More info: https://prometheus.io/docs/prometheus/latest/configuration/configuration/#metric_relabel_configs
 	MetricRelabelings []RelabelConfigApplyConfiguration `json:"metricRelabelings,omitempty"`
-	AttachMetadata    *AttachMetadataApplyConfiguration `json:"attachMetadata,omitempty"`
+	// attachMetadata defines additional metadata to the discovered targets.
+	// When the scrape object defines its own configuration, it takes
+	// precedence over the scrape class configuration.
+	AttachMetadata *AttachMetadataApplyConfiguration `json:"attachMetadata,omitempty"`
 }
 
-// ScrapeClassApplyConfiguration constructs an declarative configuration of the ScrapeClass type for use with
+// ScrapeClassApplyConfiguration constructs a declarative configuration of the ScrapeClass type for use with
 // apply.
 func ScrapeClass() *ScrapeClassApplyConfiguration {
 	return &ScrapeClassApplyConfiguration{}
@@ -49,11 +89,27 @@ func (b *ScrapeClassApplyConfiguration) WithDefault(value bool) *ScrapeClassAppl
 	return b
 }
 
+// WithFallbackScrapeProtocol sets the FallbackScrapeProtocol field in the declarative configuration to the given value
+// and returns the receiver, so that objects can be built by chaining "With" function invocations.
+// If called multiple times, the FallbackScrapeProtocol field is set to the value of the last call.
+func (b *ScrapeClassApplyConfiguration) WithFallbackScrapeProtocol(value monitoringv1.ScrapeProtocol) *ScrapeClassApplyConfiguration {
+	b.FallbackScrapeProtocol = &value
+	return b
+}
+
 // WithTLSConfig sets the TLSConfig field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the TLSConfig field is set to the value of the last call.
 func (b *ScrapeClassApplyConfiguration) WithTLSConfig(value *TLSConfigApplyConfiguration) *ScrapeClassApplyConfiguration {
 	b.TLSConfig = value
+	return b
+}
+
+// WithAuthorization sets the Authorization field in the declarative configuration to the given value
+// and returns the receiver, so that objects can be built by chaining "With" function invocations.
+// If called multiple times, the Authorization field is set to the value of the last call.
+func (b *ScrapeClassApplyConfiguration) WithAuthorization(value *AuthorizationApplyConfiguration) *ScrapeClassApplyConfiguration {
+	b.Authorization = value
 	return b
 }
 

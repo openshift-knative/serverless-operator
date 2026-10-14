@@ -17,39 +17,126 @@
 package v1
 
 import (
-	apismonitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
-	v1 "k8s.io/api/core/v1"
+	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
+	corev1 "k8s.io/api/core/v1"
 )
 
-// ThanosSpecApplyConfiguration represents an declarative configuration of the ThanosSpec type for use
+// ThanosSpecApplyConfiguration represents a declarative configuration of the ThanosSpec type for use
 // with apply.
+//
+// ThanosSpec defines the configuration of the Thanos sidecar.
 type ThanosSpecApplyConfiguration struct {
-	Image                   *string                      `json:"image,omitempty"`
-	Version                 *string                      `json:"version,omitempty"`
-	Tag                     *string                      `json:"tag,omitempty"`
-	SHA                     *string                      `json:"sha,omitempty"`
-	BaseImage               *string                      `json:"baseImage,omitempty"`
-	Resources               *v1.ResourceRequirements     `json:"resources,omitempty"`
-	ObjectStorageConfig     *v1.SecretKeySelector        `json:"objectStorageConfig,omitempty"`
-	ObjectStorageConfigFile *string                      `json:"objectStorageConfigFile,omitempty"`
-	ListenLocal             *bool                        `json:"listenLocal,omitempty"`
-	GRPCListenLocal         *bool                        `json:"grpcListenLocal,omitempty"`
-	HTTPListenLocal         *bool                        `json:"httpListenLocal,omitempty"`
-	TracingConfig           *v1.SecretKeySelector        `json:"tracingConfig,omitempty"`
-	TracingConfigFile       *string                      `json:"tracingConfigFile,omitempty"`
-	GRPCServerTLSConfig     *TLSConfigApplyConfiguration `json:"grpcServerTlsConfig,omitempty"`
-	LogLevel                *string                      `json:"logLevel,omitempty"`
-	LogFormat               *string                      `json:"logFormat,omitempty"`
-	MinTime                 *string                      `json:"minTime,omitempty"`
-	BlockDuration           *apismonitoringv1.Duration   `json:"blockSize,omitempty"`
-	ReadyTimeout            *apismonitoringv1.Duration   `json:"readyTimeout,omitempty"`
-	GetConfigInterval       *apismonitoringv1.Duration   `json:"getConfigInterval,omitempty"`
-	GetConfigTimeout        *apismonitoringv1.Duration   `json:"getConfigTimeout,omitempty"`
-	VolumeMounts            []v1.VolumeMount             `json:"volumeMounts,omitempty"`
-	AdditionalArgs          []ArgumentApplyConfiguration `json:"additionalArgs,omitempty"`
+	// image defines the container image name for Thanos. If specified, it takes precedence over
+	// the `spec.thanos.baseImage`, `spec.thanos.tag` and `spec.thanos.sha`
+	// fields.
+	//
+	// Specifying `spec.thanos.version` is still necessary to ensure the
+	// Prometheus Operator knows which version of Thanos is being configured.
+	//
+	// If neither `spec.thanos.image` nor `spec.thanos.baseImage` are defined,
+	// the operator will use the latest upstream version of Thanos available at
+	// the time when the operator was released.
+	Image *string `json:"image,omitempty"`
+	// version of Thanos being deployed. The operator uses this information
+	// to generate the Prometheus StatefulSet + configuration files.
+	//
+	// If not specified, the operator assumes the latest upstream release of
+	// Thanos available at the time when the version of the operator was
+	// released.
+	Version *string `json:"version,omitempty"`
+	// tag is deprecated: use 'image' instead. The image's tag can be specified as as part of the image name.
+	Tag *string `json:"tag,omitempty"`
+	// sha is deprecated: use 'image' instead.  The image digest can be specified as part of the image name.
+	SHA *string `json:"sha,omitempty"`
+	// baseImage is deprecated: use 'image' instead.
+	BaseImage *string `json:"baseImage,omitempty"`
+	// resources defines the resources requests and limits of the Thanos sidecar.
+	Resources *corev1.ResourceRequirements `json:"resources,omitempty"`
+	// objectStorageConfig defines the Thanos sidecar's configuration to upload TSDB blocks to object storage.
+	//
+	// More info: https://thanos.io/tip/thanos/storage.md/
+	//
+	// objectStorageConfigFile takes precedence over this field.
+	ObjectStorageConfig *corev1.SecretKeySelector `json:"objectStorageConfig,omitempty"`
+	// objectStorageConfigFile defines the Thanos sidecar's configuration file to upload TSDB blocks to object storage.
+	//
+	// More info: https://thanos.io/tip/thanos/storage.md/
+	//
+	// This field takes precedence over objectStorageConfig.
+	ObjectStorageConfigFile *string `json:"objectStorageConfigFile,omitempty"`
+	// listenLocal is deprecated: use `grpcListenLocal` and `httpListenLocal` instead.
+	ListenLocal *bool `json:"listenLocal,omitempty"`
+	// grpcListenLocal defines when true, the Thanos sidecar listens on the loopback interface instead
+	// of the Pod IP's address for the gRPC endpoints.
+	//
+	// It has no effect if `listenLocal` is true.
+	GRPCListenLocal *bool `json:"grpcListenLocal,omitempty"`
+	// httpListenLocal when true, the Thanos sidecar listens on the loopback interface instead
+	// of the Pod IP's address for the HTTP endpoints.
+	//
+	// It has no effect if `listenLocal` is true.
+	HTTPListenLocal *bool `json:"httpListenLocal,omitempty"`
+	// tracingConfig defines the tracing configuration for the Thanos sidecar.
+	//
+	// `tracingConfigFile` takes precedence over this field.
+	//
+	// More info: https://thanos.io/tip/thanos/tracing.md/
+	//
+	// This is an *experimental feature*, it may change in any upcoming release
+	// in a breaking way.
+	TracingConfig *corev1.SecretKeySelector `json:"tracingConfig,omitempty"`
+	// tracingConfigFile defines the tracing configuration file for the Thanos sidecar.
+	//
+	// This field takes precedence over `tracingConfig`.
+	//
+	// More info: https://thanos.io/tip/thanos/tracing.md/
+	//
+	// This is an *experimental feature*, it may change in any upcoming release
+	// in a breaking way.
+	TracingConfigFile *string `json:"tracingConfigFile,omitempty"`
+	// grpcServerTlsConfig defines the TLS parameters for the gRPC server providing the StoreAPI.
+	//
+	// Note: Currently only the `minVersion`, `caFile`, `certFile`, `keyFile`, `cipherSuites` and `curves` fields are supported.
+	GRPCServerTLSConfig *GRPCServerTLSConfigApplyConfiguration `json:"grpcServerTlsConfig,omitempty"`
+	// logLevel for the Thanos sidecar.
+	LogLevel *string `json:"logLevel,omitempty"`
+	// logFormat for the Thanos sidecar.
+	LogFormat *string `json:"logFormat,omitempty"`
+	// minTime defines the start of time range limit served by the Thanos sidecar's StoreAPI.
+	// The field's value should be a constant time in RFC3339 format or a time
+	// duration relative to current time, such as -1d or 2h45m. Valid duration
+	// units are ms, s, m, h, d, w, y.
+	MinTime *string `json:"minTime,omitempty"`
+	// blockSize controls the size of TSDB blocks produced by Prometheus.
+	// The default value is 2h to match the upstream Prometheus defaults.
+	//
+	// WARNING: Changing the block duration can impact the performance and
+	// efficiency of the entire Prometheus/Thanos stack due to how it interacts
+	// with memory and Thanos compactors. It is recommended to keep this value
+	// set to a multiple of 120 times your longest scrape or rule interval. For
+	// example, 30s * 120 = 1h.
+	BlockDuration *monitoringv1.Duration `json:"blockSize,omitempty"`
+	// readyTimeout defines the maximum time that the Thanos sidecar will wait for
+	// Prometheus to start.
+	ReadyTimeout *monitoringv1.Duration `json:"readyTimeout,omitempty"`
+	// getConfigInterval defines how often to retrieve the Prometheus configuration.
+	GetConfigInterval *monitoringv1.Duration `json:"getConfigInterval,omitempty"`
+	// getConfigTimeout defines the maximum time to wait when retrieving the Prometheus configuration.
+	GetConfigTimeout *monitoringv1.Duration `json:"getConfigTimeout,omitempty"`
+	// volumeMounts allows configuration of additional VolumeMounts for Thanos.
+	// VolumeMounts specified will be appended to other VolumeMounts in the
+	// 'thanos-sidecar' container.
+	VolumeMounts []corev1.VolumeMount `json:"volumeMounts,omitempty"`
+	// additionalArgs allows setting additional arguments for the Thanos container.
+	// The arguments are passed as-is to the Thanos container which may cause issues
+	// if they are invalid or not supported the given Thanos version.
+	// In case of an argument conflict (e.g. an argument which is already set by the
+	// operator itself) or when providing an invalid argument, the reconciliation will
+	// fail and an error will be logged.
+	AdditionalArgs []ArgumentApplyConfiguration `json:"additionalArgs,omitempty"`
 }
 
-// ThanosSpecApplyConfiguration constructs an declarative configuration of the ThanosSpec type for use with
+// ThanosSpecApplyConfiguration constructs a declarative configuration of the ThanosSpec type for use with
 // apply.
 func ThanosSpec() *ThanosSpecApplyConfiguration {
 	return &ThanosSpecApplyConfiguration{}
@@ -98,7 +185,7 @@ func (b *ThanosSpecApplyConfiguration) WithBaseImage(value string) *ThanosSpecAp
 // WithResources sets the Resources field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the Resources field is set to the value of the last call.
-func (b *ThanosSpecApplyConfiguration) WithResources(value v1.ResourceRequirements) *ThanosSpecApplyConfiguration {
+func (b *ThanosSpecApplyConfiguration) WithResources(value corev1.ResourceRequirements) *ThanosSpecApplyConfiguration {
 	b.Resources = &value
 	return b
 }
@@ -106,7 +193,7 @@ func (b *ThanosSpecApplyConfiguration) WithResources(value v1.ResourceRequiremen
 // WithObjectStorageConfig sets the ObjectStorageConfig field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the ObjectStorageConfig field is set to the value of the last call.
-func (b *ThanosSpecApplyConfiguration) WithObjectStorageConfig(value v1.SecretKeySelector) *ThanosSpecApplyConfiguration {
+func (b *ThanosSpecApplyConfiguration) WithObjectStorageConfig(value corev1.SecretKeySelector) *ThanosSpecApplyConfiguration {
 	b.ObjectStorageConfig = &value
 	return b
 }
@@ -146,7 +233,7 @@ func (b *ThanosSpecApplyConfiguration) WithHTTPListenLocal(value bool) *ThanosSp
 // WithTracingConfig sets the TracingConfig field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the TracingConfig field is set to the value of the last call.
-func (b *ThanosSpecApplyConfiguration) WithTracingConfig(value v1.SecretKeySelector) *ThanosSpecApplyConfiguration {
+func (b *ThanosSpecApplyConfiguration) WithTracingConfig(value corev1.SecretKeySelector) *ThanosSpecApplyConfiguration {
 	b.TracingConfig = &value
 	return b
 }
@@ -162,7 +249,7 @@ func (b *ThanosSpecApplyConfiguration) WithTracingConfigFile(value string) *Than
 // WithGRPCServerTLSConfig sets the GRPCServerTLSConfig field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the GRPCServerTLSConfig field is set to the value of the last call.
-func (b *ThanosSpecApplyConfiguration) WithGRPCServerTLSConfig(value *TLSConfigApplyConfiguration) *ThanosSpecApplyConfiguration {
+func (b *ThanosSpecApplyConfiguration) WithGRPCServerTLSConfig(value *GRPCServerTLSConfigApplyConfiguration) *ThanosSpecApplyConfiguration {
 	b.GRPCServerTLSConfig = value
 	return b
 }
@@ -194,7 +281,7 @@ func (b *ThanosSpecApplyConfiguration) WithMinTime(value string) *ThanosSpecAppl
 // WithBlockDuration sets the BlockDuration field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the BlockDuration field is set to the value of the last call.
-func (b *ThanosSpecApplyConfiguration) WithBlockDuration(value apismonitoringv1.Duration) *ThanosSpecApplyConfiguration {
+func (b *ThanosSpecApplyConfiguration) WithBlockDuration(value monitoringv1.Duration) *ThanosSpecApplyConfiguration {
 	b.BlockDuration = &value
 	return b
 }
@@ -202,7 +289,7 @@ func (b *ThanosSpecApplyConfiguration) WithBlockDuration(value apismonitoringv1.
 // WithReadyTimeout sets the ReadyTimeout field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the ReadyTimeout field is set to the value of the last call.
-func (b *ThanosSpecApplyConfiguration) WithReadyTimeout(value apismonitoringv1.Duration) *ThanosSpecApplyConfiguration {
+func (b *ThanosSpecApplyConfiguration) WithReadyTimeout(value monitoringv1.Duration) *ThanosSpecApplyConfiguration {
 	b.ReadyTimeout = &value
 	return b
 }
@@ -210,7 +297,7 @@ func (b *ThanosSpecApplyConfiguration) WithReadyTimeout(value apismonitoringv1.D
 // WithGetConfigInterval sets the GetConfigInterval field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the GetConfigInterval field is set to the value of the last call.
-func (b *ThanosSpecApplyConfiguration) WithGetConfigInterval(value apismonitoringv1.Duration) *ThanosSpecApplyConfiguration {
+func (b *ThanosSpecApplyConfiguration) WithGetConfigInterval(value monitoringv1.Duration) *ThanosSpecApplyConfiguration {
 	b.GetConfigInterval = &value
 	return b
 }
@@ -218,7 +305,7 @@ func (b *ThanosSpecApplyConfiguration) WithGetConfigInterval(value apismonitorin
 // WithGetConfigTimeout sets the GetConfigTimeout field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the GetConfigTimeout field is set to the value of the last call.
-func (b *ThanosSpecApplyConfiguration) WithGetConfigTimeout(value apismonitoringv1.Duration) *ThanosSpecApplyConfiguration {
+func (b *ThanosSpecApplyConfiguration) WithGetConfigTimeout(value monitoringv1.Duration) *ThanosSpecApplyConfiguration {
 	b.GetConfigTimeout = &value
 	return b
 }
@@ -226,7 +313,7 @@ func (b *ThanosSpecApplyConfiguration) WithGetConfigTimeout(value apismonitoring
 // WithVolumeMounts adds the given value to the VolumeMounts field in the declarative configuration
 // and returns the receiver, so that objects can be build by chaining "With" function invocations.
 // If called multiple times, values provided by each call will be appended to the VolumeMounts field.
-func (b *ThanosSpecApplyConfiguration) WithVolumeMounts(values ...v1.VolumeMount) *ThanosSpecApplyConfiguration {
+func (b *ThanosSpecApplyConfiguration) WithVolumeMounts(values ...corev1.VolumeMount) *ThanosSpecApplyConfiguration {
 	for i := range values {
 		b.VolumeMounts = append(b.VolumeMounts, values[i])
 	}

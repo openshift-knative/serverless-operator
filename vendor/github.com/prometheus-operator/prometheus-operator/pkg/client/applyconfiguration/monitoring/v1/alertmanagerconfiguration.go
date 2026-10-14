@@ -16,15 +16,22 @@
 
 package v1
 
-// AlertmanagerConfigurationApplyConfiguration represents an declarative configuration of the AlertmanagerConfiguration type for use
+// AlertmanagerConfigurationApplyConfiguration represents a declarative configuration of the AlertmanagerConfiguration type for use
 // with apply.
+//
+// AlertmanagerConfiguration defines the Alertmanager configuration.
 type AlertmanagerConfigurationApplyConfiguration struct {
-	Name      *string                                     `json:"name,omitempty"`
-	Global    *AlertmanagerGlobalConfigApplyConfiguration `json:"global,omitempty"`
-	Templates []SecretOrConfigMapApplyConfiguration       `json:"templates,omitempty"`
+	// name defines the name of the AlertmanagerConfig custom resource which is used to generate the Alertmanager configuration.
+	// It must be defined in the same namespace as the Alertmanager object.
+	// The operator will not enforce a `namespace` label for routes and inhibition rules.
+	Name *string `json:"name,omitempty"`
+	// global defines the global parameters of the Alertmanager configuration.
+	Global *AlertmanagerGlobalConfigApplyConfiguration `json:"global,omitempty"`
+	// templates defines the custom notification templates.
+	Templates []SecretOrConfigMapApplyConfiguration `json:"templates,omitempty"`
 }
 
-// AlertmanagerConfigurationApplyConfiguration constructs an declarative configuration of the AlertmanagerConfiguration type for use with
+// AlertmanagerConfigurationApplyConfiguration constructs a declarative configuration of the AlertmanagerConfiguration type for use with
 // apply.
 func AlertmanagerConfiguration() *AlertmanagerConfigurationApplyConfiguration {
 	return &AlertmanagerConfigurationApplyConfiguration{}

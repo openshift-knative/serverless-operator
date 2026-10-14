@@ -17,22 +17,51 @@
 package v1
 
 import (
-	v1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
+	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 )
 
-// RelabelConfigApplyConfiguration represents an declarative configuration of the RelabelConfig type for use
+// RelabelConfigApplyConfiguration represents a declarative configuration of the RelabelConfig type for use
 // with apply.
+//
+// RelabelConfig allows dynamic rewriting of the label set for targets, alerts,
+// scraped samples and remote write samples.
+//
+// More info: https://prometheus.io/docs/prometheus/latest/configuration/configuration/#relabel_config
 type RelabelConfigApplyConfiguration struct {
-	SourceLabels []v1.LabelName `json:"sourceLabels,omitempty"`
-	Separator    *string        `json:"separator,omitempty"`
-	TargetLabel  *string        `json:"targetLabel,omitempty"`
-	Regex        *string        `json:"regex,omitempty"`
-	Modulus      *uint64        `json:"modulus,omitempty"`
-	Replacement  *string        `json:"replacement,omitempty"`
-	Action       *string        `json:"action,omitempty"`
+	// sourceLabels defines the source labels select values from existing labels. Their content is
+	// concatenated using the configured Separator and matched against the
+	// configured regular expression.
+	SourceLabels []monitoringv1.LabelName `json:"sourceLabels,omitempty"`
+	// separator defines the string between concatenated SourceLabels.
+	Separator *string `json:"separator,omitempty"`
+	// targetLabel defines the label to which the resulting string is written in a replacement.
+	//
+	// It is mandatory for `Replace`, `HashMod`, `Lowercase`, `Uppercase`,
+	// `KeepEqual` and `DropEqual` actions.
+	//
+	// Regex capture groups are available.
+	TargetLabel *string `json:"targetLabel,omitempty"`
+	// regex defines the regular expression against which the extracted value is matched.
+	Regex *string `json:"regex,omitempty"`
+	// modulus to take of the hash of the source label values.
+	//
+	// Only applicable when the action is `HashMod`.
+	Modulus *int64 `json:"modulus,omitempty"`
+	// replacement value against which a Replace action is performed if the
+	// regular expression matches.
+	//
+	// Regex capture groups are available.
+	Replacement *string `json:"replacement,omitempty"`
+	// action to perform based on the regex matching.
+	//
+	// `Uppercase` and `Lowercase` actions require Prometheus >= v2.36.0.
+	// `DropEqual` and `KeepEqual` actions require Prometheus >= v2.41.0.
+	//
+	// Default: "Replace"
+	Action *string `json:"action,omitempty"`
 }
 
-// RelabelConfigApplyConfiguration constructs an declarative configuration of the RelabelConfig type for use with
+// RelabelConfigApplyConfiguration constructs a declarative configuration of the RelabelConfig type for use with
 // apply.
 func RelabelConfig() *RelabelConfigApplyConfiguration {
 	return &RelabelConfigApplyConfiguration{}
@@ -41,7 +70,7 @@ func RelabelConfig() *RelabelConfigApplyConfiguration {
 // WithSourceLabels adds the given value to the SourceLabels field in the declarative configuration
 // and returns the receiver, so that objects can be build by chaining "With" function invocations.
 // If called multiple times, values provided by each call will be appended to the SourceLabels field.
-func (b *RelabelConfigApplyConfiguration) WithSourceLabels(values ...v1.LabelName) *RelabelConfigApplyConfiguration {
+func (b *RelabelConfigApplyConfiguration) WithSourceLabels(values ...monitoringv1.LabelName) *RelabelConfigApplyConfiguration {
 	for i := range values {
 		b.SourceLabels = append(b.SourceLabels, values[i])
 	}
@@ -75,7 +104,7 @@ func (b *RelabelConfigApplyConfiguration) WithRegex(value string) *RelabelConfig
 // WithModulus sets the Modulus field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the Modulus field is set to the value of the last call.
-func (b *RelabelConfigApplyConfiguration) WithModulus(value uint64) *RelabelConfigApplyConfiguration {
+func (b *RelabelConfigApplyConfiguration) WithModulus(value int64) *RelabelConfigApplyConfiguration {
 	b.Modulus = &value
 	return b
 }
