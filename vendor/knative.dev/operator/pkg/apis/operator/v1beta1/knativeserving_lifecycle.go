@@ -17,6 +17,7 @@ limitations under the License.
 package v1beta1
 
 import (
+	"os"
 	"strings"
 
 	"knative.dev/operator/pkg/apis/operator"
@@ -132,7 +133,7 @@ func (is *KnativeServingStatus) GetVersion() string {
 
 // SetVersion sets the currently installed version of the component.
 func (is *KnativeServingStatus) SetVersion(version string) {
-	is.Version = version
+	is.Version = os.Getenv("KNATIVE_SERVING_VERSION")
 }
 
 // GetManifests gets the url links of the manifests.
