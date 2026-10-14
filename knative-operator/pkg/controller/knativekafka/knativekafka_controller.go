@@ -29,6 +29,7 @@ import (
 
 	mf "github.com/manifestival/manifestival"
 	appsv1 "k8s.io/api/apps/v1"
+	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -285,6 +286,7 @@ func (r *ReconcileKnativeKafka) executeInstallStages(ctx context.Context, instan
 		r.transform,
 		removeCreationTimestamp,
 		r.handleTLSResources(ctx),
+		r.rerunJobsAfterVersionSwitch,
 		r.apply,
 		r.checkDeployments,
 		r.checkStatefulSets,
@@ -385,6 +387,77 @@ func injectOwner(owner mf.Owner) mf.Transformer {
 }
 
 // Install Knative Kafka components
+// rerunJobsOnVersionChange deletes the finished Jobs of the manifest when the
+// operator version recorded in the status differs from CURRENT_VERSION, so
+// that apply re-creates them and their post-install migrations run again.
+// Jobs are named <name>-<CURRENT_VERSION>, so after upgrade -> downgrade ->
+// upgrade the Job of the target version already exists (Complete) and would
+// otherwise never run again (SRVKE-1658). Running Jobs are left alone: they
+// belong to an install of this version that is in flight.
+// rerunJobsAfterVersionSwitch deletes the finished post-install Jobs of this
+// version when another operator version ran after them, so that apply
+// re-creates them and their migrations run again (SRVKE-1658). The Jobs are
+// named <name>-<version> and never deleted, so a downgrade and a second
+// upgrade find them Complete and skip them. The switch is visible in the
+// Deployments: the other version applied its own images, which differ from
+// the images of this manifest.
+func (r *ReconcileKnativeKafka) rerunJobsAfterVersionSwitch(manifest *mf.Manifest, _ *serverlessoperatorv1alpha1.KnativeKafka) error {
+	switched, err := r.deploymentImagesDiffer(manifest)
+	if err != nil || !switched {
+		return err
+	}
+	for _, u := range manifest.Filter(mf.ByKind("Job")).Resources() {
+		job := &batchv1.Job{}
+		err := r.client.Get(context.TODO(), client.ObjectKey{Namespace: u.GetNamespace(), Name: u.GetName()}, job)
+		if apierrors.IsNotFound(err) {
+			continue
+		}
+		if err != nil {
+			return fmt.Errorf("failed to get job %s/%s: %w", u.GetNamespace(), u.GetName(), err)
+		}
+		if job.Status.Active > 0 {
+			continue
+		}
+		log.Info("Deleting finished job so it re-runs, another operator version was installed after it", "job", job.Name)
+		// The precondition protects the Job that apply re-creates under the
+		// same name when a later reconcile reads this one from a stale cache.
+		err = r.client.Delete(context.TODO(), job, client.PropagationPolicy(metav1.DeletePropagationBackground), client.Preconditions{ResourceVersion: &job.ResourceVersion})
+		if err != nil && !apierrors.IsNotFound(err) && !apierrors.IsConflict(err) {
+			return fmt.Errorf("failed to delete job %s/%s: %w", job.Namespace, job.Name, err)
+		}
+	}
+	return nil
+}
+
+// deploymentImagesDiffer reports whether a live Deployment of the manifest
+// runs another image than the manifest in a container of the same name.
+func (r *ReconcileKnativeKafka) deploymentImagesDiffer(manifest *mf.Manifest) (bool, error) {
+	for _, u := range manifest.Filter(mf.ByKind("Deployment")).Resources() {
+		want := &appsv1.Deployment{}
+		if err := scheme.Scheme.Convert(&u, want, nil); err != nil {
+			return false, err
+		}
+		live := &appsv1.Deployment{}
+		err := r.client.Get(context.TODO(), client.ObjectKey{Namespace: want.Namespace, Name: want.Name}, live)
+		if apierrors.IsNotFound(err) {
+			continue
+		}
+		if err != nil {
+			return false, fmt.Errorf("failed to get deployment %s/%s: %w", want.Namespace, want.Name, err)
+		}
+		liveImages := map[string]string{}
+		for _, c := range live.Spec.Template.Spec.Containers {
+			liveImages[c.Name] = c.Image
+		}
+		for _, c := range want.Spec.Template.Spec.Containers {
+			if img, ok := liveImages[c.Name]; ok && img != c.Image {
+				return true, nil
+			}
+		}
+	}
+	return false, nil
+}
+
 func (r *ReconcileKnativeKafka) apply(manifest *mf.Manifest, instance *serverlessoperatorv1alpha1.KnativeKafka) error {
 	log.Info("Installing manifest")
 	// The Operator needs a higher level of permissions if it 'bind's non-existent roles.
