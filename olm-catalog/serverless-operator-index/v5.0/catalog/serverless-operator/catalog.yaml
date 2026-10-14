@@ -8071,7 +8071,7 @@ relatedImages:
   name: IMAGE_KN_PLUGIN_FUNC_PYTHON_39
 schema: olm.bundle
 ---
-image: registry.redhat.io/openshift-serverless-1/serverless-operator-bundle@sha256:4ef547183598cb452f79758267d20f48efa987aa84c71afc7008dcb69ad9c274
+image: registry.redhat.io/openshift-serverless-1/serverless-operator-bundle@sha256:38e7da01d0c1c4de62f658b7a7b3785d597508629d8979173a96f2b3871e6626
 name: serverless-operator.v1.37.2
 package: serverless-operator
 properties:
@@ -8324,13 +8324,13 @@ properties:
     provider:
       name: Red Hat
 relatedImages:
-- image: registry.redhat.io/openshift-serverless-1/serverless-operator-bundle@sha256:4ef547183598cb452f79758267d20f48efa987aa84c71afc7008dcb69ad9c274
+- image: registry.redhat.io/openshift-serverless-1/serverless-operator-bundle@sha256:38e7da01d0c1c4de62f658b7a7b3785d597508629d8979173a96f2b3871e6626
   name: ""
 - image: registry.access.redhat.com/ubi9/nodejs-20-minimal@sha256:87f2eb0ce06e922a7629fa94fad62ed4e6be05931852b779269e0692282a099e
   name: IMAGE_KN_PLUGIN_FUNC_NODEJS_20_MINIMAL
-- image: registry.access.redhat.com/ubi9/openjdk-21@sha256:3e281b9da807321a35231b3ba543eeff9b7c736ece3f27a914303d3b8f9da0e1
+- image: registry.access.redhat.com/ubi9/openjdk-21@sha256:bd995811a45eb587f97a105796f8f43df466a4269411a2a1642f0f9799f885db
   name: IMAGE_KN_PLUGIN_FUNC_OPENJDK_21
-- image: registry.access.redhat.com/ubi9/python-39@sha256:a74eb096739a36db1f5951b0c2f30598864e04645ee705f03935961c6eb1feca
+- image: registry.access.redhat.com/ubi9/python-39@sha256:d908923146765da3ab4ca01c50c5ce9e00ee41099db350876273c325fb98032c
   name: IMAGE_KN_PLUGIN_FUNC_PYTHON_39
 - image: registry.redhat.io/openshift-serverless-1/kn-backstage-plugins-eventmesh-rhel9@sha256:dbb29f171d3f45d8dc8dbc1bd86f0c8df94ff807270e0f7cd7f0df217a7764e9
   name: IMAGE_eventmesh-backend__controller
@@ -8438,6 +8438,6 @@ relatedImages:
   name: IMAGE_kourier-gateway
 - image: registry.redhat.io/openshift4/ose-kube-rbac-proxy-rhel9@sha256:767e04a881378b4c06e3ebc7a805c188981a2fd71884f3fd76f3c832fe53e431
   name: IMAGE_KUBE_RBAC_PROXY
-- image: registry.redhat.io/rhel9/buildah@sha256:ad338b5751f30fcd3653333cea88ebb36455b0d4bf3988b66d7083886206bc50
+- image: registry.redhat.io/rhel9/buildah@sha256:ce2db38cddeedde4489473a689981c532dff4e2e63971d20bb7b3ceca996c18d
   name: IMAGE_KN_PLUGIN_FUNC_TEKTON_BUILDAH
 schema: olm.bundle
