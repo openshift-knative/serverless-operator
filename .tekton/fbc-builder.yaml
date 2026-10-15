@@ -149,13 +149,13 @@ spec:
     - name: IDMS_PATH
       value: $(params.idms-path)
     - name: SOURCE_ARTIFACT
-      value: $(tasks.fbc-inject-lifecycle.results.SOURCE_ARTIFACT)
+      value: $(tasks.clone-repository.results.SOURCE_ARTIFACT)
     - name: ociStorage
       value: $(params.output-image).opm
     - name: ociArtifactExpiresAfter
       value: $(params.image-expires-after)
     runAfter:
-    - fbc-inject-lifecycle
+    - clone-repository
     taskRef:
       params:
       - name: name
@@ -224,7 +224,7 @@ spec:
   - name: fbc-inject-lifecycle
     params:
     - name: SOURCE_ARTIFACT
-      value: $(tasks.clone-repository.results.SOURCE_ARTIFACT)
+      value: $(tasks.run-opm-command.results.SOURCE_ARTIFACT)
     - name: ociStorage
       value: $(params.output-image).lifecycle
     - name: ociArtifactExpiresAfter
@@ -237,7 +237,7 @@ spec:
       value:
       - $(params.build-args[*])
     runAfter:
-    - clone-repository
+    - run-opm-command
     taskRef:
       params:
       - name: name
@@ -254,13 +254,13 @@ spec:
     - name: enable-package-registry-proxy
       value: $(params.enable-package-registry-proxy)
     - name: SOURCE_ARTIFACT
-      value: $(tasks.run-opm-command.results.SOURCE_ARTIFACT)
+      value: $(tasks.fbc-inject-lifecycle.results.SOURCE_ARTIFACT)
     - name: ociStorage
       value: $(params.output-image).prefetch
     - name: ociArtifactExpiresAfter
       value: $(params.image-expires-after)
     runAfter:
-    - run-opm-command
+    - fbc-inject-lifecycle
     taskRef:
       params:
       - name: name
