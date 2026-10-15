@@ -17,22 +17,37 @@
 package v1
 
 import (
+	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	corev1 "k8s.io/api/core/v1"
 )
 
-// OAuth2ApplyConfiguration represents an declarative configuration of the OAuth2 type for use
+// OAuth2ApplyConfiguration represents a declarative configuration of the OAuth2 type for use
 // with apply.
+//
+// OAuth2 configures OAuth2 settings.
 type OAuth2ApplyConfiguration struct {
-	ClientID                      *SecretOrConfigMapApplyConfiguration `json:"clientId,omitempty"`
-	ClientSecret                  *corev1.SecretKeySelector            `json:"clientSecret,omitempty"`
-	TokenURL                      *string                              `json:"tokenUrl,omitempty"`
-	Scopes                        []string                             `json:"scopes,omitempty"`
-	EndpointParams                map[string]string                    `json:"endpointParams,omitempty"`
-	TLSConfig                     *SafeTLSConfigApplyConfiguration     `json:"tlsConfig,omitempty"`
-	ProxyConfigApplyConfiguration `json:",inline"`
+	// clientId defines a key of a Secret or ConfigMap containing the
+	// OAuth2 client's ID.
+	ClientID *SecretOrConfigMapApplyConfiguration `json:"clientId,omitempty"`
+	// clientSecret defines a key of a Secret containing the OAuth2
+	// client's secret.
+	ClientSecret *corev1.SecretKeySelector `json:"clientSecret,omitempty"`
+	// tokenUrl defines the URL to fetch the token from.
+	TokenURL *monitoringv1.URL `json:"tokenUrl,omitempty"`
+	// scopes defines the OAuth2 scopes used for the token request.
+	Scopes []string `json:"scopes,omitempty"`
+	// endpointParams configures the HTTP parameters to append to the token
+	// URL.
+	EndpointParams map[string]string `json:"endpointParams,omitempty"`
+	// tlsConfig defines the TLS configuration to use when connecting to the OAuth2 server.
+	// It requires Prometheus >= v2.43.0.
+	TLSConfig *SafeTLSConfigApplyConfiguration `json:"tlsConfig,omitempty"`
+	// Proxy configuration to use when connecting to the OAuth2 server.
+	// It requires Prometheus >= v2.43.0.
+	ProxyConfigApplyConfiguration `json:""`
 }
 
-// OAuth2ApplyConfiguration constructs an declarative configuration of the OAuth2 type for use with
+// OAuth2ApplyConfiguration constructs a declarative configuration of the OAuth2 type for use with
 // apply.
 func OAuth2() *OAuth2ApplyConfiguration {
 	return &OAuth2ApplyConfiguration{}
@@ -57,7 +72,7 @@ func (b *OAuth2ApplyConfiguration) WithClientSecret(value corev1.SecretKeySelect
 // WithTokenURL sets the TokenURL field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the TokenURL field is set to the value of the last call.
-func (b *OAuth2ApplyConfiguration) WithTokenURL(value string) *OAuth2ApplyConfiguration {
+func (b *OAuth2ApplyConfiguration) WithTokenURL(value monitoringv1.URL) *OAuth2ApplyConfiguration {
 	b.TokenURL = &value
 	return b
 }
@@ -98,7 +113,7 @@ func (b *OAuth2ApplyConfiguration) WithTLSConfig(value *SafeTLSConfigApplyConfig
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the ProxyURL field is set to the value of the last call.
 func (b *OAuth2ApplyConfiguration) WithProxyURL(value string) *OAuth2ApplyConfiguration {
-	b.ProxyURL = &value
+	b.ProxyConfigApplyConfiguration.ProxyURL = &value
 	return b
 }
 
@@ -106,7 +121,7 @@ func (b *OAuth2ApplyConfiguration) WithProxyURL(value string) *OAuth2ApplyConfig
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the NoProxy field is set to the value of the last call.
 func (b *OAuth2ApplyConfiguration) WithNoProxy(value string) *OAuth2ApplyConfiguration {
-	b.NoProxy = &value
+	b.ProxyConfigApplyConfiguration.NoProxy = &value
 	return b
 }
 
@@ -114,7 +129,7 @@ func (b *OAuth2ApplyConfiguration) WithNoProxy(value string) *OAuth2ApplyConfigu
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the ProxyFromEnvironment field is set to the value of the last call.
 func (b *OAuth2ApplyConfiguration) WithProxyFromEnvironment(value bool) *OAuth2ApplyConfiguration {
-	b.ProxyFromEnvironment = &value
+	b.ProxyConfigApplyConfiguration.ProxyFromEnvironment = &value
 	return b
 }
 
@@ -123,11 +138,11 @@ func (b *OAuth2ApplyConfiguration) WithProxyFromEnvironment(value bool) *OAuth2A
 // If called multiple times, the entries provided by each call will be put on the ProxyConnectHeader field,
 // overwriting an existing map entries in ProxyConnectHeader field with the same key.
 func (b *OAuth2ApplyConfiguration) WithProxyConnectHeader(entries map[string][]corev1.SecretKeySelector) *OAuth2ApplyConfiguration {
-	if b.ProxyConnectHeader == nil && len(entries) > 0 {
-		b.ProxyConnectHeader = make(map[string][]corev1.SecretKeySelector, len(entries))
+	if b.ProxyConfigApplyConfiguration.ProxyConnectHeader == nil && len(entries) > 0 {
+		b.ProxyConfigApplyConfiguration.ProxyConnectHeader = make(map[string][]corev1.SecretKeySelector, len(entries))
 	}
 	for k, v := range entries {
-		b.ProxyConnectHeader[k] = v
+		b.ProxyConfigApplyConfiguration.ProxyConnectHeader[k] = v
 	}
 	return b
 }

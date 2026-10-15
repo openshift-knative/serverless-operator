@@ -17,20 +17,44 @@
 package v1
 
 import (
-	v1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
+	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 )
 
-// RuleGroupApplyConfiguration represents an declarative configuration of the RuleGroup type for use
+// RuleGroupApplyConfiguration represents a declarative configuration of the RuleGroup type for use
 // with apply.
+//
+// RuleGroup and Rule are copied instead of vendored because the
+// upstream Prometheus struct definitions don't have json struct tags.
+// RuleGroup is a list of sequentially evaluated recording and alerting rules.
 type RuleGroupApplyConfiguration struct {
-	Name                    *string                  `json:"name,omitempty"`
-	Interval                *v1.Duration             `json:"interval,omitempty"`
-	Rules                   []RuleApplyConfiguration `json:"rules,omitempty"`
-	PartialResponseStrategy *string                  `json:"partial_response_strategy,omitempty"`
-	Limit                   *int                     `json:"limit,omitempty"`
+	// name defines the name of the rule group.
+	Name *string `json:"name,omitempty"`
+	// labels define the labels to add or overwrite before storing the result for its rules.
+	// The labels defined at the rule level take precedence.
+	//
+	// It requires Prometheus >= 3.0.0.
+	// The field is ignored for Thanos Ruler.
+	Labels map[string]string `json:"labels,omitempty"`
+	// interval defines how often rules in the group are evaluated.
+	Interval *monitoringv1.Duration `json:"interval,omitempty"`
+	// query_offset defines the offset the rule evaluation timestamp of this particular group by the specified duration into the past.
+	//
+	// It requires Prometheus >= v2.53.0.
+	// It is not supported for ThanosRuler.
+	QueryOffset *monitoringv1.Duration `json:"query_offset,omitempty"`
+	// rules defines the list of alerting and recording rules.
+	Rules []RuleApplyConfiguration `json:"rules,omitempty"`
+	// partial_response_strategy is only used by ThanosRuler and will
+	// be ignored by Prometheus instances.
+	// More info: https://github.com/thanos-io/thanos/blob/main/docs/components/rule.md#partial-response
+	PartialResponseStrategy *string `json:"partial_response_strategy,omitempty"`
+	// limit defines the number of alerts an alerting rule and series a recording
+	// rule can produce.
+	// Limit is supported starting with Prometheus >= 2.31 and Thanos Ruler >= 0.24.
+	Limit *int `json:"limit,omitempty"`
 }
 
-// RuleGroupApplyConfiguration constructs an declarative configuration of the RuleGroup type for use with
+// RuleGroupApplyConfiguration constructs a declarative configuration of the RuleGroup type for use with
 // apply.
 func RuleGroup() *RuleGroupApplyConfiguration {
 	return &RuleGroupApplyConfiguration{}
@@ -44,11 +68,33 @@ func (b *RuleGroupApplyConfiguration) WithName(value string) *RuleGroupApplyConf
 	return b
 }
 
+// WithLabels puts the entries into the Labels field in the declarative configuration
+// and returns the receiver, so that objects can be build by chaining "With" function invocations.
+// If called multiple times, the entries provided by each call will be put on the Labels field,
+// overwriting an existing map entries in Labels field with the same key.
+func (b *RuleGroupApplyConfiguration) WithLabels(entries map[string]string) *RuleGroupApplyConfiguration {
+	if b.Labels == nil && len(entries) > 0 {
+		b.Labels = make(map[string]string, len(entries))
+	}
+	for k, v := range entries {
+		b.Labels[k] = v
+	}
+	return b
+}
+
 // WithInterval sets the Interval field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the Interval field is set to the value of the last call.
-func (b *RuleGroupApplyConfiguration) WithInterval(value v1.Duration) *RuleGroupApplyConfiguration {
+func (b *RuleGroupApplyConfiguration) WithInterval(value monitoringv1.Duration) *RuleGroupApplyConfiguration {
 	b.Interval = &value
+	return b
+}
+
+// WithQueryOffset sets the QueryOffset field in the declarative configuration to the given value
+// and returns the receiver, so that objects can be built by chaining "With" function invocations.
+// If called multiple times, the QueryOffset field is set to the value of the last call.
+func (b *RuleGroupApplyConfiguration) WithQueryOffset(value monitoringv1.Duration) *RuleGroupApplyConfiguration {
+	b.QueryOffset = &value
 	return b
 }
 

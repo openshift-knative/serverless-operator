@@ -16,13 +16,15 @@
 
 package v1
 
-// ThanosRulerWebSpecApplyConfiguration represents an declarative configuration of the ThanosRulerWebSpec type for use
+// ThanosRulerWebSpecApplyConfiguration represents a declarative configuration of the ThanosRulerWebSpec type for use
 // with apply.
+//
+// ThanosRulerWebSpec defines the configuration of the ThanosRuler web server.
 type ThanosRulerWebSpecApplyConfiguration struct {
-	WebConfigFileFieldsApplyConfiguration `json:",inline"`
+	WebConfigFileFieldsApplyConfiguration `json:""`
 }
 
-// ThanosRulerWebSpecApplyConfiguration constructs an declarative configuration of the ThanosRulerWebSpec type for use with
+// ThanosRulerWebSpecApplyConfiguration constructs a declarative configuration of the ThanosRulerWebSpec type for use with
 // apply.
 func ThanosRulerWebSpec() *ThanosRulerWebSpecApplyConfiguration {
 	return &ThanosRulerWebSpecApplyConfiguration{}
@@ -32,7 +34,7 @@ func ThanosRulerWebSpec() *ThanosRulerWebSpecApplyConfiguration {
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the TLSConfig field is set to the value of the last call.
 func (b *ThanosRulerWebSpecApplyConfiguration) WithTLSConfig(value *WebTLSConfigApplyConfiguration) *ThanosRulerWebSpecApplyConfiguration {
-	b.TLSConfig = value
+	b.WebConfigFileFieldsApplyConfiguration.TLSConfig = value
 	return b
 }
 
@@ -40,6 +42,6 @@ func (b *ThanosRulerWebSpecApplyConfiguration) WithTLSConfig(value *WebTLSConfig
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the HTTPConfig field is set to the value of the last call.
 func (b *ThanosRulerWebSpecApplyConfiguration) WithHTTPConfig(value *WebHTTPConfigApplyConfiguration) *ThanosRulerWebSpecApplyConfiguration {
-	b.HTTPConfig = value
+	b.WebConfigFileFieldsApplyConfiguration.HTTPConfig = value
 	return b
 }
