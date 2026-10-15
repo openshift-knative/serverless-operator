@@ -254,13 +254,13 @@ spec:
     - name: enable-package-registry-proxy
       value: $(params.enable-package-registry-proxy)
     - name: SOURCE_ARTIFACT
-      value: $(tasks.run-opm-command.results.SOURCE_ARTIFACT)
+      value: $(tasks.fbc-inject-lifecycle.results.SOURCE_ARTIFACT)
     - name: ociStorage
       value: $(params.output-image).prefetch
     - name: ociArtifactExpiresAfter
       value: $(params.image-expires-after)
     runAfter:
-    - run-opm-command
+    - fbc-inject-lifecycle
     taskRef:
       params:
       - name: name
