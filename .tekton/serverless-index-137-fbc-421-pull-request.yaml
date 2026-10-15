@@ -54,9 +54,9 @@ spec:
         - "olm-catalog/serverless-operator-index/v4.21/catalog-template.yaml"
         - --migrate-level=bundle-object-to-csv-metadata
     - name: opm-output-path
-      value: olm-catalog/serverless-operator-index/v4.21/catalog/serverless-operator/catalog.yaml
+      value: olm-catalog/serverless-operator-index/v4.21/catalog/serverless-operator/catalog.json
     - name: file-to-update-pullspec
-      value: olm-catalog/serverless-operator-index/v4.21/catalog/serverless-operator/catalog.yaml
+      value: olm-catalog/serverless-operator-index/v4.21/catalog/serverless-operator/catalog.json
   pipelineRef:
     name: fbc-builder
   taskRunTemplate:
