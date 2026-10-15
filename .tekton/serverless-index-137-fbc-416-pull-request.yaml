@@ -53,9 +53,9 @@ spec:
         - basic
         - "olm-catalog/serverless-operator-index/v4.16/catalog-template.yaml"
     - name: opm-output-path
-      value: olm-catalog/serverless-operator-index/v4.16/catalog/serverless-operator/catalog.yaml
+      value: olm-catalog/serverless-operator-index/v4.16/catalog/serverless-operator/catalog.json
     - name: file-to-update-pullspec
-      value: olm-catalog/serverless-operator-index/v4.16/catalog/serverless-operator/catalog.yaml
+      value: olm-catalog/serverless-operator-index/v4.16/catalog/serverless-operator/catalog.json
   pipelineRef:
     name: fbc-builder
   taskRunTemplate:
