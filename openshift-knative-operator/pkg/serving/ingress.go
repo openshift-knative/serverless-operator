@@ -63,21 +63,24 @@ func defaultIngressClass(ks *operatorv1beta1.KnativeServing) string {
 	return kourierIngressClassName
 }
 
-func generateDefaultIstioNetworkPoliciesIfRequired(ks base.KComponent) ([]mf.Manifest, error) {
-	if !ks.(*operatorv1beta1.KnativeServing).Spec.Ingress.Istio.Enabled {
-		return nil, nil
+// istioWebhookNetworkPolicies builds the NetworkPolicies that keep the Knative
+// webhook and metrics endpoints reachable in a Service Mesh member namespace,
+// where the deny-all policy would otherwise block ingress (including apiserver
+// admission calls). Returns nil when not required (Istio ingress disabled or
+// opted out via annotation).
+func istioWebhookNetworkPolicies(ks *operatorv1beta1.KnativeServing) []*networkingv1.NetworkPolicy {
+	if !ks.Spec.Ingress.Istio.Enabled {
+		return nil
 	}
-
 	if v, ok := ks.GetAnnotations()[disableGeneratingIstioNetPoliciesAnnotation]; ok {
 		if disableGeneration, _ := strconv.ParseBool(v); disableGeneration {
-			return nil, nil
+			return nil
 		}
 	}
 
-	unObjs := []unstructured.Unstructured{{}, {}, {}}
-
-	for i, name := range []string{"webhook", "net-istio-webhook", "allow-from-openshift-monitoring-ns"} {
-		nwp := networkingv1.NetworkPolicy{
+	policies := make([]*networkingv1.NetworkPolicy, 0, 3)
+	for _, name := range []string{"webhook", "net-istio-webhook", "allow-from-openshift-monitoring-ns"} {
+		nwp := &networkingv1.NetworkPolicy{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      name,
 				Namespace: ks.GetNamespace(),
@@ -108,7 +111,20 @@ func generateDefaultIstioNetworkPoliciesIfRequired(ks base.KComponent) ([]mf.Man
 			}}
 		}
 
-		if err := scheme.Scheme.Convert(&nwp, &unObjs[i], nil); err != nil {
+		policies = append(policies, nwp)
+	}
+	return policies
+}
+
+func generateDefaultIstioNetworkPoliciesIfRequired(ks base.KComponent) ([]mf.Manifest, error) {
+	policies := istioWebhookNetworkPolicies(ks.(*operatorv1beta1.KnativeServing))
+	if len(policies) == 0 {
+		return nil, nil
+	}
+
+	unObjs := make([]unstructured.Unstructured, len(policies))
+	for i, p := range policies {
+		if err := scheme.Scheme.Convert(p, &unObjs[i], nil); err != nil {
 			return nil, err
 		}
 	}
