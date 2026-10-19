@@ -194,6 +194,16 @@ func (e *extension) Reconcile(ctx context.Context, comp base.KComponent) error {
 		common.ConfigureIfUnset(&ks.Spec.CommonSpec, monitoring.ObservabilityCMName, monitoring.ObservabilityBackendKey, "none")
 	}
 
+	// Create the policies before the install stage applies resources that trigger
+	// the webhooks: otherwise the Service Mesh deny-all policy blocks the apiserver
+	// from reaching the webhook and the install deadlocks. Missing policies only;
+	// the manifest reconciliation owns their ongoing lifecycle.
+	for _, np := range istioWebhookNetworkPolicies(ks) {
+		if _, err := e.kubeclient.NetworkingV1().NetworkPolicies(np.Namespace).Create(ctx, np, metav1.CreateOptions{}); err != nil && !apierrors.IsAlreadyExists(err) {
+			return fmt.Errorf("failed to create NetworkPolicy %s/%s: %w", np.Namespace, np.Name, err)
+		}
+	}
+
 	if !oldResourceRemoved.Load() {
 		if err := e.cleanupOldResources(ctx, ks.GetNamespace()); err != nil {
 			return err
