@@ -18,7 +18,8 @@ spec:
     - linux/arm64
     - linux/ppc64le
     - linux/s390x
-    description: List of platforms to build the container images on. The available set of values is determined by the configuration of the multi-platform-controller.
+    description: List of platforms to build the container images on. The available
+      set of values is determined by the configuration of the multi-platform-controller.
     name: build-platforms
     type: array
   - default: "true"
@@ -34,7 +35,8 @@ spec:
     name: opm-output-path
     type: string
   - default: ""
-    description: Optional. Relative path to a file (e.g., catalog-template.yml) in which pullspecs should be updated before running opm.
+    description: Optional. Relative path to a file (e.g., catalog-template.yml) in
+      which pullspecs should be updated before running opm.
     name: file-to-update-pullspec
     type: string
   - default: .tekton/images-mirror-set.yaml
@@ -56,11 +58,13 @@ spec:
     name: output-image
     type: string
   - default: .
-    description: Path to the source code of an application's component from where to build image.
+    description: Path to the source code of an application's component from where
+      to build image.
     name: path-context
     type: string
   - default: Dockerfile
-    description: Path to the Dockerfile inside the context specified by parameter path-context
+    description: Path to the Dockerfile inside the context specified by parameter
+      path-context
     name: dockerfile
     type: string
   - default: "false"
@@ -76,7 +80,8 @@ spec:
     name: prefetch-input
     type: string
   - default: ""
-    description: Image tag expiration time, time values could be something like 1h, 2d, 3w for hours, days, and weeks, respectively.
+    description: Image tag expiration time, time values could be something like 1h,
+      2d, 3w for hours, days, and weeks, respectively.
     name: image-expires-after
     type: string
   - default: "true"
@@ -90,7 +95,8 @@ spec:
     description: Use the package registry proxy when prefetching dependencies
     name: enable-package-registry-proxy
   - default: .
-    description: Target directories in component's source code to scan with SAST tools. Multiple values should be separated with commas.
+    description: Target directories in component's source code to scan with SAST tools.
+      Multiple values should be separated with commas.
     name: sast-target-dirs
     type: string
   - default: []
@@ -102,15 +108,19 @@ spec:
     name: build-args-file
     type: string
   - default: ""
-    description: Sets the image created time and the SOURCE_DATE_EPOCH build argument. On its own, it does not change file timestamps inside the layers (set rewrite-timestamp to "true" for that). Leave empty to keep the actual build time.
+    description: Sets the image created time and the SOURCE_DATE_EPOCH build argument.
+      On its own, it does not change file timestamps inside the layers (set rewrite-timestamp
+      to "true" for that). Leave empty to keep the actual build time.
     name: source-date-epoch
     type: string
   - default: "false"
-    description: When "true", clamp file modification times in the image layers to at most source-date-epoch. Does nothing unless source-date-epoch is set.
+    description: When "true", clamp file modification times in the image layers to
+      at most source-date-epoch. Does nothing unless source-date-epoch is set.
     name: rewrite-timestamp
     type: string
   - default: "false"
-    description: When "true", omit the build history (history timestamps, layer metadata, etc.) from the resulting image.
+    description: When "true", omit the build history (history timestamps, layer metadata,
+      etc.) from the resulting image.
     name: omit-history
     type: string
   results:
@@ -129,6 +139,8 @@ spec:
   tasks:
   - name: run-opm-command
     params:
+    - name: SOURCE_ARTIFACT
+      value: $(tasks.clone-repository.results.SOURCE_ARTIFACT)
     - name: OPM_ARGS
       value:
       - $(params.opm-args[*])
@@ -138,14 +150,12 @@ spec:
       value: $(params.file-to-update-pullspec)
     - name: IDMS_PATH
       value: $(params.idms-path)
-    - name: SOURCE_ARTIFACT
-      value: $(tasks.fbc-inject-lifecycle.results.SOURCE_ARTIFACT)
     - name: ociStorage
       value: $(params.output-image).opm
     - name: ociArtifactExpiresAfter
       value: $(params.image-expires-after)
     runAfter:
-    - fbc-inject-lifecycle
+    - clone-repository
     taskRef:
       params:
       - name: name
@@ -155,6 +165,60 @@ spec:
       - name: kind
         value: task
       resolver: bundles
+  - name: fbc-inject-lifecycle
+    params:
+    - name: SOURCE_ARTIFACT
+      value: $(tasks.run-opm-command.results.SOURCE_ARTIFACT)
+    - name: ociStorage
+      value: $(params.output-image).lifecycle
+    - name: ociArtifactExpiresAfter
+      value: $(params.image-expires-after)
+    - name: CONTEXT
+      value: $(params.path-context)
+    - name: DOCKERFILE
+      value: $(params.dockerfile)
+    - name: BUILD_ARGS
+      value:
+      - $(params.build-args[*])
+    runAfter:
+    - run-opm-command
+    taskRef:
+      params:
+      - name: name
+        value: fbc-inject-lifecycle-oci-ta
+      - name: bundle
+        value: quay.io/konflux-ci/tekton-catalog/task-fbc-inject-lifecycle-oci-ta:0.1@sha256:465d8c8745a7994f2e69f33df5b7538502c1355200fd37c8ac358b798add012c
+      - name: kind
+        value: task
+      resolver: bundles
+  - name: prefetch-dependencies
+    params:
+    - name: SOURCE_ARTIFACT
+      value: $(tasks.fbc-inject-lifecycle.results.SOURCE_ARTIFACT)
+    - name: input
+      value: $(params.prefetch-input)
+    - name: enable-package-registry-proxy
+      value: $(params.enable-package-registry-proxy)
+    - name: ociStorage
+      value: $(params.output-image).prefetch
+    - name: ociArtifactExpiresAfter
+      value: $(params.image-expires-after)
+    runAfter:
+    - fbc-inject-lifecycle
+    taskRef:
+      params:
+      - name: name
+        value: prefetch-dependencies-oci-ta
+      - name: bundle
+        value: quay.io/konflux-ci/tekton-catalog/task-prefetch-dependencies-oci-ta:0.11.0@sha256:7ffdaab6322c4bed64297eb79f767d92609a3e24bd123b14dc73536c038bf5b7
+      - name: kind
+        value: task
+      resolver: bundles
+    workspaces:
+    - name: git-basic-auth
+      workspace: git-auth
+    - name: netrc
+      workspace: netrc
   - name: apply-tags
     params:
     - name: ADDITIONAL_TAGS
@@ -211,60 +275,6 @@ spec:
     workspaces:
     - name: basic-auth
       workspace: git-auth
-  - name: fbc-inject-lifecycle
-    params:
-    - name: SOURCE_ARTIFACT
-      value: $(tasks.clone-repository.results.SOURCE_ARTIFACT)
-    - name: ociStorage
-      value: $(params.output-image).lifecycle
-    - name: ociArtifactExpiresAfter
-      value: $(params.image-expires-after)
-    - name: CONTEXT
-      value: $(params.path-context)
-    - name: DOCKERFILE
-      value: $(params.dockerfile)
-    - name: BUILD_ARGS
-      value:
-      - $(params.build-args[*])
-    runAfter:
-    - clone-repository
-    taskRef:
-      params:
-      - name: name
-        value: fbc-inject-lifecycle-oci-ta
-      - name: bundle
-        value: quay.io/konflux-ci/tekton-catalog/task-fbc-inject-lifecycle-oci-ta:0.1@sha256:465d8c8745a7994f2e69f33df5b7538502c1355200fd37c8ac358b798add012c
-      - name: kind
-        value: task
-      resolver: bundles
-  - name: prefetch-dependencies
-    params:
-    - name: input
-      value: $(params.prefetch-input)
-    - name: enable-package-registry-proxy
-      value: $(params.enable-package-registry-proxy)
-    - name: SOURCE_ARTIFACT
-      value: $(tasks.run-opm-command.results.SOURCE_ARTIFACT)
-    - name: ociStorage
-      value: $(params.output-image).prefetch
-    - name: ociArtifactExpiresAfter
-      value: $(params.image-expires-after)
-    runAfter:
-    - run-opm-command
-    taskRef:
-      params:
-      - name: name
-        value: prefetch-dependencies-oci-ta
-      - name: bundle
-        value: quay.io/konflux-ci/tekton-catalog/task-prefetch-dependencies-oci-ta:0.11.0@sha256:7ffdaab6322c4bed64297eb79f767d92609a3e24bd123b14dc73536c038bf5b7
-      - name: kind
-        value: task
-      resolver: bundles
-    workspaces:
-    - name: git-basic-auth
-      workspace: git-auth
-    - name: netrc
-      workspace: netrc
   - matrix:
       params:
       - name: PLATFORM
@@ -305,10 +315,10 @@ spec:
       value: $(params.omit-history)
     - name: SOURCE_ARTIFACT
       value: $(tasks.prefetch-dependencies.results.SOURCE_ARTIFACT)
+    - name: CACHI2_ARTIFACT
+      value: $(tasks.prefetch-dependencies.results.CACHI2_ARTIFACT)
     - name: IMAGE_APPEND_PLATFORM
       value: "true"
-    - name: PREFETCH_ARTIFACT
-      value: $(tasks.prefetch-dependencies.results.PREFETCH_ARTIFACT)
     runAfter:
     - clone-repository
     taskRef:
