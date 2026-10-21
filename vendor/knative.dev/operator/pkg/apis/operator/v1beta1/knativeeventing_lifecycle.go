@@ -17,7 +17,6 @@ limitations under the License.
 package v1beta1
 
 import (
-	"os"
 	"strings"
 
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -133,7 +132,7 @@ func (es *KnativeEventingStatus) GetVersion() string {
 
 // SetVersion sets the currently installed version of the component.
 func (es *KnativeEventingStatus) SetVersion(version string) {
-	es.Version = os.Getenv("KNATIVE_EVENTING_VERSION")
+	es.Version = version
 }
 
 // GetManifests gets the url links of the manifests.
