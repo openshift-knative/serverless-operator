@@ -17,17 +17,27 @@
 package v1
 
 import (
-	v1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
+	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 )
 
-// MetadataConfigApplyConfiguration represents an declarative configuration of the MetadataConfig type for use
+// MetadataConfigApplyConfiguration represents a declarative configuration of the MetadataConfig type for use
 // with apply.
+//
+// MetadataConfig configures the sending of series metadata to the remote storage.
 type MetadataConfigApplyConfiguration struct {
-	Send         *bool        `json:"send,omitempty"`
-	SendInterval *v1.Duration `json:"sendInterval,omitempty"`
+	// send defines whether metric metadata is sent to the remote storage or not.
+	//
+	// The setting is ignored when Remote Write message's version 2.0 is used.
+	Send *bool `json:"send,omitempty"`
+	// sendInterval defines how frequently metric metadata is sent to the remote storage.
+	SendInterval *monitoringv1.Duration `json:"sendInterval,omitempty"`
+	// maxSamplesPerSend defines the maximum number of metadata samples per send.
+	//
+	// It requires Prometheus >= v2.29.0.
+	MaxSamplesPerSend *int32 `json:"maxSamplesPerSend,omitempty"`
 }
 
-// MetadataConfigApplyConfiguration constructs an declarative configuration of the MetadataConfig type for use with
+// MetadataConfigApplyConfiguration constructs a declarative configuration of the MetadataConfig type for use with
 // apply.
 func MetadataConfig() *MetadataConfigApplyConfiguration {
 	return &MetadataConfigApplyConfiguration{}
@@ -44,7 +54,15 @@ func (b *MetadataConfigApplyConfiguration) WithSend(value bool) *MetadataConfigA
 // WithSendInterval sets the SendInterval field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the SendInterval field is set to the value of the last call.
-func (b *MetadataConfigApplyConfiguration) WithSendInterval(value v1.Duration) *MetadataConfigApplyConfiguration {
+func (b *MetadataConfigApplyConfiguration) WithSendInterval(value monitoringv1.Duration) *MetadataConfigApplyConfiguration {
 	b.SendInterval = &value
+	return b
+}
+
+// WithMaxSamplesPerSend sets the MaxSamplesPerSend field in the declarative configuration to the given value
+// and returns the receiver, so that objects can be built by chaining "With" function invocations.
+// If called multiple times, the MaxSamplesPerSend field is set to the value of the last call.
+func (b *MetadataConfigApplyConfiguration) WithMaxSamplesPerSend(value int32) *MetadataConfigApplyConfiguration {
+	b.MaxSamplesPerSend = &value
 	return b
 }

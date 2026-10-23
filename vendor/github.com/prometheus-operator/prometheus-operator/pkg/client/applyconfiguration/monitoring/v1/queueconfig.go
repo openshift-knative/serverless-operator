@@ -17,25 +17,43 @@
 package v1
 
 import (
-	v1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
+	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 )
 
-// QueueConfigApplyConfiguration represents an declarative configuration of the QueueConfig type for use
+// QueueConfigApplyConfiguration represents a declarative configuration of the QueueConfig type for use
 // with apply.
+//
+// QueueConfig allows the tuning of remote write's queue_config parameters.
+// This object is referenced in the RemoteWriteSpec object.
 type QueueConfigApplyConfiguration struct {
-	Capacity          *int         `json:"capacity,omitempty"`
-	MinShards         *int         `json:"minShards,omitempty"`
-	MaxShards         *int         `json:"maxShards,omitempty"`
-	MaxSamplesPerSend *int         `json:"maxSamplesPerSend,omitempty"`
-	BatchSendDeadline *v1.Duration `json:"batchSendDeadline,omitempty"`
-	MaxRetries        *int         `json:"maxRetries,omitempty"`
-	MinBackoff        *v1.Duration `json:"minBackoff,omitempty"`
-	MaxBackoff        *v1.Duration `json:"maxBackoff,omitempty"`
-	RetryOnRateLimit  *bool        `json:"retryOnRateLimit,omitempty"`
-	SampleAgeLimit    *v1.Duration `json:"sampleAgeLimit,omitempty"`
+	// capacity defines the number of samples to buffer per shard before we start
+	// dropping them.
+	Capacity *int `json:"capacity,omitempty"`
+	// minShards defines the minimum number of shards, i.e. amount of concurrency.
+	MinShards *int `json:"minShards,omitempty"`
+	// maxShards defines the maximum number of shards, i.e. amount of concurrency.
+	MaxShards *int `json:"maxShards,omitempty"`
+	// maxSamplesPerSend defines the maximum number of samples per send.
+	MaxSamplesPerSend *int `json:"maxSamplesPerSend,omitempty"`
+	// batchSendDeadline defines the maximum time a sample will wait in buffer.
+	BatchSendDeadline *monitoringv1.Duration `json:"batchSendDeadline,omitempty"`
+	// maxRetries defines the maximum number of times to retry a batch on recoverable errors.
+	MaxRetries *int `json:"maxRetries,omitempty"`
+	// minBackoff defines the initial retry delay. Gets doubled for every retry.
+	MinBackoff *monitoringv1.Duration `json:"minBackoff,omitempty"`
+	// maxBackoff defines the maximum retry delay.
+	MaxBackoff *monitoringv1.Duration `json:"maxBackoff,omitempty"`
+	// retryOnRateLimit defines the retry upon receiving a 429 status code from the remote-write storage.
+	//
+	// This is an *experimental feature*, it may change in any upcoming release
+	// in a breaking way.
+	RetryOnRateLimit *bool `json:"retryOnRateLimit,omitempty"`
+	// sampleAgeLimit drops samples older than the limit.
+	// It requires Prometheus >= v2.50.0 or Thanos >= v0.32.0.
+	SampleAgeLimit *monitoringv1.Duration `json:"sampleAgeLimit,omitempty"`
 }
 
-// QueueConfigApplyConfiguration constructs an declarative configuration of the QueueConfig type for use with
+// QueueConfigApplyConfiguration constructs a declarative configuration of the QueueConfig type for use with
 // apply.
 func QueueConfig() *QueueConfigApplyConfiguration {
 	return &QueueConfigApplyConfiguration{}
@@ -76,7 +94,7 @@ func (b *QueueConfigApplyConfiguration) WithMaxSamplesPerSend(value int) *QueueC
 // WithBatchSendDeadline sets the BatchSendDeadline field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the BatchSendDeadline field is set to the value of the last call.
-func (b *QueueConfigApplyConfiguration) WithBatchSendDeadline(value v1.Duration) *QueueConfigApplyConfiguration {
+func (b *QueueConfigApplyConfiguration) WithBatchSendDeadline(value monitoringv1.Duration) *QueueConfigApplyConfiguration {
 	b.BatchSendDeadline = &value
 	return b
 }
@@ -92,7 +110,7 @@ func (b *QueueConfigApplyConfiguration) WithMaxRetries(value int) *QueueConfigAp
 // WithMinBackoff sets the MinBackoff field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the MinBackoff field is set to the value of the last call.
-func (b *QueueConfigApplyConfiguration) WithMinBackoff(value v1.Duration) *QueueConfigApplyConfiguration {
+func (b *QueueConfigApplyConfiguration) WithMinBackoff(value monitoringv1.Duration) *QueueConfigApplyConfiguration {
 	b.MinBackoff = &value
 	return b
 }
@@ -100,7 +118,7 @@ func (b *QueueConfigApplyConfiguration) WithMinBackoff(value v1.Duration) *Queue
 // WithMaxBackoff sets the MaxBackoff field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the MaxBackoff field is set to the value of the last call.
-func (b *QueueConfigApplyConfiguration) WithMaxBackoff(value v1.Duration) *QueueConfigApplyConfiguration {
+func (b *QueueConfigApplyConfiguration) WithMaxBackoff(value monitoringv1.Duration) *QueueConfigApplyConfiguration {
 	b.MaxBackoff = &value
 	return b
 }
@@ -116,7 +134,7 @@ func (b *QueueConfigApplyConfiguration) WithRetryOnRateLimit(value bool) *QueueC
 // WithSampleAgeLimit sets the SampleAgeLimit field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the SampleAgeLimit field is set to the value of the last call.
-func (b *QueueConfigApplyConfiguration) WithSampleAgeLimit(value v1.Duration) *QueueConfigApplyConfiguration {
+func (b *QueueConfigApplyConfiguration) WithSampleAgeLimit(value monitoringv1.Duration) *QueueConfigApplyConfiguration {
 	b.SampleAgeLimit = &value
 	return b
 }

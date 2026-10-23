@@ -16,18 +16,47 @@
 
 package v1
 
-// APIServerConfigApplyConfiguration represents an declarative configuration of the APIServerConfig type for use
+import (
+	corev1 "k8s.io/api/core/v1"
+)
+
+// APIServerConfigApplyConfiguration represents a declarative configuration of the APIServerConfig type for use
 // with apply.
+//
+// APIServerConfig defines how the Prometheus server connects to the Kubernetes API server.
+//
+// More info: https://prometheus.io/docs/prometheus/latest/configuration/configuration/#kubernetes_sd_config
 type APIServerConfigApplyConfiguration struct {
-	Host            *string                          `json:"host,omitempty"`
-	BasicAuth       *BasicAuthApplyConfiguration     `json:"basicAuth,omitempty"`
-	BearerTokenFile *string                          `json:"bearerTokenFile,omitempty"`
-	TLSConfig       *TLSConfigApplyConfiguration     `json:"tlsConfig,omitempty"`
-	Authorization   *AuthorizationApplyConfiguration `json:"authorization,omitempty"`
-	BearerToken     *string                          `json:"bearerToken,omitempty"`
+	// host defines the Kubernetes API address consisting of a hostname or IP address followed
+	// by an optional port number.
+	Host *string `json:"host,omitempty"`
+	// basicAuth configuration for the API server.
+	//
+	// Cannot be set at the same time as `authorization`, `bearerToken`, or
+	// `bearerTokenFile`.
+	BasicAuth *BasicAuthApplyConfiguration `json:"basicAuth,omitempty"`
+	// bearerTokenFile defines the file to read bearer token for accessing apiserver.
+	//
+	// Cannot be set at the same time as `basicAuth`, `authorization`, or `bearerToken`.
+	//
+	// Deprecated: this will be removed in a future release. Prefer using `authorization`.
+	BearerTokenFile *string `json:"bearerTokenFile,omitempty"`
+	// tlsConfig to use for the API server.
+	TLSConfig *TLSConfigApplyConfiguration `json:"tlsConfig,omitempty"`
+	// authorization section for the API server.
+	//
+	// Cannot be set at the same time as `basicAuth`, `bearerToken`, or
+	// `bearerTokenFile`.
+	Authorization *AuthorizationApplyConfiguration `json:"authorization,omitempty"`
+	// bearerToken is deprecated: this will be removed in a future release.
+	// *Warning: this field shouldn't be used because the token value appears
+	// in clear-text. Prefer using `authorization`.*
+	BearerToken *string `json:"bearerToken,omitempty"`
+	// Optional ProxyConfig.
+	ProxyConfigApplyConfiguration `json:""`
 }
 
-// APIServerConfigApplyConfiguration constructs an declarative configuration of the APIServerConfig type for use with
+// APIServerConfigApplyConfiguration constructs a declarative configuration of the APIServerConfig type for use with
 // apply.
 func APIServerConfig() *APIServerConfigApplyConfiguration {
 	return &APIServerConfigApplyConfiguration{}
@@ -78,5 +107,43 @@ func (b *APIServerConfigApplyConfiguration) WithAuthorization(value *Authorizati
 // If called multiple times, the BearerToken field is set to the value of the last call.
 func (b *APIServerConfigApplyConfiguration) WithBearerToken(value string) *APIServerConfigApplyConfiguration {
 	b.BearerToken = &value
+	return b
+}
+
+// WithProxyURL sets the ProxyURL field in the declarative configuration to the given value
+// and returns the receiver, so that objects can be built by chaining "With" function invocations.
+// If called multiple times, the ProxyURL field is set to the value of the last call.
+func (b *APIServerConfigApplyConfiguration) WithProxyURL(value string) *APIServerConfigApplyConfiguration {
+	b.ProxyConfigApplyConfiguration.ProxyURL = &value
+	return b
+}
+
+// WithNoProxy sets the NoProxy field in the declarative configuration to the given value
+// and returns the receiver, so that objects can be built by chaining "With" function invocations.
+// If called multiple times, the NoProxy field is set to the value of the last call.
+func (b *APIServerConfigApplyConfiguration) WithNoProxy(value string) *APIServerConfigApplyConfiguration {
+	b.ProxyConfigApplyConfiguration.NoProxy = &value
+	return b
+}
+
+// WithProxyFromEnvironment sets the ProxyFromEnvironment field in the declarative configuration to the given value
+// and returns the receiver, so that objects can be built by chaining "With" function invocations.
+// If called multiple times, the ProxyFromEnvironment field is set to the value of the last call.
+func (b *APIServerConfigApplyConfiguration) WithProxyFromEnvironment(value bool) *APIServerConfigApplyConfiguration {
+	b.ProxyConfigApplyConfiguration.ProxyFromEnvironment = &value
+	return b
+}
+
+// WithProxyConnectHeader puts the entries into the ProxyConnectHeader field in the declarative configuration
+// and returns the receiver, so that objects can be build by chaining "With" function invocations.
+// If called multiple times, the entries provided by each call will be put on the ProxyConnectHeader field,
+// overwriting an existing map entries in ProxyConnectHeader field with the same key.
+func (b *APIServerConfigApplyConfiguration) WithProxyConnectHeader(entries map[string][]corev1.SecretKeySelector) *APIServerConfigApplyConfiguration {
+	if b.ProxyConfigApplyConfiguration.ProxyConnectHeader == nil && len(entries) > 0 {
+		b.ProxyConfigApplyConfiguration.ProxyConnectHeader = make(map[string][]corev1.SecretKeySelector, len(entries))
+	}
+	for k, v := range entries {
+		b.ProxyConfigApplyConfiguration.ProxyConnectHeader[k] = v
+	}
 	return b
 }

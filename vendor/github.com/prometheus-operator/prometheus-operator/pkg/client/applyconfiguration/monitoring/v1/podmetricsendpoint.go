@@ -17,38 +17,99 @@
 package v1
 
 import (
-	v1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
+	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	corev1 "k8s.io/api/core/v1"
 	intstr "k8s.io/apimachinery/pkg/util/intstr"
 )
 
-// PodMetricsEndpointApplyConfiguration represents an declarative configuration of the PodMetricsEndpoint type for use
+// PodMetricsEndpointApplyConfiguration represents a declarative configuration of the PodMetricsEndpoint type for use
 // with apply.
+//
+// PodMetricsEndpoint defines an endpoint serving Prometheus metrics to be scraped by
+// Prometheus.
 type PodMetricsEndpointApplyConfiguration struct {
-	Port                     *string                              `json:"port,omitempty"`
-	TargetPort               *intstr.IntOrString                  `json:"targetPort,omitempty"`
-	Path                     *string                              `json:"path,omitempty"`
-	Scheme                   *string                              `json:"scheme,omitempty"`
-	Params                   map[string][]string                  `json:"params,omitempty"`
-	Interval                 *v1.Duration                         `json:"interval,omitempty"`
-	ScrapeTimeout            *v1.Duration                         `json:"scrapeTimeout,omitempty"`
-	TLSConfig                *SafeTLSConfigApplyConfiguration     `json:"tlsConfig,omitempty"`
-	BearerTokenSecret        *corev1.SecretKeySelector            `json:"bearerTokenSecret,omitempty"`
-	HonorLabels              *bool                                `json:"honorLabels,omitempty"`
-	HonorTimestamps          *bool                                `json:"honorTimestamps,omitempty"`
-	TrackTimestampsStaleness *bool                                `json:"trackTimestampsStaleness,omitempty"`
-	BasicAuth                *BasicAuthApplyConfiguration         `json:"basicAuth,omitempty"`
-	OAuth2                   *OAuth2ApplyConfiguration            `json:"oauth2,omitempty"`
-	Authorization            *SafeAuthorizationApplyConfiguration `json:"authorization,omitempty"`
-	MetricRelabelConfigs     []RelabelConfigApplyConfiguration    `json:"metricRelabelings,omitempty"`
-	RelabelConfigs           []RelabelConfigApplyConfiguration    `json:"relabelings,omitempty"`
-	ProxyURL                 *string                              `json:"proxyUrl,omitempty"`
-	FollowRedirects          *bool                                `json:"followRedirects,omitempty"`
-	EnableHttp2              *bool                                `json:"enableHttp2,omitempty"`
-	FilterRunning            *bool                                `json:"filterRunning,omitempty"`
+	// port defines the `Pod` port name which exposes the endpoint.
+	//
+	// If the pod doesn't expose a port with the same name, it will result
+	// in no targets being discovered.
+	//
+	// If a `Pod` has multiple `Port`s with the same name (which is not
+	// recommended), one target instance per unique port number will be
+	// generated.
+	//
+	// It takes precedence over the `portNumber` and `targetPort` fields.
+	Port *string `json:"port,omitempty"`
+	// portNumber defines the `Pod` port number which exposes the endpoint.
+	//
+	// The `Pod` must declare the specified `Port` in its spec or the
+	// target will be dropped by Prometheus.
+	//
+	// This cannot be used to enable scraping of an undeclared port.
+	// To scrape targets on a port which isn't exposed, you need to use
+	// relabeling to override the `__address__` label (but beware of
+	// duplicate targets if the `Pod` has other declared ports).
+	//
+	// In practice Prometheus will select targets for which the
+	// matches the target's __meta_kubernetes_pod_container_port_number.
+	PortNumber *int32 `json:"portNumber,omitempty"`
+	// targetPort defines the name or number of the target port of the `Pod` object behind the Service, the
+	// port must be specified with container port property.
+	//
+	// Deprecated: use 'port' or 'portNumber' instead.
+	TargetPort *intstr.IntOrString `json:"targetPort,omitempty"`
+	// path defines the HTTP path from which to scrape for metrics.
+	//
+	// If empty, Prometheus uses the default value (e.g. `/metrics`).
+	Path *string `json:"path,omitempty"`
+	// scheme defines the HTTP scheme to use for scraping.
+	Scheme *monitoringv1.Scheme `json:"scheme,omitempty"`
+	// params define optional HTTP URL parameters.
+	Params map[string][]string `json:"params,omitempty"`
+	// interval at which Prometheus scrapes the metrics from the target.
+	//
+	// If empty, Prometheus uses the global scrape interval.
+	Interval *monitoringv1.Duration `json:"interval,omitempty"`
+	// scrapeTimeout defines the timeout after which Prometheus considers the scrape to be failed.
+	//
+	// If empty, Prometheus uses the global scrape timeout unless it is less
+	// than the target's scrape interval value in which the latter is used.
+	// The value cannot be greater than the scrape interval otherwise the operator will reject the resource.
+	ScrapeTimeout *monitoringv1.Duration `json:"scrapeTimeout,omitempty"`
+	// honorLabels when true preserves the metric's labels when they collide
+	// with the target's labels.
+	HonorLabels *bool `json:"honorLabels,omitempty"`
+	// honorTimestamps defines whether Prometheus preserves the timestamps
+	// when exposed by the target.
+	HonorTimestamps *bool `json:"honorTimestamps,omitempty"`
+	// trackTimestampsStaleness defines whether Prometheus tracks staleness of
+	// the metrics that have an explicit timestamp present in scraped data.
+	// Has no effect if `honorTimestamps` is false.
+	//
+	// It requires Prometheus >= v2.48.0.
+	TrackTimestampsStaleness *bool `json:"trackTimestampsStaleness,omitempty"`
+	// metricRelabelings defines the relabeling rules to apply to the
+	// samples before ingestion.
+	MetricRelabelConfigs []RelabelConfigApplyConfiguration `json:"metricRelabelings,omitempty"`
+	// relabelings defines the relabeling rules to apply the target's
+	// metadata labels.
+	//
+	// The Operator automatically adds relabelings for a few standard Kubernetes fields.
+	//
+	// The original scrape job's name is available via the `__tmp_prometheus_job_name` label.
+	//
+	// More info: https://prometheus.io/docs/prometheus/latest/configuration/configuration/#relabel_config
+	RelabelConfigs []RelabelConfigApplyConfiguration `json:"relabelings,omitempty"`
+	// filterRunning when true, the pods which are not running (e.g. either in Failed or
+	// Succeeded state) are dropped during the target discovery.
+	//
+	// If unset, the filtering is enabled.
+	//
+	// More info: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/#pod-phase
+	FilterRunning                         *bool `json:"filterRunning,omitempty"`
+	HTTPConfigWithProxyApplyConfiguration `json:""`
 }
 
-// PodMetricsEndpointApplyConfiguration constructs an declarative configuration of the PodMetricsEndpoint type for use with
+// PodMetricsEndpointApplyConfiguration constructs a declarative configuration of the PodMetricsEndpoint type for use with
 // apply.
 func PodMetricsEndpoint() *PodMetricsEndpointApplyConfiguration {
 	return &PodMetricsEndpointApplyConfiguration{}
@@ -59,6 +120,14 @@ func PodMetricsEndpoint() *PodMetricsEndpointApplyConfiguration {
 // If called multiple times, the Port field is set to the value of the last call.
 func (b *PodMetricsEndpointApplyConfiguration) WithPort(value string) *PodMetricsEndpointApplyConfiguration {
 	b.Port = &value
+	return b
+}
+
+// WithPortNumber sets the PortNumber field in the declarative configuration to the given value
+// and returns the receiver, so that objects can be built by chaining "With" function invocations.
+// If called multiple times, the PortNumber field is set to the value of the last call.
+func (b *PodMetricsEndpointApplyConfiguration) WithPortNumber(value int32) *PodMetricsEndpointApplyConfiguration {
+	b.PortNumber = &value
 	return b
 }
 
@@ -81,7 +150,7 @@ func (b *PodMetricsEndpointApplyConfiguration) WithPath(value string) *PodMetric
 // WithScheme sets the Scheme field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the Scheme field is set to the value of the last call.
-func (b *PodMetricsEndpointApplyConfiguration) WithScheme(value string) *PodMetricsEndpointApplyConfiguration {
+func (b *PodMetricsEndpointApplyConfiguration) WithScheme(value monitoringv1.Scheme) *PodMetricsEndpointApplyConfiguration {
 	b.Scheme = &value
 	return b
 }
@@ -103,7 +172,7 @@ func (b *PodMetricsEndpointApplyConfiguration) WithParams(entries map[string][]s
 // WithInterval sets the Interval field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the Interval field is set to the value of the last call.
-func (b *PodMetricsEndpointApplyConfiguration) WithInterval(value v1.Duration) *PodMetricsEndpointApplyConfiguration {
+func (b *PodMetricsEndpointApplyConfiguration) WithInterval(value monitoringv1.Duration) *PodMetricsEndpointApplyConfiguration {
 	b.Interval = &value
 	return b
 }
@@ -111,24 +180,8 @@ func (b *PodMetricsEndpointApplyConfiguration) WithInterval(value v1.Duration) *
 // WithScrapeTimeout sets the ScrapeTimeout field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the ScrapeTimeout field is set to the value of the last call.
-func (b *PodMetricsEndpointApplyConfiguration) WithScrapeTimeout(value v1.Duration) *PodMetricsEndpointApplyConfiguration {
+func (b *PodMetricsEndpointApplyConfiguration) WithScrapeTimeout(value monitoringv1.Duration) *PodMetricsEndpointApplyConfiguration {
 	b.ScrapeTimeout = &value
-	return b
-}
-
-// WithTLSConfig sets the TLSConfig field in the declarative configuration to the given value
-// and returns the receiver, so that objects can be built by chaining "With" function invocations.
-// If called multiple times, the TLSConfig field is set to the value of the last call.
-func (b *PodMetricsEndpointApplyConfiguration) WithTLSConfig(value *SafeTLSConfigApplyConfiguration) *PodMetricsEndpointApplyConfiguration {
-	b.TLSConfig = value
-	return b
-}
-
-// WithBearerTokenSecret sets the BearerTokenSecret field in the declarative configuration to the given value
-// and returns the receiver, so that objects can be built by chaining "With" function invocations.
-// If called multiple times, the BearerTokenSecret field is set to the value of the last call.
-func (b *PodMetricsEndpointApplyConfiguration) WithBearerTokenSecret(value corev1.SecretKeySelector) *PodMetricsEndpointApplyConfiguration {
-	b.BearerTokenSecret = &value
 	return b
 }
 
@@ -153,30 +206,6 @@ func (b *PodMetricsEndpointApplyConfiguration) WithHonorTimestamps(value bool) *
 // If called multiple times, the TrackTimestampsStaleness field is set to the value of the last call.
 func (b *PodMetricsEndpointApplyConfiguration) WithTrackTimestampsStaleness(value bool) *PodMetricsEndpointApplyConfiguration {
 	b.TrackTimestampsStaleness = &value
-	return b
-}
-
-// WithBasicAuth sets the BasicAuth field in the declarative configuration to the given value
-// and returns the receiver, so that objects can be built by chaining "With" function invocations.
-// If called multiple times, the BasicAuth field is set to the value of the last call.
-func (b *PodMetricsEndpointApplyConfiguration) WithBasicAuth(value *BasicAuthApplyConfiguration) *PodMetricsEndpointApplyConfiguration {
-	b.BasicAuth = value
-	return b
-}
-
-// WithOAuth2 sets the OAuth2 field in the declarative configuration to the given value
-// and returns the receiver, so that objects can be built by chaining "With" function invocations.
-// If called multiple times, the OAuth2 field is set to the value of the last call.
-func (b *PodMetricsEndpointApplyConfiguration) WithOAuth2(value *OAuth2ApplyConfiguration) *PodMetricsEndpointApplyConfiguration {
-	b.OAuth2 = value
-	return b
-}
-
-// WithAuthorization sets the Authorization field in the declarative configuration to the given value
-// and returns the receiver, so that objects can be built by chaining "With" function invocations.
-// If called multiple times, the Authorization field is set to the value of the last call.
-func (b *PodMetricsEndpointApplyConfiguration) WithAuthorization(value *SafeAuthorizationApplyConfiguration) *PodMetricsEndpointApplyConfiguration {
-	b.Authorization = value
 	return b
 }
 
@@ -206,11 +235,43 @@ func (b *PodMetricsEndpointApplyConfiguration) WithRelabelConfigs(values ...*Rel
 	return b
 }
 
-// WithProxyURL sets the ProxyURL field in the declarative configuration to the given value
+// WithFilterRunning sets the FilterRunning field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
-// If called multiple times, the ProxyURL field is set to the value of the last call.
-func (b *PodMetricsEndpointApplyConfiguration) WithProxyURL(value string) *PodMetricsEndpointApplyConfiguration {
-	b.ProxyURL = &value
+// If called multiple times, the FilterRunning field is set to the value of the last call.
+func (b *PodMetricsEndpointApplyConfiguration) WithFilterRunning(value bool) *PodMetricsEndpointApplyConfiguration {
+	b.FilterRunning = &value
+	return b
+}
+
+// WithAuthorization sets the Authorization field in the declarative configuration to the given value
+// and returns the receiver, so that objects can be built by chaining "With" function invocations.
+// If called multiple times, the Authorization field is set to the value of the last call.
+func (b *PodMetricsEndpointApplyConfiguration) WithAuthorization(value *SafeAuthorizationApplyConfiguration) *PodMetricsEndpointApplyConfiguration {
+	b.HTTPConfigWithoutTLSApplyConfiguration.Authorization = value
+	return b
+}
+
+// WithBasicAuth sets the BasicAuth field in the declarative configuration to the given value
+// and returns the receiver, so that objects can be built by chaining "With" function invocations.
+// If called multiple times, the BasicAuth field is set to the value of the last call.
+func (b *PodMetricsEndpointApplyConfiguration) WithBasicAuth(value *BasicAuthApplyConfiguration) *PodMetricsEndpointApplyConfiguration {
+	b.HTTPConfigWithoutTLSApplyConfiguration.BasicAuth = value
+	return b
+}
+
+// WithOAuth2 sets the OAuth2 field in the declarative configuration to the given value
+// and returns the receiver, so that objects can be built by chaining "With" function invocations.
+// If called multiple times, the OAuth2 field is set to the value of the last call.
+func (b *PodMetricsEndpointApplyConfiguration) WithOAuth2(value *OAuth2ApplyConfiguration) *PodMetricsEndpointApplyConfiguration {
+	b.HTTPConfigWithoutTLSApplyConfiguration.OAuth2 = value
+	return b
+}
+
+// WithBearerTokenSecret sets the BearerTokenSecret field in the declarative configuration to the given value
+// and returns the receiver, so that objects can be built by chaining "With" function invocations.
+// If called multiple times, the BearerTokenSecret field is set to the value of the last call.
+func (b *PodMetricsEndpointApplyConfiguration) WithBearerTokenSecret(value corev1.SecretKeySelector) *PodMetricsEndpointApplyConfiguration {
+	b.HTTPConfigWithoutTLSApplyConfiguration.BearerTokenSecret = &value
 	return b
 }
 
@@ -218,22 +279,60 @@ func (b *PodMetricsEndpointApplyConfiguration) WithProxyURL(value string) *PodMe
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the FollowRedirects field is set to the value of the last call.
 func (b *PodMetricsEndpointApplyConfiguration) WithFollowRedirects(value bool) *PodMetricsEndpointApplyConfiguration {
-	b.FollowRedirects = &value
+	b.HTTPConfigWithoutTLSApplyConfiguration.FollowRedirects = &value
 	return b
 }
 
-// WithEnableHttp2 sets the EnableHttp2 field in the declarative configuration to the given value
+// WithEnableHTTP2 sets the EnableHTTP2 field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
-// If called multiple times, the EnableHttp2 field is set to the value of the last call.
-func (b *PodMetricsEndpointApplyConfiguration) WithEnableHttp2(value bool) *PodMetricsEndpointApplyConfiguration {
-	b.EnableHttp2 = &value
+// If called multiple times, the EnableHTTP2 field is set to the value of the last call.
+func (b *PodMetricsEndpointApplyConfiguration) WithEnableHTTP2(value bool) *PodMetricsEndpointApplyConfiguration {
+	b.HTTPConfigWithoutTLSApplyConfiguration.EnableHTTP2 = &value
 	return b
 }
 
-// WithFilterRunning sets the FilterRunning field in the declarative configuration to the given value
+// WithTLSConfig sets the TLSConfig field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
-// If called multiple times, the FilterRunning field is set to the value of the last call.
-func (b *PodMetricsEndpointApplyConfiguration) WithFilterRunning(value bool) *PodMetricsEndpointApplyConfiguration {
-	b.FilterRunning = &value
+// If called multiple times, the TLSConfig field is set to the value of the last call.
+func (b *PodMetricsEndpointApplyConfiguration) WithTLSConfig(value *SafeTLSConfigApplyConfiguration) *PodMetricsEndpointApplyConfiguration {
+	b.HTTPConfigApplyConfiguration.TLSConfig = value
+	return b
+}
+
+// WithProxyURL sets the ProxyURL field in the declarative configuration to the given value
+// and returns the receiver, so that objects can be built by chaining "With" function invocations.
+// If called multiple times, the ProxyURL field is set to the value of the last call.
+func (b *PodMetricsEndpointApplyConfiguration) WithProxyURL(value string) *PodMetricsEndpointApplyConfiguration {
+	b.ProxyConfigApplyConfiguration.ProxyURL = &value
+	return b
+}
+
+// WithNoProxy sets the NoProxy field in the declarative configuration to the given value
+// and returns the receiver, so that objects can be built by chaining "With" function invocations.
+// If called multiple times, the NoProxy field is set to the value of the last call.
+func (b *PodMetricsEndpointApplyConfiguration) WithNoProxy(value string) *PodMetricsEndpointApplyConfiguration {
+	b.ProxyConfigApplyConfiguration.NoProxy = &value
+	return b
+}
+
+// WithProxyFromEnvironment sets the ProxyFromEnvironment field in the declarative configuration to the given value
+// and returns the receiver, so that objects can be built by chaining "With" function invocations.
+// If called multiple times, the ProxyFromEnvironment field is set to the value of the last call.
+func (b *PodMetricsEndpointApplyConfiguration) WithProxyFromEnvironment(value bool) *PodMetricsEndpointApplyConfiguration {
+	b.ProxyConfigApplyConfiguration.ProxyFromEnvironment = &value
+	return b
+}
+
+// WithProxyConnectHeader puts the entries into the ProxyConnectHeader field in the declarative configuration
+// and returns the receiver, so that objects can be build by chaining "With" function invocations.
+// If called multiple times, the entries provided by each call will be put on the ProxyConnectHeader field,
+// overwriting an existing map entries in ProxyConnectHeader field with the same key.
+func (b *PodMetricsEndpointApplyConfiguration) WithProxyConnectHeader(entries map[string][]corev1.SecretKeySelector) *PodMetricsEndpointApplyConfiguration {
+	if b.ProxyConfigApplyConfiguration.ProxyConnectHeader == nil && len(entries) > 0 {
+		b.ProxyConfigApplyConfiguration.ProxyConnectHeader = make(map[string][]corev1.SecretKeySelector, len(entries))
+	}
+	for k, v := range entries {
+		b.ProxyConfigApplyConfiguration.ProxyConnectHeader[k] = v
+	}
 	return b
 }

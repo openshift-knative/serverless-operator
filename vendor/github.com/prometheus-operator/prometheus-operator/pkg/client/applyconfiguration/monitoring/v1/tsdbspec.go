@@ -17,16 +17,48 @@
 package v1
 
 import (
-	v1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
+	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
+	resource "k8s.io/apimachinery/pkg/api/resource"
 )
 
-// TSDBSpecApplyConfiguration represents an declarative configuration of the TSDBSpec type for use
+// TSDBSpecApplyConfiguration represents a declarative configuration of the TSDBSpec type for use
 // with apply.
 type TSDBSpecApplyConfiguration struct {
-	OutOfOrderTimeWindow *v1.Duration `json:"outOfOrderTimeWindow,omitempty"`
+	// outOfOrderTimeWindow defines how old an out-of-order/out-of-bounds sample can be with
+	// respect to the TSDB max time.
+	//
+	// An out-of-order/out-of-bounds sample is ingested into the TSDB as long as
+	// the timestamp of the sample is >= (TSDB.MaxTime - outOfOrderTimeWindow).
+	//
+	// This is an *experimental feature*, it may change in any upcoming release
+	// in a breaking way.
+	//
+	// It requires Prometheus >= v2.39.0 or PrometheusAgent >= v2.54.0.
+	OutOfOrderTimeWindow *monitoringv1.Duration `json:"outOfOrderTimeWindow,omitempty"`
+	// staleSeriesCompactionThreshold configures the trigger point for compacting
+	// stale series from memory into persistent blocks and removing those stale
+	// series from memory.
+	//
+	// The threshold is a number between 0.0 and 1.0. It represents the ratio of
+	// stale series in memory to the total series in memory. The stale series
+	// compaction is triggered when this ratio crosses the configured threshold.
+	// It may not trigger the stale series compaction if the usual head compaction
+	// is about to happen soon.
+	//
+	// If set to 0, stale series compaction is disabled.
+	//
+	// It requires Prometheus >= v3.10.0.
+	StaleSeriesCompactionThreshold *resource.Quantity `json:"staleSeriesCompactionThreshold,omitempty"`
+	// chunkEncoding configures per-chunk-type encoding overrides.
+	//
+	// It requires Prometheus >= v3.13.0.
+	//
+	// Notice: Setting "Xor" is incompatible with --enable-feature=st-storage
+	// (XOR chunks do not store start timestamps).
+	ChunkEncoding *ChunkEncodingSpecApplyConfiguration `json:"chunkEncoding,omitempty"`
 }
 
-// TSDBSpecApplyConfiguration constructs an declarative configuration of the TSDBSpec type for use with
+// TSDBSpecApplyConfiguration constructs a declarative configuration of the TSDBSpec type for use with
 // apply.
 func TSDBSpec() *TSDBSpecApplyConfiguration {
 	return &TSDBSpecApplyConfiguration{}
@@ -35,7 +67,23 @@ func TSDBSpec() *TSDBSpecApplyConfiguration {
 // WithOutOfOrderTimeWindow sets the OutOfOrderTimeWindow field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the OutOfOrderTimeWindow field is set to the value of the last call.
-func (b *TSDBSpecApplyConfiguration) WithOutOfOrderTimeWindow(value v1.Duration) *TSDBSpecApplyConfiguration {
+func (b *TSDBSpecApplyConfiguration) WithOutOfOrderTimeWindow(value monitoringv1.Duration) *TSDBSpecApplyConfiguration {
 	b.OutOfOrderTimeWindow = &value
+	return b
+}
+
+// WithStaleSeriesCompactionThreshold sets the StaleSeriesCompactionThreshold field in the declarative configuration to the given value
+// and returns the receiver, so that objects can be built by chaining "With" function invocations.
+// If called multiple times, the StaleSeriesCompactionThreshold field is set to the value of the last call.
+func (b *TSDBSpecApplyConfiguration) WithStaleSeriesCompactionThreshold(value resource.Quantity) *TSDBSpecApplyConfiguration {
+	b.StaleSeriesCompactionThreshold = &value
+	return b
+}
+
+// WithChunkEncoding sets the ChunkEncoding field in the declarative configuration to the given value
+// and returns the receiver, so that objects can be built by chaining "With" function invocations.
+// If called multiple times, the ChunkEncoding field is set to the value of the last call.
+func (b *TSDBSpecApplyConfiguration) WithChunkEncoding(value *ChunkEncodingSpecApplyConfiguration) *TSDBSpecApplyConfiguration {
+	b.ChunkEncoding = value
 	return b
 }
