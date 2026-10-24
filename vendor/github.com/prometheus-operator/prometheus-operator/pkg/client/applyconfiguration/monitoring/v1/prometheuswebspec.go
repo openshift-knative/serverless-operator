@@ -16,15 +16,20 @@
 
 package v1
 
-// PrometheusWebSpecApplyConfiguration represents an declarative configuration of the PrometheusWebSpec type for use
+// PrometheusWebSpecApplyConfiguration represents a declarative configuration of the PrometheusWebSpec type for use
 // with apply.
+//
+// PrometheusWebSpec defines the configuration of the Prometheus web server.
 type PrometheusWebSpecApplyConfiguration struct {
-	WebConfigFileFieldsApplyConfiguration `json:",inline"`
-	PageTitle                             *string `json:"pageTitle,omitempty"`
-	MaxConnections                        *int32  `json:"maxConnections,omitempty"`
+	WebConfigFileFieldsApplyConfiguration `json:""`
+	// pageTitle defines the prometheus web page title.
+	PageTitle *string `json:"pageTitle,omitempty"`
+	// maxConnections defines the maximum number of simultaneous connections
+	// A zero value means that Prometheus doesn't accept any incoming connection.
+	MaxConnections *int32 `json:"maxConnections,omitempty"`
 }
 
-// PrometheusWebSpecApplyConfiguration constructs an declarative configuration of the PrometheusWebSpec type for use with
+// PrometheusWebSpecApplyConfiguration constructs a declarative configuration of the PrometheusWebSpec type for use with
 // apply.
 func PrometheusWebSpec() *PrometheusWebSpecApplyConfiguration {
 	return &PrometheusWebSpecApplyConfiguration{}
@@ -34,7 +39,7 @@ func PrometheusWebSpec() *PrometheusWebSpecApplyConfiguration {
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the TLSConfig field is set to the value of the last call.
 func (b *PrometheusWebSpecApplyConfiguration) WithTLSConfig(value *WebTLSConfigApplyConfiguration) *PrometheusWebSpecApplyConfiguration {
-	b.TLSConfig = value
+	b.WebConfigFileFieldsApplyConfiguration.TLSConfig = value
 	return b
 }
 
@@ -42,7 +47,7 @@ func (b *PrometheusWebSpecApplyConfiguration) WithTLSConfig(value *WebTLSConfigA
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the HTTPConfig field is set to the value of the last call.
 func (b *PrometheusWebSpecApplyConfiguration) WithHTTPConfig(value *WebHTTPConfigApplyConfiguration) *PrometheusWebSpecApplyConfiguration {
-	b.HTTPConfig = value
+	b.WebConfigFileFieldsApplyConfiguration.HTTPConfig = value
 	return b
 }
 

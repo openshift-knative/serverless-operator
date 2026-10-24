@@ -21,19 +21,45 @@ import (
 	corev1 "k8s.io/api/core/v1"
 )
 
-// AlertmanagerGlobalConfigApplyConfiguration represents an declarative configuration of the AlertmanagerGlobalConfig type for use
+// AlertmanagerGlobalConfigApplyConfiguration represents a declarative configuration of the AlertmanagerGlobalConfig type for use
 // with apply.
+//
+// AlertmanagerGlobalConfig configures parameters that are valid in all other configuration contexts.
+// See https://prometheus.io/docs/alerting/latest/configuration/#configuration-file
 type AlertmanagerGlobalConfigApplyConfiguration struct {
-	SMTPConfig     *GlobalSMTPConfigApplyConfiguration `json:"smtp,omitempty"`
-	ResolveTimeout *monitoringv1.Duration              `json:"resolveTimeout,omitempty"`
-	HTTPConfig     *HTTPConfigApplyConfiguration       `json:"httpConfig,omitempty"`
-	SlackAPIURL    *corev1.SecretKeySelector           `json:"slackApiUrl,omitempty"`
-	OpsGenieAPIURL *corev1.SecretKeySelector           `json:"opsGenieApiUrl,omitempty"`
-	OpsGenieAPIKey *corev1.SecretKeySelector           `json:"opsGenieApiKey,omitempty"`
-	PagerdutyURL   *string                             `json:"pagerdutyUrl,omitempty"`
+	// smtp defines global SMTP parameters.
+	SMTPConfig *GlobalSMTPConfigApplyConfiguration `json:"smtp,omitempty"`
+	// resolveTimeout defines the default value used by alertmanager if the alert does
+	// not include EndsAt, after this time passes it can declare the alert as resolved if it has not been updated.
+	// This has no impact on alerts from Prometheus, as they always include EndsAt.
+	ResolveTimeout *monitoringv1.Duration `json:"resolveTimeout,omitempty"`
+	// httpConfig defines the default HTTP configuration.
+	HTTPConfigWithProxy *HTTPConfigWithProxyApplyConfiguration `json:"httpConfig,omitempty"`
+	// slackApiUrl defines the default Slack API URL.
+	SlackAPIURL *corev1.SecretKeySelector `json:"slackApiUrl,omitempty"`
+	// opsGenieApiUrl defines the default OpsGenie API URL.
+	OpsGenieAPIURL *corev1.SecretKeySelector `json:"opsGenieApiUrl,omitempty"`
+	// opsGenieApiKey defines the default OpsGenie API Key.
+	OpsGenieAPIKey *corev1.SecretKeySelector `json:"opsGenieApiKey,omitempty"`
+	// pagerdutyUrl defines the default Pagerduty URL.
+	PagerdutyURL *monitoringv1.URL `json:"pagerdutyUrl,omitempty"`
+	// telegram defines the default Telegram config
+	TelegramConfig *GlobalTelegramConfigApplyConfiguration `json:"telegram,omitempty"`
+	// jira defines the default configuration for Jira.
+	JiraConfig *GlobalJiraConfigApplyConfiguration `json:"jira,omitempty"`
+	// victorops defines the default configuration for VictorOps.
+	VictorOpsConfig *GlobalVictorOpsConfigApplyConfiguration `json:"victorops,omitempty"`
+	// rocketChat defines the default configuration for Rocket Chat.
+	RocketChatConfig *GlobalRocketChatConfigApplyConfiguration `json:"rocketChat,omitempty"`
+	// webex defines the default configuration for Webex.
+	WebexConfig *GlobalWebexConfigApplyConfiguration `json:"webex,omitempty"`
+	// wechat defines the default WeChat Config
+	WeChatConfig *GlobalWeChatConfigApplyConfiguration `json:"wechat,omitempty"`
+	// mattermost defines the default Mattermost Config
+	MattermostConfig *GlobalMattermostConfigApplyConfiguration `json:"mattermost,omitempty"`
 }
 
-// AlertmanagerGlobalConfigApplyConfiguration constructs an declarative configuration of the AlertmanagerGlobalConfig type for use with
+// AlertmanagerGlobalConfigApplyConfiguration constructs a declarative configuration of the AlertmanagerGlobalConfig type for use with
 // apply.
 func AlertmanagerGlobalConfig() *AlertmanagerGlobalConfigApplyConfiguration {
 	return &AlertmanagerGlobalConfigApplyConfiguration{}
@@ -55,11 +81,11 @@ func (b *AlertmanagerGlobalConfigApplyConfiguration) WithResolveTimeout(value mo
 	return b
 }
 
-// WithHTTPConfig sets the HTTPConfig field in the declarative configuration to the given value
+// WithHTTPConfigWithProxy sets the HTTPConfigWithProxy field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
-// If called multiple times, the HTTPConfig field is set to the value of the last call.
-func (b *AlertmanagerGlobalConfigApplyConfiguration) WithHTTPConfig(value *HTTPConfigApplyConfiguration) *AlertmanagerGlobalConfigApplyConfiguration {
-	b.HTTPConfig = value
+// If called multiple times, the HTTPConfigWithProxy field is set to the value of the last call.
+func (b *AlertmanagerGlobalConfigApplyConfiguration) WithHTTPConfigWithProxy(value *HTTPConfigWithProxyApplyConfiguration) *AlertmanagerGlobalConfigApplyConfiguration {
+	b.HTTPConfigWithProxy = value
 	return b
 }
 
@@ -90,7 +116,63 @@ func (b *AlertmanagerGlobalConfigApplyConfiguration) WithOpsGenieAPIKey(value co
 // WithPagerdutyURL sets the PagerdutyURL field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the PagerdutyURL field is set to the value of the last call.
-func (b *AlertmanagerGlobalConfigApplyConfiguration) WithPagerdutyURL(value string) *AlertmanagerGlobalConfigApplyConfiguration {
+func (b *AlertmanagerGlobalConfigApplyConfiguration) WithPagerdutyURL(value monitoringv1.URL) *AlertmanagerGlobalConfigApplyConfiguration {
 	b.PagerdutyURL = &value
+	return b
+}
+
+// WithTelegramConfig sets the TelegramConfig field in the declarative configuration to the given value
+// and returns the receiver, so that objects can be built by chaining "With" function invocations.
+// If called multiple times, the TelegramConfig field is set to the value of the last call.
+func (b *AlertmanagerGlobalConfigApplyConfiguration) WithTelegramConfig(value *GlobalTelegramConfigApplyConfiguration) *AlertmanagerGlobalConfigApplyConfiguration {
+	b.TelegramConfig = value
+	return b
+}
+
+// WithJiraConfig sets the JiraConfig field in the declarative configuration to the given value
+// and returns the receiver, so that objects can be built by chaining "With" function invocations.
+// If called multiple times, the JiraConfig field is set to the value of the last call.
+func (b *AlertmanagerGlobalConfigApplyConfiguration) WithJiraConfig(value *GlobalJiraConfigApplyConfiguration) *AlertmanagerGlobalConfigApplyConfiguration {
+	b.JiraConfig = value
+	return b
+}
+
+// WithVictorOpsConfig sets the VictorOpsConfig field in the declarative configuration to the given value
+// and returns the receiver, so that objects can be built by chaining "With" function invocations.
+// If called multiple times, the VictorOpsConfig field is set to the value of the last call.
+func (b *AlertmanagerGlobalConfigApplyConfiguration) WithVictorOpsConfig(value *GlobalVictorOpsConfigApplyConfiguration) *AlertmanagerGlobalConfigApplyConfiguration {
+	b.VictorOpsConfig = value
+	return b
+}
+
+// WithRocketChatConfig sets the RocketChatConfig field in the declarative configuration to the given value
+// and returns the receiver, so that objects can be built by chaining "With" function invocations.
+// If called multiple times, the RocketChatConfig field is set to the value of the last call.
+func (b *AlertmanagerGlobalConfigApplyConfiguration) WithRocketChatConfig(value *GlobalRocketChatConfigApplyConfiguration) *AlertmanagerGlobalConfigApplyConfiguration {
+	b.RocketChatConfig = value
+	return b
+}
+
+// WithWebexConfig sets the WebexConfig field in the declarative configuration to the given value
+// and returns the receiver, so that objects can be built by chaining "With" function invocations.
+// If called multiple times, the WebexConfig field is set to the value of the last call.
+func (b *AlertmanagerGlobalConfigApplyConfiguration) WithWebexConfig(value *GlobalWebexConfigApplyConfiguration) *AlertmanagerGlobalConfigApplyConfiguration {
+	b.WebexConfig = value
+	return b
+}
+
+// WithWeChatConfig sets the WeChatConfig field in the declarative configuration to the given value
+// and returns the receiver, so that objects can be built by chaining "With" function invocations.
+// If called multiple times, the WeChatConfig field is set to the value of the last call.
+func (b *AlertmanagerGlobalConfigApplyConfiguration) WithWeChatConfig(value *GlobalWeChatConfigApplyConfiguration) *AlertmanagerGlobalConfigApplyConfiguration {
+	b.WeChatConfig = value
+	return b
+}
+
+// WithMattermostConfig sets the MattermostConfig field in the declarative configuration to the given value
+// and returns the receiver, so that objects can be built by chaining "With" function invocations.
+// If called multiple times, the MattermostConfig field is set to the value of the last call.
+func (b *AlertmanagerGlobalConfigApplyConfiguration) WithMattermostConfig(value *GlobalMattermostConfigApplyConfiguration) *AlertmanagerGlobalConfigApplyConfiguration {
+	b.MattermostConfig = value
 	return b
 }

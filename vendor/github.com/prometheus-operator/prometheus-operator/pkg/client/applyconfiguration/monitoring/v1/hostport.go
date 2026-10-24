@@ -16,14 +16,18 @@
 
 package v1
 
-// HostPortApplyConfiguration represents an declarative configuration of the HostPort type for use
+// HostPortApplyConfiguration represents a declarative configuration of the HostPort type for use
 // with apply.
+//
+// HostPort represents a "host:port" network address.
 type HostPortApplyConfiguration struct {
+	// host defines the host's address, it can be a DNS name or a literal IP address.
 	Host *string `json:"host,omitempty"`
+	// port defines the host's port, it can be a literal port number or a port name.
 	Port *string `json:"port,omitempty"`
 }
 
-// HostPortApplyConfiguration constructs an declarative configuration of the HostPort type for use with
+// HostPortApplyConfiguration constructs a declarative configuration of the HostPort type for use with
 // apply.
 func HostPort() *HostPortApplyConfiguration {
 	return &HostPortApplyConfiguration{}

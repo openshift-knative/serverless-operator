@@ -17,17 +17,27 @@
 package v1
 
 import (
-	v1 "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 )
 
-// SafeAuthorizationApplyConfiguration represents an declarative configuration of the SafeAuthorization type for use
+// SafeAuthorizationApplyConfiguration represents a declarative configuration of the SafeAuthorization type for use
 // with apply.
+//
+// SafeAuthorization specifies a subset of the Authorization struct, that is
+// safe for use because it doesn't provide access to the Prometheus container's
+// filesystem.
 type SafeAuthorizationApplyConfiguration struct {
-	Type        *string               `json:"type,omitempty"`
-	Credentials *v1.SecretKeySelector `json:"credentials,omitempty"`
+	// type defines the authentication type. The value is case-insensitive.
+	//
+	// "Basic" is not a supported value.
+	//
+	// Default: "Bearer"
+	Type *string `json:"type,omitempty"`
+	// credentials defines a key of a Secret in the namespace that contains the credentials for authentication.
+	Credentials *corev1.SecretKeySelector `json:"credentials,omitempty"`
 }
 
-// SafeAuthorizationApplyConfiguration constructs an declarative configuration of the SafeAuthorization type for use with
+// SafeAuthorizationApplyConfiguration constructs a declarative configuration of the SafeAuthorization type for use with
 // apply.
 func SafeAuthorization() *SafeAuthorizationApplyConfiguration {
 	return &SafeAuthorizationApplyConfiguration{}
@@ -44,7 +54,7 @@ func (b *SafeAuthorizationApplyConfiguration) WithType(value string) *SafeAuthor
 // WithCredentials sets the Credentials field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the Credentials field is set to the value of the last call.
-func (b *SafeAuthorizationApplyConfiguration) WithCredentials(value v1.SecretKeySelector) *SafeAuthorizationApplyConfiguration {
+func (b *SafeAuthorizationApplyConfiguration) WithCredentials(value corev1.SecretKeySelector) *SafeAuthorizationApplyConfiguration {
 	b.Credentials = &value
 	return b
 }

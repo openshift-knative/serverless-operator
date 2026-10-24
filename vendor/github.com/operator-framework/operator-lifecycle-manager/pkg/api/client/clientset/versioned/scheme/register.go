@@ -1,6 +1,4 @@
 /*
-Copyright Red Hat, Inc.
-
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
@@ -34,9 +32,9 @@ var Scheme = runtime.NewScheme()
 var Codecs = serializer.NewCodecFactory(Scheme)
 var ParameterCodec = runtime.NewParameterCodec(Scheme)
 var localSchemeBuilder = runtime.SchemeBuilder{
+	operatorsv1.AddToScheme,
 	operatorsv1alpha1.AddToScheme,
 	operatorsv1alpha2.AddToScheme,
-	operatorsv1.AddToScheme,
 	operatorsv2.AddToScheme,
 }
 
