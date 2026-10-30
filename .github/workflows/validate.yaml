@@ -45,6 +45,10 @@ jobs:
         run: |
           go install github.com/mikefarah/yq/v3@latest
 
+      - name: Install OPM
+        run: |
+          go install github.com/operator-framework/operator-registry/cmd/opm@v1.47.0
+
       - name: Merge upstream
         if: github.event_name == 'pull_request'
         run: |
@@ -67,6 +71,14 @@ jobs:
 
       - name: Regenerate all generated files
         run: make generated-files
+
+      # Generate catalog only if not triggered by a pull request. Credentials are not available in pre-submit phase.
+      - name: Regenerate file-based catalog
+        if: github.event_name == 'workflow_dispatch' || github.event_name == 'schedule' || ( github.event_name == 'push' && !contains(github.ref_name, 'dependabot/') )
+        env:
+          REGISTRY_REDHAT_IO_USERNAME: ${{ secrets.REGISTRY_REDHAT_IO_USERNAME }}
+          REGISTRY_REDHAT_IO_PASSWORD: ${{ secrets.REGISTRY_REDHAT_IO_PASSWORD }}
+        run: make generate-catalog
 
       - name: Regenerate override-snapshot
         if: ( github.event_name == 'workflow_dispatch' && github.event.inputs.skip-override-snapshot-gen == 'false' ) || github.event_name == 'schedule' || ( github.event_name == 'push' && !contains(github.ref_name, 'dependabot/') )

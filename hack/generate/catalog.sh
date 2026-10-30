@@ -5,6 +5,12 @@ set -Eeuo pipefail
 # shellcheck disable=SC1091,SC1090
 source "$(dirname "${BASH_SOURCE[0]}")/../lib/__sources__.bash"
 
+# Add platform override to podman cmd, in case of MacOS add OS/arch overrides
+podman_platform_flags=""
+if [[ "$(uname -s)" == "Darwin" ]]; then
+  podman_platform_flags="--platform linux/amd64"
+fi
+
 function generate_catalog {
   local root_dir index_dir catalog_template
 
@@ -26,10 +32,19 @@ function generate_catalog {
 
     catalog_template="${index_dir}/v${ocp_version}/catalog-template.yaml"
 
-    opm migrate "registry.redhat.io/redhat/redhat-operator-index:v${ocp_version}" "${catalog_tmp_dir}" -oyaml
+    # The index images are file-based catalogs (label
+    # operators.operatorframework.io.index.configs.v1=/configs) with one pre-rendered
+    # declcfg per operator. Cat our package's file straight out of the image instead of
+    # `opm migrate`, which pulls and re-renders every operator in the index (~2min per
+    # OCP version). Registry auth is shared: skopeo login above writes the common
+    # containers auth.json, which podman reads as well.
+    # shellcheck disable=SC2086
+    podman run --pull always --rm ${podman_platform_flags} --entrypoint cat \
+      "registry.redhat.io/redhat/redhat-operator-index:v${ocp_version}" \
+      /configs/serverless-operator/catalog.json > "${catalog_tmp_dir}/catalog.json"
 
     # Generate simplified template
-    opm alpha convert-template basic "${catalog_tmp_dir}/serverless-operator/catalog.yaml" -oyaml \
+    opm alpha convert-template basic "${catalog_tmp_dir}/catalog.json" -oyaml \
       > "${catalog_template}"
 
     while IFS=$'\n' read -r channel; do
@@ -46,13 +61,6 @@ function generate_catalog {
     if versions.ge "$ocp_version" "4.17" ; then
       level="bundle-object-to-csv-metadata"
     fi
-
-    # Generate full catalog
-    opm alpha render-template basic --migrate-level="$level" "${catalog_template}" -oyaml \
-      > "${index_dir}/v${ocp_version}/catalog/serverless-operator/catalog.yaml"
-
-    # Replace quay.io with registry.redhat.io for bundle image.
-    sed -ri "s#(.*)(${SERVERLESS_BUNDLE})(.*)#\1${SERVERLESS_BUNDLE_REDHAT_IO}\3#" "${index_dir}/v${ocp_version}/catalog/serverless-operator/catalog.yaml"
 
     rm -rf "${catalog_tmp_dir}"
   done < <(metadata.get 'requirements.ocpVersion.list[*]')
@@ -112,7 +120,8 @@ function add_channel {
     # See for example https://github.com/openshift-knative/serverless-operator/pull/3608#issuecomment-2846440232
     # Therefor we only add the catalog, if the corresponding bundle has the correct version (and is "new")
     bundle_image_for_version=$(get_bundle_for_version "${version}")
-    version_in_bundle_image=$(skopeo inspect --no-tags docker://"$bundle_image_for_version" | jq -r .Labels.version)
+    # shellcheck disable=SC2086
+    version_in_bundle_image=$(skopeo inspect --no-tags docker://"$bundle_image_for_version" ${SKOPEO_EXTRA_FLAGS} | jq -r .Labels.version)
     if [[ "$version_in_bundle_image" != "$version" ]]; then
       logger.debug "Bundle image (${bundle_image_for_version}) for version ${version} not updated yet and still contains old version (${version_in_bundle_image}). Thus skipping to add it to the catalog"
       should_add=0
@@ -157,7 +166,8 @@ EOF
 
 function upgrade_service_mesh_proxy_image() {
   sm_proxy_image=$(yq r olm-catalog/serverless-operator/project.yaml 'dependencies.service_mesh_proxy')
-  sm_proxy_image_stream=$(skopeo inspect --retry-times=10 --no-tags=true "docker://${sm_proxy_image}" | jq -r '.Labels.version')
+  # shellcheck disable=SC2086
+  sm_proxy_image_stream=$(skopeo inspect --retry-times=10 --no-tags=true "docker://${sm_proxy_image}" ${SKOPEO_EXTRA_FLAGS} | jq -r '.Labels.version')
   sm_proxy_image_stream=${sm_proxy_image_stream%.*}
   sm_proxy_image=$(latest_konflux_image_sha "${sm_proxy_image}" "${sm_proxy_image_stream}")
   yq w --inplace olm-catalog/serverless-operator/project.yaml 'dependencies.service_mesh_proxy' "${sm_proxy_image}"
