@@ -69,9 +69,12 @@ entries:
       - name: serverless-operator.v1.37.1
         replaces: serverless-operator.v1.37.0
         skipRange: '>1.37.0 <1.37.1'
-      - name: "serverless-operator.v1.37.2"
-        replaces: "serverless-operator.v1.37.1"
-        skipRange: ">1.37.1 <1.37.2"
+      - name: serverless-operator.v1.37.2
+        replaces: serverless-operator.v1.37.1
+        skipRange: '>1.37.1 <1.37.2'
+      - name: "serverless-operator.v1.37.3"
+        replaces: "serverless-operator.v1.37.2"
+        skipRange: ">1.37.2 <1.37.3"
     name: stable
     package: serverless-operator
     schema: olm.channel
@@ -543,9 +546,12 @@ entries:
       - name: serverless-operator.v1.37.1
         replaces: serverless-operator.v1.37.0
         skipRange: '>1.37.0 <1.37.1'
-      - name: "serverless-operator.v1.37.2"
-        replaces: "serverless-operator.v1.37.1"
-        skipRange: ">1.37.1 <1.37.2"
+      - name: serverless-operator.v1.37.2
+        replaces: serverless-operator.v1.37.1
+        skipRange: '>1.37.1 <1.37.2'
+      - name: "serverless-operator.v1.37.3"
+        replaces: "serverless-operator.v1.37.2"
+        skipRange: ">1.37.2 <1.37.3"
     name: stable-1.37
     package: serverless-operator
     schema: olm.channel
@@ -605,6 +611,8 @@ entries:
     schema: olm.bundle
   - image: registry.redhat.io/openshift-serverless-1/serverless-operator-bundle@sha256:6684c8ed063f2691d745f3a1739e2ef0821db77b625b43d519d691b5ff35d16b
     schema: olm.bundle
+  - image: registry.redhat.io/openshift-serverless-1/serverless-operator-bundle@sha256:38e7da01d0c1c4de62f658b7a7b3785d597508629d8979173a96f2b3871e6626
+    schema: olm.bundle
   - schema: "olm.bundle"
-    image: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-137/serverless-bundle@sha256:38e7da01d0c1c4de62f658b7a7b3785d597508629d8979173a96f2b3871e6626"
+    image: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-137/serverless-bundle@sha256:0d561216368ea74eb0ef454eccb47eaed7ee81eec0ee2307ea82f788263bede8"
 schema: olm.template.basic
