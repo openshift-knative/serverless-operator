@@ -69,6 +69,17 @@ jobs:
           echo "CURRENT_VERSION_IMAGES=${tag}" >> $GITHUB_ENV
         shell: bash
 
+      # Upgrade dependency images only when registry credentials are available,
+      # same limitation as the catalog generation below: on pre-submit
+      # (pull_request) runs the pins must not be touched, so users are not
+      # forced to commit upgraded image digests.
+      - name: Upgrade dependency images
+        if: github.event_name == 'workflow_dispatch' || github.event_name == 'schedule' || ( github.event_name == 'push' && !contains(github.ref_name, 'dependabot/') )
+        env:
+          REGISTRY_REDHAT_IO_USERNAME: ${{ secrets.REGISTRY_REDHAT_IO_USERNAME }}
+          REGISTRY_REDHAT_IO_PASSWORD: ${{ secrets.REGISTRY_REDHAT_IO_PASSWORD }}
+        run: make upgrade-dependencies
+
       - name: Regenerate all generated files
         run: make generated-files
 
