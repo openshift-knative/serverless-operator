@@ -1,0 +1,21 @@
+entries:
+  - defaultChannel: stable
+    name: serverless-operator
+    schema: olm.package
+  - entries:
+      - name: "serverless-operator.v1.37.3"
+        replaces: "serverless-operator.v1.37.2"
+        skipRange: ">1.37.2 <1.37.3"
+    name: stable
+    package: serverless-operator
+    schema: olm.channel
+  - entries:
+      - name: "serverless-operator.v1.37.3"
+        replaces: "serverless-operator.v1.37.2"
+        skipRange: ">1.37.2 <1.37.3"
+    name: stable-1.37
+    package: serverless-operator
+    schema: olm.channel
+  - schema: "olm.bundle"
+    image: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-137/serverless-bundle@sha256:eec99ec89a11d625c8fd8ae0f7bddfbb8d9d85cfaefd6105b98ace56b311eb49"
+schema: olm.template.basic
