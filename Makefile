@@ -296,6 +296,15 @@ generate-catalog:
 		olm-catalog/serverless-operator-index/index-bundles.yaml
 .PHONY: generate-catalog
 
+# Upgrades the pinned dependency images in project.yaml (service-mesh-proxy,
+# kube-rbac-proxy, func utils). Requires registry credentials
+# (REGISTRY_REDHAT_IO_USERNAME/PASSWORD), therefore kept separate from
+# generated-files. Run `make generated-files` afterwards to regenerate the CSV
+# with the updated images.
+upgrade-dependencies: install-tools
+	./hack/generate/dependencies.sh
+.PHONY: upgrade-dependencies
+
 generate-override-snapshot: install-tools
 	./hack/generate/override-snapshot.sh \
   	.konflux-release/
