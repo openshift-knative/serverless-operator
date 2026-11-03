@@ -1,7 +1,7 @@
 apiVersion: appstudio.redhat.com/v1alpha1
 kind: Snapshot
 metadata:
-  name: serverless-operator-137-override-snapshot-a94f49a5
+  name: serverless-operator-137-override-snapshot-52481aa4
   labels:
     test.appstudio.openshift.io/type: override
     application: serverless-operator-137
@@ -17,18 +17,18 @@ spec:
           revision: "2a28d962f5e849eaffc62235ebcc5f4f4b90c695"
           dockerfileUrl: "openshift/ci-operator/knative-images/eventmesh/Dockerfile"
     - name: "kn-client-cli-artifacts-117"
-      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-137/kn-client-cli-artifacts@sha256:d597394bb2b292b410fea21e8d2d3a8acebebb0046c314d110fedf650e95ec83"
+      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-137/kn-client-cli-artifacts@sha256:06a6d306622b8abb67c4e23c1f88789a4208b273d5e1c8528caa2f046251e388"
       source:
         git:
           url: "https://github.com/openshift-knative/client"
-          revision: "ca3ecf3dba3e137d6487cd1ec2ff463431530799"
+          revision: "81a724dbe33818525ad0b3e8ec881d4330b84161"
           dockerfileUrl: "openshift/ci-operator/knative-images/cli-artifacts/Dockerfile"
     - name: "kn-client-kn-117"
-      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-137/kn-client-kn@sha256:5468f17f0bfd8a7a45cccf0ae293548f0506b131ef982f6f98e12a7cb962ef2d"
+      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-137/kn-client-kn@sha256:45b6a649ec611395194f56ccdef8ddf8e9d11a0a8149129e20426f66b0137f10"
       source:
         git:
           url: "https://github.com/openshift-knative/client"
-          revision: "ca3ecf3dba3e137d6487cd1ec2ff463431530799"
+          revision: "81a724dbe33818525ad0b3e8ec881d4330b84161"
           dockerfileUrl: "openshift/ci-operator/knative-images/kn/Dockerfile"
     - name: "kn-ekb-dispatcher-117"
       containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-137/kn-ekb-dispatcher@sha256:be7f1a0973d0973884a0cb7755361f9b883f5c2f142b9b9847be8cf81c1cccfc"
@@ -325,9 +325,9 @@ spec:
           revision: "cf0375e9d06d6b9ad5ca4303ae73b4ee91a8e93e"
           dockerfileUrl: "openshift-knative-operator/Dockerfile"
     - name: "serverless-bundle-137"
-      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-137/serverless-bundle@sha256:64cadc28b8d238e23f4c54813e5c9255de6d75220d49fc2b9bf9020940d6fc1d"
+      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-137/serverless-bundle@sha256:0c15be70be1c17c3f670693d593bf74116fb625b00e004233b6cd2ea7a9dadfd"
       source:
         git:
           url: "https://github.com/openshift-knative/serverless-operator"
-          revision: "ebe490bb88b6a3420d1582142ea3fc471628ae4e"
+          revision: "4cf01096035ec37807fc556d77a9e642fadd1d89"
           dockerfileUrl: "olm-catalog/serverless-operator/Dockerfile"
