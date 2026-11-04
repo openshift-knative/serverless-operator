@@ -101,6 +101,7 @@ func main() {
 		HealthProbeBindAddress: fmt.Sprintf(":%d", healthPort),
 		WebhookServer:          hookServer,
 		PprofBindAddress:       pprofAddress,
+		Cache:                  common.CacheOptions(),
 	})
 	if err != nil {
 		log.Error(err, "")
