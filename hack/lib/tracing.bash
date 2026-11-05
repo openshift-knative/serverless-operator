@@ -175,7 +175,7 @@ spec:
               value: tempo
             - name: MINIO_SECRET_KEY
               value: supersecret
-          image: quay.io/minio/minio
+          image: ghcr.io/grafana/tempo-operator/test-utils:sha-0fc5ef0
           name: minio
           ports:
             - containerPort: 9000
