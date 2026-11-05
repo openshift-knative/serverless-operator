@@ -1,4 +1,4 @@
-ARG OPM_IMAGE=registry.ci.openshift.org/origin/scos-4.17:operator-registry
+ARG OPM_IMAGE=registry.redhat.io/openshift5/ose-operator-registry-rhel9:v5.0
 
 FROM $OPM_IMAGE
 
