@@ -96,6 +96,16 @@ jobs:
         working-directory: ./src/github.com/${{ github.repository }}
         run: go run hack/cmd/bumpso/bumpso.go --branch "${RELEASE_BRANCH}"
 
+      # Upgrade the pinned dependency images first, so that the CSV regenerated
+      # in the next step picks up the updated images. Requires registry
+      # credentials, which is why this is a separate step from generated-files.
+      - name: Upgrade dependency images
+        working-directory: ./src/github.com/${{ github.repository }}
+        env:
+          REGISTRY_REDHAT_IO_USERNAME: ${{ secrets.REGISTRY_REDHAT_IO_USERNAME }}
+          REGISTRY_REDHAT_IO_PASSWORD: ${{ secrets.REGISTRY_REDHAT_IO_PASSWORD }}
+        run: make upgrade-dependencies
+
       - name: Regenerate all generated files
         working-directory: ./src/github.com/${{ github.repository }}
         run: make generated-files

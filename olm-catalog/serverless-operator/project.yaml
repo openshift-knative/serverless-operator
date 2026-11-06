@@ -6,8 +6,8 @@ project:
   # Also make sure to update values under `olm.previous` by copying from `olm.replaces` and `olm.skipRange`.
   version: 1.38.0
 olm:
-  replaces: 1.37.1
-  skipRange: '>1.37.1 <1.38.0'
+  replaces: 1.37.2
+  skipRange: '>1.37.2 <1.38.0'
   channels:
     # The "global" operator default, used as "operators.operatorframework.io.bundle.channels.v1" annotation
     operator_default: stable
@@ -18,6 +18,9 @@ olm:
       - stable-1.38
   previousBundles:
     # List of previous bundles to add to the generated index, also used in upgrade tests
+    - version: 1.37.2
+      replaces: 1.37.1
+      skipRange: ">1.37.1 <1.37.2"
     - version: 1.37.1
       replaces: 1.37.0
       skipRange: ">=1.37.0 <1.37.1"
@@ -38,26 +41,29 @@ requirements:
     # The min version validation in `vendor/knative.dev/pkg/version/version.go`
     # is ignored as it is overridden by fake version via KUBERNETES_MIN_VERSION.
     # This value is used for CSV's min version validation.
-    minVersion: 1.29.0
+    minVersion: 1.30.0
   golang: '1.26'
   nodejs: 20.x
   ocpVersion:
     list:
-      - "4.16"
-      - "4.17"
       - "4.18"
       - "4.19"
       - "4.20"
       - "4.21"
       - "4.22"
-    min: '4.16'
+      - "4.23"
+      - "5.0"
+      - "5.1"
+    min: '4.18'
     # Version to use for OCP docs links (in CSV or Quickstarts)
-    doc: '4.20'
+    doc: '5.0'
     # deprecated, use requirements.ocpVersion.list[-1]
-    max: '4.20'
-    label: 'v4.16'
+    max: '5.1'
+    # version to use in Dockerfiles
+    build: '5.0'
+    label: 'v4.18'
     # OCP stream for kube-rbac-proxy image.
-    kube-rbac-proxy: "4.17"
+    kube-rbac-proxy: "5.0"
 dependencies:
   serving: knative-v1.21
   # serving midstream branch name
@@ -89,10 +95,10 @@ dependencies:
   # backstage-plugins midstream branch or commit
   backstage_plugins_artifacts_branch: release-v1.21
   cli: knative-v1.21
-  kube_rbac_proxy: registry.redhat.io/openshift4/ose-kube-rbac-proxy-rhel9@sha256:e212e18b843e5182952d297d6571f32676d6b9c1c6f8a4722e6c6bbfdb8f2b09
+  kube_rbac_proxy: registry.redhat.io/openshift5/ose-kube-rbac-proxy-rhel9@sha256:35e642296198602070774681bc340e9dd835f0116fd2a1ab275cab9ecf95a6a0
   func:
     promotion_tag: knative-v1.21
-    # if additional image is added amend the list in hack/generate/catalog.sh
+    # if additional image is added amend the list in hack/generate/dependencies.sh
     tekton_buildah: registry.redhat.io/rhel9/buildah@sha256:a6f8842c45cf0c821c6e7055415ad035a41dbde8597c26a58e032b7cbcee595c
     nodejs_20_minimal: registry.access.redhat.com/ubi9/nodejs-20-minimal@sha256:714ca1c5e1350d28c0fa896675323d9d4f7c133420c699bb95b3326783b769fb
     openjdk_21: registry.access.redhat.com/ubi9/openjdk-21@sha256:78b159c0db6eb947775ad682a04dbe5cea07c16d8f5635ddd94b6cf468ab8577

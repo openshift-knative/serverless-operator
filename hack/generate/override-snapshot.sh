@@ -127,7 +127,8 @@ spec:
 EOF
 
   index_image="${registry_quay}-fbc-${ocp_version}/serverless-index-${so_short_version}-fbc-${ocp_version}"
-  index_image_digest="$(skopeo inspect --retry-times=10 --no-tags docker://"${index_image}:latest" | jq -r .Digest)"
+  # shellcheck disable=SC2086
+  index_image_digest="$(skopeo inspect --retry-times=10 --no-tags docker://"${index_image}:latest" ${SKOPEO_EXTRA_FLAGS} | jq -r .Digest)"
   add_component "${snapshot_file}" "serverless-index-${so_short_version}-fbc-${ocp_version}" "${index_image}@${index_image_digest}"
 
   append_hash_to_snapshot_name "${snapshot_file}"
