@@ -65,7 +65,11 @@ jobs:
       - name: Generate CI (on push)
         if: github.event_name == 'push' && github.event.created == false
         working-directory: ./src/github.com/openshift-knative/hack
-        run: go run ./cmd/prowcopy --from-branch ${{ github.ref_name }} --branch ${{ github.ref_name }} --tag "release-$(yq read ../serverless-operator/olm-catalog/serverless-operator/project.yaml 'project.version')" --config config/serverless-operator.yaml
+        # --remove-periodic-tests=false: periodic tests are owned by the
+        # openshift-knative/hack CI config (synced via "Sync Serverless CI
+        # config/" PRs). Stripping them here made this workflow open/update
+        # PRs proposing to delete actively running cron jobs on every push.
+        run: go run ./cmd/prowcopy --from-branch ${{ github.ref_name }} --branch ${{ github.ref_name }} --tag "release-$(yq read ../serverless-operator/olm-catalog/serverless-operator/project.yaml 'project.version')" --remove-periodic-tests=false --config config/serverless-operator.yaml
 
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v7
