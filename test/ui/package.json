@@ -17,7 +17,7 @@
     "cypress": "^15.6.0",
     "cypress-multi-reporters": "^2.0.5",
     "diff": "^8.0.2",
-    "mocha": "^11.7.5",
+    "mocha": "^12.0.3",
     "mocha-junit-reporter": "^2.2.1",
     "semver": "^7.7.3"
   }
