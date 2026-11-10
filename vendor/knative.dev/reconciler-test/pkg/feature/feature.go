@@ -252,15 +252,6 @@ func DeleteResources(ctx context.Context, t T, refs []corev1.ObjectReference) er
 				return false, fmt.Errorf("failed to get resource %+v %s/%s: %w", resource, ref.Namespace, ref.Name, err)
 			}
 
-			// Repeat deleting service accounts.
-			// Workaround for https://issues.redhat.com/browse/OCPBUGS-35731
-			if resource.Resource == "serviceaccounts" {
-				err = dc.Resource(resource).Namespace(ref.Namespace).Delete(ctx, ref.Name, metav1.DeleteOptions{})
-				if err != nil && !apierrors.IsNotFound(err) {
-					t.Logf("Warning, failed to delete %s/%s of GVR: %+v: %v", ref.Namespace, ref.Name, resource, err)
-				}
-			}
-
 			lastResource = ref
 			t.Logf("Resource %+v %s/%s still present", resource, ref.Namespace, ref.Name)
 			return false, nil
