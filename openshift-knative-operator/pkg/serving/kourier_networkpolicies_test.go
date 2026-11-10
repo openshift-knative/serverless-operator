@@ -18,15 +18,19 @@ package serving
 
 import (
 	"context"
+	"errors"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
 	corev1 "k8s.io/api/core/v1"
 	networkingv1 "k8s.io/api/networking/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	clientgofake "k8s.io/client-go/kubernetes/fake"
 	k8sscheme "k8s.io/client-go/kubernetes/scheme"
+	k8stesting "k8s.io/client-go/testing"
 	"k8s.io/utils/ptr"
 	"knative.dev/operator/pkg/apis/operator/base"
 	operatorv1beta1 "knative.dev/operator/pkg/apis/operator/v1beta1"
@@ -437,6 +441,85 @@ func TestGatewayExtAuthzEgressTargetPort(t *testing.T) {
 		}
 	}
 	t.Fatalf("expected allow-gateway-to-extauthz NetworkPolicy")
+}
+
+// TestGatewayExtAuthzEgressNamedTargetPort pins that a named targetPort is
+// preserved in the policy: NetworkPolicy ports accept named ports, which
+// resolve against the backend pods, so a Service port 80 with
+// targetPort: grpc yields the service port plus the named port.
+func TestGatewayExtAuthzEgressNamedTargetPort(t *testing.T) {
+	ks := extAuthzServing("auth.user-namespace.svc:80")
+
+	kube := clientgofake.NewSimpleClientset(&corev1.Service{
+		ObjectMeta: metav1.ObjectMeta{Name: "auth", Namespace: "user-namespace"},
+		Spec: corev1.ServiceSpec{
+			Ports: []corev1.ServicePort{{
+				Port:       80,
+				TargetPort: intstr.FromString("grpc"),
+			}},
+		},
+	})
+
+	manifests, err := generateKourierNetworkPolicies(ks, kube)
+	if err != nil {
+		t.Fatalf("generateKourierNetworkPolicies() returned error: %v", err)
+	}
+
+	for _, m := range manifests {
+		for _, r := range m.Resources() {
+			if r.GetName() != "allow-gateway-to-extauthz" {
+				continue
+			}
+			p := &networkingv1.NetworkPolicy{}
+			if err := k8sscheme.Scheme.Convert(&r, p, nil); err != nil {
+				t.Fatalf("failed to convert policy: %v", err)
+			}
+			want := []networkingv1.NetworkPolicyPort{
+				{Protocol: ptr.To(corev1.ProtocolTCP), Port: ptr.To(intstr.FromInt32(80))},
+				{Protocol: ptr.To(corev1.ProtocolTCP), Port: ptr.To(intstr.FromString("grpc"))},
+			}
+			if diff := cmp.Diff(want, p.Spec.Egress[0].Ports); diff != "" {
+				t.Errorf("ports diff (-want +got):\n%s", diff)
+			}
+			return
+		}
+	}
+	t.Fatalf("expected allow-gateway-to-extauthz NetworkPolicy")
+}
+
+// TestGenerateKourierNetworkPoliciesLookupError pins that transient errors
+// from the authorization Service lookup fail the generation, so the
+// reconcile retries instead of silently keeping an incomplete policy. A
+// missing Service is not an error: the rule falls back to the service port
+// and the Service watch re-enqueues the KnativeServing once it appears.
+func TestGenerateKourierNetworkPoliciesLookupError(t *testing.T) {
+	ks := extAuthzServing("auth.user-namespace.svc:2222")
+
+	kube := clientgofake.NewSimpleClientset()
+	kube.PrependReactor("get", "services", func(_ k8stesting.Action) (bool, runtime.Object, error) {
+		return true, nil, errors.New("boom")
+	})
+
+	if _, err := generateKourierNetworkPolicies(ks, kube); err == nil {
+		t.Errorf("expected generateKourierNetworkPolicies() to return an error on a transient Service lookup failure")
+	}
+}
+
+// TestKnativeServingsForExtAuthzService pins the mapping used by the Service
+// watch: a Service event enqueues exactly the KnativeServings whose
+// configured external authorization service it is.
+func TestKnativeServingsForExtAuthzService(t *testing.T) {
+	withExtAuthz := extAuthzServing("auth.user-namespace.svc:2222")
+	withoutExtAuthz := kourierServing(nil)
+	otherExtAuthz := extAuthzServing("other.other-namespace.svc:2222")
+
+	got := knativeServingsForExtAuthzService(
+		[]*operatorv1beta1.KnativeServing{withExtAuthz, withoutExtAuthz, otherExtAuthz},
+		"user-namespace", "auth")
+	want := []types.NamespacedName{{Namespace: withExtAuthz.Namespace, Name: withExtAuthz.Name}}
+	if diff := cmp.Diff(want, got); diff != "" {
+		t.Errorf("enqueue keys diff (-want +got):\n%s", diff)
+	}
 }
 
 // TestReconcileDeletesStaleExtAuthzPolicy pins the transition when the

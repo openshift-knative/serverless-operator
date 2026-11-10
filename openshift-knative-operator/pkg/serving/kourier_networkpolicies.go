@@ -23,10 +23,14 @@ import (
 	"strings"
 
 	mf "github.com/manifestival/manifestival"
+	corev1 "k8s.io/api/core/v1"
 	networkingv1 "k8s.io/api/networking/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/client-go/kubernetes"
+	"k8s.io/utils/ptr"
 	"knative.dev/operator/pkg/apis/operator/base"
 	operatorv1beta1 "knative.dev/operator/pkg/apis/operator/v1beta1"
 
@@ -72,7 +76,9 @@ func generateKourierNetworkPolicies(ks base.KComponent, kubeclient kubernetes.In
 	}
 	extAuthz := parseExtAuthzEndpoint(ks)
 	if extAuthz != nil && kubeclient != nil {
-		extAuthz.resolveBackendPort(kubeclient)
+		if err := extAuthz.resolveBackendPort(kubeclient); err != nil {
+			return nil, err
+		}
 	}
 	return networkpolicy.ToManifests(kourierNetworkPolicies(kourierNamespace(ks.GetNamespace()), extAuthz))
 }
@@ -160,11 +166,18 @@ func kourierNetworkPolicies(namespace string, extAuthz *extAuthzEndpoint) []netw
 	// Gateway -> configured external authorization service, scoped to its
 	// namespace and ports (the service port, and the backend port when it
 	// differs: OVN-Kubernetes applies egress policies after service load
-	// balancing).
+	// balancing). Named backend ports are kept as names: NetworkPolicy
+	// ports resolve them against the backend pods.
 	if extAuthz != nil {
 		ports := networkPolicyPorts(networkPolicyPortTCP(extAuthz.port))
 		if extAuthz.backendPort != 0 && extAuthz.backendPort != extAuthz.port {
 			ports = append(ports, networkPolicyPortTCP(extAuthz.backendPort))
+		}
+		if extAuthz.backendPortName != "" {
+			ports = append(ports, networkingv1.NetworkPolicyPort{
+				Protocol: ptr.To(corev1.ProtocolTCP),
+				Port:     ptr.To(intstr.FromString(extAuthz.backendPortName)),
+			})
 		}
 		policies = append(policies, networkingv1.NetworkPolicy{
 			ObjectMeta: metav1.ObjectMeta{
@@ -190,6 +203,22 @@ func kourierNetworkPolicies(namespace string, extAuthz *extAuthzEndpoint) []netw
 	}
 
 	return policies
+}
+
+// knativeServingsForExtAuthzService returns the keys of the KnativeServings
+// whose configured external authorization service is the given Service. It
+// backs the Service watch: changes to such a Service re-enqueue the owning
+// KnativeServing, so the generated egress rule follows the Service's ports
+// and creation.
+func knativeServingsForExtAuthzService(knativeServings []*operatorv1beta1.KnativeServing, serviceNamespace, serviceName string) []types.NamespacedName {
+	var keys []types.NamespacedName
+	for _, ks := range knativeServings {
+		if extAuthz := parseExtAuthzEndpoint(ks); extAuthz != nil &&
+			extAuthz.namespace == serviceNamespace && extAuthz.service == serviceName {
+			keys = append(keys, types.NamespacedName{Namespace: ks.Namespace, Name: ks.Name})
+		}
+	}
+	return keys
 }
 
 // deleteExtAuthzNetworkPolicy removes a stale allow-gateway-to-extauthz
@@ -219,10 +248,15 @@ type extAuthzEndpoint struct {
 	service string
 	// port is the configured service port.
 	port int32
-	// backendPort is the resolved backend port, when it differs from the
-	// service port. OVN-Kubernetes applies egress policies after service
-	// load balancing (post-DNAT), so the backend port must be allowed too.
+	// backendPort is the resolved numeric backend port, when it differs
+	// from the service port. OVN-Kubernetes applies egress policies after
+	// service load balancing (post-DNAT), so the backend port must be
+	// allowed too.
 	backendPort int32
+	// backendPortName is the resolved named backend port (targetPort).
+	// NetworkPolicy ports accept named ports, which resolve against the
+	// backend pods, so the name can be used directly.
+	backendPortName string
 }
 
 // parseExtAuthzEndpoint parses the extauthz-host from the Kourier
@@ -266,26 +300,38 @@ func parseExtAuthzEndpoint(ks base.KComponent) *extAuthzEndpoint {
 }
 
 // resolveBackendPort looks up the authorization service and records its
-// backend port (targetPort) when it differs from the service port. Lookups
-// that cannot be resolved (service missing, permission, named targetPort)
-// keep the service port only.
-func (e *extAuthzEndpoint) resolveBackendPort(kubeclient kubernetes.Interface) {
+// backend port (targetPort) when it differs from the service port: numeric
+// targetPorts as backendPort, named targetPorts as backendPortName.
+//
+// A missing Service is not an error: the rule falls back to the service
+// port and the Service watch re-enqueues the KnativeServing once the
+// Service appears. Any other lookup error is returned so the reconcile
+// retries instead of silently keeping an incomplete policy.
+func (e *extAuthzEndpoint) resolveBackendPort(kubeclient kubernetes.Interface) error {
 	svc, err := kubeclient.CoreV1().Services(e.namespace).Get(context.Background(), e.service, metav1.GetOptions{})
 	if err != nil {
-		return
+		if apierrors.IsNotFound(err) {
+			return nil
+		}
+		return err
 	}
 	for _, p := range svc.Spec.Ports {
-		if p.Port != e.port || p.TargetPort.Type != intstr.Int {
-			// Named targetPorts cannot be resolved without the pods.
+		if p.Port != e.port {
 			continue
 		}
-		if backend := p.TargetPort.IntValue(); backend > 0 && backend <= unixMaxPort {
-			//nolint:gosec // bounded by unixMaxPort above
-			if int32(backend) != e.port {
-				e.backendPort = int32(backend)
+		switch p.TargetPort.Type {
+		case intstr.Int:
+			if backend := p.TargetPort.IntValue(); backend > 0 && backend <= unixMaxPort {
+				//nolint:gosec // bounded by unixMaxPort above
+				if int32(backend) != e.port {
+					e.backendPort = int32(backend)
+				}
 			}
+		case intstr.String:
+			e.backendPortName = p.TargetPort.StrVal
 		}
 	}
+	return nil
 }
 
 // kourierMonitoringPolicy allows the cluster-monitoring prometheus to scrape

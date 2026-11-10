@@ -19,6 +19,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/tools/cache"
@@ -34,6 +35,8 @@ import (
 
 	configinjection "github.com/openshift-knative/serverless-operator/pkg/client/config/injection/client"
 	routeinjection "github.com/openshift-knative/serverless-operator/pkg/client/route/injection/client"
+	knativeservinginformer "knative.dev/operator/pkg/client/injection/informers/operator/v1beta1/knativeserving"
+	serviceinformer "knative.dev/pkg/client/injection/kube/informers/core/v1/service"
 
 	configclient "github.com/openshift/client-go/config/clientset/versioned"
 	routeclient "github.com/openshift/client-go/route/clientset/versioned"
@@ -59,6 +62,39 @@ func NewExtension(ctx context.Context, impl *controller.Impl) operator.Extension
 	deploymentInformer.Informer().AddEventHandler(cache.FilteringResourceEventHandler{
 		FilterFunc: reconciler.LabelExistsFilterFunc(socommon.ServingOwnerNamespace),
 		Handler:    controller.HandleAll(impl.EnqueueLabelOfNamespaceScopedResource(socommon.ServingOwnerNamespace, socommon.ServingOwnerName)),
+	})
+
+	// The operand NetworkPolicies for a configured Kourier external
+	// authorization service depend on that Service (its ports, and whether
+	// it exists at all), so changes to it must re-reconcile the owning
+	// KnativeServing.
+	serviceInformer := serviceinformer.Get(ctx)
+	knativeServingLister := knativeservinginformer.Get(ctx).Lister()
+	serviceInformer.Informer().AddEventHandler(cache.FilteringResourceEventHandler{
+		FilterFunc: func(obj interface{}) bool {
+			svc, ok := obj.(*corev1.Service)
+			if !ok {
+				return false
+			}
+			knativeServings, err := knativeServingLister.List(labels.Everything())
+			if err != nil {
+				return false
+			}
+			return len(knativeServingsForExtAuthzService(knativeServings, svc.Namespace, svc.Name)) > 0
+		},
+		Handler: controller.HandleAll(func(obj interface{}) {
+			svc, ok := obj.(*corev1.Service)
+			if !ok {
+				return
+			}
+			knativeServings, err := knativeServingLister.List(labels.Everything())
+			if err != nil {
+				return
+			}
+			for _, key := range knativeServingsForExtAuthzService(knativeServings, svc.Namespace, svc.Name) {
+				impl.EnqueueKey(key)
+			}
+		}),
 	})
 
 	return &extension{
