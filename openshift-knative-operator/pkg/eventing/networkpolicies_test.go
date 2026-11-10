@@ -27,9 +27,6 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	networkingv1 "k8s.io/api/networking/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	k8sscheme "k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/utils/ptr"
@@ -165,6 +162,7 @@ func TestEventDeliveryEgressUnrestricted(t *testing.T) {
 			Key:      "app.kubernetes.io/component",
 			Operator: metav1.LabelSelectorOpIn,
 			Values: []string{"broker-filter", "imc-dispatcher", "pingsource-mt-adapter", "request-reply",
+				"kafka-broker-receiver", "kafka-channel-receiver", "kafka-sink-receiver",
 				"kafka-broker-dispatcher", "kafka-channel-dispatcher", "kafka-source-dispatcher", "kafka-controller"},
 		}},
 	}
@@ -175,9 +173,7 @@ func TestEventDeliveryEgressUnrestricted(t *testing.T) {
 		t.Fatalf("expected a single egress rule, got: %+v", p.Spec.Egress)
 	}
 	rule := p.Spec.Egress[0]
-	if len(rule.To) != 1 || rule.To[0].IPBlock == nil || rule.To[0].IPBlock.CIDR != "0.0.0.0/0" {
-		t.Errorf("expected ipBlock 0.0.0.0/0, got: %+v", rule.To)
-	}
+	assertAnyAddressPeers(t, rule.To)
 	if len(rule.Ports) != 0 {
 		t.Errorf("expected no port scoping (subscriber URIs are arbitrary), got: %+v", rule.Ports)
 	}
@@ -218,6 +214,26 @@ func TestGenerateDefaultNetworkPoliciesSkippedWithMesh(t *testing.T) {
 	}
 }
 
+// assertAnyAddressPeers checks that a rule's peers cover all addresses of
+// both address families (0.0.0.0/0 and ::/0), so the rule also works on
+// IPv6 and dual-stack clusters.
+func assertAnyAddressPeers(t *testing.T, peers []networkingv1.NetworkPolicyPeer) {
+	t.Helper()
+	if len(peers) != 2 {
+		t.Fatalf("expected two ipBlock peers (0.0.0.0/0 and ::/0), got: %+v", peers)
+	}
+	cidrs := []string{}
+	for _, peer := range peers {
+		if peer.IPBlock == nil {
+			t.Fatalf("expected ipBlock peers, got: %+v", peers)
+		}
+		cidrs = append(cidrs, peer.IPBlock.CIDR)
+	}
+	if diff := cmp.Diff([]string{"0.0.0.0/0", "::/0"}, cidrs); diff != "" {
+		t.Errorf("peer CIDRs diff (-want +got):\n%s", diff)
+	}
+}
+
 func findEventingPolicy(t *testing.T, policies []networkingv1.NetworkPolicy, name string) networkingv1.NetworkPolicy {
 	t.Helper()
 	for _, p := range policies {
@@ -231,7 +247,9 @@ func findEventingPolicy(t *testing.T, policies []networkingv1.NetworkPolicy, nam
 
 // TestManifestsDeleteNetworkPoliciesWhenDisabled verifies the disable
 // transition: with the opt-out annotation, Manifests() neither returns the
-// policies nor leaves previously generated ones behind.
+// policies nor leaves previously generated ones behind. Only policies
+// carrying the managed-by label are deleted: user-owned policies sharing a
+// generated name must survive.
 func TestManifestsDeleteNetworkPoliciesWhenDisabled(t *testing.T) {
 	if os.Getenv("KO_DATA_PATH") == "" {
 		t.Setenv("KO_DATA_PATH", "../../cmd/openshift-knative-operator/kodata")
@@ -243,19 +261,21 @@ func TestManifestsDeleteNetworkPoliciesWhenDisabled(t *testing.T) {
 		k.Annotations = map[string]string{networkpolicy.DisableGenerationAnnotation: "true"}
 	})
 
-	ctx, _ := kubefake.With(context.Background(), &eventingNamespace)
-	ctx, dynamicClient := dynamicfake.With(ctx, k8sscheme.Scheme)
+	ctx, kube := kubefake.With(context.Background(), &eventingNamespace)
+	ctx, _ = dynamicfake.With(ctx, k8sscheme.Scheme)
 	ext := NewExtension(ctx, nil).(*extension)
 
-	// Seed a previously generated policy as if generation was enabled before.
-	seed := networkpolicy.DenyAll("deny-by-default", requiredNs)
-	seedGVR := schema.GroupVersionResource{Group: "networking.k8s.io", Version: "v1", Resource: "networkpolicies"}
-	seedU, err := runtime.DefaultUnstructuredConverter.ToUnstructured(&seed)
-	if err != nil {
-		t.Fatalf("failed to convert seed policy: %v", err)
+	// Seed a previously generated policy as if generation was enabled
+	// before, plus a user-owned policy that happens to share a generated
+	// name (e.g. created before an upgrade with the opt-out already set).
+	seed := networkpolicy.AllowToDNS("allow-to-dns", requiredNs)
+	unmanaged := networkingv1.NetworkPolicy{
+		ObjectMeta: metav1.ObjectMeta{Name: "deny-by-default", Namespace: requiredNs},
 	}
-	if _, err := dynamicClient.Resource(seedGVR).Namespace(requiredNs).Create(context.Background(), &unstructured.Unstructured{Object: seedU}, metav1.CreateOptions{}); err != nil {
-		t.Fatalf("failed to seed NetworkPolicy: %v", err)
+	for _, p := range []networkingv1.NetworkPolicy{seed, unmanaged} {
+		if _, err := kube.NetworkingV1().NetworkPolicies(requiredNs).Create(context.Background(), &p, metav1.CreateOptions{}); err != nil {
+			t.Fatalf("failed to seed NetworkPolicy %s: %v", p.Name, err)
+		}
 	}
 
 	manifests, err := ext.Manifests(disabled)
@@ -270,8 +290,13 @@ func TestManifestsDeleteNetworkPoliciesWhenDisabled(t *testing.T) {
 		}
 	}
 
-	if _, err := dynamicClient.Resource(seedGVR).Namespace(requiredNs).Get(context.Background(), "deny-by-default", metav1.GetOptions{}); err == nil {
-		t.Errorf("expected managed 'deny-by-default' NetworkPolicy to be deleted after disabling generation")
+	policies, err := kube.NetworkingV1().NetworkPolicies(requiredNs).List(context.Background(), metav1.ListOptions{})
+	if err != nil {
+		t.Fatalf("failed to list NetworkPolicies: %v", err)
+	}
+	if len(policies.Items) != 1 || policies.Items[0].Name != "deny-by-default" ||
+		policies.Items[0].Labels[networkpolicy.ManagedByLabel] != "" {
+		t.Errorf("expected only the unmanaged 'deny-by-default' NetworkPolicy to survive, got: %+v", policies.Items)
 	}
 }
 

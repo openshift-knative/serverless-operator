@@ -25,12 +25,18 @@ limitations under the License.
 package networkpolicy
 
 import (
+	"context"
+	"errors"
+	"fmt"
+
 	mf "github.com/manifestival/manifestival"
 	corev1 "k8s.io/api/core/v1"
 	networkingv1 "k8s.io/api/networking/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/util/intstr"
+	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/utils/ptr"
 )
@@ -105,7 +111,7 @@ func AllowSameNamespace(name, namespace string) networkingv1.NetworkPolicy {
 // AllowToAPIServer builds an egress policy allowing every pod in the
 // namespace to reach the API server on TCP 443 and 6443. Port scoping is the
 // only portable restriction: the API endpoint IP is cluster-specific
-// (external on HyperShift), so an ipBlock 0.0.0.0/0 is intentional here.
+// (external on HyperShift), so any-address ipBlocks are intentional here.
 func AllowToAPIServer(name, namespace string) networkingv1.NetworkPolicy {
 	return networkingv1.NetworkPolicy{
 		ObjectMeta: metav1.ObjectMeta{
@@ -117,9 +123,7 @@ func AllowToAPIServer(name, namespace string) networkingv1.NetworkPolicy {
 			PodSelector: metav1.LabelSelector{},
 			PolicyTypes: []networkingv1.PolicyType{networkingv1.PolicyTypeEgress},
 			Egress: []networkingv1.NetworkPolicyEgressRule{{
-				To: []networkingv1.NetworkPolicyPeer{{
-					IPBlock: &networkingv1.IPBlock{CIDR: "0.0.0.0/0"},
-				}},
+				To: AnyAddressPeers(),
 				Ports: []networkingv1.NetworkPolicyPort{
 					networkPolicyPort(corev1.ProtocolTCP, apiServerPort),
 					networkPolicyPort(corev1.ProtocolTCP, apiServerPortExternal),
@@ -205,9 +209,7 @@ func AllowToTracing(name, namespace string) networkingv1.NetworkPolicy {
 			PodSelector: metav1.LabelSelector{},
 			PolicyTypes: []networkingv1.PolicyType{networkingv1.PolicyTypeEgress},
 			Egress: []networkingv1.NetworkPolicyEgressRule{{
-				To: []networkingv1.NetworkPolicyPeer{{
-					IPBlock: &networkingv1.IPBlock{CIDR: "0.0.0.0/0"},
-				}},
+				To: AnyAddressPeers(),
 				Ports: []networkingv1.NetworkPolicyPort{
 					networkPolicyPort(corev1.ProtocolTCP, 4317),
 					networkPolicyPort(corev1.ProtocolTCP, 4318),
@@ -216,6 +218,38 @@ func AllowToTracing(name, namespace string) networkingv1.NetworkPolicy {
 			}},
 		},
 	}
+}
+
+// AnyAddressPeers returns NetworkPolicy peers covering all addresses of both
+// address families, for rules that intentionally do not restrict
+// destinations by address (only by port). Both 0.0.0.0/0 and ::/0 are needed
+// so the rule also works on IPv6 and dual-stack clusters.
+func AnyAddressPeers() []networkingv1.NetworkPolicyPeer {
+	return []networkingv1.NetworkPolicyPeer{
+		{IPBlock: &networkingv1.IPBlock{CIDR: "0.0.0.0/0"}},
+		{IPBlock: &networkingv1.IPBlock{CIDR: "::/0"}},
+	}
+}
+
+// DeleteManaged deletes all NetworkPolicies managed by this package
+// (ManagedByLabel) in the given namespace. It is used when the user disables
+// policy generation via the opt-out annotation, so previously generated
+// policies are removed rather than frozen — without touching user-owned
+// policies that happen to share a generated name.
+func DeleteManaged(ctx context.Context, kubeclient kubernetes.Interface, namespace string) error {
+	policies, err := kubeclient.NetworkingV1().NetworkPolicies(namespace).
+		List(ctx, metav1.ListOptions{LabelSelector: ManagedByLabel})
+	if err != nil {
+		return err
+	}
+
+	var errs []error
+	for _, p := range policies.Items {
+		if err := kubeclient.NetworkingV1().NetworkPolicies(namespace).Delete(ctx, p.Name, metav1.DeleteOptions{}); err != nil && !apierrors.IsNotFound(err) {
+			errs = append(errs, fmt.Errorf("failed to delete NetworkPolicy %s/%s: %w", namespace, p.Name, err))
+		}
+	}
+	return errors.Join(errs...)
 }
 
 // ToManifests converts typed NetworkPolicies into a single manifestival

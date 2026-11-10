@@ -17,6 +17,10 @@ limitations under the License.
 package serving
 
 import (
+	"net"
+	"strconv"
+	"strings"
+
 	mf "github.com/manifestival/manifestival"
 	networkingv1 "k8s.io/api/networking/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -56,7 +60,7 @@ func generateKourierNetworkPolicies(ks base.KComponent) ([]mf.Manifest, error) {
 	if networkPoliciesDisabled(ks) || !kourierIngressEnabled(ks) {
 		return nil, nil
 	}
-	return networkpolicy.ToManifests(kourierNetworkPolicies(kourierNamespace(ks.GetNamespace())))
+	return networkpolicy.ToManifests(kourierNetworkPolicies(kourierNamespace(ks.GetNamespace()), parseExtAuthzEndpoint(ks)))
 }
 
 // kourierIngressEnabled reports whether the Kourier ingress is (or defaults
@@ -72,8 +76,10 @@ func kourierIngressEnabled(ks base.KComponent) bool {
 
 // kourierNetworkPolicies builds the policies isolating the Kourier
 // (knative-serving-ingress) namespace: default-deny plus the tailored allows
-// for the Envoy gateway data plane (see SRVCOM-3716).
-func kourierNetworkPolicies(namespace string) []networkingv1.NetworkPolicy {
+// for the Envoy gateway data plane (see SRVCOM-3716). extAuthz, when
+// non-empty, is the configured external authorization service
+// (namespace, port) and yields an additional scoped gateway egress rule.
+func kourierNetworkPolicies(namespace string, extAuthz *extAuthzEndpoint) []networkingv1.NetworkPolicy {
 	// All policies carry the Kourier provider label so the
 	// overrideKourierNamespace transformer moves them into the Kourier
 	// namespace and strips owner references (a cross-namespace owner ref
@@ -127,9 +133,7 @@ func kourierNetworkPolicies(namespace string) []networkingv1.NetworkPolicy {
 			PodSelector: metav1.LabelSelector{MatchLabels: map[string]string{"app": kourierGatewayPodLabel}},
 			PolicyTypes: []networkingv1.PolicyType{networkingv1.PolicyTypeEgress},
 			Egress: []networkingv1.NetworkPolicyEgressRule{{
-				To: []networkingv1.NetworkPolicyPeer{{
-					IPBlock: &networkingv1.IPBlock{CIDR: "0.0.0.0/0"},
-				}},
+				To: networkpolicy.AnyAddressPeers(),
 				Ports: networkPolicyPorts(
 					networkPolicyPortTCP(activatorPort),
 					networkPolicyPortTCP(activatorHTTP2Port),
@@ -139,7 +143,75 @@ func kourierNetworkPolicies(namespace string) []networkingv1.NetworkPolicy {
 		},
 	})
 
+	// Gateway -> configured external authorization service, scoped to its
+	// namespace and port.
+	if extAuthz != nil {
+		policies = append(policies, networkingv1.NetworkPolicy{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "allow-gateway-to-extauthz",
+				Namespace: namespace,
+				Labels:    kourierLabels(),
+			},
+			Spec: networkingv1.NetworkPolicySpec{
+				PodSelector: metav1.LabelSelector{MatchLabels: map[string]string{"app": kourierGatewayPodLabel}},
+				PolicyTypes: []networkingv1.PolicyType{networkingv1.PolicyTypeEgress},
+				Egress: []networkingv1.NetworkPolicyEgressRule{{
+					To: []networkingv1.NetworkPolicyPeer{{
+						NamespaceSelector: &metav1.LabelSelector{
+							MatchLabels: map[string]string{
+								"kubernetes.io/metadata.name": extAuthz.namespace,
+							},
+						},
+					}},
+					Ports: networkPolicyPorts(networkPolicyPortTCP(extAuthz.port)),
+				}},
+			},
+		})
+	}
+
 	return policies
+}
+
+// extAuthzEndpoint describes a configured Kourier external authorization
+// service (config-kourier extauthz-host) as far as a NetworkPolicy can
+// express it: the namespace of the service and its port.
+type extAuthzEndpoint struct {
+	namespace string
+	port      int32
+}
+
+// extAuthzEndpoint parses the extauthz-host from the config-kourier
+// ConfigMap (via the KnativeServing spec). It returns nil when no rule can
+// be generated: no service configured, a bare service name (same namespace,
+// covered by allow-same-namespace) or an external hostname that cannot be
+// scoped by a namespace selector.
+func parseExtAuthzEndpoint(ks base.KComponent) *extAuthzEndpoint {
+	host := ""
+	if cfg := ks.GetSpec().GetConfig(); cfg != nil {
+		if kourierCfg := cfg["config-kourier"]; kourierCfg != nil {
+			host = kourierCfg["extauthz-host"]
+		}
+	}
+	if host == "" {
+		return nil
+	}
+
+	h, portStr, err := net.SplitHostPort(host)
+	if err != nil {
+		return nil
+	}
+	port, err := strconv.ParseInt(portStr, 10, 32)
+	if err != nil || port <= 0 {
+		return nil
+	}
+
+	// Only cluster service DNS names can be scoped: <service>.<namespace>.svc
+	// optionally with further suffixes (svc.cluster.local and beyond).
+	labels := strings.Split(h, ".")
+	if len(labels) < 3 || labels[2] != "svc" {
+		return nil
+	}
+	return &extAuthzEndpoint{namespace: labels[1], port: int32(port)}
 }
 
 // kourierMonitoringPolicy allows the cluster-monitoring prometheus to scrape

@@ -100,6 +100,26 @@ func TestGenerateDefaultNetworkPoliciesDisabled(t *testing.T) {
 	}
 }
 
+// assertAnyAddressPeers checks that a rule's peers cover all addresses of
+// both address families (0.0.0.0/0 and ::/0), so the rule also works on
+// IPv6 and dual-stack clusters.
+func assertAnyAddressPeers(t *testing.T, peers []networkingv1.NetworkPolicyPeer) {
+	t.Helper()
+	if len(peers) != 2 {
+		t.Fatalf("expected two ipBlock peers (0.0.0.0/0 and ::/0), got: %+v", peers)
+	}
+	cidrs := []string{}
+	for _, peer := range peers {
+		if peer.IPBlock == nil {
+			t.Fatalf("expected ipBlock peers, got: %+v", peers)
+		}
+		cidrs = append(cidrs, peer.IPBlock.CIDR)
+	}
+	if diff := cmp.Diff([]string{"0.0.0.0/0", "::/0"}, cidrs); diff != "" {
+		t.Errorf("peer CIDRs diff (-want +got):\n%s", diff)
+	}
+}
+
 func findPolicy(t *testing.T, policies []networkingv1.NetworkPolicy, name string) networkingv1.NetworkPolicy {
 	t.Helper()
 	for _, p := range policies {
@@ -149,9 +169,7 @@ func TestActivatorEgressUnrestricted(t *testing.T) {
 		t.Fatalf("expected a single egress rule, got: %+v", p.Spec.Egress)
 	}
 	rule := p.Spec.Egress[0]
-	if len(rule.To) != 1 || rule.To[0].IPBlock == nil || rule.To[0].IPBlock.CIDR != "0.0.0.0/0" {
-		t.Errorf("expected ipBlock 0.0.0.0/0, got: %+v", rule.To)
-	}
+	assertAnyAddressPeers(t, rule.To)
 	want := []networkingv1.NetworkPolicyPort{
 		{Protocol: ptr.To(corev1.ProtocolTCP), Port: ptr.To(intstr.FromInt32(8012))},
 		{Protocol: ptr.To(corev1.ProtocolTCP), Port: ptr.To(intstr.FromInt32(8013))},
@@ -174,9 +192,7 @@ func TestAutoscalerEgressRevisionMetrics(t *testing.T) {
 		t.Fatalf("expected a single egress rule, got: %+v", p.Spec.Egress)
 	}
 	rule := p.Spec.Egress[0]
-	if len(rule.To) != 1 || rule.To[0].IPBlock == nil || rule.To[0].IPBlock.CIDR != "0.0.0.0/0" {
-		t.Errorf("expected ipBlock 0.0.0.0/0, got: %+v", rule.To)
-	}
+	assertAnyAddressPeers(t, rule.To)
 	want := []networkingv1.NetworkPolicyPort{
 		{Protocol: ptr.To(corev1.ProtocolTCP), Port: ptr.To(intstr.FromInt32(9090))},
 	}
@@ -228,9 +244,7 @@ func TestControllerEgressToRegistries(t *testing.T) {
 		t.Fatalf("expected a single egress rule, got: %+v", p.Spec.Egress)
 	}
 	rule := p.Spec.Egress[0]
-	if len(rule.To) != 1 || rule.To[0].IPBlock == nil || rule.To[0].IPBlock.CIDR != "0.0.0.0/0" {
-		t.Errorf("expected ipBlock 0.0.0.0/0, got: %+v", rule.To)
-	}
+	assertAnyAddressPeers(t, rule.To)
 	if len(rule.Ports) != 0 {
 		t.Errorf("expected no port scoping (registry endpoints are arbitrary), got: %+v", rule.Ports)
 	}

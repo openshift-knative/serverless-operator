@@ -25,6 +25,7 @@ import (
 	networkingv1 "k8s.io/api/networking/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
+	k8sscheme "k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/utils/ptr"
 	"knative.dev/operator/pkg/apis/operator/base"
 	operatorv1beta1 "knative.dev/operator/pkg/apis/operator/v1beta1"
@@ -169,7 +170,7 @@ func TestKourierPoliciesNoOwnerRefs(t *testing.T) {
 // gateway service targetPorts 8080, 8081, 8443 (https-external) and 8444
 // (cluster-local TLS).
 func TestGatewayIngressSources(t *testing.T) {
-	p := findPolicy(t, kourierNetworkPolicies(kourierNamespace(servingNamespace.Name)), "allow-to-kourier-gateway")
+	p := findPolicy(t, kourierNetworkPolicies(kourierNamespace(servingNamespace.Name), nil), "allow-to-kourier-gateway")
 
 	if diff := cmp.Diff(map[string]string{"app": "3scale-kourier-gateway"}, p.Spec.PodSelector.MatchLabels); diff != "" {
 		t.Errorf("podSelector diff (-want +got):\n%s", diff)
@@ -200,7 +201,7 @@ func TestGatewayIngressSources(t *testing.T) {
 // in arbitrary user namespaces: 0.0.0.0/0 on the HTTP (8012), h2c (8013)
 // and HTTPS (8112) backend ports.
 func TestGatewayEgress(t *testing.T) {
-	p := findPolicy(t, kourierNetworkPolicies(kourierNamespace(servingNamespace.Name)), "allow-gateway-to-revisions")
+	p := findPolicy(t, kourierNetworkPolicies(kourierNamespace(servingNamespace.Name), nil), "allow-gateway-to-revisions")
 
 	if diff := cmp.Diff(map[string]string{"app": "3scale-kourier-gateway"}, p.Spec.PodSelector.MatchLabels); diff != "" {
 		t.Errorf("podSelector diff (-want +got):\n%s", diff)
@@ -209,9 +210,7 @@ func TestGatewayEgress(t *testing.T) {
 		t.Fatalf("expected a single egress rule, got: %+v", p.Spec.Egress)
 	}
 	rule := p.Spec.Egress[0]
-	if len(rule.To) != 1 || rule.To[0].IPBlock == nil || rule.To[0].IPBlock.CIDR != "0.0.0.0/0" {
-		t.Errorf("expected ipBlock 0.0.0.0/0, got: %+v", rule.To)
-	}
+	assertAnyAddressPeers(t, rule.To)
 	want := []networkingv1.NetworkPolicyPort{
 		{Protocol: ptr.To(corev1.ProtocolTCP), Port: ptr.To(intstr.FromInt32(8012))},
 		{Protocol: ptr.To(corev1.ProtocolTCP), Port: ptr.To(intstr.FromInt32(8013))},
@@ -257,7 +256,7 @@ func TestManifestsIncludeKourierNetworkPolicies(t *testing.T) {
 // other namespaces) and 9090 (the Kourier pods have no kube-rbac-proxy and
 // expose their metrics directly).
 func TestKourierMonitoringPorts(t *testing.T) {
-	p := findPolicy(t, kourierNetworkPolicies(kourierNamespace(servingNamespace.Name)), "allow-from-openshift-monitoring")
+	p := findPolicy(t, kourierNetworkPolicies(kourierNamespace(servingNamespace.Name), nil), "allow-from-openshift-monitoring")
 
 	if len(p.Spec.Ingress) != 1 {
 		t.Fatalf("expected a single ingress rule, got: %+v", p.Spec.Ingress)
@@ -275,5 +274,97 @@ func TestKourierMonitoringPorts(t *testing.T) {
 	}
 	if diff := cmp.Diff(want, rule.Ports); diff != "" {
 		t.Errorf("ports diff (-want +got):\n%s", diff)
+	}
+}
+
+func extAuthzServing(extAuthzHost string) *operatorv1beta1.KnativeServing {
+	ks := kourierServing(nil)
+	if extAuthzHost != "" {
+		ks.Spec.CommonSpec.Config = base.ConfigMapData{
+			"config-kourier": map[string]string{
+				"extauthz-host": extAuthzHost,
+			},
+		}
+	}
+	return ks
+}
+
+// TestGatewayExtAuthzEgress pins the gateway egress to a configured
+// external authorization service (config-kourier extauthz-host): the rule
+// is scoped to the authorization service's namespace and port.
+func TestGatewayExtAuthzEgress(t *testing.T) {
+	ks := extAuthzServing("auth.user-namespace.svc:2222")
+
+	manifests, err := generateKourierNetworkPolicies(ks)
+	if err != nil {
+		t.Fatalf("generateKourierNetworkPolicies() returned error: %v", err)
+	}
+
+	found := false
+	for _, m := range manifests {
+		for _, r := range m.Resources() {
+			if r.GetName() != "allow-gateway-to-extauthz" {
+				continue
+			}
+			found = true
+			p := &networkingv1.NetworkPolicy{}
+			if err := k8sscheme.Scheme.Convert(&r, p, nil); err != nil {
+				t.Fatalf("failed to convert policy: %v", err)
+			}
+			if diff := cmp.Diff(map[string]string{"app": kourierGatewayPodLabel}, p.Spec.PodSelector.MatchLabels); diff != "" {
+				t.Errorf("podSelector diff (-want +got):\n%s", diff)
+			}
+			if len(p.Spec.Egress) != 1 {
+				t.Fatalf("expected a single egress rule, got: %+v", p.Spec.Egress)
+			}
+			rule := p.Spec.Egress[0]
+			if len(rule.To) != 1 || rule.To[0].NamespaceSelector == nil {
+				t.Fatalf("expected a namespaceSelector peer, got: %+v", rule.To)
+			}
+			if diff := cmp.Diff(map[string]string{"kubernetes.io/metadata.name": "user-namespace"}, rule.To[0].NamespaceSelector.MatchLabels); diff != "" {
+				t.Errorf("namespaceSelector diff (-want +got):\n%s", diff)
+			}
+			want := []networkingv1.NetworkPolicyPort{
+				{Protocol: ptr.To(corev1.ProtocolTCP), Port: ptr.To(intstr.FromInt32(2222))},
+			}
+			if diff := cmp.Diff(want, rule.Ports); diff != "" {
+				t.Errorf("ports diff (-want +got):\n%s", diff)
+			}
+		}
+	}
+	if !found {
+		t.Errorf("expected allow-gateway-to-extauthz NetworkPolicy when extauthz-host is configured")
+	}
+}
+
+// TestGatewayExtAuthzEgressAbsent pins that no extauthz policy is generated
+// when no external authorization service is configured, when the host is a
+// bare service name (same namespace, covered by allow-same-namespace), or
+// when it is an external hostname that cannot be scoped.
+func TestGatewayExtAuthzEgressAbsent(t *testing.T) {
+	cases := []struct {
+		name     string
+		extAuthz string
+	}{
+		{name: "unset", extAuthz: ""},
+		{name: "bare service name", extAuthz: "my-auth:2222"},
+		{name: "external hostname", extAuthz: "auth.example.com:2222"},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			ks := extAuthzServing(c.extAuthz)
+
+			manifests, err := generateKourierNetworkPolicies(ks)
+			if err != nil {
+				t.Fatalf("generateKourierNetworkPolicies() returned error: %v", err)
+			}
+			for _, m := range manifests {
+				for _, r := range m.Resources() {
+					if r.GetName() == "allow-gateway-to-extauthz" {
+						t.Errorf("did not expect allow-gateway-to-extauthz NetworkPolicy for extauthz-host %q", c.extAuthz)
+					}
+				}
+			}
+		})
 	}
 }

@@ -26,6 +26,7 @@ import (
 
 	"github.com/openshift-knative/serverless-operator/openshift-knative-operator/pkg/common"
 	"github.com/openshift-knative/serverless-operator/openshift-knative-operator/pkg/monitoring"
+	"github.com/openshift-knative/serverless-operator/openshift-knative-operator/pkg/networkpolicy"
 	"github.com/openshift-knative/serverless-operator/pkg/istio/eventingistio"
 )
 
@@ -72,7 +73,9 @@ func (e *extension) Manifests(ke base.KComponent) ([]mf.Manifest, error) {
 	// Operand NetworkPolicies (SRVCOM-3716): default-deny with tailored
 	// allows for the knative-eventing namespace. Generated unless opted out
 	// via the annotation or the Service Mesh integration is enabled; when
-	// not generated, previously generated policies are deleted.
+	// not generated, previously generated policies are deleted. Deletion is
+	// scoped to the managed-by label, so user-owned policies sharing a
+	// generated name are left alone.
 	np, err := generateDefaultNetworkPolicies(ke)
 	if err != nil {
 		return nil, err
@@ -80,8 +83,8 @@ func (e *extension) Manifests(ke base.KComponent) ([]mf.Manifest, error) {
 	if np != nil {
 		m = append(m, np...)
 	} else {
-		for _, manifest := range operandNetworkPoliciesForDeletion(ke) {
-			e.deleteResourcesSilently(manifest)
+		if err := networkpolicy.DeleteManaged(context.Background(), e.kubeclient, ke.GetNamespace()); err != nil {
+			e.logger.Warnw("Failed to delete operand NetworkPolicies", "namespace", ke.GetNamespace(), zap.Error(err))
 		}
 	}
 	return m, nil

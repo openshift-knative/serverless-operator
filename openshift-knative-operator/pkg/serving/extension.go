@@ -11,6 +11,7 @@ import (
 	mf "github.com/manifestival/manifestival"
 	"github.com/openshift-knative/serverless-operator/openshift-knative-operator/pkg/common"
 	"github.com/openshift-knative/serverless-operator/openshift-knative-operator/pkg/monitoring"
+	"github.com/openshift-knative/serverless-operator/openshift-knative-operator/pkg/networkpolicy"
 	socommon "github.com/openshift-knative/serverless-operator/pkg/common"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -220,7 +221,7 @@ func (e *extension) Reconcile(ctx context.Context, comp base.KComponent) error {
 	// previously generated policies instead of freezing them in place.
 	if operandNetworkPoliciesDisabled(ks) {
 		for _, ns := range []string{ks.GetNamespace(), kourierNamespace(ks.GetNamespace())} {
-			if err := deleteNetworkPolicies(ctx, e.kubeclient, ns); err != nil {
+			if err := networkpolicy.DeleteManaged(ctx, e.kubeclient, ns); err != nil {
 				logging.FromContext(ctx).Warnw("Failed to delete operand NetworkPolicies", "namespace", ns, "error", err)
 			}
 		}
@@ -245,7 +246,7 @@ func (e *extension) Finalize(ctx context.Context, comp base.KComponent) error {
 	// uninstall stage does not remove; the Kourier-namespace ones carry no
 	// owner references, so clean them up explicitly.
 	for _, ns := range []string{ks.GetNamespace(), kourierNamespace(ks.GetNamespace())} {
-		if err := deleteNetworkPolicies(ctx, e.kubeclient, ns); err != nil {
+		if err := networkpolicy.DeleteManaged(ctx, e.kubeclient, ns); err != nil {
 			logging.FromContext(ctx).Warnw("Failed to delete operand NetworkPolicies on finalize", "namespace", ns, "error", err)
 		}
 	}

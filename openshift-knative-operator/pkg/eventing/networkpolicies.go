@@ -60,19 +60,6 @@ func generateDefaultNetworkPolicies(ke base.KComponent) ([]mf.Manifest, error) {
 	return networkpolicy.ToManifests(eventingNetworkPolicies(ke.GetNamespace()))
 }
 
-// operandNetworkPoliciesForDeletion returns the manifests of the operand
-// NetworkPolicies that would have been generated, for deletion when
-// generation is disabled (opt-out annotation or mesh enabled). Deleting the
-// would-be resources by their deterministic names handles the enable ->
-// disable transition, mirroring the Service Mesh policy handling.
-func operandNetworkPoliciesForDeletion(ke base.KComponent) []mf.Manifest {
-	manifests, err := networkpolicy.ToManifests(eventingNetworkPolicies(ke.GetNamespace()))
-	if err != nil {
-		return nil
-	}
-	return manifests
-}
-
 // eventingNetworkPoliciesDisabled reports whether operand NetworkPolicy
 // generation must not run: opted out via the annotation, or the Service Mesh
 // integration is enabled (features.istio=enabled).
@@ -163,9 +150,9 @@ func eventingNetworkPolicies(namespace string) []networkingv1.NetworkPolicy {
 
 	// Event delivery: the data-plane roles that dial subscriber, sink and
 	// target URIs in arbitrary user namespaces on arbitrary ports. The
-	// Knative Kafka dispatchers and controller are included: they also
-	// consume from and produce to Kafka bootstrap servers on arbitrary
-	// hosts and ports.
+	// Knative Kafka components are included: the receivers produce incoming
+	// events to Kafka and the dispatchers and controller consume from and
+	// produce to Kafka bootstrap servers, all on arbitrary hosts and ports.
 	policies = append(policies, networkingv1.NetworkPolicy{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "allow-event-delivery",
@@ -174,12 +161,11 @@ func eventingNetworkPolicies(namespace string) []networkingv1.NetworkPolicy {
 		},
 		Spec: networkingv1.NetworkPolicySpec{
 			PodSelector: componentSelector("broker-filter", "imc-dispatcher", "pingsource-mt-adapter", "request-reply",
+				"kafka-broker-receiver", "kafka-channel-receiver", "kafka-sink-receiver",
 				"kafka-broker-dispatcher", "kafka-channel-dispatcher", "kafka-source-dispatcher", "kafka-controller"),
 			PolicyTypes: []networkingv1.PolicyType{networkingv1.PolicyTypeEgress},
 			Egress: []networkingv1.NetworkPolicyEgressRule{{
-				To: []networkingv1.NetworkPolicyPeer{{
-					IPBlock: &networkingv1.IPBlock{CIDR: "0.0.0.0/0"},
-				}},
+				To: networkpolicy.AnyAddressPeers(),
 				// No port scoping: subscriber URIs are arbitrary.
 			}},
 		},

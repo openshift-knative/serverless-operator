@@ -17,18 +17,13 @@ limitations under the License.
 package serving
 
 import (
-	"context"
-	"errors"
-	"fmt"
 	"strconv"
 
 	mf "github.com/manifestival/manifestival"
 	corev1 "k8s.io/api/core/v1"
 	networkingv1 "k8s.io/api/networking/v1"
-	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
-	"k8s.io/client-go/kubernetes"
 	"k8s.io/utils/ptr"
 	"knative.dev/operator/pkg/apis/operator/base"
 	operatorv1beta1 "knative.dev/operator/pkg/apis/operator/v1beta1"
@@ -162,9 +157,7 @@ func servingNetworkPolicies(namespace string) []networkingv1.NetworkPolicy {
 			PodSelector: metav1.LabelSelector{MatchLabels: map[string]string{"app": "activator"}},
 			PolicyTypes: []networkingv1.PolicyType{networkingv1.PolicyTypeEgress},
 			Egress: []networkingv1.NetworkPolicyEgressRule{{
-				To: []networkingv1.NetworkPolicyPeer{{
-					IPBlock: &networkingv1.IPBlock{CIDR: "0.0.0.0/0"},
-				}},
+				To: networkpolicy.AnyAddressPeers(),
 				Ports: networkPolicyPorts(
 					networkPolicyPortTCP(activatorPort),
 					networkPolicyPortTCP(activatorHTTP2Port),
@@ -186,9 +179,7 @@ func servingNetworkPolicies(namespace string) []networkingv1.NetworkPolicy {
 			PodSelector: metav1.LabelSelector{MatchLabels: map[string]string{"app": "autoscaler"}},
 			PolicyTypes: []networkingv1.PolicyType{networkingv1.PolicyTypeEgress},
 			Egress: []networkingv1.NetworkPolicyEgressRule{{
-				To: []networkingv1.NetworkPolicyPeer{{
-					IPBlock: &networkingv1.IPBlock{CIDR: "0.0.0.0/0"},
-				}},
+				To:    networkpolicy.AnyAddressPeers(),
 				Ports: networkPolicyPorts(networkPolicyPortTCP(queueProxyMetricsPort)),
 			}},
 		},
@@ -207,35 +198,12 @@ func servingNetworkPolicies(namespace string) []networkingv1.NetworkPolicy {
 			PodSelector: metav1.LabelSelector{MatchLabels: map[string]string{"app": "controller"}},
 			PolicyTypes: []networkingv1.PolicyType{networkingv1.PolicyTypeEgress},
 			Egress: []networkingv1.NetworkPolicyEgressRule{{
-				To: []networkingv1.NetworkPolicyPeer{{
-					IPBlock: &networkingv1.IPBlock{CIDR: "0.0.0.0/0"},
-				}},
+				To: networkpolicy.AnyAddressPeers(),
 			}},
 		},
 	})
 
 	return policies
-}
-
-// deleteNetworkPolicies deletes all NetworkPolicies managed by the operator
-// (networkpolicy.ManagedByLabel) in the given namespace. It is used when the
-// user disables policy generation via the opt-out annotation, so previously
-// generated policies are removed rather than frozen. Errors are logged by the
-// caller, they do not fail the reconcile.
-func deleteNetworkPolicies(ctx context.Context, kubeclient kubernetes.Interface, namespace string) error {
-	policies, err := kubeclient.NetworkingV1().NetworkPolicies(namespace).
-		List(ctx, metav1.ListOptions{LabelSelector: networkpolicy.ManagedByLabel})
-	if err != nil {
-		return err
-	}
-
-	var errs []error
-	for _, p := range policies.Items {
-		if err := kubeclient.NetworkingV1().NetworkPolicies(namespace).Delete(ctx, p.Name, metav1.DeleteOptions{}); err != nil && !apierrors.IsNotFound(err) {
-			errs = append(errs, fmt.Errorf("failed to delete NetworkPolicy %s/%s: %w", namespace, p.Name, err))
-		}
-	}
-	return errors.Join(errs...)
 }
 
 func managedLabels() map[string]string {

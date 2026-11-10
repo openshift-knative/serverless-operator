@@ -17,12 +17,15 @@ limitations under the License.
 package networkpolicy
 
 import (
+	"context"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
 	corev1 "k8s.io/api/core/v1"
 	networkingv1 "k8s.io/api/networking/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
+	kubefake "k8s.io/client-go/kubernetes/fake"
 	"k8s.io/utils/ptr"
 )
 
@@ -67,8 +70,9 @@ func TestAllowSameNamespace(t *testing.T) {
 	}
 }
 
-// TestAllowToAPIServer pins the API server egress: 0.0.0.0/0, TCP 443 and 6443
-// (6443 is the external API endpoint on HyperShift, 443 the in-cluster service).
+// TestAllowToAPIServer pins the API server egress: any address (IPv4 and
+// IPv6), TCP 443 and 6443 (6443 is the external API endpoint on HyperShift,
+// 443 the in-cluster service).
 func TestAllowToAPIServer(t *testing.T) {
 	p := AllowToAPIServer("allow-to-api-server", "knative-serving")
 
@@ -76,9 +80,7 @@ func TestAllowToAPIServer(t *testing.T) {
 		t.Fatalf("expected a single egress rule, got: %+v", p.Spec.Egress)
 	}
 	rule := p.Spec.Egress[0]
-	if len(rule.To) != 1 || rule.To[0].IPBlock == nil || rule.To[0].IPBlock.CIDR != "0.0.0.0/0" {
-		t.Errorf("expected ipBlock 0.0.0.0/0, got: %+v", rule.To)
-	}
+	assertAnyAddressPeers(t, rule.To)
 	want := []networkingv1.NetworkPolicyPort{
 		{Protocol: ptr.To(corev1.ProtocolTCP), Port: portPtr(443)},
 		{Protocol: ptr.To(corev1.ProtocolTCP), Port: portPtr(6443)},
@@ -178,6 +180,55 @@ func TestToManifests(t *testing.T) {
 
 func portPtr(p int32) *intstr.IntOrString { return ptr.To(intstr.FromInt32(p)) }
 
+// assertAnyAddressPeers checks that a rule's peers cover all addresses of
+// both address families (0.0.0.0/0 and ::/0), so the rule also works on
+// IPv6 and dual-stack clusters.
+func assertAnyAddressPeers(t *testing.T, peers []networkingv1.NetworkPolicyPeer) {
+	t.Helper()
+	if len(peers) != 2 {
+		t.Fatalf("expected two ipBlock peers (0.0.0.0/0 and ::/0), got: %+v", peers)
+	}
+	cidrs := []string{}
+	for _, peer := range peers {
+		if peer.IPBlock == nil {
+			t.Fatalf("expected ipBlock peers, got: %+v", peers)
+		}
+		cidrs = append(cidrs, peer.IPBlock.CIDR)
+	}
+	if diff := cmp.Diff([]string{"0.0.0.0/0", "::/0"}, cidrs); diff != "" {
+		t.Errorf("peer CIDRs diff (-want +got):\n%s", diff)
+	}
+}
+
+// TestDeleteManaged verifies that DeleteManaged removes only the policies
+// carrying the ManagedByLabel: user-owned policies sharing a generated name
+// must survive the opt-out deletion.
+func TestDeleteManaged(t *testing.T) {
+	ctx := context.Background()
+	kube := kubefake.NewSimpleClientset()
+
+	managed := AllowToDNS("allow-to-dns", "knative-eventing")
+	unmanaged := networkingv1.NetworkPolicy{
+		ObjectMeta: metav1.ObjectMeta{Name: "deny-by-default", Namespace: "knative-eventing"},
+	}
+	for _, p := range []networkingv1.NetworkPolicy{managed, unmanaged} {
+		if _, err := kube.NetworkingV1().NetworkPolicies(p.Namespace).Create(ctx, &p, metav1.CreateOptions{}); err != nil {
+			t.Fatalf("failed to seed NetworkPolicy %s: %v", p.Name, err)
+		}
+	}
+
+	if err := DeleteManaged(ctx, kube, "knative-eventing"); err != nil {
+		t.Fatalf("DeleteManaged() returned error: %v", err)
+	}
+
+	if _, err := kube.NetworkingV1().NetworkPolicies("knative-eventing").Get(ctx, "allow-to-dns", metav1.GetOptions{}); err == nil {
+		t.Errorf("expected the managed 'allow-to-dns' NetworkPolicy to be deleted")
+	}
+	if _, err := kube.NetworkingV1().NetworkPolicies("knative-eventing").Get(ctx, "deny-by-default", metav1.GetOptions{}); err != nil {
+		t.Errorf("expected the unmanaged 'deny-by-default' NetworkPolicy to survive, got: %v", err)
+	}
+}
+
 // TestAllowToTracing pins the tracing egress: every pod may export spans to
 // a tracing collector (OpenTelemetry 4317/4318, Zipkin 9411). The collector
 // namespace is user-chosen, so the rule is port-scoped only.
@@ -188,9 +239,7 @@ func TestAllowToTracing(t *testing.T) {
 		t.Fatalf("expected a single egress rule, got: %+v", p.Spec.Egress)
 	}
 	rule := p.Spec.Egress[0]
-	if len(rule.To) != 1 || rule.To[0].IPBlock == nil || rule.To[0].IPBlock.CIDR != "0.0.0.0/0" {
-		t.Errorf("expected ipBlock 0.0.0.0/0, got: %+v", rule.To)
-	}
+	assertAnyAddressPeers(t, rule.To)
 	want := []networkingv1.NetworkPolicyPort{
 		{Protocol: ptr.To(corev1.ProtocolTCP), Port: portPtr(4317)},
 		{Protocol: ptr.To(corev1.ProtocolTCP), Port: portPtr(4318)},
