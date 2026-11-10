@@ -68,6 +68,22 @@ func (e *extension) Manifests(ke base.KComponent) ([]mf.Manifest, error) {
 		// This handles the case when it transitions from "enabled" to "disabled".
 		e.deleteResourcesSilently(p)
 	}
+
+	// Operand NetworkPolicies (SRVCOM-3716): default-deny with tailored
+	// allows for the knative-eventing namespace. Generated unless opted out
+	// via the annotation or the Service Mesh integration is enabled; when
+	// not generated, previously generated policies are deleted.
+	np, err := generateDefaultNetworkPolicies(ke)
+	if err != nil {
+		return nil, err
+	}
+	if np != nil {
+		m = append(m, np...)
+	} else {
+		for _, manifest := range operandNetworkPoliciesForDeletion(ke) {
+			e.deleteResourcesSilently(manifest)
+		}
+	}
 	return m, nil
 }
 

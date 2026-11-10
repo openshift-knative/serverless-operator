@@ -205,6 +205,29 @@ func TestGatewayToActivatorIngress(t *testing.T) {
 	}
 }
 
+// TestGenerateDefaultNetworkPoliciesSkippedWithIstio verifies that no
+// policies are generated for the knative-serving namespace when the Istio
+// ingress (Service Mesh) integration is enabled: the mesh variant with its
+// istiod egress rule is a follow-up of SRVCOM-3716.
+func TestGenerateDefaultNetworkPoliciesSkippedWithIstio(t *testing.T) {
+	ks := &operatorv1beta1.KnativeServing{
+		ObjectMeta: metav1.ObjectMeta{Namespace: servingNamespace.Name},
+		Spec: operatorv1beta1.KnativeServingSpec{
+			Ingress: &operatorv1beta1.IngressConfigs{
+				Istio: base.IstioIngressConfiguration{Enabled: true},
+			},
+		},
+	}
+
+	manifests, err := generateDefaultNetworkPolicies(ks)
+	if err != nil {
+		t.Fatalf("generateDefaultNetworkPolicies() returned error: %v", err)
+	}
+	if manifests != nil {
+		t.Errorf("expected no manifests when the Istio ingress is enabled, got: %v", manifests)
+	}
+}
+
 // TestReconcileDeletesNetworkPoliciesWhenDisabled verifies the disable
 // transition: setting the opt-out annotation on an existing install deletes
 // the previously generated policies rather than freezing them.

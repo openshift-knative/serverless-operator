@@ -215,9 +215,10 @@ func (e *extension) Reconcile(ctx context.Context, comp base.KComponent) error {
 		}
 	}
 
-	// When the user opts out of operand NetworkPolicy generation, delete the
+	// When the user opts out of operand NetworkPolicy generation (or moves
+	// to the Istio ingress, where they are not generated), delete the
 	// previously generated policies instead of freezing them in place.
-	if networkPoliciesDisabled(ks) {
+	if operandNetworkPoliciesDisabled(ks) {
 		for _, ns := range []string{ks.GetNamespace(), kourierNamespace(ks.GetNamespace())} {
 			if err := deleteNetworkPolicies(ctx, e.kubeclient, ns); err != nil {
 				logging.FromContext(ctx).Warnw("Failed to delete operand NetworkPolicies", "namespace", ns, "error", err)

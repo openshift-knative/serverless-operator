@@ -31,6 +31,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/utils/ptr"
 	"knative.dev/operator/pkg/apis/operator/base"
+	operatorv1beta1 "knative.dev/operator/pkg/apis/operator/v1beta1"
 
 	"github.com/openshift-knative/serverless-operator/openshift-knative-operator/pkg/networkpolicy"
 )
@@ -48,12 +49,32 @@ const (
 
 // generateDefaultNetworkPolicies returns the default-deny NetworkPolicies
 // for the knative-serving namespace, or nil when generation is disabled via
-// the serverless.openshift.io/disable-network-policies-generation annotation.
+// the serverless.openshift.io/disable-network-policies-generation annotation
+// or when the Istio ingress (Service Mesh) integration is enabled — the mesh
+// variant, which additionally needs an istiod egress rule, is a follow-up of
+// SRVCOM-3716.
 func generateDefaultNetworkPolicies(ks base.KComponent) ([]mf.Manifest, error) {
-	if networkPoliciesDisabled(ks) {
+	if operandNetworkPoliciesDisabled(ks) {
 		return nil, nil
 	}
 	return networkpolicy.ToManifests(servingNetworkPolicies(ks.GetNamespace()))
+}
+
+// operandNetworkPoliciesDisabled reports whether operand NetworkPolicy
+// generation must not run for KnativeServing: opted out via the annotation,
+// or the Istio ingress (Service Mesh) is enabled.
+func operandNetworkPoliciesDisabled(ks base.KComponent) bool {
+	return networkPoliciesDisabled(ks) || istioIngressEnabled(ks)
+}
+
+// istioIngressEnabled reports whether the Istio ingress is enabled for the
+// given KnativeServing, which implies the Service Mesh integration.
+func istioIngressEnabled(ks base.KComponent) bool {
+	kcomponent, ok := ks.(*operatorv1beta1.KnativeServing)
+	if !ok || kcomponent.Spec.Ingress == nil {
+		return false
+	}
+	return kcomponent.Spec.Ingress.Istio.Enabled
 }
 
 // networkPoliciesDisabled reports whether the opt-out annotation disables
