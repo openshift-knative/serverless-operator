@@ -39,9 +39,13 @@ import (
 const (
 	// webhookPort is the targetPort of the serving webhook service.
 	webhookPort int32 = 8443
-	// activatorPort is the queue-proxy/activator request port used for
-	// cold starts and request path probing.
-	activatorPort int32 = 8012
+	// activatorPort, activatorHTTP2Port and activatorHTTPSPort are the
+	// revision backend ports (knative.dev/networking constants): HTTP/1,
+	// h2c and HTTPS respectively, used by the activator, the Kourier
+	// gateway and the queue-proxies.
+	activatorPort      int32 = 8012
+	activatorHTTP2Port int32 = 8013
+	activatorHTTPSPort int32 = 8112
 	// queueProxyMetricsPort is the queue-proxy metrics port scraped by the
 	// autoscaler.
 	queueProxyMetricsPort int32 = 9090
@@ -98,11 +102,12 @@ func servingNetworkPolicies(namespace string) []networkingv1.NetworkPolicy {
 		networkpolicy.AllowToAPIServer("allow-to-api-server", namespace),
 		networkpolicy.AllowToDNS("allow-to-dns", namespace),
 		networkpolicy.AllowFromMonitoring("allow-from-openshift-monitoring", namespace),
+		networkpolicy.AllowToTracing("allow-to-tracing", namespace),
 	}
 
 	// The webhook must be reachable by the apiserver for admission; on
 	// HyperShift the apiserver is outside the cluster network, so the rule
-	// allows all sources.
+	// allows all sources (no From peers).
 	policies = append(policies, networkingv1.NetworkPolicy{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "allow-to-webhook",
@@ -113,7 +118,6 @@ func servingNetworkPolicies(namespace string) []networkingv1.NetworkPolicy {
 			PodSelector: metav1.LabelSelector{MatchLabels: map[string]string{"app": "webhook"}},
 			PolicyTypes: []networkingv1.PolicyType{networkingv1.PolicyTypeIngress},
 			Ingress: []networkingv1.NetworkPolicyIngressRule{{
-				From:  []networkingv1.NetworkPolicyPeer{{}},
 				Ports: networkPolicyPorts(networkPolicyPortTCP(webhookPort)),
 			}},
 		},
@@ -137,12 +141,17 @@ func servingNetworkPolicies(namespace string) []networkingv1.NetworkPolicy {
 						},
 					},
 				}},
-				Ports: networkPolicyPorts(networkPolicyPortTCP(activatorPort)),
+				Ports: networkPolicyPorts(
+					networkPolicyPortTCP(activatorPort),
+					networkPolicyPortTCP(activatorHTTP2Port),
+					networkPolicyPortTCP(activatorHTTPSPort),
+				),
 			}},
 		},
 	})
 
-	// Activator -> queue-proxies of revisions in arbitrary user namespaces.
+	// Activator -> queue-proxies of revisions in arbitrary user namespaces
+	// on the HTTP, h2c and HTTPS backend ports.
 	policies = append(policies, networkingv1.NetworkPolicy{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "allow-activator-to-revisions",
@@ -156,7 +165,11 @@ func servingNetworkPolicies(namespace string) []networkingv1.NetworkPolicy {
 				To: []networkingv1.NetworkPolicyPeer{{
 					IPBlock: &networkingv1.IPBlock{CIDR: "0.0.0.0/0"},
 				}},
-				Ports: networkPolicyPorts(networkPolicyPortTCP(activatorPort)),
+				Ports: networkPolicyPorts(
+					networkPolicyPortTCP(activatorPort),
+					networkPolicyPortTCP(activatorHTTP2Port),
+					networkPolicyPortTCP(activatorHTTPSPort),
+				),
 			}},
 		},
 	})
@@ -177,6 +190,26 @@ func servingNetworkPolicies(namespace string) []networkingv1.NetworkPolicy {
 					IPBlock: &networkingv1.IPBlock{CIDR: "0.0.0.0/0"},
 				}},
 				Ports: networkPolicyPorts(networkPolicyPortTCP(queueProxyMetricsPort)),
+			}},
+		},
+	})
+
+	// Controller -> container registries for tag to digest resolution:
+	// registry hosts and ports are arbitrary (e.g. the internal OpenShift
+	// image registry on 5000), so the egress is unrestricted.
+	policies = append(policies, networkingv1.NetworkPolicy{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "allow-controller-to-registries",
+			Namespace: namespace,
+			Labels:    managedLabels(),
+		},
+		Spec: networkingv1.NetworkPolicySpec{
+			PodSelector: metav1.LabelSelector{MatchLabels: map[string]string{"app": "controller"}},
+			PolicyTypes: []networkingv1.PolicyType{networkingv1.PolicyTypeEgress},
+			Egress: []networkingv1.NetworkPolicyEgressRule{{
+				To: []networkingv1.NetworkPolicyPeer{{
+					IPBlock: &networkingv1.IPBlock{CIDR: "0.0.0.0/0"},
+				}},
 			}},
 		},
 	})

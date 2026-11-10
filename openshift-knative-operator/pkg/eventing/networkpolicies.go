@@ -94,13 +94,15 @@ func eventingNetworkPolicies(namespace string) []networkingv1.NetworkPolicy {
 		networkpolicy.AllowSameNamespace("allow-same-namespace", namespace),
 		networkpolicy.AllowToAPIServer("allow-to-api-server", namespace),
 		networkpolicy.AllowToDNS("allow-to-dns", namespace),
-		networkpolicy.AllowFromMonitoring("allow-from-openshift-monitoring", namespace),
+		networkpolicy.AllowFromMonitoring("allow-from-openshift-monitoring-metrics", namespace),
+		networkpolicy.AllowToTracing("allow-to-tracing", namespace),
 	}
 
 	// The webhooks must be reachable by the apiserver for admission; on
 	// HyperShift the apiserver is outside the cluster network, so the rule
-	// allows all sources. The inmemorychannel-webhook service is served by
-	// the imc-controller pods.
+	// allows all sources (no From peers). The inmemorychannel-webhook
+	// service is served by the imc-controller pods; kafka-webhook-eventing
+	// is the Knative Kafka admission webhook.
 	policies = append(policies, networkingv1.NetworkPolicy{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "allow-to-webhooks",
@@ -108,10 +110,9 @@ func eventingNetworkPolicies(namespace string) []networkingv1.NetworkPolicy {
 			Labels:    managedLabels(),
 		},
 		Spec: networkingv1.NetworkPolicySpec{
-			PodSelector: componentSelector("eventing-webhook", "imc-controller"),
+			PodSelector: componentSelector("eventing-webhook", "imc-controller", "kafka-webhook-eventing"),
 			PolicyTypes: []networkingv1.PolicyType{networkingv1.PolicyTypeIngress},
 			Ingress: []networkingv1.NetworkPolicyIngressRule{{
-				From:  []networkingv1.NetworkPolicyPeer{{}},
 				Ports: networkPolicyPorts(networkPolicyPortTCP(webhookPort)),
 			}},
 		},
@@ -119,7 +120,8 @@ func eventingNetworkPolicies(namespace string) []networkingv1.NetworkPolicy {
 
 	// Data-plane receivers: event producers in arbitrary user namespaces
 	// POST CloudEvents to the broker ingress, InMemoryChannels, JobSinks and
-	// RequestReplies.
+	// RequestReplies; the eventmesh-backend serves the Backstage plugin
+	// (Developer Hub) on 8080. No From peers: all sources.
 	policies = append(policies, networkingv1.NetworkPolicy{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "allow-to-data-plane",
@@ -127,10 +129,30 @@ func eventingNetworkPolicies(namespace string) []networkingv1.NetworkPolicy {
 			Labels:    managedLabels(),
 		},
 		Spec: networkingv1.NetworkPolicySpec{
-			PodSelector: componentSelector("broker-ingress", "imc-dispatcher", "job-sink", "request-reply"),
+			PodSelector: componentSelector("broker-ingress", "imc-dispatcher", "job-sink", "request-reply", "eventmesh-backend"),
 			PolicyTypes: []networkingv1.PolicyType{networkingv1.PolicyTypeIngress},
 			Ingress: []networkingv1.NetworkPolicyIngressRule{{
-				From: []networkingv1.NetworkPolicyPeer{{}},
+				Ports: networkPolicyPorts(
+					networkPolicyPortTCP(dataPlaneHTTPPort),
+					networkPolicyPortTCP(dataPlaneHTTPSPort),
+				),
+			}},
+		},
+	})
+
+	// Knative Kafka receivers (broker, channel, sink): they run in
+	// knative-eventing (see eventing-kafka-broker.yaml) and receive events
+	// from arbitrary user namespaces. No From peers: all sources.
+	policies = append(policies, networkingv1.NetworkPolicy{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "allow-to-kafka-data-plane",
+			Namespace: namespace,
+			Labels:    managedLabels(),
+		},
+		Spec: networkingv1.NetworkPolicySpec{
+			PodSelector: componentSelector("kafka-broker-receiver", "kafka-channel-receiver", "kafka-sink-receiver"),
+			PolicyTypes: []networkingv1.PolicyType{networkingv1.PolicyTypeIngress},
+			Ingress: []networkingv1.NetworkPolicyIngressRule{{
 				Ports: networkPolicyPorts(
 					networkPolicyPortTCP(dataPlaneHTTPPort),
 					networkPolicyPortTCP(dataPlaneHTTPSPort),
@@ -140,7 +162,10 @@ func eventingNetworkPolicies(namespace string) []networkingv1.NetworkPolicy {
 	})
 
 	// Event delivery: the data-plane roles that dial subscriber, sink and
-	// target URIs in arbitrary user namespaces on arbitrary ports.
+	// target URIs in arbitrary user namespaces on arbitrary ports. The
+	// Knative Kafka dispatchers and controller are included: they also
+	// consume from and produce to Kafka bootstrap servers on arbitrary
+	// hosts and ports.
 	policies = append(policies, networkingv1.NetworkPolicy{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "allow-event-delivery",
@@ -148,7 +173,8 @@ func eventingNetworkPolicies(namespace string) []networkingv1.NetworkPolicy {
 			Labels:    managedLabels(),
 		},
 		Spec: networkingv1.NetworkPolicySpec{
-			PodSelector: componentSelector("broker-filter", "imc-dispatcher", "pingsource-mt-adapter", "request-reply"),
+			PodSelector: componentSelector("broker-filter", "imc-dispatcher", "pingsource-mt-adapter", "request-reply",
+				"kafka-broker-dispatcher", "kafka-channel-dispatcher", "kafka-source-dispatcher", "kafka-controller"),
 			PolicyTypes: []networkingv1.PolicyType{networkingv1.PolicyTypeEgress},
 			Egress: []networkingv1.NetworkPolicyEgressRule{{
 				To: []networkingv1.NetworkPolicyPeer{{

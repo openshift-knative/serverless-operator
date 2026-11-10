@@ -56,10 +56,12 @@ func TestGenerateDefaultNetworkPolicies(t *testing.T) {
 		"allow-to-api-server",
 		"allow-to-dns",
 		"allow-from-openshift-monitoring",
+		"allow-to-tracing",
 		"allow-to-webhook",
 		"allow-from-kourier-gateway-to-activator",
 		"allow-activator-to-revisions",
 		"allow-autoscaler-to-revision-metrics",
+		"allow-controller-to-registries",
 	}
 
 	got := []string{}
@@ -121,8 +123,10 @@ func TestWebhookPolicyAcceptsAllSources(t *testing.T) {
 		t.Fatalf("expected a single ingress rule, got: %+v", p.Spec.Ingress)
 	}
 	rule := p.Spec.Ingress[0]
-	if len(rule.From) != 1 || rule.From[0].PodSelector != nil || rule.From[0].NamespaceSelector != nil || rule.From[0].IPBlock != nil {
-		t.Errorf("expected a single empty From peer (all sources), got: %+v", rule.From)
+	// No From peers at all: an empty NetworkPolicyPeer ({}) is rejected by
+	// the API server ("must specify a peer"), omitted From allows all sources.
+	if len(rule.From) != 0 {
+		t.Errorf("expected no From peers (all sources), got: %+v", rule.From)
 	}
 	want := []networkingv1.NetworkPolicyPort{
 		{Protocol: ptr.To(corev1.ProtocolTCP), Port: ptr.To(intstr.FromInt32(8443))},
@@ -133,7 +137,8 @@ func TestWebhookPolicyAcceptsAllSources(t *testing.T) {
 }
 
 // TestActivatorEgressUnrestricted pins the activator egress to revision pods
-// in arbitrary user namespaces: 0.0.0.0/0 on TCP 8012 only.
+// in arbitrary user namespaces: 0.0.0.0/0 on the HTTP (8012), h2c (8013) and
+// HTTPS (8112) backend ports.
 func TestActivatorEgressUnrestricted(t *testing.T) {
 	p := findPolicy(t, servingNetworkPolicies(servingNamespace.Name), "allow-activator-to-revisions")
 
@@ -149,6 +154,8 @@ func TestActivatorEgressUnrestricted(t *testing.T) {
 	}
 	want := []networkingv1.NetworkPolicyPort{
 		{Protocol: ptr.To(corev1.ProtocolTCP), Port: ptr.To(intstr.FromInt32(8012))},
+		{Protocol: ptr.To(corev1.ProtocolTCP), Port: ptr.To(intstr.FromInt32(8013))},
+		{Protocol: ptr.To(corev1.ProtocolTCP), Port: ptr.To(intstr.FromInt32(8112))},
 	}
 	if diff := cmp.Diff(want, rule.Ports); diff != "" {
 		t.Errorf("ports diff (-want +got):\n%s", diff)
@@ -179,7 +186,8 @@ func TestAutoscalerEgressRevisionMetrics(t *testing.T) {
 }
 
 // TestGatewayToActivatorIngress pins the Kourier gateway -> activator cold
-// start path: ingress from the kourier (-ingress) namespace on TCP 8012.
+// start path: ingress from the kourier (-ingress) namespace on the HTTP
+// (8012), h2c (8013) and HTTPS (8112) backend ports.
 func TestGatewayToActivatorIngress(t *testing.T) {
 	p := findPolicy(t, servingNetworkPolicies(servingNamespace.Name), "allow-from-kourier-gateway-to-activator")
 
@@ -199,9 +207,32 @@ func TestGatewayToActivatorIngress(t *testing.T) {
 	}
 	want := []networkingv1.NetworkPolicyPort{
 		{Protocol: ptr.To(corev1.ProtocolTCP), Port: ptr.To(intstr.FromInt32(8012))},
+		{Protocol: ptr.To(corev1.ProtocolTCP), Port: ptr.To(intstr.FromInt32(8013))},
+		{Protocol: ptr.To(corev1.ProtocolTCP), Port: ptr.To(intstr.FromInt32(8112))},
 	}
 	if diff := cmp.Diff(want, rule.Ports); diff != "" {
 		t.Errorf("ports diff (-want +got):\n%s", diff)
+	}
+}
+
+// TestControllerEgressToRegistries pins the controller egress for tag to
+// digest resolution against container registries, which use arbitrary hosts
+// and ports (e.g. the internal image registry on 5000): unrestricted.
+func TestControllerEgressToRegistries(t *testing.T) {
+	p := findPolicy(t, servingNetworkPolicies(servingNamespace.Name), "allow-controller-to-registries")
+
+	if diff := cmp.Diff(map[string]string{"app": "controller"}, p.Spec.PodSelector.MatchLabels); diff != "" {
+		t.Errorf("podSelector diff (-want +got):\n%s", diff)
+	}
+	if len(p.Spec.Egress) != 1 {
+		t.Fatalf("expected a single egress rule, got: %+v", p.Spec.Egress)
+	}
+	rule := p.Spec.Egress[0]
+	if len(rule.To) != 1 || rule.To[0].IPBlock == nil || rule.To[0].IPBlock.CIDR != "0.0.0.0/0" {
+		t.Errorf("expected ipBlock 0.0.0.0/0, got: %+v", rule.To)
+	}
+	if len(rule.Ports) != 0 {
+		t.Errorf("expected no port scoping (registry endpoints are arbitrary), got: %+v", rule.Ports)
 	}
 }
 
@@ -272,6 +303,44 @@ func TestReconcileDeletesNetworkPoliciesWhenDisabled(t *testing.T) {
 	}
 	if _, err := kube.NetworkingV1().NetworkPolicies(servingNamespace.Name).Get(context.Background(), "user-managed", metav1.GetOptions{}); err != nil {
 		t.Errorf("expected unmanaged 'user-managed' NetworkPolicy to survive, got: %v", err)
+	}
+}
+
+// TestFinalizeDeletesNetworkPolicies verifies that deleting the
+// KnativeServing CR cleans up the operand NetworkPolicies in both managed
+// namespaces: the Kourier-namespace policies carry no owner references, so
+// neither the garbage collector nor the manifest uninstall removes them.
+func TestFinalizeDeletesNetworkPolicies(t *testing.T) {
+	ks := &operatorv1beta1.KnativeServing{
+		ObjectMeta: metav1.ObjectMeta{Namespace: servingNamespace.Name},
+		Spec: operatorv1beta1.KnativeServingSpec{
+			Ingress: &operatorv1beta1.IngressConfigs{
+				Kourier: base.KourierIngressConfiguration{Enabled: true},
+			},
+		},
+	}
+
+	ctx, _ := routefake.With(context.Background())
+	ctx, _ = configfake.With(ctx, defaultIngress)
+	ctx, kube := kubefake.With(ctx, &servingNamespace)
+	ext := newFakeExtension(ctx, t)
+
+	kourierNS := kourierNamespace(servingNamespace.Name)
+	for _, ns := range []string{servingNamespace.Name, kourierNS} {
+		seed := networkpolicy.DenyAll("deny-by-default", ns)
+		if _, err := kube.NetworkingV1().NetworkPolicies(ns).Create(context.Background(), &seed, metav1.CreateOptions{}); err != nil {
+			t.Fatalf("failed to seed NetworkPolicy in %s: %v", ns, err)
+		}
+	}
+
+	if err := ext.Finalize(ctx, ks); err != nil {
+		t.Fatalf("Finalize() returned error: %v", err)
+	}
+
+	for _, ns := range []string{servingNamespace.Name, kourierNS} {
+		if _, err := kube.NetworkingV1().NetworkPolicies(ns).Get(context.Background(), "deny-by-default", metav1.GetOptions{}); err == nil {
+			t.Errorf("expected 'deny-by-default' NetworkPolicy in %s to be deleted on Finalize", ns)
+		}
 	}
 }
 

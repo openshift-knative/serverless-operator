@@ -30,15 +30,18 @@ const (
 	// kourierGatewayPodLabel selects the Envoy gateway deployment.
 	kourierGatewayPodLabel = "3scale-kourier-gateway"
 
-	// routerNamespaceSelectorLabel is the namespace label OVN-Kubernetes
-	// classifies host-network OpenShift router traffic under for NetworkPolicy
-	// evaluation.
-	routerNamespaceSelectorLabel = "policy-group.network.openshift.io/ingress"
+	// kourierGatewayHTTPPort, kourierGatewayInternalPort,
+	// kourierGatewayHTTPSPort and kourierGatewayInternalTLSPort are the
+	// gateway service targetPorts: external and cluster-local traffic, plus
+	// their TLS counterparts (https-external, kourier-internal https).
+	kourierGatewayHTTPPort        int32 = 8080
+	kourierGatewayInternalPort    int32 = 8081
+	kourierGatewayHTTPSPort       int32 = 8443
+	kourierGatewayInternalTLSPort int32 = 8444
 
-	// kourierGatewayHTTPPort and kourierGatewayInternalPort are the gateway
-	// service targetPorts for external and cluster-local traffic.
-	kourierGatewayHTTPPort     int32 = 8080
-	kourierGatewayInternalPort int32 = 8081
+	// monitoringPort is the kube-rbac-proxy secure metrics port, matching
+	// the shared builder.
+	monitoringPort int32 = 8444
 )
 
 // generateKourierNetworkPolicies returns the NetworkPolicies for the Kourier
@@ -80,15 +83,18 @@ func kourierNetworkPolicies(namespace string) []networkingv1.NetworkPolicy {
 		networkpolicy.AllowSameNamespace("allow-same-namespace", namespace),
 		networkpolicy.AllowToAPIServer("allow-to-api-server", namespace),
 		networkpolicy.AllowToDNS("allow-to-dns", namespace),
-		networkpolicy.AllowFromMonitoring("allow-from-openshift-monitoring", namespace),
+		kourierMonitoringPolicy(namespace),
+		networkpolicy.AllowToTracing("allow-to-tracing", namespace),
 	}
 	for i := range policies {
 		policies[i].Labels[providerLabel] = "kourier"
 	}
 
 	// The gateway receives external traffic from the OpenShift router and
-	// cluster-local traffic from arbitrary user namespaces (ksvc URLs resolve
-	// to kourier-internal).
+	// cluster-local traffic from arbitrary user namespaces (ksvc URLs
+	// resolve to kourier-internal), plus TLS traffic on https-external
+	// (8443) and cluster-local TLS (8444). No From peers: all sources (an
+	// empty peer would be rejected by the API server).
 	policies = append(policies, networkingv1.NetworkPolicy{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "allow-to-kourier-gateway",
@@ -99,27 +105,18 @@ func kourierNetworkPolicies(namespace string) []networkingv1.NetworkPolicy {
 			PodSelector: metav1.LabelSelector{MatchLabels: map[string]string{"app": kourierGatewayPodLabel}},
 			PolicyTypes: []networkingv1.PolicyType{networkingv1.PolicyTypeIngress},
 			Ingress: []networkingv1.NetworkPolicyIngressRule{{
-				From: []networkingv1.NetworkPolicyPeer{
-					{
-						NamespaceSelector: &metav1.LabelSelector{
-							MatchLabels: map[string]string{
-								routerNamespaceSelectorLabel: "",
-							},
-						},
-					},
-					// All sources: cluster-local traffic from user namespaces.
-					{},
-				},
 				Ports: networkPolicyPorts(
 					networkPolicyPortTCP(kourierGatewayHTTPPort),
 					networkPolicyPortTCP(kourierGatewayInternalPort),
+					networkPolicyPortTCP(kourierGatewayHTTPSPort),
+					networkPolicyPortTCP(kourierGatewayInternalTLSPort),
 				),
 			}},
 		},
 	})
 
 	// Gateway -> activator and queue-proxies of revisions in arbitrary user
-	// namespaces.
+	// namespaces on the HTTP, h2c and HTTPS backend ports.
 	policies = append(policies, networkingv1.NetworkPolicy{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "allow-gateway-to-revisions",
@@ -133,12 +130,48 @@ func kourierNetworkPolicies(namespace string) []networkingv1.NetworkPolicy {
 				To: []networkingv1.NetworkPolicyPeer{{
 					IPBlock: &networkingv1.IPBlock{CIDR: "0.0.0.0/0"},
 				}},
-				Ports: networkPolicyPorts(networkPolicyPortTCP(activatorPort)),
+				Ports: networkPolicyPorts(
+					networkPolicyPortTCP(activatorPort),
+					networkPolicyPortTCP(activatorHTTP2Port),
+					networkPolicyPortTCP(activatorHTTPSPort),
+				),
 			}},
 		},
 	})
 
 	return policies
+}
+
+// kourierMonitoringPolicy allows the cluster-monitoring prometheus to scrape
+// the Kourier namespace pods. Unlike the serving/eventing components, the
+// Kourier pods get no kube-rbac-proxy injected (see servingDeployments in
+// pkg/monitoring), so their metrics are exposed directly on 9090 in addition
+// to the common 8444.
+func kourierMonitoringPolicy(namespace string) networkingv1.NetworkPolicy {
+	return networkingv1.NetworkPolicy{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "allow-from-openshift-monitoring",
+			Namespace: namespace,
+			Labels:    managedLabels(),
+		},
+		Spec: networkingv1.NetworkPolicySpec{
+			PodSelector: metav1.LabelSelector{},
+			PolicyTypes: []networkingv1.PolicyType{networkingv1.PolicyTypeIngress},
+			Ingress: []networkingv1.NetworkPolicyIngressRule{{
+				From: []networkingv1.NetworkPolicyPeer{{
+					NamespaceSelector: &metav1.LabelSelector{
+						MatchLabels: map[string]string{
+							"kubernetes.io/metadata.name": "openshift-monitoring",
+						},
+					},
+				}},
+				Ports: networkPolicyPorts(
+					networkPolicyPortTCP(monitoringPort),
+					networkPolicyPortTCP(9090),
+				),
+			}},
+		},
+	}
 }
 
 func kourierLabels() map[string]string {

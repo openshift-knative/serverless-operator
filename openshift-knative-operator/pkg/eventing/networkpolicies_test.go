@@ -57,9 +57,11 @@ func TestGenerateDefaultNetworkPolicies(t *testing.T) {
 		"allow-same-namespace",
 		"allow-to-api-server",
 		"allow-to-dns",
-		"allow-from-openshift-monitoring",
+		"allow-from-openshift-monitoring-metrics",
+		"allow-to-tracing",
 		"allow-to-webhooks",
 		"allow-to-data-plane",
+		"allow-to-kafka-data-plane",
 		"allow-event-delivery",
 	}
 
@@ -79,8 +81,9 @@ func TestGenerateDefaultNetworkPolicies(t *testing.T) {
 }
 
 // TestWebhookPolicyAcceptsAllSources pins the webhook ingress: the
-// eventing-webhook and imc-controller (serving the inmemorychannel-webhook
-// service) pods accept admission calls from all sources on TCP 8443.
+// eventing-webhook, imc-controller (serving the inmemorychannel-webhook
+// service) and kafka-webhook-eventing pods accept admission calls from all
+// sources on TCP 8443.
 func TestWebhookPolicyAcceptsAllSources(t *testing.T) {
 	p := findEventingPolicy(t, eventingPolicies(), "allow-to-webhooks")
 
@@ -88,7 +91,7 @@ func TestWebhookPolicyAcceptsAllSources(t *testing.T) {
 		MatchExpressions: []metav1.LabelSelectorRequirement{{
 			Key:      "app.kubernetes.io/component",
 			Operator: metav1.LabelSelectorOpIn,
-			Values:   []string{"eventing-webhook", "imc-controller"},
+			Values:   []string{"eventing-webhook", "imc-controller", "kafka-webhook-eventing"},
 		}},
 	}
 	if diff := cmp.Diff(wantSelector, p.Spec.PodSelector); diff != "" {
@@ -98,8 +101,10 @@ func TestWebhookPolicyAcceptsAllSources(t *testing.T) {
 		t.Fatalf("expected a single ingress rule, got: %+v", p.Spec.Ingress)
 	}
 	rule := p.Spec.Ingress[0]
-	if len(rule.From) != 1 || rule.From[0].PodSelector != nil || rule.From[0].NamespaceSelector != nil || rule.From[0].IPBlock != nil {
-		t.Errorf("expected a single empty From peer (all sources), got: %+v", rule.From)
+	// No From peers at all: an empty NetworkPolicyPeer ({}) is rejected by
+	// the API server ("must specify a peer"), omitted From allows all sources.
+	if len(rule.From) != 0 {
+		t.Errorf("expected no From peers (all sources), got: %+v", rule.From)
 	}
 	wantPorts := []networkingv1.NetworkPolicyPort{
 		{Protocol: ptr.To(corev1.ProtocolTCP), Port: ptr.To(intstr.FromInt32(8443))},
@@ -111,8 +116,10 @@ func TestWebhookPolicyAcceptsAllSources(t *testing.T) {
 
 // TestDataPlanePolicyAcceptsAllSources pins the ingress for the eventing
 // data-plane receivers (broker-ingress, imc-dispatcher, job-sink,
-// request-reply): event producers in arbitrary user namespaces POST
-// CloudEvents to them on the HTTP (8080) and HTTPS (8443) ports.
+// request-reply, eventmesh-backend): event producers in arbitrary user
+// namespaces POST CloudEvents to them on the HTTP (8080) and HTTPS (8443)
+// ports; the Backstage eventmesh-backend serves Developer Hub requests on
+// 8080.
 func TestDataPlanePolicyAcceptsAllSources(t *testing.T) {
 	p := findEventingPolicy(t, eventingPolicies(), "allow-to-data-plane")
 
@@ -120,7 +127,7 @@ func TestDataPlanePolicyAcceptsAllSources(t *testing.T) {
 		MatchExpressions: []metav1.LabelSelectorRequirement{{
 			Key:      "app.kubernetes.io/component",
 			Operator: metav1.LabelSelectorOpIn,
-			Values:   []string{"broker-ingress", "imc-dispatcher", "job-sink", "request-reply"},
+			Values:   []string{"broker-ingress", "imc-dispatcher", "job-sink", "request-reply", "eventmesh-backend"},
 		}},
 	}
 	if diff := cmp.Diff(wantSelector, p.Spec.PodSelector); diff != "" {
@@ -130,8 +137,10 @@ func TestDataPlanePolicyAcceptsAllSources(t *testing.T) {
 		t.Fatalf("expected a single ingress rule, got: %+v", p.Spec.Ingress)
 	}
 	rule := p.Spec.Ingress[0]
-	if len(rule.From) != 1 || rule.From[0].PodSelector != nil || rule.From[0].NamespaceSelector != nil || rule.From[0].IPBlock != nil {
-		t.Errorf("expected a single empty From peer (all sources), got: %+v", rule.From)
+	// No From peers at all: an empty NetworkPolicyPeer ({}) is rejected by
+	// the API server ("must specify a peer"), omitted From allows all sources.
+	if len(rule.From) != 0 {
+		t.Errorf("expected no From peers (all sources), got: %+v", rule.From)
 	}
 	wantPorts := []networkingv1.NetworkPolicyPort{
 		{Protocol: ptr.To(corev1.ProtocolTCP), Port: ptr.To(intstr.FromInt32(8080))},
@@ -144,7 +153,10 @@ func TestDataPlanePolicyAcceptsAllSources(t *testing.T) {
 
 // TestEventDeliveryEgressUnrestricted pins the delivery egress: the
 // data-plane roles that dial subscriber, sink and target URIs (arbitrary user
-// namespaces, arbitrary ports) get unrestricted egress.
+// namespaces, arbitrary ports) get unrestricted egress. The Kafka
+// dispatchers and controller are included: they consume from and produce to
+// Kafka bootstrap servers on arbitrary hosts and ports (they run in
+// knative-eventing, see eventing-kafka-broker.yaml).
 func TestEventDeliveryEgressUnrestricted(t *testing.T) {
 	p := findEventingPolicy(t, eventingPolicies(), "allow-event-delivery")
 
@@ -152,7 +164,8 @@ func TestEventDeliveryEgressUnrestricted(t *testing.T) {
 		MatchExpressions: []metav1.LabelSelectorRequirement{{
 			Key:      "app.kubernetes.io/component",
 			Operator: metav1.LabelSelectorOpIn,
-			Values:   []string{"broker-filter", "imc-dispatcher", "pingsource-mt-adapter", "request-reply"},
+			Values: []string{"broker-filter", "imc-dispatcher", "pingsource-mt-adapter", "request-reply",
+				"kafka-broker-dispatcher", "kafka-channel-dispatcher", "kafka-source-dispatcher", "kafka-controller"},
 		}},
 	}
 	if diff := cmp.Diff(wantSelector, p.Spec.PodSelector); diff != "" {
@@ -266,4 +279,38 @@ func TestManifestsDeleteNetworkPoliciesWhenDisabled(t *testing.T) {
 // knative-eventing namespace.
 func eventingPolicies() []networkingv1.NetworkPolicy {
 	return eventingNetworkPolicies(requiredNs)
+}
+
+// TestKafkaDataPlanePolicyAcceptsAllSources pins the ingress for the Knative
+// Kafka receivers (broker, channel, sink), which run in knative-eventing and
+// receive events from arbitrary user namespaces on 8080/8443.
+func TestKafkaDataPlanePolicyAcceptsAllSources(t *testing.T) {
+	p := findEventingPolicy(t, eventingPolicies(), "allow-to-kafka-data-plane")
+
+	wantSelector := metav1.LabelSelector{
+		MatchExpressions: []metav1.LabelSelectorRequirement{{
+			Key:      "app.kubernetes.io/component",
+			Operator: metav1.LabelSelectorOpIn,
+			Values:   []string{"kafka-broker-receiver", "kafka-channel-receiver", "kafka-sink-receiver"},
+		}},
+	}
+	if diff := cmp.Diff(wantSelector, p.Spec.PodSelector); diff != "" {
+		t.Errorf("podSelector diff (-want +got):\n%s", diff)
+	}
+	if len(p.Spec.Ingress) != 1 {
+		t.Fatalf("expected a single ingress rule, got: %+v", p.Spec.Ingress)
+	}
+	rule := p.Spec.Ingress[0]
+	// No From peers at all: an empty NetworkPolicyPeer ({}) is rejected by
+	// the API server ("must specify a peer"), omitted From allows all sources.
+	if len(rule.From) != 0 {
+		t.Errorf("expected no From peers (all sources), got: %+v", rule.From)
+	}
+	wantPorts := []networkingv1.NetworkPolicyPort{
+		{Protocol: ptr.To(corev1.ProtocolTCP), Port: ptr.To(intstr.FromInt32(8080))},
+		{Protocol: ptr.To(corev1.ProtocolTCP), Port: ptr.To(intstr.FromInt32(8443))},
+	}
+	if diff := cmp.Diff(wantPorts, rule.Ports); diff != "" {
+		t.Errorf("ports diff (-want +got):\n%s", diff)
+	}
 }

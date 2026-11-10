@@ -67,6 +67,7 @@ func TestGenerateKourierNetworkPolicies(t *testing.T) {
 		"allow-to-api-server",
 		"allow-to-dns",
 		"allow-from-openshift-monitoring",
+		"allow-to-tracing",
 		"allow-to-kourier-gateway",
 		"allow-gateway-to-revisions",
 	}
@@ -163,9 +164,10 @@ func TestKourierPoliciesNoOwnerRefs(t *testing.T) {
 	}
 }
 
-// TestGatewayIngressSources pins the gateway ingress: the OpenShift router
-// (policy-group network label) plus all namespaces for cluster-local
-// traffic, on the gateway service targetPorts 8080 and 8081.
+// TestGatewayIngressSources pins the gateway ingress: all sources (the
+// OpenShift router and cluster-local traffic from user namespaces) on the
+// gateway service targetPorts 8080, 8081, 8443 (https-external) and 8444
+// (cluster-local TLS).
 func TestGatewayIngressSources(t *testing.T) {
 	p := findPolicy(t, kourierNetworkPolicies(kourierNamespace(servingNamespace.Name)), "allow-to-kourier-gateway")
 
@@ -176,29 +178,18 @@ func TestGatewayIngressSources(t *testing.T) {
 		t.Fatalf("expected a single ingress rule, got: %+v", p.Spec.Ingress)
 	}
 	rule := p.Spec.Ingress[0]
-	if len(rule.From) != 2 {
-		t.Fatalf("expected two From peers, got: %+v", rule.From)
-	}
-	hasRouter, hasAll := false, false
-	for _, f := range rule.From {
-		if f.NamespaceSelector != nil && f.NamespaceSelector.MatchLabels["policy-group.network.openshift.io/ingress"] == "" {
-			if _, ok := f.NamespaceSelector.MatchLabels["policy-group.network.openshift.io/ingress"]; ok {
-				hasRouter = true
-			}
-		}
-		if f.PodSelector == nil && f.NamespaceSelector == nil && f.IPBlock == nil {
-			hasAll = true
-		}
-	}
-	if !hasRouter {
-		t.Errorf("expected a router namespaceSelector peer (policy-group.network.openshift.io/ingress), got: %+v", rule.From)
-	}
-	if !hasAll {
-		t.Errorf("expected an empty From peer (all sources, cluster-local traffic), got: %+v", rule.From)
+	// No From peers at all: an empty NetworkPolicyPeer ({}) is rejected by
+	// the API server ("must specify a peer"), omitted From allows all
+	// sources, which covers both the OpenShift router and cluster-local
+	// traffic from user namespaces.
+	if len(rule.From) != 0 {
+		t.Errorf("expected no From peers (all sources), got: %+v", rule.From)
 	}
 	want := []networkingv1.NetworkPolicyPort{
 		{Protocol: ptr.To(corev1.ProtocolTCP), Port: ptr.To(intstr.FromInt32(8080))},
 		{Protocol: ptr.To(corev1.ProtocolTCP), Port: ptr.To(intstr.FromInt32(8081))},
+		{Protocol: ptr.To(corev1.ProtocolTCP), Port: ptr.To(intstr.FromInt32(8443))},
+		{Protocol: ptr.To(corev1.ProtocolTCP), Port: ptr.To(intstr.FromInt32(8444))},
 	}
 	if diff := cmp.Diff(want, rule.Ports); diff != "" {
 		t.Errorf("ports diff (-want +got):\n%s", diff)
@@ -206,7 +197,8 @@ func TestGatewayIngressSources(t *testing.T) {
 }
 
 // TestGatewayEgress pins the gateway egress to activator and queue-proxies
-// in arbitrary user namespaces: 0.0.0.0/0 on TCP 8012 only.
+// in arbitrary user namespaces: 0.0.0.0/0 on the HTTP (8012), h2c (8013)
+// and HTTPS (8112) backend ports.
 func TestGatewayEgress(t *testing.T) {
 	p := findPolicy(t, kourierNetworkPolicies(kourierNamespace(servingNamespace.Name)), "allow-gateway-to-revisions")
 
@@ -222,6 +214,8 @@ func TestGatewayEgress(t *testing.T) {
 	}
 	want := []networkingv1.NetworkPolicyPort{
 		{Protocol: ptr.To(corev1.ProtocolTCP), Port: ptr.To(intstr.FromInt32(8012))},
+		{Protocol: ptr.To(corev1.ProtocolTCP), Port: ptr.To(intstr.FromInt32(8013))},
+		{Protocol: ptr.To(corev1.ProtocolTCP), Port: ptr.To(intstr.FromInt32(8112))},
 	}
 	if diff := cmp.Diff(want, rule.Ports); diff != "" {
 		t.Errorf("ports diff (-want +got):\n%s", diff)
@@ -255,5 +249,31 @@ func TestManifestsIncludeKourierNetworkPolicies(t *testing.T) {
 	}
 	if !found {
 		t.Errorf("expected allow-to-kourier-gateway NetworkPolicy in extension manifests")
+	}
+}
+
+// TestKourierMonitoringPorts pins the monitoring ingress in the Kourier
+// namespace: openshift-monitoring on 8444 (kube-rbac-proxy, matching the
+// other namespaces) and 9090 (the Kourier pods have no kube-rbac-proxy and
+// expose their metrics directly).
+func TestKourierMonitoringPorts(t *testing.T) {
+	p := findPolicy(t, kourierNetworkPolicies(kourierNamespace(servingNamespace.Name)), "allow-from-openshift-monitoring")
+
+	if len(p.Spec.Ingress) != 1 {
+		t.Fatalf("expected a single ingress rule, got: %+v", p.Spec.Ingress)
+	}
+	rule := p.Spec.Ingress[0]
+	if len(rule.From) != 1 || rule.From[0].NamespaceSelector == nil {
+		t.Fatalf("expected a namespaceSelector peer, got: %+v", rule.From)
+	}
+	if diff := cmp.Diff(map[string]string{"kubernetes.io/metadata.name": "openshift-monitoring"}, rule.From[0].NamespaceSelector.MatchLabels); diff != "" {
+		t.Errorf("namespaceSelector diff (-want +got):\n%s", diff)
+	}
+	want := []networkingv1.NetworkPolicyPort{
+		{Protocol: ptr.To(corev1.ProtocolTCP), Port: ptr.To(intstr.FromInt32(8444))},
+		{Protocol: ptr.To(corev1.ProtocolTCP), Port: ptr.To(intstr.FromInt32(9090))},
+	}
+	if diff := cmp.Diff(want, rule.Ports); diff != "" {
+		t.Errorf("ports diff (-want +got):\n%s", diff)
 	}
 }

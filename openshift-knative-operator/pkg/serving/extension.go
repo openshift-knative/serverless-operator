@@ -236,10 +236,19 @@ func (e *extension) Reconcile(ctx context.Context, comp base.KComponent) error {
 	return monitoring.ReconcileMonitoringForServing(ctx, e.kubeclient, ks)
 }
 
-func (e *extension) Finalize(_ context.Context, comp base.KComponent) error {
+func (e *extension) Finalize(ctx context.Context, comp base.KComponent) error {
 	ks := comp.(*operatorv1beta1.KnativeServing)
 	// Also default to Kourier here to pick the right manifest to uninstall.
 	defaultToKourier(ks)
+
+	// The operand NetworkPolicies are extension manifests, which the
+	// uninstall stage does not remove; the Kourier-namespace ones carry no
+	// owner references, so clean them up explicitly.
+	for _, ns := range []string{ks.GetNamespace(), kourierNamespace(ks.GetNamespace())} {
+		if err := deleteNetworkPolicies(ctx, e.kubeclient, ns); err != nil {
+			logging.FromContext(ctx).Warnw("Failed to delete operand NetworkPolicies on finalize", "namespace", ns, "error", err)
+		}
+	}
 	return nil
 }
 

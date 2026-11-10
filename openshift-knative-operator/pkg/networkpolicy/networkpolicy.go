@@ -190,6 +190,34 @@ func AllowFromMonitoring(name, namespace string) networkingv1.NetworkPolicy {
 	}
 }
 
+// AllowToTracing builds an egress policy allowing every pod in the
+// namespace to export spans to a tracing collector: OpenTelemetry collectors
+// (4317 gRPC, 4318 HTTP) and Zipkin (9411). The collector is user-deployed
+// in a namespace of their choosing, so the rule is port-scoped only.
+func AllowToTracing(name, namespace string) networkingv1.NetworkPolicy {
+	return networkingv1.NetworkPolicy{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      name,
+			Namespace: namespace,
+			Labels:    managedLabels(),
+		},
+		Spec: networkingv1.NetworkPolicySpec{
+			PodSelector: metav1.LabelSelector{},
+			PolicyTypes: []networkingv1.PolicyType{networkingv1.PolicyTypeEgress},
+			Egress: []networkingv1.NetworkPolicyEgressRule{{
+				To: []networkingv1.NetworkPolicyPeer{{
+					IPBlock: &networkingv1.IPBlock{CIDR: "0.0.0.0/0"},
+				}},
+				Ports: []networkingv1.NetworkPolicyPort{
+					networkPolicyPort(corev1.ProtocolTCP, 4317),
+					networkPolicyPort(corev1.ProtocolTCP, 4318),
+					networkPolicyPort(corev1.ProtocolTCP, 9411),
+				},
+			}},
+		},
+	}
+}
+
 // ToManifests converts typed NetworkPolicies into a single manifestival
 // manifest, so they can be appended to the extension Manifests() output.
 func ToManifests(policies []networkingv1.NetworkPolicy) ([]mf.Manifest, error) {

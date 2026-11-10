@@ -177,3 +177,32 @@ func TestToManifests(t *testing.T) {
 }
 
 func portPtr(p int32) *intstr.IntOrString { return ptr.To(intstr.FromInt32(p)) }
+
+// TestAllowToTracing pins the tracing egress: every pod may export spans to
+// a tracing collector (OpenTelemetry 4317/4318, Zipkin 9411). The collector
+// namespace is user-chosen, so the rule is port-scoped only.
+func TestAllowToTracing(t *testing.T) {
+	p := AllowToTracing("allow-to-tracing", "knative-serving")
+
+	if len(p.Spec.Egress) != 1 {
+		t.Fatalf("expected a single egress rule, got: %+v", p.Spec.Egress)
+	}
+	rule := p.Spec.Egress[0]
+	if len(rule.To) != 1 || rule.To[0].IPBlock == nil || rule.To[0].IPBlock.CIDR != "0.0.0.0/0" {
+		t.Errorf("expected ipBlock 0.0.0.0/0, got: %+v", rule.To)
+	}
+	want := []networkingv1.NetworkPolicyPort{
+		{Protocol: ptr.To(corev1.ProtocolTCP), Port: portPtr(4317)},
+		{Protocol: ptr.To(corev1.ProtocolTCP), Port: portPtr(4318)},
+		{Protocol: ptr.To(corev1.ProtocolTCP), Port: portPtr(9411)},
+	}
+	if diff := cmp.Diff(want, rule.Ports); diff != "" {
+		t.Errorf("ports diff (-want +got):\n%s", diff)
+	}
+	if len(p.Spec.PodSelector.MatchLabels) != 0 && len(p.Spec.PodSelector.MatchExpressions) != 0 {
+		t.Errorf("tracing policy must select all pods, got: %+v", p.Spec.PodSelector)
+	}
+	if p.Labels[ManagedByLabel] != "true" {
+		t.Errorf("expected %s=true label, got: %v", ManagedByLabel, p.Labels)
+	}
+}
