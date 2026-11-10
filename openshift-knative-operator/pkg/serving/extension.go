@@ -82,7 +82,11 @@ func (e *extension) Manifests(ks base.KComponent) ([]mf.Manifest, error) {
 	if err != nil {
 		return nil, err
 	}
-	return append(monitoringManifests, istioNetPoliciesManifests...), nil
+	defaultNetworkPoliciesManifests, err := generateDefaultNetworkPolicies(ks)
+	if err != nil {
+		return nil, err
+	}
+	return append(append(monitoringManifests, istioNetPoliciesManifests...), defaultNetworkPoliciesManifests...), nil
 }
 
 func (e *extension) Transformers(ks base.KComponent) []mf.Transformer {
@@ -204,6 +208,14 @@ func (e *extension) Reconcile(ctx context.Context, comp base.KComponent) error {
 	for _, np := range istioWebhookNetworkPolicies(ks) {
 		if _, err := e.kubeclient.NetworkingV1().NetworkPolicies(np.Namespace).Create(ctx, np, metav1.CreateOptions{}); err != nil && !apierrors.IsAlreadyExists(err) {
 			return fmt.Errorf("failed to create NetworkPolicy %s/%s: %w", np.Namespace, np.Name, err)
+		}
+	}
+
+	// When the user opts out of operand NetworkPolicy generation, delete the
+	// previously generated policies instead of freezing them in place.
+	if networkPoliciesDisabled(ks) {
+		if err := deleteNetworkPolicies(ctx, e.kubeclient, ks.GetNamespace()); err != nil {
+			logging.FromContext(ctx).Warnw("Failed to delete operand NetworkPolicies", "namespace", ks.GetNamespace(), "error", err)
 		}
 	}
 
