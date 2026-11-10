@@ -13,7 +13,6 @@ source "$root/hack/lib/__sources__.bash"
 serving_files=(serving-crds serving-core serving-hpa serving-post-install-jobs)
 eventing_files=(eventing-crds.yaml eventing-core.yaml in-memory-channel.yaml mt-channel-broker.yaml eventing-post-install.yaml eventing-tls-networking.yaml)
 eventing_istio_files=(eventing-istio-controller.yaml)
-backstage_plugins_files=(backstage-plugins-eventmesh-backend.yaml)
 
 # This excludes the gateways and peerauthentication settings as we want customers to do
 # manipulate those.
@@ -23,7 +22,6 @@ kourier_files=(net-kourier)
 
 export KNATIVE_EVENTING_MANIFESTS_DIR=${KNATIVE_EVENTING_MANIFESTS_DIR:-""}
 export KNATIVE_EVENTING_ISTIO_MANIFESTS_DIR=${KNATIVE_EVENTING_ISTIO_MANIFESTS_DIR:-""}
-export KNATIVE_BACKSTAGE_PLUGINS_MANIFESTS_DIR=${KNATIVE_BACKSTAGE_PLUGINS_MANIFESTS_DIR:-""}
 export KNATIVE_SERVING_MANIFESTS_DIR=${KNATIVE_SERVING_MANIFESTS_DIR:-""}
 export KNATIVE_SERVING_TEST_MANIFESTS_DIR=${KNATIVE_SERVING_TEST_MANIFESTS_DIR:-""}
 
@@ -128,38 +126,6 @@ function download_eventing_istio {
   done
 }
 
-function download_backstage_plugins {
-  component=$1
-  shift
-
-  files=("$@")
-  echo "Files: ${files[*]}"
-
-  component_dir="$root/openshift-knative-operator/cmd/openshift-knative-operator/kodata/knative-${component}"
-  target_dir="${component_dir}/latest"
-
-  for ((i = 0; i < ${#files[@]}; i++)); do
-    index=$(( i+1 ))
-    file="${files[$i]}"
-    target_file="$target_dir/$index-$file"
-    if [[ ${KNATIVE_BACKSTAGE_PLUGINS_MANIFESTS_DIR} = "" ]]; then
-      if [[ "${USE_RELEASE_NEXT}" == "true" ]]; then
-        branch="release-next"
-      else
-        branch=$(metadata.get dependencies.backstage_plugins_artifacts_branch)
-      fi
-      url="https://raw.githubusercontent.com/openshift-knative/backstage-plugins/${branch}/openshift/release/artifacts/$file"
-      echo "Downloading file from ${url}"
-      wget --no-check-certificate "$url" -O "$target_file"
-    else
-      cp "${KNATIVE_BACKSTAGE_PLUGINS_MANIFESTS_DIR}/${file}" "$target_file"
-    fi
-
-    # Break all image references so we know our overrides work correctly.
-    yaml.break_image_references "$target_file"
-  done
-}
-
 function download_ingress {
   component=$1
   ingress_dir=$2
@@ -248,6 +214,4 @@ download_eventing eventing "${eventing_files[@]}"
 download_eventing_istio eventing "${eventing_istio_files[@]}"
 
 download_eventing_tls_testing_resources "ca-certificate.yaml" "eventing-ca-issuer.yaml" "selfsigned-issuer.yaml"
-
-download_backstage_plugins eventing "${backstage_plugins_files[@]}"
 

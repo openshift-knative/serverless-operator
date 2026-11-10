@@ -348,24 +348,6 @@ function default_knative_ingress_images() {
   export KNATIVE_ISTIO_WEBHOOK=${KNATIVE_ISTIO_WEBHOOK:-$(latest_registry_redhat_io_image_sha "${istio_registry}-webhook:${knative_istio}")}
 }
 
-function knative_backstage_plugins_images() {
-  local backstage_plugins tag app_version
-  tag=${1:?"Provide tag for Backstage plugins images"}
-
-  app_version=$(get_app_version_from_tag "${tag}")
-  backstage_plugins="${registry_prefix_quay}${app_version}/kn-backstage-plugins"
-
-  export KNATIVE_BACKSTAGE_PLUGINS_EVENTMESH=${KNATIVE_BACKSTAGE_PLUGINS_EVENTMESH:-$(latest_registry_redhat_io_image_sha "${backstage_plugins}-eventmesh:${tag}")}
-}
-
-function knative_backstage_plugins_images_release() {
-  knative_backstage_plugins_images "${USE_IMAGE_RELEASE_TAG}"
-}
-
-function default_knative_backstage_plugins_images() {
-  knative_backstage_plugins_images "$(metadata.get dependencies.backstage_plugins)"
-}
-
 function latest_registry_redhat_io_image_sha() {
   input=${1:?"Provide image"}
   return_input_on_empty=${2:-"false"}

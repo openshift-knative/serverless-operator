@@ -9,13 +9,6 @@ metadata:
 spec:
   application: serverless-operator-138
   components:
-    - name: "kn-backstage-plugins-eventmesh-121"
-      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-138/kn-backstage-plugins-eventmesh@sha256:cbeb49032764ecc833bf1d44f5e6ee1a24f1e1da05d4bd1996e1a912f89a7a80"
-      source:
-        git:
-          url: "https://github.com/openshift-knative/backstage-plugins"
-          revision: "db0bf21082b04350699e1550b5813214f19690b2"
-          dockerfileUrl: "openshift/ci-operator/knative-images/eventmesh/Dockerfile"
     - name: "kn-client-cli-artifacts-121"
       containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-138/kn-client-cli-artifacts@sha256:d70dfdac78f216c81958378a168c475107be4a8b7fc5eb91824d1e139120363e"
       source:
