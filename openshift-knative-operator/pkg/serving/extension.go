@@ -87,7 +87,7 @@ func (e *extension) Manifests(ks base.KComponent) ([]mf.Manifest, error) {
 	if err != nil {
 		return nil, err
 	}
-	kourierNetworkPoliciesManifests, err := generateKourierNetworkPolicies(ks)
+	kourierNetworkPoliciesManifests, err := generateKourierNetworkPolicies(ks, e.kubeclient)
 	if err != nil {
 		return nil, err
 	}
@@ -224,6 +224,13 @@ func (e *extension) Reconcile(ctx context.Context, comp base.KComponent) error {
 			if err := networkpolicy.DeleteManaged(ctx, e.kubeclient, ns); err != nil {
 				logging.FromContext(ctx).Warnw("Failed to delete operand NetworkPolicies", "namespace", ns, "error", err)
 			}
+		}
+	} else if kourierIngressEnabled(ks) && parseExtAuthzEndpoint(ks) == nil {
+		// No external authorization service configured: prune a stale
+		// allow-gateway-to-extauthz policy from a previous configuration,
+		// extension manifests are not pruned automatically.
+		if err := deleteExtAuthzNetworkPolicy(ctx, e.kubeclient, kourierNamespace(ks.GetNamespace())); err != nil && !apierrors.IsNotFound(err) {
+			logging.FromContext(ctx).Warnw("Failed to delete stale extauthz NetworkPolicy", "error", err)
 		}
 	}
 

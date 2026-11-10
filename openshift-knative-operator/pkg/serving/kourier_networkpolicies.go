@@ -17,6 +17,7 @@ limitations under the License.
 package serving
 
 import (
+	"context"
 	"net"
 	"strconv"
 	"strings"
@@ -24,6 +25,8 @@ import (
 	mf "github.com/manifestival/manifestival"
 	networkingv1 "k8s.io/api/networking/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/intstr"
+	"k8s.io/client-go/kubernetes"
 	"knative.dev/operator/pkg/apis/operator/base"
 	operatorv1beta1 "knative.dev/operator/pkg/apis/operator/v1beta1"
 
@@ -46,6 +49,9 @@ const (
 	// monitoringPort is the kube-rbac-proxy secure metrics port, matching
 	// the shared builder.
 	monitoringPort int32 = 8444
+
+	// unixMaxPort is the highest registered port number.
+	unixMaxPort = 65535
 )
 
 // generateKourierNetworkPolicies returns the NetworkPolicies for the Kourier
@@ -56,11 +62,19 @@ const (
 // The policies carry the Kourier ingress-provider label, so the
 // overrideKourierNamespace transformer moves them into the Kourier namespace
 // and strips owner references along with the other Kourier resources.
-func generateKourierNetworkPolicies(ks base.KComponent) ([]mf.Manifest, error) {
+//
+// kubeclient is used to resolve the backend port of a configured external
+// authorization service; it may be nil, in which case only the configured
+// service port is allowed.
+func generateKourierNetworkPolicies(ks base.KComponent, kubeclient kubernetes.Interface) ([]mf.Manifest, error) {
 	if networkPoliciesDisabled(ks) || !kourierIngressEnabled(ks) {
 		return nil, nil
 	}
-	return networkpolicy.ToManifests(kourierNetworkPolicies(kourierNamespace(ks.GetNamespace()), parseExtAuthzEndpoint(ks)))
+	extAuthz := parseExtAuthzEndpoint(ks)
+	if extAuthz != nil && kubeclient != nil {
+		extAuthz.resolveBackendPort(kubeclient)
+	}
+	return networkpolicy.ToManifests(kourierNetworkPolicies(kourierNamespace(ks.GetNamespace()), extAuthz))
 }
 
 // kourierIngressEnabled reports whether the Kourier ingress is (or defaults
@@ -144,8 +158,14 @@ func kourierNetworkPolicies(namespace string, extAuthz *extAuthzEndpoint) []netw
 	})
 
 	// Gateway -> configured external authorization service, scoped to its
-	// namespace and port.
+	// namespace and ports (the service port, and the backend port when it
+	// differs: OVN-Kubernetes applies egress policies after service load
+	// balancing).
 	if extAuthz != nil {
+		ports := networkPolicyPorts(networkPolicyPortTCP(extAuthz.port))
+		if extAuthz.backendPort != 0 && extAuthz.backendPort != extAuthz.port {
+			ports = append(ports, networkPolicyPortTCP(extAuthz.backendPort))
+		}
 		policies = append(policies, networkingv1.NetworkPolicy{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "allow-gateway-to-extauthz",
@@ -163,7 +183,7 @@ func kourierNetworkPolicies(namespace string, extAuthz *extAuthzEndpoint) []netw
 							},
 						},
 					}},
-					Ports: networkPolicyPorts(networkPolicyPortTCP(extAuthz.port)),
+					Ports: ports,
 				}},
 			},
 		})
@@ -172,23 +192,54 @@ func kourierNetworkPolicies(namespace string, extAuthz *extAuthzEndpoint) []netw
 	return policies
 }
 
-// extAuthzEndpoint describes a configured Kourier external authorization
-// service (config-kourier extauthz-host) as far as a NetworkPolicy can
-// express it: the namespace of the service and its port.
-type extAuthzEndpoint struct {
-	namespace string
-	port      int32
+// deleteExtAuthzNetworkPolicy removes a stale allow-gateway-to-extauthz
+// policy from the Kourier namespace, used when the external authorization
+// service is no longer configured: extension manifests are not pruned
+// automatically, so the allow would otherwise linger. Only policies carrying
+// the managed-by label are removed.
+func deleteExtAuthzNetworkPolicy(ctx context.Context, kubeclient kubernetes.Interface, namespace string) error {
+	p, err := kubeclient.NetworkingV1().NetworkPolicies(namespace).Get(ctx, "allow-gateway-to-extauthz", metav1.GetOptions{})
+	if err != nil {
+		return err
+	}
+	if p.Labels[networkpolicy.ManagedByLabel] != "true" {
+		// Not ours: leave it alone.
+		return nil
+	}
+	return kubeclient.NetworkingV1().NetworkPolicies(namespace).Delete(ctx, p.Name, metav1.DeleteOptions{})
 }
 
-// extAuthzEndpoint parses the extauthz-host from the config-kourier
-// ConfigMap (via the KnativeServing spec). It returns nil when no rule can
-// be generated: no service configured, a bare service name (same namespace,
+// extAuthzEndpoint describes a configured Kourier external authorization
+// service (config-kourier extauthz-host) as far as a NetworkPolicy can
+// express it: the namespace of the service, its name and the ports to allow.
+type extAuthzEndpoint struct {
+	namespace string
+	// service is the authorization service's name, used to resolve the
+	// backend (targetPort) port.
+	service string
+	// port is the configured service port.
+	port int32
+	// backendPort is the resolved backend port, when it differs from the
+	// service port. OVN-Kubernetes applies egress policies after service
+	// load balancing (post-DNAT), so the backend port must be allowed too.
+	backendPort int32
+}
+
+// parseExtAuthzEndpoint parses the extauthz-host from the Kourier
+// configuration (via the KnativeServing spec). Both the config-kourier and
+// the short kourier key are supported, matching the operator's ConfigMap
+// merge precedence (the full name wins). It returns nil when no rule can be
+// generated: no service configured, a bare service name (same namespace,
 // covered by allow-same-namespace) or an external hostname that cannot be
 // scoped by a namespace selector.
 func parseExtAuthzEndpoint(ks base.KComponent) *extAuthzEndpoint {
 	host := ""
 	if cfg := ks.GetSpec().GetConfig(); cfg != nil {
-		if kourierCfg := cfg["config-kourier"]; kourierCfg != nil {
+		if kourierCfg, ok := cfg["config-kourier"]; ok {
+			host = kourierCfg["extauthz-host"]
+		} else if kourierCfg, ok := cfg["kourier"]; ok {
+			// The "config-" prefix is optional in spec.config, see
+			// common.ConfigMapTransform.
 			host = kourierCfg["extauthz-host"]
 		}
 	}
@@ -211,7 +262,30 @@ func parseExtAuthzEndpoint(ks base.KComponent) *extAuthzEndpoint {
 	if len(labels) < 3 || labels[2] != "svc" {
 		return nil
 	}
-	return &extAuthzEndpoint{namespace: labels[1], port: int32(port)}
+	return &extAuthzEndpoint{namespace: labels[1], service: labels[0], port: int32(port)}
+}
+
+// resolveBackendPort looks up the authorization service and records its
+// backend port (targetPort) when it differs from the service port. Lookups
+// that cannot be resolved (service missing, permission, named targetPort)
+// keep the service port only.
+func (e *extAuthzEndpoint) resolveBackendPort(kubeclient kubernetes.Interface) {
+	svc, err := kubeclient.CoreV1().Services(e.namespace).Get(context.Background(), e.service, metav1.GetOptions{})
+	if err != nil {
+		return
+	}
+	for _, p := range svc.Spec.Ports {
+		if p.Port != e.port || p.TargetPort.Type != intstr.Int {
+			// Named targetPorts cannot be resolved without the pods.
+			continue
+		}
+		if backend := p.TargetPort.IntValue(); backend > 0 && backend <= unixMaxPort {
+			//nolint:gosec // bounded by unixMaxPort above
+			if int32(backend) != e.port {
+				e.backendPort = int32(backend)
+			}
+		}
+	}
 }
 
 // kourierMonitoringPolicy allows the cluster-monitoring prometheus to scrape

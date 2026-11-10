@@ -25,6 +25,7 @@ import (
 	networkingv1 "k8s.io/api/networking/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
+	clientgofake "k8s.io/client-go/kubernetes/fake"
 	k8sscheme "k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/utils/ptr"
 	"knative.dev/operator/pkg/apis/operator/base"
@@ -54,7 +55,7 @@ func kourierServing(annotations map[string]string) *operatorv1beta1.KnativeServi
 // TestGenerateKourierNetworkPolicies pins the complete set of policies
 // generated for the knative-serving-ingress (Kourier) namespace.
 func TestGenerateKourierNetworkPolicies(t *testing.T) {
-	manifests, err := generateKourierNetworkPolicies(kourierServing(nil))
+	manifests, err := generateKourierNetworkPolicies(kourierServing(nil), nil)
 	if err != nil {
 		t.Fatalf("generateKourierNetworkPolicies() returned error: %v", err)
 	}
@@ -96,7 +97,7 @@ func TestGenerateKourierNetworkPolicies(t *testing.T) {
 func TestGenerateKourierNetworkPoliciesDisabled(t *testing.T) {
 	ks := kourierServing(map[string]string{networkpolicy.DisableGenerationAnnotation: "true"})
 
-	manifests, err := generateKourierNetworkPolicies(ks)
+	manifests, err := generateKourierNetworkPolicies(ks, nil)
 	if err != nil {
 		t.Fatalf("generateKourierNetworkPolicies() returned error: %v", err)
 	}
@@ -119,7 +120,7 @@ func TestGenerateKourierNetworkPoliciesSkippedWithoutKourier(t *testing.T) {
 		},
 	}
 
-	manifests, err := generateKourierNetworkPolicies(ks)
+	manifests, err := generateKourierNetworkPolicies(ks, nil)
 	if err != nil {
 		t.Fatalf("generateKourierNetworkPolicies() returned error: %v", err)
 	}
@@ -135,7 +136,7 @@ func TestGenerateKourierNetworkPoliciesSkippedWithoutKourier(t *testing.T) {
 func TestKourierPoliciesNoOwnerRefs(t *testing.T) {
 	ks := kourierServing(nil)
 
-	manifests, err := generateKourierNetworkPolicies(ks)
+	manifests, err := generateKourierNetworkPolicies(ks, nil)
 	if err != nil {
 		t.Fatalf("generateKourierNetworkPolicies() returned error: %v", err)
 	}
@@ -278,10 +279,14 @@ func TestKourierMonitoringPorts(t *testing.T) {
 }
 
 func extAuthzServing(extAuthzHost string) *operatorv1beta1.KnativeServing {
+	return extAuthzServingWithKey("config-kourier", extAuthzHost)
+}
+
+func extAuthzServingWithKey(configKey, extAuthzHost string) *operatorv1beta1.KnativeServing {
 	ks := kourierServing(nil)
 	if extAuthzHost != "" {
 		ks.Spec.CommonSpec.Config = base.ConfigMapData{
-			"config-kourier": map[string]string{
+			configKey: map[string]string{
 				"extauthz-host": extAuthzHost,
 			},
 		}
@@ -295,7 +300,7 @@ func extAuthzServing(extAuthzHost string) *operatorv1beta1.KnativeServing {
 func TestGatewayExtAuthzEgress(t *testing.T) {
 	ks := extAuthzServing("auth.user-namespace.svc:2222")
 
-	manifests, err := generateKourierNetworkPolicies(ks)
+	manifests, err := generateKourierNetworkPolicies(ks, nil)
 	if err != nil {
 		t.Fatalf("generateKourierNetworkPolicies() returned error: %v", err)
 	}
@@ -354,7 +359,7 @@ func TestGatewayExtAuthzEgressAbsent(t *testing.T) {
 		t.Run(c.name, func(t *testing.T) {
 			ks := extAuthzServing(c.extAuthz)
 
-			manifests, err := generateKourierNetworkPolicies(ks)
+			manifests, err := generateKourierNetworkPolicies(ks, nil)
 			if err != nil {
 				t.Fatalf("generateKourierNetworkPolicies() returned error: %v", err)
 			}
@@ -366,5 +371,120 @@ func TestGatewayExtAuthzEgressAbsent(t *testing.T) {
 				}
 			}
 		})
+	}
+}
+
+// TestGatewayExtAuthzEgressShortConfigKey pins that the extauthz
+// configuration is also picked up from the spec.config.kourier short key,
+// which the operator merges into the config-kourier ConfigMap (the
+// "config-" prefix is optional, see ConfigMapTransform).
+func TestGatewayExtAuthzEgressShortConfigKey(t *testing.T) {
+	ks := extAuthzServingWithKey("kourier", "auth.user-namespace.svc:2222")
+
+	manifests, err := generateKourierNetworkPolicies(ks, nil)
+	if err != nil {
+		t.Fatalf("generateKourierNetworkPolicies() returned error: %v", err)
+	}
+	for _, m := range manifests {
+		for _, r := range m.Resources() {
+			if r.GetName() == "allow-gateway-to-extauthz" {
+				return
+			}
+		}
+	}
+	t.Errorf("expected allow-gateway-to-extauthz NetworkPolicy for the spec.config.kourier short key")
+}
+
+// TestGatewayExtAuthzEgressTargetPort pins that the gateway egress covers
+// the authorization service's backend port: OVN-Kubernetes applies egress
+// policies after service load balancing (post-DNAT), so the policy must
+// allow the targetPort, not only the service port.
+func TestGatewayExtAuthzEgressTargetPort(t *testing.T) {
+	ks := extAuthzServing("auth.user-namespace.svc:80")
+
+	kube := clientgofake.NewSimpleClientset(&corev1.Service{
+		ObjectMeta: metav1.ObjectMeta{Name: "auth", Namespace: "user-namespace"},
+		Spec: corev1.ServiceSpec{
+			Ports: []corev1.ServicePort{{
+				Port:       80,
+				TargetPort: intstr.FromInt32(2222),
+			}},
+		},
+	})
+
+	manifests, err := generateKourierNetworkPolicies(ks, kube)
+	if err != nil {
+		t.Fatalf("generateKourierNetworkPolicies() returned error: %v", err)
+	}
+
+	for _, m := range manifests {
+		for _, r := range m.Resources() {
+			if r.GetName() != "allow-gateway-to-extauthz" {
+				continue
+			}
+			p := &networkingv1.NetworkPolicy{}
+			if err := k8sscheme.Scheme.Convert(&r, p, nil); err != nil {
+				t.Fatalf("failed to convert policy: %v", err)
+			}
+			want := []networkingv1.NetworkPolicyPort{
+				{Protocol: ptr.To(corev1.ProtocolTCP), Port: ptr.To(intstr.FromInt32(80))},
+				{Protocol: ptr.To(corev1.ProtocolTCP), Port: ptr.To(intstr.FromInt32(2222))},
+			}
+			if diff := cmp.Diff(want, p.Spec.Egress[0].Ports); diff != "" {
+				t.Errorf("ports diff (-want +got):\n%s", diff)
+			}
+			return
+		}
+	}
+	t.Fatalf("expected allow-gateway-to-extauthz NetworkPolicy")
+}
+
+// TestReconcileDeletesStaleExtAuthzPolicy pins the transition when the
+// external authorization service is removed from the configuration: the
+// previously applied allow-gateway-to-extauthz policy is deleted (extension
+// manifests are not pruned automatically), while an unmanaged policy of the
+// same name survives.
+func TestReconcileDeletesStaleExtAuthzPolicy(t *testing.T) {
+	ks := kourierServing(nil) // no extauthz configured
+
+	ctx, _ := routefake.With(context.Background())
+	ctx, _ = configfake.With(ctx, defaultIngress)
+	ctx, kube := kubefake.With(ctx, &servingNamespace)
+	ext := newFakeExtension(ctx, t)
+
+	kourierNS := kourierNamespace(servingNamespace.Name)
+	managed := networkingv1.NetworkPolicy{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "allow-gateway-to-extauthz",
+			Namespace: kourierNS,
+			Labels:    map[string]string{networkpolicy.ManagedByLabel: "true"},
+		},
+	}
+	// Only one policy per name can exist: seed the managed one and assert
+	// deletion first, then an unmanaged one and assert survival.
+	if _, err := kube.NetworkingV1().NetworkPolicies(kourierNS).Create(context.Background(), &managed, metav1.CreateOptions{}); err != nil {
+		t.Fatalf("failed to seed NetworkPolicy: %v", err)
+	}
+
+	if err := ext.Reconcile(ctx, ks); err != nil {
+		t.Fatalf("Reconcile() returned error: %v", err)
+	}
+
+	if _, err := kube.NetworkingV1().NetworkPolicies(kourierNS).Get(context.Background(), "allow-gateway-to-extauthz", metav1.GetOptions{}); err == nil {
+		t.Errorf("expected managed 'allow-gateway-to-extauthz' NetworkPolicy to be deleted when extauthz is not configured")
+	}
+
+	// An unmanaged policy of the same name must survive the pruning.
+	unmanaged := networkingv1.NetworkPolicy{
+		ObjectMeta: metav1.ObjectMeta{Name: "allow-gateway-to-extauthz", Namespace: kourierNS},
+	}
+	if _, err := kube.NetworkingV1().NetworkPolicies(kourierNS).Create(context.Background(), &unmanaged, metav1.CreateOptions{}); err != nil {
+		t.Fatalf("failed to seed unmanaged NetworkPolicy: %v", err)
+	}
+	if err := ext.Reconcile(ctx, ks); err != nil {
+		t.Fatalf("Reconcile() returned error: %v", err)
+	}
+	if _, err := kube.NetworkingV1().NetworkPolicies(kourierNS).Get(context.Background(), "allow-gateway-to-extauthz", metav1.GetOptions{}); err != nil {
+		t.Errorf("expected unmanaged 'allow-gateway-to-extauthz' NetworkPolicy to survive, got: %v", err)
 	}
 }
