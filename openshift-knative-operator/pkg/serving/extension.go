@@ -86,7 +86,11 @@ func (e *extension) Manifests(ks base.KComponent) ([]mf.Manifest, error) {
 	if err != nil {
 		return nil, err
 	}
-	return append(append(monitoringManifests, istioNetPoliciesManifests...), defaultNetworkPoliciesManifests...), nil
+	kourierNetworkPoliciesManifests, err := generateKourierNetworkPolicies(ks)
+	if err != nil {
+		return nil, err
+	}
+	return append(append(append(monitoringManifests, istioNetPoliciesManifests...), defaultNetworkPoliciesManifests...), kourierNetworkPoliciesManifests...), nil
 }
 
 func (e *extension) Transformers(ks base.KComponent) []mf.Transformer {
@@ -214,8 +218,10 @@ func (e *extension) Reconcile(ctx context.Context, comp base.KComponent) error {
 	// When the user opts out of operand NetworkPolicy generation, delete the
 	// previously generated policies instead of freezing them in place.
 	if networkPoliciesDisabled(ks) {
-		if err := deleteNetworkPolicies(ctx, e.kubeclient, ks.GetNamespace()); err != nil {
-			logging.FromContext(ctx).Warnw("Failed to delete operand NetworkPolicies", "namespace", ks.GetNamespace(), "error", err)
+		for _, ns := range []string{ks.GetNamespace(), kourierNamespace(ks.GetNamespace())} {
+			if err := deleteNetworkPolicies(ctx, e.kubeclient, ns); err != nil {
+				logging.FromContext(ctx).Warnw("Failed to delete operand NetworkPolicies", "namespace", ns, "error", err)
+			}
 		}
 	}
 
