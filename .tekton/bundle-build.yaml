@@ -17,10 +17,6 @@ spec:
     description: Add built image into an OCI image index
     name: build-image-index
     type: string
-  - default: --all-projects --org=3e1a4cca-ebfb-495f-b64c-3cc960d566b4 --exclude=test*,vendor,third_party
-    description: Append arguments to Snyk code command.
-    name: snyk-args
-    type: string
   - default: "true"
     description: Build a source image.
     name: build-source-image
@@ -174,8 +170,6 @@ spec:
       resolver: bundles
   - name: sast-snyk-check
     params:
-    - name: ARGS
-      value: $(params.snyk-args)
     - name: image-digest
       value: $(tasks.build-image-index.results.IMAGE_DIGEST)
     - name: image-url
