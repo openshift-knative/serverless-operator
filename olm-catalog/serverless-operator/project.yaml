@@ -90,10 +90,6 @@ dependencies:
   eventing_istio: knative-v1.21
   # eventing-istio midstream branch or commit
   eventing_istio_artifacts_branch: release-v1.21
-  # backstage-plugins promotion tag
-  backstage_plugins: knative-v1.21
-  # backstage-plugins midstream branch or commit
-  backstage_plugins_artifacts_branch: release-v1.21
   cli: knative-v1.21
   kube_rbac_proxy: registry.redhat.io/openshift5/ose-kube-rbac-proxy-rhel9@sha256:35e642296198602070774681bc340e9dd835f0116fd2a1ab275cab9ecf95a6a0
   func:
