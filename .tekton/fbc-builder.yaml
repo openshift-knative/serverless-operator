@@ -13,19 +13,6 @@ spec:
     _Uses `buildah` to create a container image. Its build-time tests are limited to verifying the included catalog and do not scan the image.
     This pipeline is pushed as a Tekton bundle to [quay.io](https://quay.io/repository/konflux-ci/tekton-catalog/pipeline-fbc-builder?tab=tags)_
   params:
-  - default:
-    - linux/x86_64
-    - linux/arm64
-    - linux/ppc64le
-    - linux/s390x
-    description: List of platforms to build the container images on. The available
-      set of values is determined by the configuration of the multi-platform-controller.
-    name: build-platforms
-    type: array
-  - default: "true"
-    description: Build a source image.
-    name: build-source-image
-    type: string
   - default: []
     description: Array of opm command arguments
     name: opm-args
@@ -84,6 +71,10 @@ spec:
       2d, 3w for hours, days, and weeks, respectively.
     name: image-expires-after
     type: string
+  - default: "false"
+    description: Build a source image.
+    name: build-source-image
+    type: string
   - default: "true"
     description: Add built image into an OCI image index
     name: build-image-index
@@ -123,6 +114,12 @@ spec:
       etc.) from the resulting image.
     name: omit-history
     type: string
+  - default:
+    - linux/x86_64
+    description: List of platforms to build the container images on. The available
+      set of values is determined by the configuration of the multi-platform-controller.
+    name: build-platforms
+    type: array
   results:
   - description: ""
     name: IMAGE_URL
