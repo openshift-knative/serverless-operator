@@ -37,6 +37,8 @@ spec:
       value: '{{source_url}}'
     - name: hermetic
       value: "true"
+    - name: build-source-image
+      value: "true"
     - name: image-expires-after
       value: 5d
     - name: output-image
