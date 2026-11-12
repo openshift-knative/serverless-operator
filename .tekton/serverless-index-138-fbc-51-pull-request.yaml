@@ -1,0 +1,69 @@
+apiVersion: tekton.dev/v1
+kind: PipelineRun
+metadata:
+  annotations:
+    build.appstudio.openshift.io/repo: https://github.com/openshift-knative/serverless-operator?rev={{revision}}
+    build.appstudio.redhat.com/commit_sha: '{{revision}}'
+    build.appstudio.redhat.com/pull_request_number: '{{pull_request_number}}'
+    build.appstudio.redhat.com/target_branch: '{{target_branch}}'
+    pipelinesascode.tekton.dev/max-keep-runs: "3"
+    pipelinesascode.tekton.dev/on-cel-expression: event == "pull_request" && target_branch == "main" && ( files.all.exists(x, x.matches('^olm-catalog/serverless-operator-index/v5.1/')) || files.all.exists(x, x.matches('^.tekton/')) )
+  creationTimestamp: null
+  labels:
+    appstudio.openshift.io/application: serverless-operator-138-fbc-51
+    appstudio.openshift.io/component: serverless-index-138-fbc-51
+    pipelines.appstudio.openshift.io/type: build
+  name: serverless-index-138-fbc-51-on-pull-request
+  namespace: ocp-serverless-tenant
+spec:
+  params:
+    - name: dockerfile
+      value: Dockerfile
+    - name: path-context
+      value: ./olm-catalog/serverless-operator-index/v5.1
+    - name: build-args
+      value:
+        - VERSION=1.38.0
+        - TAG=v1.21.0
+        - CLI_ARTIFACTS=registry.redhat.io/openshift4/ose-cli-artifacts-rhel9:v4.16
+        - GO_BUILDER=registry.redhat.io/openshift/golang-builder:golang-builder-v1.26-rhel9
+        - GO_RUNTIME=registry.access.redhat.com/ubi9/ubi-minimal
+        - JAVA_BUILDER=registry.access.redhat.com/ubi9/openjdk-21
+        - JAVA_RUNTIME=registry.access.redhat.com/ubi9/openjdk-21-runtime
+        - NODE_BUILDER=registry.access.redhat.com/ubi9/nodejs-24
+        - NODE_RUNTIME=registry.access.redhat.com/ubi9/nodejs-24
+        - OPM_IMAGE=registry.redhat.io/openshift5/ose-operator-registry-rhel9:v5.1
+    - name: git-url
+      value: '{{source_url}}'
+    - name: hermetic
+      value: "true"
+    - name: build-source-image
+      value: "true"
+    - name: image-expires-after
+      value: 5d
+    - name: output-image
+      value: quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-138-fbc-51/serverless-index-138-fbc-51:on-pr-{{revision}}
+    - name: build-platforms
+      value:
+        - linux/x86_64
+    - name: revision
+      value: '{{revision}}'
+    - name: opm-args
+      value:
+        - alpha
+        - render-template
+        - basic
+        - "olm-catalog/serverless-operator-index/v5.1/catalog-template.yaml"
+        - --migrate-level=bundle-object-to-csv-metadata
+    - name: opm-output-path
+      value: olm-catalog/serverless-operator-index/v5.1/catalog/serverless-operator/catalog.json
+    - name: file-to-update-pullspec
+      value: olm-catalog/serverless-operator-index/v5.1/catalog/serverless-operator/catalog.json
+  pipelineRef:
+    name: fbc-builder
+  taskRunTemplate:
+    serviceAccountName: build-pipeline-serverless-index-138-fbc-51
+  workspaces:
+    - name: git-auth
+      secret:
+        secretName: '{{ git_auth_secret }}'

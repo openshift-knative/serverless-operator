@@ -13,18 +13,6 @@ spec:
     _Uses `buildah` to create a container image. Its build-time tests are limited to verifying the included catalog and do not scan the image.
     This pipeline is pushed as a Tekton bundle to [quay.io](https://quay.io/repository/konflux-ci/tekton-catalog/pipeline-fbc-builder?tab=tags)_
   params:
-  - default:
-    - linux/x86_64
-    - linux/arm64
-    - linux/ppc64le
-    - linux/s390x
-    description: List of platforms to build the container images on. The available set of values is determined by the configuration of the multi-platform-controller.
-    name: build-platforms
-    type: array
-  - default: "true"
-    description: Build a source image.
-    name: build-source-image
-    type: string
   - default: []
     description: Array of opm command arguments
     name: opm-args
@@ -34,7 +22,8 @@ spec:
     name: opm-output-path
     type: string
   - default: ""
-    description: Optional. Relative path to a file (e.g., catalog-template.yml) in which pullspecs should be updated before running opm.
+    description: Optional. Relative path to a file (e.g., catalog-template.yml) in
+      which pullspecs should be updated before running opm.
     name: file-to-update-pullspec
     type: string
   - default: .tekton/images-mirror-set.yaml
@@ -56,11 +45,13 @@ spec:
     name: output-image
     type: string
   - default: .
-    description: Path to the source code of an application's component from where to build image.
+    description: Path to the source code of an application's component from where
+      to build image.
     name: path-context
     type: string
   - default: Dockerfile
-    description: Path to the Dockerfile inside the context specified by parameter path-context
+    description: Path to the Dockerfile inside the context specified by parameter
+      path-context
     name: dockerfile
     type: string
   - default: "false"
@@ -76,8 +67,13 @@ spec:
     name: prefetch-input
     type: string
   - default: ""
-    description: Image tag expiration time, time values could be something like 1h, 2d, 3w for hours, days, and weeks, respectively.
+    description: Image tag expiration time, time values could be something like 1h,
+      2d, 3w for hours, days, and weeks, respectively.
     name: image-expires-after
+    type: string
+  - default: "false"
+    description: Build a source image.
+    name: build-source-image
     type: string
   - default: "true"
     description: Add built image into an OCI image index
@@ -90,7 +86,8 @@ spec:
     description: Use the package registry proxy when prefetching dependencies
     name: enable-package-registry-proxy
   - default: .
-    description: Target directories in component's source code to scan with SAST tools. Multiple values should be separated with commas.
+    description: Target directories in component's source code to scan with SAST tools.
+      Multiple values should be separated with commas.
     name: sast-target-dirs
     type: string
   - default: []
@@ -102,17 +99,27 @@ spec:
     name: build-args-file
     type: string
   - default: ""
-    description: Sets the image created time and the SOURCE_DATE_EPOCH build argument. On its own, it does not change file timestamps inside the layers (set rewrite-timestamp to "true" for that). Leave empty to keep the actual build time.
+    description: Sets the image created time and the SOURCE_DATE_EPOCH build argument.
+      On its own, it does not change file timestamps inside the layers (set rewrite-timestamp
+      to "true" for that). Leave empty to keep the actual build time.
     name: source-date-epoch
     type: string
   - default: "false"
-    description: When "true", clamp file modification times in the image layers to at most source-date-epoch. Does nothing unless source-date-epoch is set.
+    description: When "true", clamp file modification times in the image layers to
+      at most source-date-epoch. Does nothing unless source-date-epoch is set.
     name: rewrite-timestamp
     type: string
   - default: "false"
-    description: When "true", omit the build history (history timestamps, layer metadata, etc.) from the resulting image.
+    description: When "true", omit the build history (history timestamps, layer metadata,
+      etc.) from the resulting image.
     name: omit-history
     type: string
+  - default:
+    - linux/x86_64
+    description: List of platforms to build the container images on. The available
+      set of values is determined by the configuration of the multi-platform-controller.
+    name: build-platforms
+    type: array
   results:
   - description: ""
     name: IMAGE_URL
@@ -305,10 +312,10 @@ spec:
       value: $(params.omit-history)
     - name: SOURCE_ARTIFACT
       value: $(tasks.prefetch-dependencies.results.SOURCE_ARTIFACT)
-    - name: IMAGE_APPEND_PLATFORM
-      value: "true"
     - name: PREFETCH_ARTIFACT
       value: $(tasks.prefetch-dependencies.results.PREFETCH_ARTIFACT)
+    - name: IMAGE_APPEND_PLATFORM
+      value: "true"
     runAfter:
     - clone-repository
     taskRef:
