@@ -6,8 +6,8 @@ project:
   # Also make sure to update values under `olm.previous` by copying from `olm.replaces` and `olm.skipRange`.
   version: 1.38.0
 olm:
-  replaces: 1.37.2
-  skipRange: '>1.37.2 <1.38.0'
+  replaces: 1.37.3
+  skipRange: '>1.37.3 <1.38.0'
   channels:
     # The "global" operator default, used as "operators.operatorframework.io.bundle.channels.v1" annotation
     operator_default: stable
@@ -18,6 +18,9 @@ olm:
       - stable-1.38
   previousBundles:
     # List of previous bundles to add to the generated index, also used in upgrade tests
+    - version: 1.37.3
+      replaces: 1.37.2
+      skipRange: ">1.37.2 <1.37.3"
     - version: 1.37.2
       replaces: 1.37.1
       skipRange: ">1.37.1 <1.37.2"
