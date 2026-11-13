@@ -77,7 +77,7 @@ dependencies:
   net_istio: knative-v1.21
   net_istio_artifacts_branch: release-v1.21
   redhat-knative-istio-authz-chart: 1.37.0
-  service_mesh_proxy: registry.redhat.io/openshift-service-mesh/proxyv2-rhel9@sha256:d99177ece0e27ee6be71eb73ac4c31b837cafb850efd74043d2b3d03189e662d
+  service_mesh_proxy: registry.redhat.io/openshift-service-mesh/proxyv2-rhel9@sha256:f342f06f4ebdbad82d5bcd8c287f0edaf627703442dbda7238adde13349bb893
   eventing: knative-v1.21
   # eventing core midstream branch name
   eventing_artifacts_branch: release-v1.21
@@ -94,14 +94,14 @@ dependencies:
   # eventing-istio midstream branch or commit
   eventing_istio_artifacts_branch: release-v1.21
   cli: knative-v1.21
-  kube_rbac_proxy: registry.redhat.io/openshift5/ose-kube-rbac-proxy-rhel9@sha256:35e642296198602070774681bc340e9dd835f0116fd2a1ab275cab9ecf95a6a0
+  kube_rbac_proxy: registry.redhat.io/openshift5/ose-kube-rbac-proxy-rhel9@sha256:2b238541cb39357dcde3a00323e555c0e0150d7584f6703daba4a9311d6abc79
   func:
     promotion_tag: knative-v1.21
     # if additional image is added amend the list in hack/generate/dependencies.sh
-    tekton_buildah: registry.redhat.io/rhel9/buildah@sha256:a6f8842c45cf0c821c6e7055415ad035a41dbde8597c26a58e032b7cbcee595c
-    nodejs_20_minimal: registry.access.redhat.com/ubi9/nodejs-20-minimal@sha256:714ca1c5e1350d28c0fa896675323d9d4f7c133420c699bb95b3326783b769fb
-    openjdk_21: registry.access.redhat.com/ubi9/openjdk-21@sha256:78b159c0db6eb947775ad682a04dbe5cea07c16d8f5635ddd94b6cf468ab8577
-    python-39: registry.access.redhat.com/ubi9/python-39@sha256:6858f39fd97263227a10d0b79f098c22204b2f94a6062de465c0a31cc4040c0f
+    tekton_buildah: registry.redhat.io/rhel9/buildah@sha256:c051b9220a4c348e8c28c7d7d1ff376f5f32e916e5587a057677be74234504e8
+    nodejs_20_minimal: registry.access.redhat.com/ubi9/nodejs-20-minimal@sha256:87f2eb0ce06e922a7629fa94fad62ed4e6be05931852b779269e0692282a099e
+    openjdk_21: registry.access.redhat.com/ubi9/openjdk-21@sha256:4daa3f2fa0f2f64cc7732dca63ef1ed7c53ff4883cc18571d6f8eca7a8458b46
+    python-39: registry.access.redhat.com/ubi9/python-39@sha256:447a4c9f6ead4f063bed8778793ac9e972004e5a55d103b375de83c885887e50
   operator: 1.21.0
   # Previous versions required for downgrade testing
   previous:
