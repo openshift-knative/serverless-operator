@@ -72,9 +72,12 @@ entries:
       - name: serverless-operator.v1.37.2
         replaces: serverless-operator.v1.37.1
         skipRange: '>1.37.1 <1.37.2'
-      - name: serverless-operator.v1.38.0
+      - name: serverless-operator.v1.37.3
         replaces: serverless-operator.v1.37.2
-        skipRange: '>1.37.2 <1.38.0'
+        skipRange: '>1.37.2 <1.37.3'
+      - name: serverless-operator.v1.38.0
+        replaces: serverless-operator.v1.37.3
+        skipRange: '>1.37.3 <1.38.0'
     name: stable
     package: serverless-operator
     schema: olm.channel
@@ -684,9 +687,12 @@ entries:
       - name: serverless-operator.v1.37.2
         replaces: serverless-operator.v1.37.1
         skipRange: '>1.37.1 <1.37.2'
-      - name: serverless-operator.v1.38.0
+      - name: serverless-operator.v1.37.3
         replaces: serverless-operator.v1.37.2
-        skipRange: '>1.37.2 <1.38.0'
+        skipRange: '>1.37.2 <1.37.3'
+      - name: serverless-operator.v1.38.0
+        replaces: serverless-operator.v1.37.3
+        skipRange: '>1.37.3 <1.38.0'
     name: stable-1.38
     package: serverless-operator
     schema: olm.channel
