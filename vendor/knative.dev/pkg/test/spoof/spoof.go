@@ -165,7 +165,7 @@ func (sc *SpoofingClient) Do(req *http.Request, errorRetryCheckers ...interface{
 // If no retry checkers are specified `DefaultErrorRetryChecker` will be used.
 func (sc *SpoofingClient) Poll(req *http.Request, inState ResponseChecker, checkers ...interface{}) (*Response, error) {
 	if len(checkers) == 0 {
-		checkers = []interface{}{ErrorRetryChecker(DefaultErrorRetryChecker), ResponseRetryChecker(DefaultResponseRetryChecker)}
+		checkers = []interface{}{ErrorRetryChecker(DefaultErrorRetryChecker), ResponseRetryChecker(DefaultResponseRetryChecker), ResponseRetryChecker(RouteInconsistencyRetryChecker)}
 	}
 
 	var resp *Response
@@ -214,7 +214,12 @@ func (sc *SpoofingClient) Poll(req *http.Request, inState ResponseChecker, check
 			}
 		}
 
-		return inState(resp)
+		done, inStateErr := inState(resp)
+		if !done && inStateErr != nil && isMeshProxyResponse(resp) {
+			sc.Logf("Retrying %s: mesh proxy may be serving stale content: %v", req.URL.String(), inStateErr)
+			return false, nil
+		}
+		return done, inStateErr
 	})
 	if err != nil {
 		return resp, fmt.Errorf("response: %s did not pass checks: %w", resp, err)
@@ -246,6 +251,9 @@ func DefaultErrorRetryChecker(err error) (bool, error) {
 	// are usually transient.
 	if isNoRouteToHostError(err) {
 		return true, fmt.Errorf("retrying for 'no route to host' error: %w", err)
+	}
+	if isUnknownAuthority(err) {
+		return true, fmt.Errorf("retrying for certificate signed by unknown authority: %w", err)
 	}
 	return false, err
 }
