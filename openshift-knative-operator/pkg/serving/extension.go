@@ -11,6 +11,7 @@ import (
 	mf "github.com/manifestival/manifestival"
 	"github.com/openshift-knative/serverless-operator/openshift-knative-operator/pkg/common"
 	"github.com/openshift-knative/serverless-operator/openshift-knative-operator/pkg/monitoring"
+	"github.com/openshift-knative/serverless-operator/openshift-knative-operator/pkg/networkpolicy"
 	socommon "github.com/openshift-knative/serverless-operator/pkg/common"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -18,6 +19,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/tools/cache"
@@ -33,6 +35,8 @@ import (
 
 	configinjection "github.com/openshift-knative/serverless-operator/pkg/client/config/injection/client"
 	routeinjection "github.com/openshift-knative/serverless-operator/pkg/client/route/injection/client"
+	knativeservinginformer "knative.dev/operator/pkg/client/injection/informers/operator/v1beta1/knativeserving"
+	serviceinformer "knative.dev/pkg/client/injection/kube/informers/core/v1/service"
 
 	configclient "github.com/openshift/client-go/config/clientset/versioned"
 	routeclient "github.com/openshift/client-go/route/clientset/versioned"
@@ -60,6 +64,39 @@ func NewExtension(ctx context.Context, impl *controller.Impl) operator.Extension
 		Handler:    controller.HandleAll(impl.EnqueueLabelOfNamespaceScopedResource(socommon.ServingOwnerNamespace, socommon.ServingOwnerName)),
 	})
 
+	// The operand NetworkPolicies for a configured Kourier external
+	// authorization service depend on that Service (its ports, and whether
+	// it exists at all), so changes to it must re-reconcile the owning
+	// KnativeServing.
+	serviceInformer := serviceinformer.Get(ctx)
+	knativeServingLister := knativeservinginformer.Get(ctx).Lister()
+	serviceInformer.Informer().AddEventHandler(cache.FilteringResourceEventHandler{
+		FilterFunc: func(obj interface{}) bool {
+			svc, ok := obj.(*corev1.Service)
+			if !ok {
+				return false
+			}
+			knativeServings, err := knativeServingLister.List(labels.Everything())
+			if err != nil {
+				return false
+			}
+			return len(knativeServingsForExtAuthzService(knativeServings, svc.Namespace, svc.Name)) > 0
+		},
+		Handler: controller.HandleAll(func(obj interface{}) {
+			svc, ok := obj.(*corev1.Service)
+			if !ok {
+				return
+			}
+			knativeServings, err := knativeServingLister.List(labels.Everything())
+			if err != nil {
+				return
+			}
+			for _, key := range knativeServingsForExtAuthzService(knativeServings, svc.Namespace, svc.Name) {
+				impl.EnqueueKey(key)
+			}
+		}),
+	})
+
 	return &extension{
 		routeClient:  routeinjection.Get(ctx),
 		configClient: configinjection.Get(ctx),
@@ -82,7 +119,15 @@ func (e *extension) Manifests(ks base.KComponent) ([]mf.Manifest, error) {
 	if err != nil {
 		return nil, err
 	}
-	return append(monitoringManifests, istioNetPoliciesManifests...), nil
+	defaultNetworkPoliciesManifests, err := generateDefaultNetworkPolicies(ks)
+	if err != nil {
+		return nil, err
+	}
+	kourierNetworkPoliciesManifests, err := generateKourierNetworkPolicies(ks, e.kubeclient)
+	if err != nil {
+		return nil, err
+	}
+	return append(append(append(monitoringManifests, istioNetPoliciesManifests...), defaultNetworkPoliciesManifests...), kourierNetworkPoliciesManifests...), nil
 }
 
 func (e *extension) Transformers(ks base.KComponent) []mf.Transformer {
@@ -207,6 +252,24 @@ func (e *extension) Reconcile(ctx context.Context, comp base.KComponent) error {
 		}
 	}
 
+	// When the user opts out of operand NetworkPolicy generation (or moves
+	// to the Istio ingress, where they are not generated), delete the
+	// previously generated policies instead of freezing them in place.
+	if operandNetworkPoliciesDisabled(ks) {
+		for _, ns := range []string{ks.GetNamespace(), kourierNamespace(ks.GetNamespace())} {
+			if err := networkpolicy.DeleteManaged(ctx, e.kubeclient, ns); err != nil {
+				logging.FromContext(ctx).Warnw("Failed to delete operand NetworkPolicies", "namespace", ns, "error", err)
+			}
+		}
+	} else if kourierIngressEnabled(ks) && parseExtAuthzEndpoint(ks) == nil {
+		// No external authorization service configured: prune a stale
+		// allow-gateway-to-extauthz policy from a previous configuration,
+		// extension manifests are not pruned automatically.
+		if err := deleteExtAuthzNetworkPolicy(ctx, e.kubeclient, kourierNamespace(ks.GetNamespace())); err != nil && !apierrors.IsNotFound(err) {
+			logging.FromContext(ctx).Warnw("Failed to delete stale extauthz NetworkPolicy", "error", err)
+		}
+	}
+
 	if !oldResourceRemoved.Load() {
 		if err := e.cleanupOldResources(ctx, ks.GetNamespace()); err != nil {
 			return err
@@ -217,10 +280,19 @@ func (e *extension) Reconcile(ctx context.Context, comp base.KComponent) error {
 	return monitoring.ReconcileMonitoringForServing(ctx, e.kubeclient, ks)
 }
 
-func (e *extension) Finalize(_ context.Context, comp base.KComponent) error {
+func (e *extension) Finalize(ctx context.Context, comp base.KComponent) error {
 	ks := comp.(*operatorv1beta1.KnativeServing)
 	// Also default to Kourier here to pick the right manifest to uninstall.
 	defaultToKourier(ks)
+
+	// The operand NetworkPolicies are extension manifests, which the
+	// uninstall stage does not remove; the Kourier-namespace ones carry no
+	// owner references, so clean them up explicitly.
+	for _, ns := range []string{ks.GetNamespace(), kourierNamespace(ks.GetNamespace())} {
+		if err := networkpolicy.DeleteManaged(ctx, e.kubeclient, ns); err != nil {
+			logging.FromContext(ctx).Warnw("Failed to delete operand NetworkPolicies on finalize", "namespace", ns, "error", err)
+		}
+	}
 	return nil
 }
 
