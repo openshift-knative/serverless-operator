@@ -11,8 +11,33 @@ if [[ "$(uname -s)" == "Darwin" ]]; then
   podman_platform_flags="--platform linux/amd64"
 fi
 
+# Extracts the serverless-operator package catalog of the given OCP version's
+# published index image into the catalog_tmp_dir and echoes its canonical form
+# (sorted keys and entries; the raw files can differ in ordering between index
+# builds) for comparisons.
+function extract_catalog {
+  local ocp_version="${1:?Pass OCP version as arg[1]}"
+
+  # The index images are file-based catalogs (label
+  # operators.operatorframework.io/index.configs.v1=/configs) with one pre-rendered
+  # declcfg per operator. Cat our package's file straight out of the image instead of
+  # `opm migrate`, which pulls and re-renders every operator in the index (~2min per
+  # OCP version). Registry auth is shared: skopeo login above writes the common
+  # containers auth.json, which podman reads as well.
+  # shellcheck disable=SC2086
+  podman run --pull always --rm ${podman_platform_flags} --entrypoint cat \
+    "registry.redhat.io/redhat/redhat-operator-index:v${ocp_version}" \
+    /configs/serverless-operator/catalog.json > "${catalog_tmp_dir}/catalog-${ocp_version}.json"
+
+  jq -S -s 'map(if .schema == "olm.channel" then (.entries |= sort_by(.name)) else . end)
+    | sort_by(.schema // "", .name // "")' \
+    "${catalog_tmp_dir}/catalog-${ocp_version}.json"
+}
+
 function generate_catalog {
-  local root_dir index_dir catalog_template
+  local root_dir index_dir catalog_template catalog_tmp_dir
+  local -a ocp_versions
+  local i ocp_version matched_version
 
   if [[ -n "${REGISTRY_REDHAT_IO_USERNAME:-}" ]] || [[ -n "${REGISTRY_REDHAT_IO_PASSWORD:-}" ]]; then
     skopeo login registry.redhat.io -u "${REGISTRY_REDHAT_IO_USERNAME}" -p "${REGISTRY_REDHAT_IO_PASSWORD}"
@@ -23,46 +48,71 @@ function generate_catalog {
   root_dir="$(dirname "$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")")"
   index_dir="${root_dir}/olm-catalog/serverless-operator-index"
 
-  while IFS=$'\n' read -r ocp_version; do
-    logger.info "Generating catalog for OCP ${ocp_version}"
+  # The serverless-operator package content is identical in the published index
+  # of every GA OCP version, so a single shared catalog template is generated
+  # instead of one per OCP version. The last version in the OCP version list is
+  # the pre-release GA version, whose published index can temporarily lag
+  # behind during release rollouts, so it is skipped as a source. The catalogs
+  # of the versions before it are extracted pairwise, newest pair first
+  # (last-1 vs last-2, then last-2 vs last-3, ...), and the first pair whose
+  # catalogs match settles the result: their common content is the latest GA
+  # catalog, used for the template. The per-OCP-version Dockerfiles
+  # (olm-catalog/serverless-operator-index/v*/) are kept: they pin the
+  # operator-registry base image per OCP version.
+  catalog_template="${index_dir}/catalog-template.yaml"
+  catalog_tmp_dir=$(mktemp -d)
 
-    catalog_tmp_dir=$(mktemp -d)
+  # All supported OCP versions except the last (pre-release GA) one
+  mapfile -t ocp_versions < <(metadata.get 'requirements.ocpVersion.list[*]' | sed '$d')
+  # OCP 5.0 is built from the same code stream as OCP 4.23, so their published
+  # indexes are identical by construction and comparing them would not be an
+  # independent confirmation. Skip 4.23 in the comparison chain (compare 5.0
+  # with 4.22 directly). Later 5.x versions have no 4.x twin, so the chain
+  # (5.1 vs 5.0, 5.0 vs 4.22, ...) keeps working as the version list grows.
+  mapfile -t ocp_versions < <(printf '%s\n' "${ocp_versions[@]}" | sed '/^4\.23$/d')
+  if ((${#ocp_versions[@]} < 2)); then
+    logger.error "Need at least 2 GA OCP versions to generate the catalog template"
+    exit 1
+  fi
 
-    mkdir -p "${index_dir}/v${ocp_version}/catalog/serverless-operator"
-
-    catalog_template="${index_dir}/v${ocp_version}/catalog-template.yaml"
-
-    # The index images are file-based catalogs (label
-    # operators.operatorframework.io.index.configs.v1=/configs) with one pre-rendered
-    # declcfg per operator. Cat our package's file straight out of the image instead of
-    # `opm migrate`, which pulls and re-renders every operator in the index (~2min per
-    # OCP version). Registry auth is shared: skopeo login above writes the common
-    # containers auth.json, which podman reads as well.
-    # shellcheck disable=SC2086
-    podman run --pull always --rm ${podman_platform_flags} --entrypoint cat \
-      "registry.redhat.io/redhat/redhat-operator-index:v${ocp_version}" \
-      /configs/serverless-operator/catalog.json > "${catalog_tmp_dir}/catalog.json"
-
-    # Generate simplified template
-    opm alpha convert-template basic "${catalog_tmp_dir}/catalog.json" -oyaml \
-      > "${catalog_template}"
-
-    while IFS=$'\n' read -r channel; do
-      add_channel "${catalog_template}" "$channel"
-      # Also add previous version for cases when it was not released yet
-
-      add_channel "${catalog_template}" "$channel" "$(metadata.get 'olm.replaces')"
-    done < <(metadata.get 'olm.channels.list[*]')
-
-    level=none
-    # For 4.17 and newer the olm.bundle.object must be converted to olm.csv.metadata
-    # See https://github.com/konflux-ci/build-definitions/blob/main/task/fbc-validation/0.1/USAGE.md#bundle-metadata-in-the-appropriate-format.
-    if versions.ge "$ocp_version" "4.17" ; then
-      level="bundle-object-to-csv-metadata"
+  matched_version=""
+  # Walk the pairs from the newest one downwards until the extracted catalogs match
+  for ((i = ${#ocp_versions[@]} - 1; i >= 1; i--)); do
+    if [[ ! -f "${catalog_tmp_dir}/canonical-${ocp_versions[i]}.json" ]]; then
+      logger.info "Extracting catalog for OCP ${ocp_versions[i]}"
+      extract_catalog "${ocp_versions[i]}" > "${catalog_tmp_dir}/canonical-${ocp_versions[i]}.json"
+    fi
+    if [[ ! -f "${catalog_tmp_dir}/canonical-${ocp_versions[i - 1]}.json" ]]; then
+      logger.info "Extracting catalog for OCP ${ocp_versions[i - 1]}"
+      extract_catalog "${ocp_versions[i - 1]}" > "${catalog_tmp_dir}/canonical-${ocp_versions[i - 1]}.json"
     fi
 
-    rm -rf "${catalog_tmp_dir}"
-  done < <(metadata.get 'requirements.ocpVersion.list[*]')
+    if cmp -s "${catalog_tmp_dir}/canonical-${ocp_versions[i]}.json" \
+      "${catalog_tmp_dir}/canonical-${ocp_versions[i - 1]}.json"; then
+      matched_version="${ocp_versions[i]}"
+      logger.info "Catalogs of OCP ${ocp_versions[i]} and ${ocp_versions[i - 1]} match, using OCP ${matched_version} as source"
+      break
+    fi
+    logger.warn "Catalogs of OCP ${ocp_versions[i]} and ${ocp_versions[i - 1]} differ, trying older versions"
+  done
+
+  if [[ -z "${matched_version}" ]]; then
+    logger.error "No two consecutive OCP versions have a matching serverless-operator catalog, aborting"
+    exit 1
+  fi
+
+  # Generate simplified template
+  opm alpha convert-template basic "${catalog_tmp_dir}/catalog-${matched_version}.json" -oyaml \
+    > "${catalog_template}"
+
+  while IFS=$'\n' read -r channel; do
+    add_channel "${catalog_template}" "$channel"
+    # Also add previous version for cases when it was not released yet
+
+    add_channel "${catalog_template}" "$channel" "$(metadata.get 'olm.replaces')"
+  done < <(metadata.get 'olm.channels.list[*]')
+
+  rm -rf "${catalog_tmp_dir}"
 }
 
 function add_channel {
