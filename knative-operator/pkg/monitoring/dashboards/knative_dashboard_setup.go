@@ -19,7 +19,7 @@ import (
 
 var log = common.Log.WithName("dashboard")
 
-const ConfigManagedNamespace = "openshift-config-managed"
+const ConfigManagedNamespace = common.ConfigManagedNamespace
 const DashboardsManifestPathEnvVar = "DASHBOARDS_ROOT_MANIFEST_PATH"
 
 // Apply applies dashboard resources under the manifestSubPath directory.
