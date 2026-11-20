@@ -33,8 +33,16 @@ spec:
       value: '{{source_url}}'
     - name: hermetic
       value: "true"
+    - name: build-source-image
+      value: "true"
     - name: output-image
       value: quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-137/serverless-openshift-kn-operator:{{revision}}
+    - name: build-platforms
+      value:
+        - linux/x86_64
+        - linux/arm64
+        - linux/ppc64le
+        - linux/s390x
     - name: revision
       value: '{{revision}}'
     - name: additional-tags
@@ -44,8 +52,6 @@ spec:
         - latest
     - name: prefetch-input
       value: '[{"type":"rpm"}]'
-    - name: prefetch-input-dev-package-managers
-      value: 'true'
   taskRunSpecs:
     - pipelineTaskName: sast-shell-check
       stepSpecs:
