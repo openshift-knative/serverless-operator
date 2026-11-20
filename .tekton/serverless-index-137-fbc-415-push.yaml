@@ -6,7 +6,7 @@ metadata:
     build.appstudio.redhat.com/commit_sha: '{{revision}}'
     build.appstudio.redhat.com/target_branch: '{{target_branch}}'
     pipelinesascode.tekton.dev/max-keep-runs: "3"
-    pipelinesascode.tekton.dev/on-cel-expression: event == "push" && target_branch == "release-1.37" && ( files.all.exists(x, x.matches('^olm-catalog/serverless-operator-index/v4.15/')) || files.all.exists(x, x.matches('^.tekton/')) )
+    pipelinesascode.tekton.dev/on-cel-expression: event == "push" && target_branch == "release-1.37" && ( files.all.exists(x, x.matches('^olm-catalog/serverless-operator-index/catalog-template.yaml$')) || files.all.exists(x, x.matches('^olm-catalog/serverless-operator-index/v4.15/')) || files.all.exists(x, x.matches('^.tekton/')) )
   creationTimestamp: null
   labels:
     appstudio.openshift.io/application: serverless-operator-137-fbc-415
@@ -36,8 +36,16 @@ spec:
       value: '{{source_url}}'
     - name: hermetic
       value: "true"
+    - name: build-source-image
+      value: "true"
     - name: output-image
       value: quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-137-fbc-415/serverless-index-137-fbc-415:{{revision}}
+    - name: build-platforms
+      value:
+        - linux/x86_64
+        - linux/arm64
+        - linux/ppc64le
+        - linux/s390x
     - name: revision
       value: '{{revision}}'
     - name: additional-tags
