@@ -7,7 +7,7 @@ metadata:
     build.appstudio.redhat.com/pull_request_number: '{{pull_request_number}}'
     build.appstudio.redhat.com/target_branch: '{{target_branch}}'
     pipelinesascode.tekton.dev/max-keep-runs: "3"
-    pipelinesascode.tekton.dev/on-cel-expression: event == "pull_request" && target_branch == "release-1.37" && ( files.all.exists(x, x.matches('^olm-catalog/serverless-operator-index/v4.20/')) || files.all.exists(x, x.matches('^.tekton/')) )
+    pipelinesascode.tekton.dev/on-cel-expression: event == "pull_request" && target_branch == "release-1.37" && ( files.all.exists(x, x.matches('^olm-catalog/serverless-operator-index/catalog-template.yaml$')) || files.all.exists(x, x.matches('^olm-catalog/serverless-operator-index/v4.20/')) || files.all.exists(x, x.matches('^.tekton/')) )
   creationTimestamp: null
   labels:
     appstudio.openshift.io/application: serverless-operator-137-fbc-420
@@ -23,7 +23,7 @@ spec:
       value: ./olm-catalog/serverless-operator-index/v4.20
     - name: build-args
       value:
-        - VERSION=1.37.3
+        - VERSION=1.37.4
         - TAG=v1.17.0
         - CLI_ARTIFACTS=registry.redhat.io/openshift4/ose-cli-artifacts-rhel9:v4.16
         - GO_BUILDER=registry.redhat.io/openshift/golang-builder:golang-builder-v1.26-rhel9
@@ -36,6 +36,8 @@ spec:
     - name: git-url
       value: '{{source_url}}'
     - name: hermetic
+      value: "true"
+    - name: build-source-image
       value: "true"
     - name: image-expires-after
       value: 5d
