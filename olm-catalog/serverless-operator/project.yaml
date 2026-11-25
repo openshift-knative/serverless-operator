@@ -60,6 +60,7 @@ requirements:
       - "4.22"
       - "5.0"
       - "4.23"
+      - "5.1"
     min: '4.14'
     # Version to use for OCP docs links (in CSV or Quickstarts)
     doc: '4.22'
