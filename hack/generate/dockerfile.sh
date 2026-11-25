@@ -39,6 +39,16 @@ if [[ "$template" =~ index.Dockerfile ]]; then
 elif [[ "$template" =~ catalog.Dockerfile ]]; then
   while IFS=$'\n' read -r ocp_version; do
     values[OCP_VERSION]="${ocp_version}"
+    # Default OPM image for local builds. The Konflux FBC pipelines always
+    # override this via the OPM_IMAGE build-arg (see getOPMImage in the hack
+    # repo). OCP 5.x has no SCOS CI image (scos-5.x:operator-registry does
+    # not exist), so use the registry.redhat.io variant for 5.x, matching
+    # what the pipelines pass.
+    if versions.ge "${ocp_version}" "5.0"; then
+      values[OPM_IMAGE]="registry.redhat.io/openshift5/ose-operator-registry-rhel9:v${ocp_version}"
+    else
+      values[OPM_IMAGE]="registry.ci.openshift.org/origin/scos-${ocp_version}:operator-registry"
+    fi
     mkdir -p "${target}/v${ocp_version}"
     target_dockerfile="${target}/v${ocp_version}/Dockerfile"
 
