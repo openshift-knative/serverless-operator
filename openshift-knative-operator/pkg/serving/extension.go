@@ -27,6 +27,7 @@ import (
 	kubeclient "knative.dev/pkg/client/injection/kube/client"
 	deploymentinformer "knative.dev/pkg/client/injection/kube/informers/apps/v1/deployment"
 	"knative.dev/pkg/controller"
+	"knative.dev/pkg/logging"
 	"knative.dev/pkg/ptr"
 	"knative.dev/pkg/reconciler"
 
@@ -140,6 +141,15 @@ func (e *extension) Reconcile(ctx context.Context, comp base.KComponent) error {
 	ks.Spec.Registry.Default = images["default"]
 	common.Configure(&ks.Spec.CommonSpec, "deployment", "queue-sidecar-image", images["queue-proxy"])
 
+	// spec.manifests/spec.additionalManifests are unsupported; clear them, as we force Registry
+	// above. Keep only local paths in status.manifests.
+	if common.SanitizeManifestSpec(&ks.Spec.CommonSpec) {
+		logging.FromContext(ctx).Warnw("Ignoring unsupported spec.manifests/spec.additionalManifests")
+	}
+	if common.SanitizeManifestStatus(ks.GetStatus()) {
+		logging.FromContext(ctx).Warnw("Dropping non-local status.manifests entries")
+	}
+
 	// Default to 2 replicas.
 	if ks.Spec.HighAvailability == nil {
 		ks.Spec.HighAvailability = &base.HighAvailability{
@@ -185,6 +195,16 @@ func (e *extension) Reconcile(ctx context.Context, comp base.KComponent) error {
 	// Temporary fix for SRVKS-743
 	if ks.Spec.Ingress.Istio.Enabled {
 		common.ConfigureIfUnset(&ks.Spec.CommonSpec, monitoring.ObservabilityCMName, monitoring.ObservabilityBackendKey, "none")
+	}
+
+	// Create the policies before the install stage applies resources that trigger
+	// the webhooks: otherwise the Service Mesh deny-all policy blocks the apiserver
+	// from reaching the webhook and the install deadlocks. Missing policies only;
+	// the manifest reconciliation owns their ongoing lifecycle.
+	for _, np := range istioWebhookNetworkPolicies(ks) {
+		if _, err := e.kubeclient.NetworkingV1().NetworkPolicies(np.Namespace).Create(ctx, np, metav1.CreateOptions{}); err != nil && !apierrors.IsAlreadyExists(err) {
+			return fmt.Errorf("failed to create NetworkPolicy %s/%s: %w", np.Namespace, np.Name, err)
+		}
 	}
 
 	if !oldResourceRemoved.Load() {

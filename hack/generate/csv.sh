@@ -25,7 +25,6 @@ if [[ ${USE_RELEASE_NEXT:-} == "true" ]]; then
   knative_eventing_istio_images_release
   knative_eventing_kafka_broker_images_release
   knative_eventing_integrations_images_release
-  knative_backstage_plugins_images_release
   knative_serving_images_release
   knative_kn_plugin_func_images_release
   knative_client_images_release
@@ -35,7 +34,6 @@ else
   default_knative_eventing_istio_images
   default_knative_eventing_kafka_broker_images
   default_knative_eventing_integrations_images
-  default_knative_backstage_plugins_images
   default_knative_serving_images
   default_knative_kn_plugin_func_images
   default_knative_client_images
@@ -125,8 +123,6 @@ image "INTEGRATION_SINK_LOG_IMAGE"                                              
 image "INTEGRATION_SINK_AWS_S3_IMAGE"                                            "${KNATIVE_EVENTING_INTEGRATIONS_AWS_S3_SINK}"
 image "INTEGRATION_SINK_AWS_SQS_IMAGE"                                           "${KNATIVE_EVENTING_INTEGRATIONS_AWS_SQS_SINK}"
 image "INTEGRATION_SINK_AWS_SNS_IMAGE"                                           "${KNATIVE_EVENTING_INTEGRATIONS_AWS_SNS_SINK}"
-
-image "eventmesh-backend__controller" "${KNATIVE_BACKSTAGE_PLUGINS_EVENTMESH}"
 
 kafka_image "kafka-broker-receiver__kafka-broker-receiver"       "${KNATIVE_EVENTING_KAFKA_BROKER_RECEIVER}"
 kafka_image "kafka-broker-dispatcher__kafka-broker-dispatcher"   "${KNATIVE_EVENTING_KAFKA_BROKER_DISPATCHER}"

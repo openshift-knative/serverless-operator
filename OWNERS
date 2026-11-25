@@ -4,18 +4,14 @@
 
 approvers:
 - aliok
-- creydr
 - dsimansk
 - Kaustubh-pande
 - lberk
 - maschmid
-- matzew
 - openshift-cherrypick-robot
 - rudyredhat1
 
 reviewers:
 - aliok
-- creydr
 - dsimansk
 - Kaustubh-pande
-- matzew

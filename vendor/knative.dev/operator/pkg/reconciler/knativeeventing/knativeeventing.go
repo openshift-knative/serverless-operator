@@ -140,7 +140,6 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, ke *v1beta1.KnativeEvent
 		},
 		r.transform,
 		r.handleTLSResources,
-		r.handleBackstageResources,
 		manifests.Install,
 		manifests.SetManifestPaths, // setting path right after applying manifests to populate paths
 		common.CheckDeployments,

@@ -1,0 +1,33 @@
+# Minimal stand-in for the Kafka control-plane manifest: the controller
+# Deployment and its post-install Job. The operator renames the Job to
+# <name>-<CURRENT_VERSION> on apply.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kafka-controller
+  namespace: knative-eventing
+spec:
+  selector:
+    matchLabels:
+      app: kafka-controller
+  template:
+    metadata:
+      labels:
+        app: kafka-controller
+    spec:
+      containers:
+        - name: controller
+          image: kafka-controller:current
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: kafka-controller-post-install
+  namespace: knative-eventing
+spec:
+  template:
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: post-install
+          image: TO_BE_REPLACED

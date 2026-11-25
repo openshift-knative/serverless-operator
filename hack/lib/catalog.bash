@@ -48,6 +48,12 @@ function build_bundle_and_index_images {
   export SERVERLESS_BUNDLE="${bundle_image}"
   "${rootdir}/hack/generate/dockerfile.sh" "${rootdir}/templates/index.Dockerfile" "${index_dockerfile_path}"
 
+  # The template renders the local bundle directory (/bundle), which yields an
+  # empty image reference in the olm.bundle entry. Render the freshly built
+  # bundle image instead, so the index gets a pullable image ref and the
+  # freshly generated CSV (frontport of release-1.37 PR #4140).
+  sed -i "s|/bin/opm render -o yaml /bundle|/bin/opm render --skip-tls-verify -o yaml ${SERVERLESS_BUNDLE}|" "${index_dockerfile_path}"
+
   build_image "serverless-index" "${rootdir}" "${index_dockerfile_path}"
 
   logger.debug 'Undo potential changes to the index Dockerfile.'

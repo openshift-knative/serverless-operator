@@ -114,6 +114,15 @@ func (e *extension) Reconcile(ctx context.Context, comp base.KComponent) error {
 	ke.Spec.Registry.Override = images
 	ke.Spec.Registry.Default = images["default"]
 
+	// spec.manifests/spec.additionalManifests are unsupported; clear them, as we force Registry
+	// above. Keep only local paths in status.manifests.
+	if common.SanitizeManifestSpec(&ke.Spec.CommonSpec) {
+		logging.FromContext(ctx).Warnw("Ignoring unsupported spec.manifests/spec.additionalManifests")
+	}
+	if common.SanitizeManifestStatus(ke.GetStatus()) {
+		logging.FromContext(ctx).Warnw("Dropping non-local status.manifests entries")
+	}
+
 	// Ensure webhook has 1G of memory.
 	common.EnsureContainerMemoryLimit(&ke.Spec.CommonSpec, "eventing-webhook", resource.MustParse("1024Mi"))
 
