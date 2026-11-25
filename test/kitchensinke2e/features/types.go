@@ -28,6 +28,10 @@ type labelable interface {
 	Label() string
 }
 
+type sinceVersionable interface {
+	SinceVersion() string
+}
+
 type component interface {
 	installable
 	kreferencable
@@ -46,6 +50,14 @@ type genericComponent struct {
 
 	// label is used in test descriptions
 	label string
+
+	// sinceVersion is the version that the component first appeared in (e.g. "1.36.0").
+	// Empty string means the component has been available forever.
+	sinceVersion string
+}
+
+func (c genericComponent) SinceVersion() string {
+	return c.sinceVersion
 }
 
 func (c genericComponent) ShortLabel() string {

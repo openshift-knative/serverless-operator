@@ -36,20 +36,20 @@ func SourceReadiness(index int, source component, sink component) *feature.Featu
 	return f
 }
 
-func SourceFeatureSet() feature.FeatureSet {
-	return sourceFeatureSet(false, 1)
+func SourceFeatureSet(version string) feature.FeatureSet {
+	return sourceFeatureSet(false, 1, version)
 }
 
-func SourceFeatureSetShort() feature.FeatureSet {
-	return sourceFeatureSet(true, 1)
+func SourceFeatureSetShort(version string) feature.FeatureSet {
+	return sourceFeatureSet(true, 1, version)
 }
 
-func SourceFeatureSetStress() feature.FeatureSet {
-	return sourceFeatureSet(true, 50)
+func SourceFeatureSetStress(version string) feature.FeatureSet {
+	return sourceFeatureSet(true, 50, version)
 }
 
 // sourceFeatureSet returns all combinations of Source x Sinks.
-func sourceFeatureSet(short bool, times int) feature.FeatureSet {
+func sourceFeatureSet(short bool, times int, version string) feature.FeatureSet {
 	sinks := sinksAll
 	if short {
 		sinks = sinksShort
@@ -57,8 +57,10 @@ func sourceFeatureSet(short bool, times int) feature.FeatureSet {
 	if times > 1 {
 		sinks = sinksLight
 	}
-	features := make([]*feature.Feature, 0, len(sources)*len(sinks))
-	for _, source := range sources {
+	srcs := filterByVersion(sources, version)
+	sinks = filterByVersion(sinks, version)
+	features := make([]*feature.Feature, 0, len(srcs)*len(sinks))
+	for _, source := range srcs {
 		for _, sink := range sinks {
 			for i := 0; i < times; i++ {
 				features = append(features, SourceReadiness(i, source, sink))

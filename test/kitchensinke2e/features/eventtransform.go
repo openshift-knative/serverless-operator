@@ -59,12 +59,12 @@ func EventTransformTriggerReadiness(index int, eventTr component, sink component
 	return f
 }
 
-func EventTransformFeatureSet() feature.FeatureSet {
-	return eventTransformFeatureSet(false, 1)
+func EventTransformFeatureSet(version string) feature.FeatureSet {
+	return eventTransformFeatureSet(false, 1, version)
 }
 
 // eventTransformFeatureSet return combinations of eventTransform (with and without reply) for each sink
-func eventTransformFeatureSet(short bool, times int) feature.FeatureSet {
+func eventTransformFeatureSet(short bool, times int, version string) feature.FeatureSet {
 
 	sinks := sinksAll
 	if short {
@@ -73,8 +73,10 @@ func eventTransformFeatureSet(short bool, times int) feature.FeatureSet {
 	if times > 1 {
 		sinks = sinksLight
 	}
-	features := make([]*feature.Feature, 0, len(eventTransformers)*len(sinks)*times*2)
-	for _, eventTr := range eventTransformers {
+	evtrs := filterByVersion(eventTransformers, version)
+	sinks = filterByVersion(sinks, version)
+	features := make([]*feature.Feature, 0, len(evtrs)*len(sinks)*times*2)
+	for _, eventTr := range evtrs {
 		for _, sink := range sinks {
 			for i := 0; i < times; i++ {
 				features = append(features, EventTransformTriggerReadiness(i, eventTr, sink, true))
