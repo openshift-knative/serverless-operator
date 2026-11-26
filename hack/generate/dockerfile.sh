@@ -50,6 +50,13 @@ elif [[ "$template" =~ catalog.Dockerfile ]]; then
       values[OPM_IMAGE]="registry.ci.openshift.org/origin/scos-${ocp_version}:operator-registry"
     fi
     mkdir -p "${target}/v${ocp_version}"
+    # The catalog template is shared across OCP versions (see
+    # hack/generate/catalog.sh). Keep a symlink at the per-version path for
+    # compatibility with consumers that expect the template below the
+    # per-OCP-version directory (e.g. the Konflux FBC pipelines pass
+    # olm-catalog/serverless-operator-index/v<ver>/catalog-template.yaml to
+    # opm render-template).
+    ln -sf ../catalog-template.yaml "${target}/v${ocp_version}/catalog-template.yaml"
     target_dockerfile="${target}/v${ocp_version}/Dockerfile"
 
     cp "$template" "${target_dockerfile}"
