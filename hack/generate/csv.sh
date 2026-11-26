@@ -17,28 +17,13 @@ source "$(dirname "${BASH_SOURCE[0]}")/../lib/images.bash"
 
 rbac_proxy=$(metadata.get 'dependencies.kube_rbac_proxy')
 
-default_serverless_operator_images
-default_knative_ingress_images
-
-if [[ ${USE_RELEASE_NEXT:-} == "true" ]]; then
-  knative_eventing_images_release
-  knative_eventing_istio_images_release
-  knative_eventing_kafka_broker_images_release
-  knative_eventing_integrations_images_release
-  knative_serving_images_release
-  knative_kn_plugin_func_images_release
-  knative_client_images_release
-  knative_kn_plugin_event_images_release
-else
-  default_knative_eventing_images
-  default_knative_eventing_istio_images
-  default_knative_eventing_kafka_broker_images
-  default_knative_eventing_integrations_images
-  default_knative_serving_images
-  default_knative_kn_plugin_func_images
-  default_knative_client_images
-  default_knative_kn_plugin_event_images
-fi
+# Inspect all images in parallel first, then resolve them (served from the inspect cache).
+images.init_inspect_cache
+mapfile -t resolvers < <(images.csv_resolvers)
+images.prefetch "${resolvers[@]}"
+for resolver in "${resolvers[@]}"; do
+  "${resolver}"
+done
 
 declare -a operator_images
 declare -A operator_images_addresses
