@@ -98,10 +98,10 @@ dependencies:
   func:
     promotion_tag: knative-v1.21
     # if additional image is added amend the list in hack/generate/dependencies.sh
-    tekton_buildah: registry.redhat.io/rhel9/buildah@sha256:c051b9220a4c348e8c28c7d7d1ff376f5f32e916e5587a057677be74234504e8
+    tekton_buildah: registry.redhat.io/rhel9/buildah@sha256:1e24daf13254953da8bb2ccf7c9ea0cbed9ea44fed333e38476d81a100284ab8
     nodejs_20_minimal: registry.access.redhat.com/ubi9/nodejs-20-minimal@sha256:87f2eb0ce06e922a7629fa94fad62ed4e6be05931852b779269e0692282a099e
-    openjdk_21: registry.access.redhat.com/ubi9/openjdk-21@sha256:4daa3f2fa0f2f64cc7732dca63ef1ed7c53ff4883cc18571d6f8eca7a8458b46
-    python-39: registry.access.redhat.com/ubi9/python-39@sha256:447a4c9f6ead4f063bed8778793ac9e972004e5a55d103b375de83c885887e50
+    openjdk_21: registry.access.redhat.com/ubi9/openjdk-21@sha256:dd6e02fb23225cc864dc6acae8a456bcf94432f7583c786c2b6de6fc2b5cab3d
+    python-39: registry.access.redhat.com/ubi9/python-39@sha256:da0c555fb735df7d4ca41c2c22ad69f62277c455aa09490c2c1152b5fd459106
   operator: 1.21.0
   # Previous versions required for downgrade testing
   previous:
