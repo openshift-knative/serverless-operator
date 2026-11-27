@@ -339,41 +339,9 @@ apply-override-snapshot:
 
 # Generates all files that are templated with release metadata.
 release-files: install-tools
-	./hack/generate/csv.sh \
-		templates/csv.yaml \
-		olm-catalog/serverless-operator/manifests/serverless-operator.clusterserviceversion.yaml
-	./hack/generate/annotations.sh \
-		templates/annotations.yaml \
-		olm-catalog/serverless-operator/metadata/annotations.yaml
-	./hack/generate/dockerfile.sh \
-		templates/main.Dockerfile \
-		olm-catalog/serverless-operator/Dockerfile
-	./hack/generate/dockerfile.sh \
-		templates/test-source-image.Dockerfile \
-		openshift/ci-operator/source-image/Dockerfile
-	./hack/generate/dockerfile.sh \
-		templates/build-image.Dockerfile \
-		openshift/ci-operator/build-image/Dockerfile
-	./hack/generate/index.sh \
-		olm-catalog/serverless-operator-index/configs/index.yaml
-	./hack/generate/dockerfile.sh \
-		templates/catalog.Dockerfile \
-		olm-catalog/serverless-operator-index
-	./hack/generate/dockerfile.sh \
-		templates/index.Dockerfile \
-		olm-catalog/serverless-operator-index/Dockerfile
-	./hack/generate/quickstart.sh \
-		templates/serverless-application-quickstart.yaml \
-		knative-operator/deploy/resources/quickstart/serverless-application-quickstart.yaml
-	./hack/generate/images-rekt.sh \
-		templates/images-rekt.yaml \
-		test/images-rekt.yaml
-	./hack/generate/mesh-auth-policies.sh \
-  	tenant-1,tenant-2,serving-tests,serverless-tests,eventing-e2e0,eventing-e2e1,eventing-e2e2,eventing-e2e3,eventing-e2e4
-	./hack/generate/metadata-webhook.sh
+	./hack/generate/release-files.sh
 
 generate-dockerfiles: install-tool-generate
-	GOFLAGS='' go install github.com/openshift-knative/hack/cmd/generate@latest
 	$(shell go env GOPATH)/bin/generate \
 		--generators dockerfile \
 		--includes knative-operator \
@@ -439,24 +407,25 @@ fix-lint:
 	prettier --write templates/*.yaml
 
 install-tool-sobranch:
-	GOFLAGS='' go install github.com/openshift-knative/hack/cmd/sobranch@latest
+	./hack/install-tool.sh github.com/openshift-knative/hack/cmd/sobranch@latest
 
 install-tool-skopeo:
-	GOFLAGS='' go install -tags="exclude_graphdriver_btrfs containers_image_openpgp" github.com/containers/skopeo/cmd/skopeo@v1.17.0
+	./hack/install-tool.sh github.com/containers/skopeo/cmd/skopeo@v1.17.0 -tags="exclude_graphdriver_btrfs containers_image_openpgp"
 
 install-tool-generate:
-	GOFLAGS='' go install github.com/openshift-knative/hack/cmd/generate@latest
+	./hack/install-tool.sh github.com/openshift-knative/hack/cmd/generate@latest
 
+# Always reinstalled: it's small, and its SO -> RHEL version mapping must be current.
 install-tool-sorhel:
 	GOFLAGS='' go install github.com/openshift-knative/hack/cmd/sorhel@latest
 
 install-tool-cosign:
-	GOFLAGS='' go install github.com/sigstore/cosign/cmd/cosign@latest
+	./hack/install-tool.sh github.com/sigstore/cosign/cmd/cosign@v1.13.6
 
 install-tool-opm:
-	GOFLAGS='' go install github.com/operator-framework/operator-registry/cmd/opm@v1.47.0
+	./hack/install-tool.sh github.com/operator-framework/operator-registry/cmd/opm@v1.47.0
 
 install-tool-oras:
-	GOFLAGS='' go install oras.land/oras/cmd/oras@v1.2.0
+	./hack/install-tool.sh oras.land/oras/cmd/oras@v1.2.0
 
 install-tools: install-tool-sobranch install-tool-skopeo install-tool-generate install-tool-sorhel install-tool-cosign install-tool-opm install-tool-oras

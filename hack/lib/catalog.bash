@@ -26,6 +26,11 @@ function build_bundle_and_index_images {
     export SERVERLESS_OPENSHIFT_KNATIVE_OPERATOR="${DOCKER_REPO_OVERRIDE}/serverless-openshift-knative-operator"
   fi
 
+  # Serving and Eventing images are resolved here (with registry.redhat.io references) and
+  # inherited by the CSV generation below, matching what the CSV in the repository contains.
+  default_knative_serving_images
+  default_knative_eventing_images
+
   # Generate CSV from template to properly substitute operator images from env variables.
   #
   # Pass "true" to replace registry.redhat.io references with Konflux quay.io for test purposes as

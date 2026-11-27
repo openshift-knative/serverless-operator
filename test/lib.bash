@@ -6,6 +6,9 @@
 # See https://github.com/koalaman/shellcheck/issues/518
 source "$(dirname "$(dirname "$(realpath "${BASH_SOURCE[0]}")")")/hack/lib/__sources__.bash"
 
+# Tests need serving/eventing (test) images resolved and IMAGE_TEMPLATE set up.
+setup_image_template
+
 readonly TEARDOWN="${TEARDOWN:-on_exit}"
 export TEST_NAMESPACE="${TEST_NAMESPACE:-serverless-tests}"
 declare -a TEST_NAMESPACES

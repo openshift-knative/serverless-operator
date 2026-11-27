@@ -111,11 +111,16 @@ export SAMPLE_RATE="${SAMPLE_RATE:-"1.0"}"
 export ZIPKIN_DEDICATED_NODE="${ZIPKIN_DEDICATED_NODE:-false}"
 export QUAY_REGISTRY=quay.io/openshift-knative
 
-default_knative_serving_images
-default_knative_eventing_images
+# Resolving images requires a registry lookup per image, so it is not done when sourcing this file
+# (which most scripts do without needing these images). Scripts that need IMAGE_TEMPLATE (i.e. the
+# tests, see test/lib.bash) call this function.
+function setup_image_template() {
+  default_knative_serving_images
+  default_knative_eventing_images
 
-DEFAULT_IMAGE_TEMPLATE=$(
-  cat <<-EOF
+  local DEFAULT_IMAGE_TEMPLATE
+  DEFAULT_IMAGE_TEMPLATE=$(
+    cat <<-EOF
 {{- with .Name }}
 {{- if eq . "httpproxy" }}${KNATIVE_SERVING_TEST_HTTPPROXY}
 {{- else if eq . "autoscale" }}${KNATIVE_SERVING_TEST_AUTOSCALE}
@@ -126,8 +131,9 @@ DEFAULT_IMAGE_TEMPLATE=$(
 {{- else }}${KNATIVE_SERVING_IMAGE_PREFIX}-test-{{.}}:latest{{end -}}
 {{end -}}
 EOF
-)
-export IMAGE_TEMPLATE="${IMAGE_TEMPLATE:-"$DEFAULT_IMAGE_TEMPLATE"}"
+  )
+  export IMAGE_TEMPLATE="${IMAGE_TEMPLATE:-"$DEFAULT_IMAGE_TEMPLATE"}"
+}
 export INDEX_IMAGE="${INDEX_IMAGE:-}"
 # Might be used to disable tests which need additional users.
 # Managed environments such as Hypershift might now allow creating new users.

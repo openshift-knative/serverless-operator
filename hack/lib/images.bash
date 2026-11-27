@@ -36,7 +36,80 @@ if [[ "$(uname -s)" == "Darwin" ]]; then
 fi
 
 function get_serverless_operator_rhel_version() {
+  # Memoized via an exported variable (see images.init_inspect_cache), as this is called once per
+  # image from command substitutions, where a plain assignment would not persist.
+  if [[ -n "${SERVERLESS_OPERATOR_RHEL_VERSION:-}" ]]; then
+    echo "${SERVERLESS_OPERATOR_RHEL_VERSION}"
+    return
+  fi
   sorhel --so-version="${CURRENT_VERSION}"
+}
+
+# The resolver functions needed to generate the ClusterServiceVersion (and, as a subset, all other
+# release files). Honors USE_RELEASE_NEXT.
+function images.csv_resolvers() {
+  echo default_serverless_operator_images
+  echo default_knative_ingress_images
+  if [[ ${USE_RELEASE_NEXT:-} == "true" ]]; then
+    echo knative_eventing_images_release
+    echo knative_eventing_istio_images_release
+    echo knative_eventing_kafka_broker_images_release
+    echo knative_eventing_integrations_images_release
+    echo knative_serving_images_release
+    echo knative_kn_plugin_func_images_release
+    echo knative_client_images_release
+    echo knative_kn_plugin_event_images_release
+  else
+    echo default_knative_eventing_images
+    echo default_knative_eventing_istio_images
+    echo default_knative_eventing_kafka_broker_images
+    echo default_knative_eventing_integrations_images
+    echo default_knative_serving_images
+    echo default_knative_kn_plugin_func_images
+    echo default_knative_client_images
+    echo default_knative_kn_plugin_event_images
+  fi
+}
+
+# Sets up a directory caching `skopeo inspect` results, shared with child processes via the
+# exported IMAGE_INSPECT_CACHE_DIR, so that every image is inspected at most once. The directory
+# is removed when the calling script exits. No-op if a cache is already set up (e.g. by a parent).
+function images.init_inspect_cache() {
+  if [[ -z "${IMAGE_INSPECT_CACHE_DIR:-}" ]]; then
+    IMAGE_INSPECT_CACHE_DIR="$(mktemp -d -t image-inspect-XXXXXX)"
+    export IMAGE_INSPECT_CACHE_DIR
+    # shellcheck disable=SC2064
+    trap "rm -rf '${IMAGE_INSPECT_CACHE_DIR}'" EXIT
+  fi
+  SERVERLESS_OPERATOR_RHEL_VERSION="$(get_serverless_operator_rhel_version)"
+  export SERVERLESS_OPERATOR_RHEL_VERSION
+}
+
+function images.run_resolvers() {
+  local resolver
+  for resolver in "$@"; do
+    "${resolver}"
+  done
+}
+
+# Inspects, in parallel, all images the given resolver functions would look up and stores the
+# results in the inspect cache, so that the subsequent (sequential) resolution is served from
+# the cache. Requires images.init_inspect_cache.
+function images.prefetch() {
+  local images_list
+  images_list="$(mktemp -t image-list-XXXXXX)"
+  # Dry-run the resolvers in a subshell to collect the image references they look up, without
+  # persisting any of the variables they export. Already exported variables are skipped by the
+  # resolvers, so they don't contribute any image.
+  (
+    IMAGE_INSPECT_COLLECT_FILE="${images_list}" images.run_resolvers "$@"
+  ) > /dev/null 2>&1 || true
+
+  export -f image_inspect image_inspect_cache_file
+  # shellcheck disable=SC2016
+  sort -u "${images_list}" | \
+    xargs -P "${IMAGE_INSPECT_PARALLELISM:-16}" -I{} bash -c 'image_inspect "$1" > /dev/null 2>&1 || true' _ {}
+  rm -f "${images_list}"
 }
 
 function default_serverless_operator_images() {
@@ -60,23 +133,28 @@ function default_serverless_operator_images() {
   # The actually pullable URL is used to generate the index images for FBC components and it
   # has to be (eventually) pullable.
 
-  export SERVERLESS_BUNDLE=${SERVERLESS_BUNDLE:-$(get_bundle_for_version "${CURRENT_VERSION}")}
   export DEFAULT_SERVERLESS_BUNDLE=${DEFAULT_SERVERLESS_BUNDLE:-$(get_bundle_for_version "${CURRENT_VERSION}")}
+  export SERVERLESS_BUNDLE=${SERVERLESS_BUNDLE:-${DEFAULT_SERVERLESS_BUNDLE}}
 
   SERVERLESS_BUNDLE_REDHAT_IO=${SERVERLESS_BUNDLE_REDHAT_IO:-$(latest_registry_redhat_io_image_sha "${serverless_registry}-bundle:${CURRENT_VERSION_IMAGES}" "true")}
   # Bundle image is in different locations in quay.io and registry.redhat.io
   export SERVERLESS_BUNDLE_REDHAT_IO=${SERVERLESS_BUNDLE_REDHAT_IO//serverless-bundle/serverless-operator-bundle}
 
-  # Use the current OCP version if the cluster is running otherwise use the latest.
-  if oc get clusterversion &>/dev/null; then
-    ocp_version=$(oc get clusterversion version -o jsonpath='{.status.desired.version}')
-    ocp_version=$(versions.major_minor "$ocp_version")
-  else
-    ocp_version=$(metadata.get 'requirements.ocpVersion.min')
-  fi
-  ocp_version=${ocp_version/./} # 4.17 -> 417
+  if [[ -z "${INDEX_IMAGE:-}" ]]; then
+    # Use the current OCP version if the cluster is running otherwise use the latest.
+    if oc get clusterversion &>/dev/null; then
+      ocp_version=$(oc get clusterversion version -o jsonpath='{.status.desired.version}')
+      ocp_version=$(versions.major_minor "$ocp_version")
+    else
+      ocp_version=$(metadata.get 'requirements.ocpVersion.min')
+    fi
+    ocp_version=${ocp_version/./} # 4.17 -> 417
 
-  export INDEX_IMAGE=${INDEX_IMAGE:-$(latest_konflux_image_sha "${registry_quay}-fbc-${ocp_version}/serverless-index-${quay_registry_app_version}-fbc-${ocp_version}:${CURRENT_VERSION_IMAGES}" "latest" "true")}
+    # Using `export` on the assignment keeps the original semantics of ignoring lookup failures.
+    # shellcheck disable=SC2155
+    export INDEX_IMAGE=$(latest_konflux_image_sha "${registry_quay}-fbc-${ocp_version}/serverless-index-${quay_registry_app_version}-fbc-${ocp_version}:${CURRENT_VERSION_IMAGES}" "latest" "true")
+  fi
+  export INDEX_IMAGE
 }
 
 # Bundle image is specific as we need to pull older versions for including in the catalog.
@@ -89,6 +167,13 @@ function get_bundle_for_version() {
 
   image=$(image_with_sha "${registry_prefix_quay}${app_version}/serverless-bundle:latest")
   image_version=$(bundle_image_version "${registry_prefix_quay}${app_version}/serverless-bundle:latest")
+
+  # When collecting images for images.prefetch, only prefetch the primary location. The fallbacks
+  # below are rarely needed and are then looked up on demand.
+  if [[ -n "${IMAGE_INSPECT_COLLECT_FILE:-}" ]]; then
+    echo "$image"
+    return
+  fi
 
   # As a backup, try also CI registry.
   # For .micro releases, it's possible we only have the _previous_ version in Konflux, so also check the version of the bundle
@@ -387,16 +472,58 @@ function latest_konflux_image_sha() {
   echo "${image}"
 }
 
-function image_with_sha {
+# Prints the file caching the `skopeo inspect` output of the given image (see images.init_inspect_cache).
+function image_inspect_cache_file {
+  local image="${1:?"Provide image"}"
+  # Map characters that are invalid in file names to ones that are invalid in image references, so
+  # the mapping is collision-free.
+  image="${image//\//+}"
+  image="${image//:/=}"
+  image="${image//@/,}"
+  echo "${IMAGE_INSPECT_CACHE_DIR}/${image}__${TARGET_OS:-linux}_${TARGET_ARCH:-amd64}.json"
+}
+
+# Prints the `skopeo inspect` JSON of the given image. Results are cached when
+# IMAGE_INSPECT_CACHE_DIR is set. When IMAGE_INSPECT_COLLECT_FILE is set, the image reference is only
+# recorded there and placeholder JSON is printed (see images.prefetch).
+function image_inspect {
+  local image target_os target_arch cache_file output
   image=${1:?"Provide image"}
-  return_input_on_empty=${2:-"false"}
 
   # Use TARGET_OS and TARGET_ARCH if set, otherwise default to linux/amd64
   target_os=${TARGET_OS:-linux}
   target_arch=${TARGET_ARCH:-amd64}
 
+  if [[ -n "${IMAGE_INSPECT_CACHE_DIR:-}" ]]; then
+    cache_file="$(image_inspect_cache_file "${image}")"
+    if [[ -s "${cache_file}" ]]; then
+      cat "${cache_file}"
+      return
+    fi
+  fi
+
+  if [[ -n "${IMAGE_INSPECT_COLLECT_FILE:-}" ]]; then
+    echo "${image}" >> "${IMAGE_INSPECT_COLLECT_FILE}"
+    echo '{"Digest": "sha256:collect", "Labels": {"version": "collect"}}'
+    return
+  fi
+
   # shellcheck disable=SC2086
-  digest=$(skopeo inspect --retry-times=10 --override-os "${target_os}" --override-arch "${target_arch}" --no-tags=true ${SKOPEO_EXTRA_FLAGS} "docker://${image}" | jq -r '.Digest' || echo "")
+  output=$(skopeo inspect --retry-times=10 --override-os "${target_os}" --override-arch "${target_arch}" --no-tags=true ${SKOPEO_EXTRA_FLAGS} "docker://${image}") || return 1
+
+  if [[ -n "${cache_file:-}" ]]; then
+    # Write atomically, as parallel prefetching might write the same file.
+    echo "${output}" > "${cache_file}.$$"
+    mv -f "${cache_file}.$$" "${cache_file}"
+  fi
+  echo "${output}"
+}
+
+function image_with_sha {
+  image=${1:?"Provide image"}
+  return_input_on_empty=${2:-"false"}
+
+  digest=$(image_inspect "${image}" | jq -r '.Digest' || echo "")
   if [ "${digest}" = "" ]; then
     if [ "${return_input_on_empty}" = "true" ]; then
       echo "${image}"
@@ -414,11 +541,7 @@ function image_with_sha {
 function bundle_image_version {
   image=${1:?"Provide image"}
 
-  # Use TARGET_OS and TARGET_ARCH if set, otherwise default to linux/amd64
-  target_os=${TARGET_OS:-linux}
-  target_arch=${TARGET_ARCH:-amd64}
-
-  version=$(skopeo inspect --no-tags=true --override-os "${target_os}" --override-arch "${target_arch}" "docker://${image}" | jq -r '.Labels.version')
+  version=$(image_inspect "${image}" | jq -r '.Labels.version')
   echo "${version}"
 }
 

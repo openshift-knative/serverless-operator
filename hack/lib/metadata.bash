@@ -5,11 +5,20 @@ function yq() {
   thisfile=$(realpath "${BASH_SOURCE[0]}")
   rootdir=$(dirname "$(dirname "$(dirname "${thisfile}")")")
   bindir="${rootdir}/_output/bin"
-  if [[ ! -f "${bindir}/yq" ]]; then
-    mkdir -p "${bindir}"
-    GOBIN="${bindir}" GOFLAGS='' go install github.com/mikefarah/yq/v3@latest
+  # Prefer yq v3 from PATH (e.g. preinstalled in CI) over building it.
+  if [[ -z "${YQ_BIN:-}" ]]; then
+    if type -P yq > /dev/null && [[ "$(command yq --version 2>&1)" == *"version 3."* ]]; then
+      YQ_BIN="$(type -P yq)"
+    else
+      if [[ ! -f "${bindir}/yq" ]]; then
+        mkdir -p "${bindir}"
+        GOBIN="${bindir}" GOFLAGS='' go install github.com/mikefarah/yq/v3@latest
+      fi
+      YQ_BIN="${bindir}/yq"
+    fi
+    export YQ_BIN
   fi
-  "${bindir}/yq" "$@"
+  "${YQ_BIN}" "$@"
 }
 
 #######################################
