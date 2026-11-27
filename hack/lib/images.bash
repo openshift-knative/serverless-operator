@@ -85,6 +85,13 @@ function images.init_inspect_cache() {
   export SERVERLESS_OPERATOR_RHEL_VERSION
 }
 
+function images.run_resolvers() {
+  local resolver
+  for resolver in "$@"; do
+    "${resolver}"
+  done
+}
+
 # Inspects, in parallel, all images the given resolver functions would look up and stores the
 # results in the inspect cache, so that the subsequent (sequential) resolution is served from
 # the cache. Requires images.init_inspect_cache.
@@ -94,12 +101,8 @@ function images.prefetch() {
   # Dry-run the resolvers in a subshell to collect the image references they look up, without
   # persisting any of the variables they export. Already exported variables are skipped by the
   # resolvers, so they don't contribute any image.
-  # shellcheck disable=SC2030
   (
-    export IMAGE_INSPECT_COLLECT_FILE="${images_list}"
-    for resolver in "$@"; do
-      "${resolver}"
-    done
+    IMAGE_INSPECT_COLLECT_FILE="${images_list}" images.run_resolvers "$@"
   ) > /dev/null 2>&1 || true
 
   export -f image_inspect image_inspect_cache_file
