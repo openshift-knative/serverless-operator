@@ -1,7 +1,7 @@
 apiVersion: appstudio.redhat.com/v1alpha1
 kind: Snapshot
 metadata:
-  name: serverless-operator-137-override-snapshot-a92dc3d1
+  name: serverless-operator-137-override-snapshot-a9684ec5
   labels:
     test.appstudio.openshift.io/type: override
     application: serverless-operator-137
@@ -24,7 +24,7 @@ spec:
           revision: "825d4c65bee8d5c24ab70e33e1c448e9b40a5e61"
           dockerfileUrl: "openshift/ci-operator/knative-images/cli-artifacts/Dockerfile"
     - name: "kn-client-kn-117"
-      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-137/kn-client-kn@sha256:e93a2e31e98336dc9be4d0a2dd93bab241b4d3fa970b778970d992f5c3bef94d"
+      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-137/kn-client-kn@sha256:4cff5deb06372ee82a4bac9ce52ac89c3c23c59a312b17567932f250882893ea"
       source:
         git:
           url: "https://github.com/openshift-knative/client"
@@ -241,14 +241,14 @@ spec:
           revision: "30f0168695e242c00b2f5977726ce3fd3b395e0c"
           dockerfileUrl: "openshift/ci-operator/knative-images/autoscaler-hpa/Dockerfile"
     - name: "kn-serving-autoscaler-117"
-      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-137/kn-serving-autoscaler@sha256:ff8b1585b982c3730afc308061833e6f69aa7bdaa6c8dba6e4c9a1d199838645"
+      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-137/kn-serving-autoscaler@sha256:fd786d09e8e23e1d1cb0d2f920e8480c2aa8102f1255394286be64fe58c64c97"
       source:
         git:
           url: "https://github.com/openshift-knative/serving"
           revision: "30f0168695e242c00b2f5977726ce3fd3b395e0c"
           dockerfileUrl: "openshift/ci-operator/knative-images/autoscaler/Dockerfile"
     - name: "kn-serving-controller-117"
-      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-137/kn-serving-controller@sha256:7ed9588f4b538bf89aec463d6f54a937d19c4f834634b4a63289e184b9d7a1ab"
+      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-137/kn-serving-controller@sha256:ca5d9fedd1857d0fe933223699296a26e4ed750366ed10f7ac376a1c5fd9d02f"
       source:
         git:
           url: "https://github.com/openshift-knative/serving"
@@ -325,9 +325,9 @@ spec:
           revision: "6a49d1dbfb547ff9ea659bdf9c96b3b9cfeeb545"
           dockerfileUrl: "openshift-knative-operator/Dockerfile"
     - name: "serverless-bundle-137"
-      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-137/serverless-bundle@sha256:f67a6280487a88163d3d433502a23633e7c8be0d349b825bcda8beca6d320b28"
+      containerImage: "quay.io/redhat-user-workloads/ocp-serverless-tenant/serverless-operator-137/serverless-bundle@sha256:b1fa9c7bc129df631b79bb43e5929690671986d07947f1a9063dde66e93e7dc7"
       source:
         git:
           url: "https://github.com/openshift-knative/serverless-operator"
-          revision: "8eee3a7027e47020218443b621888998f3feec59"
+          revision: "1c48458efd845e40b417edd99532f0d2287546e1"
           dockerfileUrl: "olm-catalog/serverless-operator/Dockerfile"
